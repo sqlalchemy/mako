@@ -1,6 +1,7 @@
 import unittest
 
 from mako import ast, util
+from compiler import parse
 
 class AstParseTest(unittest.TestCase):
     def setUp(self):
@@ -29,7 +30,43 @@ print "Another expr", c
         parsed = ast.PythonCode("x + 5 * (y-z)")
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z'])
         assert parsed.declared_identifiers == util.Set()
+
+    def test_function_decl(self):
+        """test getting the arguments from a function"""
+        code = "def foo(a, b, c=None, d='hi', e=x, f=y+7):pass"
+        parsed = ast.FunctionDecl(code)
+        assert parsed.funcname=='foo'
+        assert parsed.argnames==['a', 'b', 'c', 'd', 'e', 'f']
     
+    def test_expr_generate(self):
+        """test the round trip of expressions to AST back to python source"""
+        x = 1
+        y = 2
+        class F(object):
+            def bar(self, a,b):
+                return a + b
+        def lala(arg):
+            return "blah" + arg
+        local_dict = dict(x=x, y=y, foo=F(), lala=lala)
+        
+        code = "str((x+7*y) / foo.bar(5,6)) + lala('ho')"
+        astnode = parse(code)
+        newcode = ast.ExpressionGenerator(astnode).value()
+        #print "newcode:" + newcode
+        #print "result:" + eval(code, local_dict)
+        assert (eval(code, local_dict) == eval(newcode, local_dict))
+        
+        a = ["one", "two", "three"]
+        hoho = {'somevalue':"asdf"}
+        g = [1,2,3,4,5]
+        local_dict = dict(a=a,hoho=hoho,g=g)
+        code = "a[2] + hoho['somevalue'] + repr(g[3:5]) + repr(g[3:]) + repr(g[:5])"
+        astnode = parse(code)
+        newcode = ast.ExpressionGenerator(astnode).value()
+        print newcode
+        print "result:", eval(code, local_dict)
+        assert(eval(code, local_dict) == eval(newcode, local_dict))
+        
 if __name__ == '__main__':
     unittest.main()
     
