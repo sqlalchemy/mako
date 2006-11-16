@@ -115,9 +115,6 @@ and more block.
         printer.print_adjusted_line(block)
         printer.close()
         print stream.getvalue()
-        
-
-
 
 if __name__ == '__main__':
     unittest.main()
