@@ -12,7 +12,9 @@ class Lexer(object):
         self.tag = []
         
     def match(self, regexp, flags=None):
-        """return a matching function that will operate on this Lexer's text and current match position"""
+        """match the given regular expression string and flags to the current text position.
+        
+        if a match occurs, update the current text and line position."""
         mp = self.match_position
         if flags:
             reg = re.compile(regexp, flags)
@@ -73,9 +75,9 @@ class Lexer(object):
         return self.nodes    
 
     def match_tag_start(self):
-        match = self.match(r'\<%(\w+)(\s+[^>]*)?\s*>', re.I | re.S )
+        match = self.match(r'''\<%(\w+)\s+(.+?["'])?\s*(/)?>''', re.I | re.S )
         if match:
-            (keyword, attr) = (match.group(1).lower(), match.group(2))
+            (keyword, attr, isend) = (match.group(1).lower(), match.group(2), match.group(3))
             self.keyword = keyword
             attributes = {}
             if attr:
@@ -84,6 +86,8 @@ class Lexer(object):
                     attributes[key] = val
 
             self.append_node(parsetree.Tag, keyword, attributes)
+            if isend:
+                self.tag.pop()
             return True
         else: 
             return False
