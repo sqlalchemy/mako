@@ -11,6 +11,7 @@ class Lexer(object):
         self.lineno = 1
         self.match_position = 0
         self.tag = []
+        self.control_line = []
         
     def match(self, regexp, flags=None):
         """match the given regular expression string and flags to the current text position.
@@ -49,7 +50,15 @@ class Lexer(object):
             self.nodes.append(node)
         if isinstance(node, parsetree.Tag):
             self.tag.append(node)
-            
+        elif isinstance(node, parsetree.ControlLine):
+            if node.isend:
+                self.control_line.pop()
+            elif node.is_primary:
+                self.control_line.append(node)
+            elif len(self.control_line) and not self.control_line[-1].is_ternary(node.keyword):
+                raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos)
+                
+                    
     def parse(self):
         length = len(self.text)
         while (True):
@@ -134,7 +143,6 @@ class Lexer(object):
                  \Z           # end of string
                 )""", re.X | re.S)
         
-        
         if match:
             text = match.group(1)
             self.append_node(parsetree.Text, text)
@@ -175,6 +183,12 @@ class Lexer(object):
                     raise exceptions.SyntaxException("Invalid control line: '%s'" % text, self.matched_lineno, self.matched_charpos)
                 (isend, keyword) = m2.group(1, 2)
                 isend = (isend is not None)
+                
+                if isend:
+                    if not len(self.control_line):
+                        raise exceptions.SyntaxException("No starting keyword '%s' for '%s'" % (keyword, text), self.matched_lineno, self.matched_charpos)
+                    elif self.control_line[-1].keyword != keyword:
+                        raise exceptions.SyntaxException("Keyword '%s' doesn't match keyword '%s'" % (text, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos)
                 self.append_node(parsetree.ControlLine, keyword, isend, text)
             else:
                 self.append_node(parsetree.Comment, text)

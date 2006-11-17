@@ -125,10 +125,52 @@ text text la la
     
 """
         nodes = Lexer(template).parse()
-        print nodes
+        #print nodes
         assert repr(nodes) == r"""[Text('\ntext text la la\n', (1, 1)), ControlLine('if', 'if foo():', False, (3, 1)), Text(' mroe text la la blah blah\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('\n        and osme more stuff\n', (6, 1)), ControlLine('for', 'for l in range(1,5):', False, (8, 1)), Text('    tex tesl asdl l is ', (9, 1)), Expression('l', [], (9, 24)), Text(' kfmas d\n', (9, 28)), ControlLine('for', 'endfor', True, (10, 1)), Text('    tetx text\n    \n', (11, 1))]"""
         
+    def test_unmatched_control(self):
+        template = """
 
+        % if foo:
+            % for x in range(1,5):
+        % endif
+"""
+        try:
+            nodes = Lexer(template).parse()
+            assert False
+        except exceptions.SyntaxException, e:
+            assert str(e) == "Keyword 'endif' doesn't match keyword 'for' at line: 5 char: 1"
+
+    def test_unmatched_control_2(self):
+        template = """
+
+        % if foo:
+            % for x in range(1,5):
+            % endlala
+        % endif
+"""
+        try:
+            nodes = Lexer(template).parse()
+            assert False
+        except exceptions.SyntaxException, e:
+            assert str(e) == "Keyword 'endlala' doesn't match keyword 'for' at line: 5 char: 1"
+    
+    def test_ternary_control(self):
+        template = """
+        % if x:
+            hi
+        % elif y+7==10:
+            there
+        % elif lala:
+            lala
+        % else:
+            hi
+        % endif
+"""    
+        nodes = Lexer(template).parse()
+        #print nodes
+        assert repr(nodes) == r"""[ControlLine('if', 'if x:', False, (1, 1)), Text('            hi\n', (3, 1)), ControlLine('elif', 'elif y+7==10:', False, (4, 1)), Text('            there\n', (5, 1)), ControlLine('elif', 'elif lala:', False, (6, 1)), Text('            lala\n', (7, 1)), ControlLine('else', 'else:', False, (8, 1)), Text('            hi\n', (9, 1)), ControlLine('if', 'endif', True, (10, 1))]"""
+        
     def test_integration(self):
         template = """<%namespace name="foo" file="somefile.html"/>
  # inherit from foobar.html
@@ -152,7 +194,7 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        print nodes
+        #print nodes
         assert repr(nodes) == r"""[NamespaceTag('namespace', {'name': '"foo"', 'file': '"somefile.html"'}, (1, 1), []), Text('\n', (1, 46)), Comment('inherit from foobar.html', (2, 1)), InheritTag('inherit', {'file': '"foobar.html"'}, (3, 1), []), Text('\n\n', (3, 31)), ComponentTag('component', {'name': '"header"'}, (5, 1), ["Text('\\n     <div>header</div>\\n', (5, 27))"]), Text('\n', (7, 14)), ComponentTag('component', {'name': '"footer"'}, (8, 1), ["Text('\\n    <div> footer</div>\\n', (8, 27))"]), Text('\n\n<table>\n', (10, 14)), ControlLine('for', 'for j in data():', False, (13, 1)), Text('    <tr>\n', (14, 1)), ControlLine('for', 'for x in j:', False, (15, 1)), Text('            <td>Hello ', (16, 1)), Expression('x', ['h'], (16, 23)), Text('</td>\n', (16, 30)), ControlLine('for', 'endfor', True, (17, 1)), Text('    </tr>\n', (18, 1)), ControlLine('for', 'endfor', True, (19, 1)), Text('</table>\n', (20, 1))]"""
 
 if __name__ == '__main__':

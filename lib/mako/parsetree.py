@@ -1,6 +1,6 @@
 """object model defining a Mako template."""
 
-from mako import exceptions, ast
+from mako import exceptions, ast, util
 
 class Node(object):
     """base class for a Node in the parse tree."""
@@ -18,13 +18,22 @@ class ControlLine(Node):
         (markup)
     % endif
     """
-    def __init__(self, keyword, text, isend, **kwargs):
+    def __init__(self, keyword, isend, text, **kwargs):
         super(ControlLine, self).__init__(**kwargs)
         self.text = text
         self.keyword = keyword
         self.isend = isend
+        self.is_primary = keyword in ['for','if', 'while', 'try']
+
+    def is_ternary(self, keyword):
+        """return true if the given keyword is a ternary keyword for this ControlLine"""
+        return keyword in {
+            'if':util.Set(['else', 'elif']),
+            'try':util.Set(['except', 'finally']),
+            'for':util.Set(['else'])
+        }.get(self.keyword, [])
     def __repr__(self):
-        return "ControlLine(%s, %s, %s, %s)" % (repr(self.keyword), repr(self.isend), repr(self.text), repr((self.lineno, self.pos)))
+        return "ControlLine(%s, %s, %s, %s)" % (repr(self.keyword), repr(self.text), repr(self.isend), repr((self.lineno, self.pos)))
 
 class Text(Node):
     """defines plain text in the template."""
