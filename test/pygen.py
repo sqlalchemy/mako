@@ -114,7 +114,15 @@ and more block.
         printer = PythonPrinter(stream)
         printer.print_adjusted_line(block)
         printer.close()
-        print stream.getvalue()
+        assert stream.getvalue() == \
+"""
+            # comment
+if test:
+    if (lala + hoho) + \\
+(foobar + blat) == 5:
+        print "hi"
+print "more indent"
 
+"""
 if __name__ == '__main__':
     unittest.main()

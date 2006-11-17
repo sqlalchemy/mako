@@ -189,3 +189,4 @@ class PythonPrinter(object):
         self.line_buffer = []
         self._reset_multi_line_flags()
 
+

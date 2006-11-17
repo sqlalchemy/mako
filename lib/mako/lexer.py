@@ -1,5 +1,6 @@
 import re
 from mako import parsetree, exceptions
+from mako.util import adjust_whitespace
 
 class Lexer(object):
     def __init__(self, text):
@@ -57,21 +58,25 @@ class Lexer(object):
         
             if self.match_end():
                 break
-            
+            if self.match_expression():
+                continue
+            if self.match_control_line():
+                continue
             if self.match_tag_start(): 
                 continue
             if self.match_tag_end():
                 continue
-                
+            if self.match_python_block():
+                continue
             if self.match_text(): 
                 continue
             
             if (self.current.match_position > len(self.current.source)):
                 break
-        
-            raise exceptions.Compiler("Infinite parsing loop encountered - Lexer bug?")
+            raise "assertion failed"
+            
         if len(self.tag):
-            raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno)
+            raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos)
         return self.nodes    
 
     def match_tag_start(self):
@@ -117,7 +122,9 @@ class Lexer(object):
         match = self.match(r"""
                 (.*?)         # anything, followed by:
                 (
-                 (?<=\n)\s*(?=[%#]) # an eval or comment line, preceded by a consumed \n and whitespace
+                 (?<=\n)(?=\s*[%#]) # an eval or comment line, preceded by a consumed \n and whitespace
+                 |
+                 (?=\${)   # an expression
                  |
                  (?=</?[%&])  # a substitution or block or call start or end
                                               # - don't consume
@@ -134,6 +141,46 @@ class Lexer(object):
             return True
         else:
             return False
-                
+    
+    def match_python_block(self):
+        match = self.match(r"<%(!)?(.*?)%>", re.S)
+        if match:
+            text = adjust_whitespace(match.group(2))
+            self.append_node(parsetree.Code, text, match.group(1)=='!')
+            return True
+        else:
+            return False
+            
+    def match_expression(self):
+        match = self.match(r"\${(.+?)(?:\|\s*(.+?)\s*)?}", re.S)
+        if match:
+            escapes = match.group(2)
+            if escapes:
+                escapes = re.split(r'\s*,\s*', escapes)
+            else:
+                escapes = []
+            self.append_node(parsetree.Expression, match.group(1), escapes)
+            return True
+        else:
+            return False
+
+    def match_control_line(self):
+        match = self.match(r"(?<=^)\s*([%#])\s*([^\n]*)(?:\n|\Z)", re.M)
+        if match:
+            operator = match.group(1)
+            text = match.group(2)
+            if operator == '%':
+                m2 = re.match(r'(end)?(\w+)\s*(.*)', text)
+                if not m2:
+                    raise exceptions.SyntaxException("Invalid control line: '%s'" % text, self.matched_lineno, self.matched_charpos)
+                (isend, keyword) = m2.group(1, 2)
+                isend = (isend is not None)
+                self.append_node(parsetree.ControlLine, keyword, isend, text)
+            else:
+                self.append_node(parsetree.Comment, text)
+            return True
+        else:
+            return False
+            
     def _count_lines(self, text):
         return len(re.findall(r"\n", text)) 

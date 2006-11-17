@@ -1,13 +1,16 @@
 """object model defining a Mako template."""
 
-from mako import exceptions
+from mako import exceptions, ast
 
 class Node(object):
     """base class for a Node in the parse tree."""
     def __init__(self, lineno, pos):
         self.lineno = lineno
         self.pos = pos
-
+    def accept_visitor(self, visitor):
+        method = getattr(visitor, "visit" + self.__class__.__name__)
+        method(self)
+        
 class ControlLine(Node):
     """defines a control line, a line-oriented python line or end tag.
     
@@ -15,13 +18,13 @@ class ControlLine(Node):
         (markup)
     % endif
     """
-    def __init__(self, keyword, isend, text, **kwargs):
+    def __init__(self, keyword, text, isend, **kwargs):
         super(ControlLine, self).__init__(**kwargs)
-        self.keyword = keyword
         self.text = text
+        self.keyword = keyword
         self.isend = isend
     def __repr__(self):
-        return "ControlLine(%s, %s, %s, %s)" % (repr(self.keyword), repr(self.text), repr(self.isend), repr((self.lineno, self.pos)))
+        return "ControlLine(%s, %s, %s, %s)" % (repr(self.keyword), repr(self.isend), repr(self.text), repr((self.lineno, self.pos)))
 
 class Text(Node):
     """defines plain text in the template."""
@@ -49,8 +52,9 @@ class Code(Node):
         super(Code, self).__init__(**kwargs)
         self.text = text
         self.ismodule = ismodule
+        self.code = ast.PythonCode(text)
     def __repr__(self):
-        return "Comment(%s, %s, %s)" % (repr(self.text), repr(self.ismodule), repr((self.lineno, self.pos)))
+        return "Code(%s, %s, %s)" % (repr(self.text), repr(self.ismodule), repr((self.lineno, self.pos)))
         
 class Comment(Node):
     """defines a comment line.
@@ -70,11 +74,12 @@ class Expression(Node):
     ${x+y}
     
     """
-    def __init__(self, text, **kwargs):
+    def __init__(self, text, escapes, **kwargs):
         super(Expression, self).__init__(**kwargs)
         self.text = text
+        self.escapes = escapes
     def __repr__(self):
-        return "Expression(%s, %s)" % (self.text, repr((self.lineno, self.pos)))
+        return "Expression(%s, %s, %s)" % (repr(self.text), repr(self.escapes), repr((self.lineno, self.pos)))
         
 class _TagMeta(type):
     """metaclass to allow Tag to produce a subclass according to its keyword"""
@@ -87,7 +92,7 @@ class _TagMeta(type):
         try:
             cls = _TagMeta._classmap[keyword]
         except KeyError:
-            raise exceptions.CompileError("No such tag: '%s'" % keyword)
+            raise exceptions.CompileException("No such tag: '%s'" % keyword, kwargs['lineno'], kwargs['pos'])
         return type.__call__(cls, keyword, attributes, **kwargs)
         
 class Tag(Node):
@@ -117,3 +122,5 @@ class ComponentTag(Tag):
     __keyword__ = 'component'
 class CallTag(Tag):
     __keyword__ = 'call'
+class InheritTag(Tag):
+    __keyword__ = 'inherit'

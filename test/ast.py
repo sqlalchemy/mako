@@ -31,6 +31,17 @@ print "Another expr", c
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z'])
         assert parsed.declared_identifiers == util.Set()
 
+    def test_locate_identifiers_2(self):
+        code = """
+result = []
+data = get_data()
+for x in data:
+    result.append(x+7)
+"""
+        parsed = ast.PythonCode(code)
+        assert parsed.undeclared_identifiers == util.Set(['get_data'])
+        assert parsed.declared_identifiers == util.Set(['result', 'data', 'x'])
+        
     def test_function_decl(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, d='hi', e=x, f=y+7):pass"
