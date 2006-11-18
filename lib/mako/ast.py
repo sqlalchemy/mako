@@ -92,7 +92,8 @@ class FunctionDecl(object):
         visitor.walk(expr, f)
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos)
-    def get_argument_expressions(self):
+    def get_argument_expressions(self, include_defaults=True):
+        """return the argument declarations of this FunctionDecl as a printable list"""
         namedecls = []
         defaults = [d for d in self.defaults]
         kwargs = self.kwargs
@@ -109,26 +110,10 @@ class FunctionDecl(object):
                 varargs = False
             else:
                 default = len(defaults) and defaults.pop() or None
-            if default:
+            if include_defaults and default:
                 namedecls.insert(0, "%s=%s" % (arg, ExpressionGenerator(default).value()))
             else:
                 namedecls.insert(0, arg)
-        return namedecls
-    def get_invocation_expressions(self):
-        namedecls = []
-        defaults = [d for d in self.defaults]
-        kwargs = self.kwargs
-        varargs = self.varargs
-        argnames = [f for f in self.argnames]
-        argnames.reverse()
-        for arg in argnames:
-            if kwargs:
-                arg = "**" + arg
-                kwargs = False
-            elif varargs:
-                arg = "*" + arg
-                varargs = False
-            namedecls.insert(0, arg)
         return namedecls
         
 class ExpressionGenerator(object):

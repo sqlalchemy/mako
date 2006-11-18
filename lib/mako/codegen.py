@@ -93,8 +93,7 @@ class GenerateRenderMethod(object):
         self.writeSourceComment(node)
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
-        nameargs = node.function_decl.get_invocation_expressions()
-        namedecls.insert(0, 'context')
+        nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
         nameargs.insert(0, 'context')
         self.printer.writeline("def %s(%s):" % (funcname, ",".join(namedecls)))
         self.printer.writeline("return render_%s(%s)" % (funcname, ",".join(nameargs)))
