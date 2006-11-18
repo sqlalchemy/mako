@@ -74,8 +74,8 @@ for x in data:
         code = "a[2] + hoho['somevalue'] + repr(g[3:5]) + repr(g[3:]) + repr(g[:5])"
         astnode = parse(code)
         newcode = ast.ExpressionGenerator(astnode).value()
-        print newcode
-        print "result:", eval(code, local_dict)
+        #print newcode
+        #print "result:", eval(code, local_dict)
         assert(eval(code, local_dict) == eval(newcode, local_dict))
         
 if __name__ == '__main__':

@@ -7,9 +7,23 @@ class Node(object):
     def __init__(self, lineno, pos):
         self.lineno = lineno
         self.pos = pos
+    def get_children(self):
+        return []
     def accept_visitor(self, visitor):
-        method = getattr(visitor, "visit" + self.__class__.__name__)
+        def traverse(node):
+            for n in node.get_children():
+                n.accept_visitor(visitor)
+        method = getattr(visitor, "visit" + self.__class__.__name__, traverse)
         method(self)
+
+class TemplateNode(Node):
+    """a 'container' node that stores the overall collection of nodes."""
+    def __init__(self):
+        super(TemplateNode, self).__init__(0, 0)
+        self.nodes = []
+        self.page_attributes = {}
+    def __repr__(self):
+        return "TemplateNode(%s, %s)" % (repr(self.page_attributes), repr(self.nodes))
         
 class ControlLine(Node):
     """defines a control line, a line-oriented python line or end tag.
@@ -120,6 +134,8 @@ class Tag(Node):
         self.keyword = keyword
         self.attributes = attributes
         self.nodes = []
+    def get_children(self):
+        return self.nodes
     def __repr__(self):
         return "%s(%s, %s, %s, %s)" % (self.__class__.__name__, repr(self.keyword), repr(self.attributes), repr((self.lineno, self.pos)), repr([repr(x) for x in self.nodes]))
         
@@ -133,3 +149,5 @@ class CallTag(Tag):
     __keyword__ = 'call'
 class InheritTag(Tag):
     __keyword__ = 'inherit'
+class PageTag(Tag):
+    __keyword__ = 'page'

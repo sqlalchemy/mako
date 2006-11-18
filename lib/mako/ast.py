@@ -75,7 +75,6 @@ class ExpressionGenerator(object):
         [self.visit(x) for x in node.subs]
         self.buf.write("]")
     def visitSlice(self, node, *args):
-        print node, dir(node)
         self.visit(node.expr)
         self.buf.write("[")
         if node.lower is not None:

@@ -1,11 +1,11 @@
 import re
 from mako import parsetree, exceptions
-from mako.util import adjust_whitespace
+from mako.pygen import adjust_whitespace
 
 class Lexer(object):
     def __init__(self, text):
         self.text = text
-        self.nodes = []
+        self.template = parsetree.TemplateNode()
         self.matched_lineno = 1
         self.matched_charpos = 0
         self.lineno = 1
@@ -47,7 +47,7 @@ class Lexer(object):
         if len(self.tag):
             self.tag[-1].nodes.append(node)
         else:
-            self.nodes.append(node)
+            self.template.nodes.append(node)
         if isinstance(node, parsetree.Tag):
             self.tag.append(node)
         elif isinstance(node, parsetree.ControlLine):
@@ -86,7 +86,7 @@ class Lexer(object):
             
         if len(self.tag):
             raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos)
-        return self.nodes    
+        return self.template
 
     def match_tag_start(self):
         match = self.match(r'''\<%(\w+)\s+(.+?["'])?\s*(/)?>''', re.I | re.S )

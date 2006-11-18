@@ -1,6 +1,6 @@
 import unittest
 
-from mako.codegen import PythonPrinter
+from mako.pygen import PythonPrinter, adjust_whitespace
 from StringIO import StringIO
 
 class GeneratePythonTest(unittest.TestCase):
@@ -124,5 +124,39 @@ if test:
 print "more indent"
 
 """
+
+class WhitespaceTest(unittest.TestCase):
+    def test_basic(self):
+        text = """
+        for x in range(0,15):
+            print x
+        print "hi"
+        """
+        assert adjust_whitespace(text) == \
+"""
+for x in range(0,15):
+    print x
+print "hi"
+
+"""
+
+    def test_quotes(self):
+        text = """
+        print ''' aslkjfnas kjdfn
+askdjfnaskfd fkasnf dknf sadkfjn asdkfjna sdakjn
+asdkfjnads kfajns '''
+        if x:
+            print y
+"""
+        assert adjust_whitespace(text) == \
+"""
+print ''' aslkjfnas kjdfn
+askdjfnaskfd fkasnf dknf sadkfjn asdkfjna sdakjn
+asdkfjnads kfajns '''
+if x:
+    print y
+
+"""
+
 if __name__ == '__main__':
     unittest.main()
