@@ -1,6 +1,7 @@
 """object model defining a Mako template."""
 
 from mako import exceptions, ast, util
+import re
 
 class Node(object):
     """base class for a Node in the parse tree."""
@@ -22,6 +23,8 @@ class TemplateNode(Node):
         super(TemplateNode, self).__init__(0, 0)
         self.nodes = []
         self.page_attributes = {}
+    def get_children(self):
+        return self.nodes
     def __repr__(self):
         return "TemplateNode(%s, %s)" % (repr(self.page_attributes), repr(self.nodes))
         
@@ -38,7 +41,16 @@ class ControlLine(Node):
         self.keyword = keyword
         self.isend = isend
         self.is_primary = keyword in ['for','if', 'while', 'try']
-
+        if self.isend:
+            self._declared_identifiers = []
+            self._undeclared_identifiers = []
+        else:
+            code = ast.PythonFragment(text, self.lineno, self.pos)
+            (self._declared_identifiers, self._undeclared_identifiers) = (code.declared_identifiers, code.undeclared_identifiers)
+    def declared_identifiers(self):
+        return self._declared_identifiers
+    def undeclared_identifiers(self):
+        return self._undeclared_identifiers
     def is_ternary(self, keyword):
         """return true if the given keyword is a ternary keyword for this ControlLine"""
         return keyword in {
@@ -75,7 +87,11 @@ class Code(Node):
         super(Code, self).__init__(**kwargs)
         self.text = text
         self.ismodule = ismodule
-        self.code = ast.PythonCode(text)
+        self.code = ast.PythonCode(text, self.lineno, self.pos)
+    def declared_identifiers(self):
+        return self.code.declared_identifiers
+    def undeclared_identifiers(self):
+        return self.code.undeclared_identifiers
     def __repr__(self):
         return "Code(%s, %s, %s)" % (repr(self.text), repr(self.ismodule), repr((self.lineno, self.pos)))
         
@@ -101,6 +117,11 @@ class Expression(Node):
         super(Expression, self).__init__(**kwargs)
         self.text = text
         self.escapes = escapes
+        self.code = ast.PythonCode(text, self.lineno, self.pos)
+    def declared_identifiers(self):
+        return []
+    def undeclared_identifiers(self):
+        return list(self.code.undeclared_identifiers) + [n for n in self.escapes]    
     def __repr__(self):
         return "Expression(%s, %s, %s)" % (repr(self.text), repr(self.escapes), repr((self.lineno, self.pos)))
         
@@ -145,6 +166,15 @@ class NamespaceTag(Tag):
     __keyword__ = 'namespace'
 class ComponentTag(Tag):
     __keyword__ = 'component'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(ComponentTag, self).__init__(keyword, attributes, **kwargs)
+        self.function_decl = ast.FunctionDecl("def " + attributes['name'] + ":pass", self.lineno, self.pos)
+    def declared_identifiers(self):
+        # TODO: args in the function decl
+        return [self.function_decl.funcname]
+    def undeclared_identifiers(self):
+        # TODO: args in the function decl
+        return [self.function_decl.funcname]
 class CallTag(Tag):
     __keyword__ = 'call'
 class InheritTag(Tag):

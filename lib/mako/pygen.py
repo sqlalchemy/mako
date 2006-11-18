@@ -1,3 +1,5 @@
+"""utilities for generating and formatting literal Python code."""
+
 import re, string
 from StringIO import StringIO
 
