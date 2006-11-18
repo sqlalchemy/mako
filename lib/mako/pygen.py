@@ -26,16 +26,16 @@ class PythonPrinter(object):
         
         self._reset_multi_line_flags()
 
-    def print_adjusted_line(self, line):
+    def write_indented_block(self, block):
         """print a line or lines of python which already contains indentation.
         
         The indentation of the total block of lines will be adjusted to that of
         the current indent level.""" 
         self.in_indent_lines = False
-        for l in re.split(r'\r?\n', line):
+        for l in re.split(r'\r?\n', block):
             self.line_buffer.append(l)
         
-    def print_python_line(self, line, is_comment=False):
+    def writeline(self, line, is_comment=False):
         """print a line of python, indenting it according to the current indent level.
         
         this also adjusts the indentation counter according to the content of the line."""

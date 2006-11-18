@@ -7,11 +7,11 @@ class GeneratePythonTest(unittest.TestCase):
     def test_generate_normal(self):
         stream = StringIO()
         printer = PythonPrinter(stream)
-        printer.print_python_line("import lala")
-        printer.print_python_line("for x in foo:")
-        printer.print_python_line("print x")
-        printer.print_python_line(None)
-        printer.print_python_line("print y")
+        printer.writeline("import lala")
+        printer.writeline("for x in foo:")
+        printer.writeline("print x")
+        printer.writeline(None)
+        printer.writeline("print y")
         assert stream.getvalue() == \
 """import lala
 for x in foo:
@@ -27,7 +27,7 @@ print y
 """
         stream = StringIO()
         printer = PythonPrinter(stream)
-        printer.print_adjusted_line(block)
+        printer.write_indented_block(block)
         printer.close()
         #print stream.getvalue()
         assert stream.getvalue() == \
@@ -51,12 +51,12 @@ if x > 7:
         """
         stream = StringIO()
         printer = PythonPrinter(stream)
-        printer.print_python_line("import lala")
-        printer.print_python_line("for x in foo:")
-        printer.print_python_line("print x")
-        printer.print_adjusted_line(block)
-        printer.print_python_line(None)
-        printer.print_python_line("print y")
+        printer.writeline("import lala")
+        printer.writeline("for x in foo:")
+        printer.writeline("print x")
+        printer.write_indented_block(block)
+        printer.writeline(None)
+        printer.writeline("print y")
         printer.close()
         #print "->" + stream.getvalue().replace(' ', '#') + "<-"
         assert stream.getvalue() == \
@@ -86,7 +86,7 @@ and more block.
 """
         stream = StringIO()
         printer = PythonPrinter(stream)
-        printer.print_adjusted_line(block)
+        printer.write_indented_block(block)
         printer.close()
         #print stream.getvalue()
         assert stream.getvalue() == \
@@ -112,7 +112,7 @@ and more block.
 """
         stream = StringIO()
         printer = PythonPrinter(stream)
-        printer.print_adjusted_line(block)
+        printer.write_indented_block(block)
         printer.close()
         assert stream.getvalue() == \
 """
