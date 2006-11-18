@@ -1,3 +1,5 @@
+"""provides the Lexer class for parsing template strings into parse trees."""
+
 import re
 from mako import parsetree, exceptions
 from mako.pygen import adjust_whitespace
@@ -49,6 +51,8 @@ class Lexer(object):
         else:
             self.template.nodes.append(node)
         if isinstance(node, parsetree.Tag):
+            if len(self.tag):
+                node.parent = self.tag[-1]
             self.tag.append(node)
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:

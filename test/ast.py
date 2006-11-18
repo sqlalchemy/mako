@@ -42,7 +42,6 @@ for x in data:
     result.append(x+7)
 """
         parsed = ast.PythonCode(code, 0, 0)
-        print parsed.declared_identifiers
         assert parsed.undeclared_identifiers == util.Set(['get_data'])
         assert parsed.declared_identifiers == util.Set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
 

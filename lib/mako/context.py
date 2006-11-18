@@ -1,4 +1,8 @@
+"""provides the Context class, the runtime namespace for templates."""
+
+
 class Context(object):
+    """provides runtime namespace and output buffer for templates."""
     def __init__(self, buffer, **data):
         self.buffer = buffer
         self.data = data

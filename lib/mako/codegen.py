@@ -1,3 +1,5 @@
+"""provides the Compiler object for generating module source code."""
+
 from StringIO import StringIO
 from mako.pygen import PythonPrinter
 from mako import util, ast
@@ -20,22 +22,47 @@ class Compiler(object):
                 components.append(node)
         self.node.accept_visitor(FindTopLevelComponents())
         
-        declared = util.Set()
-        undeclared = util.Set()
+        (module_declared, module_undeclared) = (util.Set(), util.Set())
+        
+        buf = StringIO()
+        printer = PythonPrinter(buf)
+        for n in module_code:
+            (module_declared, module_undeclared) = self._get_declared([n], module_declared, module_undeclared)
+            printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
+            printer.write_indented_block(n.text)
+        
+        (declared, undeclared) = self._get_declared(self.node.nodes, module_declared)
+        self.node.accept_visitor(GenerateRenderMethod(printer, undeclared))
+        printer.writeline(None)
+        buf.write("\n\n")
+
+        for node in components:
+            declared = util.Set(node.declared_identifiers()).union(module_declared)
+            (declared, undeclared) = self._get_declared(node.nodes, declared)
+            print "func",  node.name ,  declared,  undeclared
+            render = GenerateRenderMethod(printer, undeclared, name="render_%s" % node.name, args=node.function_decl.get_argument_expressions())
+            for n in node.nodes:
+                n.accept_visitor(render)
+            printer.writeline(None)
+            buf.write("\n\n")
+            
+        return buf.getvalue()
+    
+    def _get_declared(self, nodes, declared=None, undeclared=None):
+        if declared is None:
+            declared = util.Set()
+        else:
+            declared = util.Set(declared)
+        if undeclared is None:
+            undeclared = util.Set()
+        else:
+            undeclared = util.Set(undeclared)
         def check_declared(node):
             for ident in node.declared_identifiers():
                 declared.add(ident)
             for ident in node.undeclared_identifiers():
                 if ident not in declared:
                     undeclared.add(ident)
-
-        buf = StringIO()
-        printer = PythonPrinter(buf)
-        for n in module_code:
-            check_declared(n)
-            printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
-            printer.write_indented_block(n.text)
-        
         class FindUndeclared(object):
             def visitExpression(self, node):
                 check_declared(node)
@@ -52,16 +79,21 @@ class Compiler(object):
             def visitNamespaceTag(self, node):
                 # TODO: expressions for attributes
                 pass
-        self.node.accept_visitor(FindUndeclared())        
-        self.node.accept_visitor(GenerateRenderMethod(printer, undeclared))
-        return buf.getvalue()
-
+        fd = FindUndeclared()
+        for n in nodes:
+            n.accept_visitor(FindUndeclared())        
+        return (declared, undeclared)
+        
 class GenerateRenderMethod(object):
-    def __init__(self, printer, undeclared, name='render', in_component=False):
+    def __init__(self, printer, undeclared, name='render', in_component=False, args=None):
         self.printer = printer
         self.in_component = in_component
         self.last_source_line = -1
-        printer.writeline("def %s(context):" % name)
+        if args is None:
+            args = ['context']
+        else:
+            args = [a for a in ['context'] + args]
+        printer.writeline("def %s(%s):" % (name, ','.join(args)))
         for ident in undeclared:
             printer.writeline("%s = context.get(%s, None)" % (ident, repr(ident)))
     def writeSourceComment(self, node):
@@ -70,7 +102,7 @@ class GenerateRenderMethod(object):
             self.last_source_line = node.lineno
     def visitExpression(self, node):
         self.writeSourceComment(node)
-        self.printer.writeline("context.write(%s)" % node.text)
+        self.printer.writeline("context.write(unicode(%s))" % node.text)
     def visitControlLine(self, node):
         if node.isend:
             self.printer.writeline(None)

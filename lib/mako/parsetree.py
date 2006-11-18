@@ -1,4 +1,4 @@
-"""object model defining a Mako template."""
+"""defines the parse tree components for Mako templates."""
 
 from mako import exceptions, ast, util
 import re
@@ -154,7 +154,10 @@ class Tag(Node):
         super(Tag, self).__init__(**kwargs)
         self.keyword = keyword
         self.attributes = attributes
+        self.parent = None
         self.nodes = []
+    def is_root(self):
+        return self.parent is None
     def get_children(self):
         return self.nodes
     def __repr__(self):
@@ -169,12 +172,14 @@ class ComponentTag(Tag):
     def __init__(self, keyword, attributes, **kwargs):
         super(ComponentTag, self).__init__(keyword, attributes, **kwargs)
         self.function_decl = ast.FunctionDecl("def " + attributes['name'] + ":pass", self.lineno, self.pos)
+        self.name = self.function_decl.funcname
     def declared_identifiers(self):
-        # TODO: args in the function decl
-        return [self.function_decl.funcname]
+        return [self.function_decl.funcname] + self.function_decl.argnames
     def undeclared_identifiers(self):
-        # TODO: args in the function decl
-        return [self.function_decl.funcname]
+        res = []
+        for c in self.function_decl.defaults:
+            res += list(ast.PythonCode(c, self.lineno, self.pos).undeclared_identifiers)
+        return res
 class CallTag(Tag):
     __keyword__ = 'call'
 class InheritTag(Tag):

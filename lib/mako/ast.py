@@ -12,7 +12,15 @@ class PythonCode(object):
         self.declared_identifiers = util.Set()
         self.undeclared_identifiers = util.Set()
 
-        expr = parse(code, "exec")
+        # note that using AST to parse instead of using code.co_varnames, code.co_names has several advantages:
+        # - we can locate an identifier as "undeclared" even if its declared later in the same block of code
+        # - AST is less likely to break with version changes (for example, the behavior of co_names changed a little bit
+        # in python version 2.5)
+        if isinstance(code, basestring):
+            expr = parse(code, "exec")
+        else:
+            expr = code
+            
         class FindIdentifiers(object):
             def visitAssName(s, node, *args):
                 if node.name not in self.undeclared_identifiers:
@@ -78,7 +86,6 @@ class FunctionDecl(object):
     """function declaration"""
     def __init__(self, code, lineno, pos):
         self.code = code
-        
         expr = parse(code, "exec")
         class ParseFunc(object):
             def visitFunction(s, node, *args):
