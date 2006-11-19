@@ -93,7 +93,23 @@ class Lexer(object):
         return self.template
 
     def match_tag_start(self):
-        match = self.match(r'''\<%(\w+)\s+(.+?["'])?\s*(/)?>''', re.I | re.S )
+        match = self.match(r'''
+            \<%     # opening tag
+            
+            (\w+)   # keyword
+            
+            \s+     # some space
+            
+            ((?:\w+|=|".*?"|'.*?')*)  # attrname, = sign, string expression
+            
+            \s*     # more whitespace
+            
+            (/)?>   # closing
+            
+            ''', 
+            
+            re.I | re.S | re.X)
+            
         if match:
             (keyword, attr, isend) = (match.group(1).lower(), match.group(2), match.group(3))
             self.keyword = keyword
@@ -102,7 +118,6 @@ class Lexer(object):
                 for att in re.findall(r"\s*(\w+)\s*=\s*(?:'([^']*)'|\"([^\"]*)\")", attr):
                     (key, val1, val2) = att
                     attributes[key] = val1 or val2
-
             self.append_node(parsetree.Tag, keyword, attributes)
             if isend:
                 self.tag.pop()

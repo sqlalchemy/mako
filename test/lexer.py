@@ -14,8 +14,7 @@ class LexerTest(unittest.TestCase):
         and some more text.
 """
         node = Lexer(template).parse()
-        #print repr(nodes)
-        assert repr(node) == r"""TemplateNode({}, [Text('\n<b>Hello world</b>\n        ', (1, 1)), ComponentTag('component', {'name': '"foo"'}, (3, 9), ["Text('\\n                this is a component.\\n        ', (3, 32))"]), Text('\n        \n        and some more text.\n', (5, 22))])"""
+        assert repr(node) == r"""TemplateNode({}, [Text('\n<b>Hello world</b>\n        ', (1, 1)), ComponentTag('component', {'name': 'foo'}, (3, 9), ["Text('\\n                this is a component.\\n        ', (3, 32))"]), Text('\n        \n        and some more text.\n', (5, 22))])"""
 
     def test_unclosed_tag(self):
         template = """
@@ -29,6 +28,28 @@ class LexerTest(unittest.TestCase):
         except exceptions.SyntaxException, e:
             assert str(e) == "Unclosed tag: <%component> at line: 5 char: 9"
 
+    def test_nonexistent_tag(self):
+        template = """
+            <%lala x="5"/>
+        """
+        try:
+            node = Lexer(template).parse()
+            assert False
+        except exceptions.CompileException, e:
+            assert str(e) == "No such tag: 'lala' at line: 2 char: 13"
+    
+    def test_component_syntax(self):
+        template = """
+        <%component lala>
+            hi
+        </%component>
+"""
+        try:
+            node = Lexer(template).parse()
+            assert False
+        except exceptions.CompileException, e:
+            assert str(e) == "Missing attribute(s): 'name' at line: 2 char: 9"
+            
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
         
@@ -39,7 +60,8 @@ class LexerTest(unittest.TestCase):
         """
         nodes = Lexer(template).parse()
         #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), CallTag('call', {'expr': '"foo>bar and \'lala\' or \'hoho\'"'}, (2, 13), []), Text('\n            ', (2, 57)), CallTag('call', {'expr': '\'foo<bar and hoho>lala and "x" + "y"\''}, (3, 13), []), Text('\n        ', (3, 64))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), CallTag('call', {'expr': "foo>bar and 'lala' or 'hoho'"}, (2, 13), []), Text('\n            ', (2, 57)), CallTag('call', {'expr': 'foo<bar and hoho>lala and "x" + "y"'}, (3, 13), []), Text('\n        ', (3, 64))])"""
+        
         
     def test_nesting(self):
         template = """
@@ -52,7 +74,7 @@ class LexerTest(unittest.TestCase):
         
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n        ', (1, 1)), NamespaceTag('namespace', {'name': '"ns"'}, (3, 9), ["Text('\\n            ', (3, 31))", 'ComponentTag(\'component\', {\'name\': \'"lala(hi, there)"\'}, (4, 13), ["Text(\'\\\\n                \', (4, 48))", \'CallTag(\\\'call\\\', {\\\'expr\\\': \\\'"something()"\\\'}, (5, 17), [])\', "Text(\'\\\\n            \', (5, 44))"])', "Text('\\n        ', (6, 26))"]), Text('\n        \n        ', (7, 22))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n        ', (1, 1)), NamespaceTag('namespace', {'name': 'ns'}, (3, 9), ["Text('\\n            ', (3, 31))", 'ComponentTag(\'component\', {\'name\': \'lala(hi, there)\'}, (4, 13), ["Text(\'\\\\n                \', (4, 48))", "CallTag(\'call\', {\'expr\': \'something()\'}, (5, 17), [])", "Text(\'\\\\n            \', (5, 44))"])', "Text('\\n        ', (6, 26))"]), Text('\n        \n        ', (7, 22))])"""
     
     def test_code(self):
         template = """
@@ -107,8 +129,7 @@ class LexerTest(unittest.TestCase):
         ${hi()}
 """
         nodes = Lexer(template).parse()
-        #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), ComponentTag('component', {'name': '"hi"'}, (3, 9), ["Text('\\n            give me ', (3, 31))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 22)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), ComponentTag('component', {'name': 'hi'}, (3, 9), ["Text('\\n            give me ', (3, 31))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 22)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
 
     def test_control_lines(self):
         template = """

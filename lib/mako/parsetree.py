@@ -140,7 +140,7 @@ class _TagMeta(type):
         return type.__call__(cls, keyword, attributes, **kwargs)
         
 class Tag(Node):
-    """base class for tags.
+    """abstract base class for tags.
     
     <%sometag/>
     
@@ -150,27 +150,76 @@ class Tag(Node):
     """
     __metaclass__ = _TagMeta
     __keyword__ = None
-    def __init__(self, keyword, attributes, **kwargs):
+    def __init__(self, keyword, attributes, expressions, nonexpressions, required, **kwargs):
+        """construct a new Tag instance.
+        
+        this constructor not called directly, and is only called by subclasses.
+        
+        keyword - the tag keyword
+        
+        attributes - raw dictionary of attribute key/value pairs
+        
+        expressions - a util.Set of identifiers that are legal attributes, which can also contain embedded expressions
+        
+        nonexpressions - a util.Set of identifiers that are legal attributes, which cannot contain embedded expressions
+        
+        **kwargs - other arguments passed to the Node superclass (lineno, pos)"""
         super(Tag, self).__init__(**kwargs)
         self.keyword = keyword
         self.attributes = attributes
+        self._parse_attributes(expressions, nonexpressions)
+        missing = [r for r in required if r not in self.parsed_attributes]
+        if len(missing):
+            raise exceptions.CompileException("Missing attribute(s): %s" % ",".join([repr(m) for m in missing]), self.lineno, self.pos)
         self.parent = None
         self.nodes = []
     def is_root(self):
         return self.parent is None
     def get_children(self):
         return self.nodes
+    def _parse_attributes(self, expressions, nonexpressions):
+        undeclared_identifiers = util.Set()
+        self.parsed_attributes = {}
+        for key in self.attributes:
+            if key in expressions:
+                expr = []
+                for x in re.split(r'(\${.+?})', self.attributes[key]):
+                    m = re.match(r'^\${(.+?)}$', x)
+                    if m:
+                        code = ast.PythonCode(m.group(1), self.lineno, self.pos)
+                        undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
+                        expr.append(m.group(1))
+                    else:
+                        expr.append(repr(x))
+                self.parsed_attributes[key] = " + ".join(expr)
+            elif key in nonexpressions:
+                if re.search(r'${.+?}', self.attributes[key]):
+                    raise exceptions.CompileException("Attibute '%s' in tag '%s' does not allow embedded expressions"  %(key, self.keyword), self.lineno, self.pos)
+                self.parsed_attributes[key] = repr(self.attributes[key])
+            else:
+                raise exceptions.CompileException("Invalid attribute for tag '%s': '%s'" %(self.keyword, key), self.lineno, self.pos)        
     def __repr__(self):
         return "%s(%s, %s, %s, %s)" % (self.__class__.__name__, repr(self.keyword), repr(self.attributes), repr((self.lineno, self.pos)), repr([repr(x) for x in self.nodes]))
         
 class IncludeTag(Tag):
     __keyword__ = 'include'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(IncludeTag, self).__init__(keyword, attributes, util.Set(['file', 'import']), util.Set([]), util.Set(['file']), **kwargs)
+    
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(NamespaceTag, self).__init__(keyword, attributes, util.Set(['file']), util.Set(['name']), util.Set(['name']), **kwargs)
+        self.name = attributes['name']
+    def declared_identifiers(self):
+        return [self.name]
+    def undeclared_identifiers(self):
+        return []
+        
 class ComponentTag(Tag):
     __keyword__ = 'component'
     def __init__(self, keyword, attributes, **kwargs):
-        super(ComponentTag, self).__init__(keyword, attributes, **kwargs)
+        super(ComponentTag, self).__init__(keyword, attributes, util.Set([]), util.Set(['name']), util.Set(['name']), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"
@@ -183,9 +232,19 @@ class ComponentTag(Tag):
         for c in self.function_decl.defaults:
             res += list(ast.PythonCode(c, self.lineno, self.pos).undeclared_identifiers)
         return res
+        
 class CallTag(Tag):
     __keyword__ = 'call'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(CallTag, self).__init__(keyword, attributes, util.Set([]), util.Set(['expr']), util.Set(['expr']), **kwargs)
+
 class InheritTag(Tag):
     __keyword__ = 'inherit'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(InheritTag, self).__init__(keyword, attributes, util.Set(['file']), util.Set([]), util.Set(['file']), **kwargs)
+
 class PageTag(Tag):
     __keyword__ = 'page'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(PageTag, self).__init__(keyword, attributes, util.Set([]), util.Set([]), util.Set([]), **kwargs)
+    

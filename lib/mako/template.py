@@ -3,7 +3,7 @@ as well as template runtime operations."""
 
 from mako.lexer import Lexer
 from mako.codegen import Compiler
-from mako.context import Context
+from mako.runtime import Context
 import imp, time, inspect, weakref, sys
 from StringIO import StringIO
 
@@ -80,11 +80,11 @@ class ComponentTemplate(Template):
 def _compile_text(text, identifier, filename):
     node = Lexer(text).parse()
     source = Compiler(node).render()
+    #print source
     cid = identifier
     module = imp.new_module(cid)
     code = compile(source, filename or cid, 'exec')
     exec code in module.__dict__, module.__dict__
-    module._modified_time = time.time()
     return (source, module)
     
 def _render(template, callable_, *args, **data):
