@@ -45,6 +45,7 @@ class Compiler(object):
             render = _GenerateRenderMethod(printer, undeclared, name="render_%s" % node.name, args=node.function_decl.get_argument_expressions())
             for n in node.nodes:
                 n.accept_visitor(render)
+            printer.writeline("return ''")
             printer.writeline(None)
             buf.write("\n\n")
             

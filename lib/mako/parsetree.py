@@ -171,10 +171,13 @@ class ComponentTag(Tag):
     __keyword__ = 'component'
     def __init__(self, keyword, attributes, **kwargs):
         super(ComponentTag, self).__init__(keyword, attributes, **kwargs)
-        self.function_decl = ast.FunctionDecl("def " + attributes['name'] + ":pass", self.lineno, self.pos)
+        name = attributes['name']
+        if re.match(r'^[\w_]+$',name):
+            name = name + "()"
+        self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos)
         self.name = self.function_decl.funcname
     def declared_identifiers(self):
-        return [self.function_decl.funcname] + self.function_decl.argnames
+        return [self.function_decl.funcname] + list(self.function_decl.argnames)
     def undeclared_identifiers(self):
         res = []
         for c in self.function_decl.defaults:
