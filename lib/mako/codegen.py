@@ -5,8 +5,9 @@ from mako.pygen import PythonPrinter
 from mako import util, ast
 
 class Compiler(object):
-    def __init__(self, node):
+    def __init__(self, node, filename=None):
         self.node = node
+        self.filename = filename
     def render(self):
         module_code = []
         class FindPyDecls(object):
@@ -26,21 +27,22 @@ class Compiler(object):
         
         buf = StringIO()
         printer = PythonPrinter(buf)
+        
+        printer.writeline("_template_filename=%s" % repr(self.filename))
         for n in module_code:
             (module_declared, module_undeclared) = self._get_declared([n], module_declared, module_undeclared)
             printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
             printer.write_indented_block(n.text)
         
         (declared, undeclared) = self._get_declared(self.node.nodes, module_declared)
-        self.node.accept_visitor(GenerateRenderMethod(printer, undeclared))
+        self.node.accept_visitor(_GenerateRenderMethod(printer, undeclared))
         printer.writeline(None)
         buf.write("\n\n")
 
         for node in components:
             declared = util.Set(node.declared_identifiers()).union(module_declared)
             (declared, undeclared) = self._get_declared(node.nodes, declared)
-            print "func",  node.name ,  declared,  undeclared
-            render = GenerateRenderMethod(printer, undeclared, name="render_%s" % node.name, args=node.function_decl.get_argument_expressions())
+            render = _GenerateRenderMethod(printer, undeclared, name="render_%s" % node.name, args=node.function_decl.get_argument_expressions())
             for n in node.nodes:
                 n.accept_visitor(render)
             printer.writeline(None)
@@ -61,7 +63,7 @@ class Compiler(object):
             for ident in node.declared_identifiers():
                 declared.add(ident)
             for ident in node.undeclared_identifiers():
-                if ident not in declared:
+                if ident != 'context' and ident not in declared:
                     undeclared.add(ident)
         class FindUndeclared(object):
             def visitExpression(self, node):
@@ -84,7 +86,7 @@ class Compiler(object):
             n.accept_visitor(FindUndeclared())        
         return (declared, undeclared)
         
-class GenerateRenderMethod(object):
+class _GenerateRenderMethod(object):
     def __init__(self, printer, undeclared, name='render', in_component=False, args=None):
         self.printer = printer
         self.in_component = in_component

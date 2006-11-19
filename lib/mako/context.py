@@ -6,6 +6,8 @@ class Context(object):
     def __init__(self, buffer, **data):
         self.buffer = buffer
         self.data = data
+        # the Template instance currently rendering with this context.
+        self.with_template = None
     def __getitem__(self, key):
         return self.data[key]
     def get(self, key, default=None):
