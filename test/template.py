@@ -259,7 +259,7 @@ class NamespaceTest(unittest.TestCase):
                 this is x a
             </%component>
             <%component name="b">
-                this is x b
+                this is x b, and heres ${x.a()}
             </%component>
         </%namespace>
         

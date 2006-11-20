@@ -40,8 +40,6 @@ class Compiler(object):
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.toplevelcomponents = module_identifiers.toplevelcomponents.union(main_identifiers.toplevelcomponents)
 
-        print "module_ident", module_identifiers
-        
         # print main render() method
         _GenerateRenderMethod(printer, module_identifiers, self.node)
 
@@ -71,9 +69,8 @@ class _GenerateRenderMethod(object):
             args = [a for a in ['context'] + args]
             
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
-        identifiers = identifiers.branch(node)
-        print "write comp", name, identifiers
-        self.write_variable_declares(identifiers)
+        self.identifiers = identifiers.branch(node)
+        self.write_variable_declares(self.identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
         printer.writeline("return ''")
@@ -81,11 +78,17 @@ class _GenerateRenderMethod(object):
         printer.write("\n\n")
 
     def write_variable_declares(self, identifiers):
+        """write variable declarations at the top of a function."""
         comp_idents = dict([(c.name, c) for c in identifiers.components])
-        print "Write variable declares, set is", identifiers.undeclared.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
 
+        # write explicit "context.get()" statements for variables that are already in the 
+        # local namespace, that we are going to re-assign
         to_write = identifiers.declared.intersection(identifiers.locally_declared)
+        
+        # write "context.get()" for all variables we are going to need that arent in the namespace yet
         to_write = to_write.union(identifiers.undeclared)
+        
+        # write closure functions for closures that we define right here
         to_write = to_write.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
         
         for ident in to_write:
@@ -116,11 +119,10 @@ class _GenerateRenderMethod(object):
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
 
-        print "inline component, name", node.name, identifiers
         identifiers = identifiers.branch(node)
-        print "updated", identifiers, "\n"
-#        raise "hi"
 
+        # if we assign to variables in this closure, then we have to nest inside
+        # of another callable so that the "context" variable is copied into the local scope
         make_closure = len(identifiers.locally_declared) > 0
         
         if make_closure:
@@ -133,6 +135,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
+
         if make_closure:
             namedecls = node.function_decl.get_argument_expressions(include_defaults=False)
             self.printer.writeline("return %s(%s)" % (node.name, ",".join(["%s=%s" % (x,x) for x in ['context'] + namedecls])))
@@ -154,6 +157,7 @@ class _GenerateRenderMethod(object):
         if not node.ismodule:
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
+            # replace the context with a new one that contains all the variable assignments we have made
             self.printer.writeline('context = context.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
 
     def visitIncludeTag(self, node):
@@ -163,9 +167,11 @@ class _GenerateRenderMethod(object):
         self.write_source_comment(node)
         self.printer.writeline("def make_namespace():")
         export = []
+        identifiers = self.identifiers #.branch(node)
+        print "NS IDENT", identifiers
         class NSComponentVisitor(object):
             def visitComponentTag(s, node):
-                self.write_inline_component(node, None, None)
+                self.write_inline_component(node, identifiers)
                 export.append(node.name)
         vis = NSComponentVisitor()
         for n in node.nodes:
@@ -189,16 +195,23 @@ class _GenerateRenderMethod(object):
 class _Identifiers(object):
     def __init__(self, node=None, parent=None):
         if parent is not None:
+            # things that have already been declared in the current namespace (i.e. names we can just use)
             self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents]).union(parent.locally_declared)
-            self.undeclared = util.Set()
+            
+            # top level components that are available
             self.toplevelcomponents = util.Set(parent.toplevelcomponents)
-            self.closurecomponents = util.Set()
         else:
             self.declared = util.Set()
-            self.undeclared = util.Set()
             self.toplevelcomponents = util.Set()
-            self.closurecomponents = util.Set()
+        
+        # things within this level that are undeclared
+        self.undeclared = util.Set()
+        
+        # things that are declared locally
         self.locally_declared = util.Set()
+        
+        # closure components that are defined in this level
+        self.closurecomponents = util.Set()
         
         self.node = node
         if node is not None:
@@ -219,6 +232,7 @@ class _Identifiers(object):
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
+                
     def visitExpression(self, node):
         self.check_declared(node)
     def visitControlLine(self, node):
@@ -227,7 +241,6 @@ class _Identifiers(object):
         if not node.ismodule:
             self.check_declared(node)
     def visitComponentTag(self, node):
-        #print "component tag", node.name, "our node is:", getattr(self.node, 'name', self.node.__class__.__name__), (node is self.node or node.parent is self.node)
         if node.is_root():
             self.toplevelcomponents.add(node)
         elif node is not self.node:
