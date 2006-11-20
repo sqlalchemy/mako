@@ -14,16 +14,24 @@ class Context(object):
         return self.data.get(key, default)
     def write(self, string):
         self.buffer.write(string)
-        
+    def update(self, **args):
+        x = self.data.copy()
+        x.update(args)
+        c = Context(self.buffer, **x)
+        c.with_template = self.with_template
+        return c
         
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
     def __init__(self, name, module=None, template=None, callables=None):
         self.module = module
         self.template = template
-        self.callables = callables
+        if callables is not None:
+            self.callables = dict((c.func_name, c) for c in callables)
+        else:
+            self.callables = {}
         
-    def load(self, key):
+    def contextual_callable(self, context, key):
         if self.callables is not None:
             try:
                 return self.callables[key]
@@ -31,16 +39,16 @@ class Namespace(object):
                 pass
         if self.template is not None:
             try:
-                return self.template.get_component(key)
+                callable_ = self.template.get_component(key)
+                return lambda *args, **kwargs:callable_(context, *args, **kwargs)
             except AttributeError:
                 pass
         if self.module is not None:
             try:
-                return getattr(self.module, key)
+                callable_ = getattr(self.module, key)
+                return lambda *args, **kwargs:callable_(context, *args, **kwargs)
             except AttributeError:
                 pass
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
         
-    def contextual_callable(self, context, key):
-        return lambda context, *args, **kwargs:self.load(key)(context, *args, **kwargs)
         

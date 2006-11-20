@@ -226,7 +226,7 @@ class ComponentTag(Tag):
         self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos)
         self.name = self.function_decl.funcname
     def declared_identifiers(self):
-        return [self.function_decl.funcname] + list(self.function_decl.argnames)
+        return self.function_decl.argnames
     def undeclared_identifiers(self):
         res = []
         for c in self.function_decl.defaults:

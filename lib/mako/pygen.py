@@ -28,6 +28,9 @@ class PythonPrinter(object):
         
         self._reset_multi_line_flags()
 
+    def write(self, text):
+        self.stream.write(text)
+        
     def write_indented_block(self, block):
         """print a line or lines of python which already contains indentation.
         

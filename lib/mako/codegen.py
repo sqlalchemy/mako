@@ -3,7 +3,7 @@
 from StringIO import StringIO
 import time
 from mako.pygen import PythonPrinter
-from mako import util, ast
+from mako import util, ast, parsetree
 
 MAGIC_NUMBER = 1
 
@@ -12,18 +12,6 @@ class Compiler(object):
         self.node = node
         self.filename = filename
     def render(self):
-        module_code = []
-        class FindPyDecls(object):
-            def visitCode(self, node):
-                if node.ismodule:
-                    module_code.append(node)
-        f = FindPyDecls()
-        self.node.accept_visitor(f)
-        
-        components = _find_top_level_components(self.node)
-        
-        (module_declared, module_undeclared) = (util.Set(), util.Set())
-        
         buf = StringIO()
         printer = PythonPrinter(buf)
         
@@ -32,55 +20,76 @@ class Compiler(object):
         printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         printer.writeline("_modified_time = %s" % repr(time.time()))
         printer.writeline("_template_filename=%s" % repr(self.filename))
-        buf.write("\n\n")
+        printer.write("\n\n")
+
+        module_code = []
+        class FindPyDecls(object):
+            def visitCode(self, node):
+                if node.ismodule:
+                    module_code.append(node)
+        f = FindPyDecls()
+        self.node.accept_visitor(f)
+        
+        module_identifiers = _Identifiers()
         for n in module_code:
-            (module_declared, module_undeclared) = _find_declared_identifiers([n], module_declared, module_undeclared)
+            module_identifiers = module_identifiers.branch(n)
             printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
             printer.write_indented_block(n.text)
         
+
+        main_identifiers = module_identifiers.branch(self.node)
+        module_identifiers.toplevelcomponents = module_identifiers.toplevelcomponents.union(main_identifiers.toplevelcomponents)
+
+        print "module_ident", module_identifiers
+        
         # print main render() method
-        (declared, undeclared) = _find_declared_identifiers(self.node.nodes, module_declared)
-        self.node.accept_visitor(_GenerateRenderMethod(printer, declared, undeclared, components))
-        printer.writeline(None)
-        buf.write("\n\n")
+        _GenerateRenderMethod(printer, module_identifiers, self.node)
 
         # print render() for each top-level component
-        for node in components:
-            declared = util.Set(node.declared_identifiers()).union(module_declared)
-            (declared, undeclared) = _find_declared_identifiers(node.nodes, declared)
-            local_components = _find_top_level_components(node.nodes)
-            render = _GenerateRenderMethod(printer, declared, undeclared, components + local_components, name="render_%s" % node.name, args=node.function_decl.get_argument_expressions())
-            for n in node.nodes:
-                n.accept_visitor(render)
-            printer.writeline("return ''")
-            printer.writeline(None)
-            buf.write("\n\n")
+        for node in main_identifiers.toplevelcomponents:
+            _GenerateRenderMethod(printer, module_identifiers, node)
             
         return buf.getvalue()
     
 
 class _GenerateRenderMethod(object):
-    def __init__(self, printer, declared, undeclared, components, name='render', in_component=False, args=None):
+    def __init__(self, printer, identifiers, node):
         self.printer = printer
-        self.in_component = in_component
         self.last_source_line = -1
+
+        self.node = node
+        if isinstance(node, parsetree.ComponentTag):
+            name = "render_" + node.name
+            args = node.function_decl.get_argument_expressions()
+        else:
+            name = "render"
+            args = None
+            
         if args is None:
             args = ['context']
         else:
             args = [a for a in ['context'] + args]
+            
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
-        
-        self.write_variable_declares(declared, undeclared, components)
+        identifiers = identifiers.branch(node)
+        print "write comp", name, identifiers
+        self.write_variable_declares(identifiers)
+        for n in node.nodes:
+            n.accept_visitor(self)
+        printer.writeline("return ''")
+        printer.writeline(None)
+        printer.write("\n\n")
 
-    def write_variable_declares(self, declared, undeclared, components):
-        comp_idents = dict([(c.name, c) for c in components])
-        for ident in undeclared:
+    def write_variable_declares(self, identifiers):
+        comp_idents = dict([(c.name, c) for c in identifiers.components])
+        print "Write variable declares, set is", identifiers.undeclared.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
+        for ident in identifiers.undeclared.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node])):
             if ident in comp_idents:
                 comp = comp_idents[ident]
                 if comp.is_root():
-                    self.write_component_decl(comp)
+                    self.write_component_decl(comp, identifiers)
                 else:
-                    self.write_inline_component(comp, declared.union(undeclared), None)
+                    self.write_inline_component(comp, identifiers)
             else:
                 self.printer.writeline("%s = context.get(%s, None)" % (ident, repr(ident)))
         
@@ -89,7 +98,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("# SOURCE LINE %d" % node.lineno, is_comment=True)
             self.last_source_line = node.lineno
 
-    def write_component_decl(self, node):
+    def write_component_decl(self, node, identifiers):
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
@@ -98,16 +107,33 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("return render_%s(%s)" % (funcname, ",".join(nameargs)))
         self.printer.writeline(None)
         
-    def write_inline_component(self, node, declared, undeclared):
+    def write_inline_component(self, node, identifiers):
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
-        components = _find_top_level_components(node.nodes)
-        (declared, undeclared) = _find_declared_identifiers(node.nodes, declared, undeclared)
-        self.write_variable_declares(declared, undeclared, components)
+
+            
+        print "inline component, name", node.name, identifiers
+        identifiers = identifiers.branch(node)
+        print "updated", identifiers, "\n"
+        raise "hi"
+        make_closure = False #len(localdecl) > 0
+        
+#        if make_closure:
+#            self.printer.writeline("def %s(%s):" % (node.name, ",".join(['context'] + namedecls)))
+#            (compdecl, compundecl) = _find_declared_identifiers(node.nodes, declared, localundecl)
+#        else:
+#            (compdecl, compundecl) = _find_declared_identifiers(node.nodes, declared, undeclared)
+#        raise "hi"    
+        self.write_variable_declares(identifiers)
+
         for n in node.nodes:
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
+        if make_closure:
+            namedecls = node.function_decl.get_argument_expressions(include_defaults=False)
+            self.printer.writeline("return %s(%s)" % (node.name, ",".join(["%s=%s" % (x,x) for x in ['context'] + namedecls])))
+            self.printer.writeline(None)
 
     def visitExpression(self, node):
         self.write_source_comment(node)
@@ -125,6 +151,8 @@ class _GenerateRenderMethod(object):
         if not node.ismodule:
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
+            self.printer.writeline('context = context.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
+
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("context.include_file(%s, import=%s)" % (repr(node.attributes['file']), repr(node.attributes.get('import', False))))
@@ -139,14 +167,14 @@ class _GenerateRenderMethod(object):
         vis = NSComponentVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
-        self.printer.writeline("return %s" % (repr(export)))
+        self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
         self.printer.writeline("class %sNamespace(runtime.Namespace):" % node.name)
         self.printer.writeline("def __getattr__(self, key):")
         self.printer.writeline("return self.contextual_callable(context, key)")
         self.printer.writeline(None)
         self.printer.writeline(None)
-        self.printer.writeline("%s = %sNamespace(%s, callables=make_namespace())" % (node.name, node.name))
+        self.printer.writeline("%s = %sNamespace(%s, callables=make_namespace())" % (node.name, node.name, repr(node.name)))
         
     def visitComponentTag(self, node):
         pass
@@ -155,51 +183,56 @@ class _GenerateRenderMethod(object):
     def visitInheritTag(self, node):
         pass
 
-def _find_top_level_components(nodes):
-    components = []
-    class FindTopLevelComponents(object):
-        def visitComponentTag(self, node):
-            components.append(node)
-    ftl = FindTopLevelComponents()
-    if isinstance(nodes, list):
-        for n in nodes:
-            n.accept_visitor(ftl)
-    else:
-        nodes.accept_visitor(ftl)
-    return components
-
-def _find_declared_identifiers(nodes, declared=None, undeclared=None):
-    if declared is None:
-        declared = util.Set()
-    else:
-        declared = util.Set(declared)
-    if undeclared is None:
-        undeclared = util.Set()
-    else:
-        undeclared = util.Set(undeclared)
-    def check_declared(node):
+class _Identifiers(object):
+    def __init__(self, node=None, parent=None):
+        if parent is not None:
+            self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents])
+            self.undeclared = util.Set()
+            self.toplevelcomponents = util.Set(parent.toplevelcomponents)
+            self.closurecomponents = util.Set()
+        else:
+            self.declared = util.Set()
+            self.undeclared = util.Set()
+            self.toplevelcomponents = util.Set()
+            self.closurecomponents = util.Set()
+        
+        self.node = node
+        if node is not None:
+            node.accept_visitor(self)
+        
+    def branch(self, node):
+        return _Identifiers(node, self)
+        
+    components = property(lambda s:s.toplevelcomponents.union(s.closurecomponents))
+    
+    def __repr__(self):
+        return "Identifiers(%s, %s, %s, %s)" % (repr(list(self.declared)), repr(list(self.undeclared)), repr([c.name for c in self.toplevelcomponents]), repr([c.name for c in self.closurecomponents]))
+        
+    def check_declared(self, node):
         for ident in node.declared_identifiers():
-            declared.add(ident)
+            self.declared.add(ident)
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and ident not in declared:
-                undeclared.add(ident)
-    class FindUndeclared(object):
-        def visitExpression(self, node):
-            check_declared(node)
-        def visitControlLine(self, node):
-            check_declared(node)
-        def visitCode(self, node):
-            if not node.ismodule:
-                check_declared(node)
-        def visitComponentTag(self, node):
-            pass
-            #check_declared(node)
-        def visitIncludeTag(self, node):
-            # TODO: expressions for attributes
-            pass        
-        def visitNamespaceTag(self, node):
-            check_declared(node)
-    fd = FindUndeclared()
-    for n in nodes:
-        n.accept_visitor(FindUndeclared())        
-    return (declared, undeclared)
+            if ident != 'context' and ident not in self.declared:
+                self.undeclared.add(ident)
+    def visitExpression(self, node):
+        self.check_declared(node)
+    def visitControlLine(self, node):
+        self.check_declared(node)
+    def visitCode(self, node):
+        if not node.ismodule:
+            self.check_declared(node)
+    def visitComponentTag(self, node):
+        #print "component tag", node.name, "our node is:", getattr(self.node, 'name', self.node.__class__.__name__), (node is self.node or node.parent is self.node)
+        if node.is_root():
+            self.toplevelcomponents.add(node)
+        else:
+            self.closurecomponents.add(node)
+        self.check_declared(node)
+        if node is self.node:
+            for n in node.nodes:
+                n.accept_visitor(self)
+    def visitIncludeTag(self, node):
+        # TODO: expressions for attributes
+        pass        
+    def visitNamespaceTag(self, node):
+        self.check_declared(node)
