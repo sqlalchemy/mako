@@ -124,6 +124,24 @@ class NestedComponentTest(unittest.TestCase):
         result = re.sub(r'[\s\n]+', ' ', result).strip()
         assert result == "hey, im hi. and heres this is foo , this is bar"
 
+    def test_nested_with_args(self):
+        template = Template("""
+        
+        ${a()}
+        <%component name="a">
+            <%component name="b(x, y=2)">
+                b x is ${x} y is ${y}
+            </%component>
+            a ${b(5)}
+        </%component>
+        
+""")
+        #print template.code
+        result = template.render()
+        #print result
+        result = re.sub(r'[\s\n]+', ' ', result).strip()
+        assert result == "a b x is 5 y is 2"
+        
     def test_nested_component_2(self):
         template = Template("""
         ${a()}

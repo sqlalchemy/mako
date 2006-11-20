@@ -83,6 +83,7 @@ class _GenerateRenderMethod(object):
 
         # write explicit "context.get()" statements for variables that are already in the 
         # local namespace, that we are going to re-assign
+        print "WVD", identifiers
         to_write = identifiers.declared.intersection(identifiers.locally_declared)
         
         # write "context.get()" for all variables we are going to need that arent in the namespace yet
@@ -90,6 +91,8 @@ class _GenerateRenderMethod(object):
         
         # write closure functions for closures that we define right here
         to_write = to_write.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
+        
+        to_write = to_write.difference(identifiers.argument_declared)
         
         for ident in to_write:
             if ident in comp_idents:
@@ -118,9 +121,10 @@ class _GenerateRenderMethod(object):
     def write_inline_component(self, node, identifiers):
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
-
+        
+        print "INLINE NAME", node.name
         identifiers = identifiers.branch(node)
-
+        print "IDENTIFIERES", identifiers
         # if we assign to variables in this closure, then we have to nest inside
         # of another callable so that the "context" variable is copied into the local scope
         make_closure = len(identifiers.locally_declared) > 0
@@ -209,6 +213,8 @@ class _Identifiers(object):
         
         # things that are declared locally
         self.locally_declared = util.Set()
+    
+        self.argument_declared = util.Set()
         
         # closure components that are defined in this level
         self.closurecomponents = util.Set()
@@ -230,6 +236,7 @@ class _Identifiers(object):
         for ident in node.declared_identifiers():
             self.locally_declared.add(ident)
         for ident in node.undeclared_identifiers():
+            print "UNDECL IDENT IN NODE", node, ident
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
                 
@@ -245,7 +252,8 @@ class _Identifiers(object):
             self.toplevelcomponents.add(node)
         elif node is not self.node:
             self.closurecomponents.add(node)
-        self.check_declared(node)
+        for ident in node.declared_identifiers():
+            self.argument_declared.add(ident)
         if node is self.node:
             for n in node.nodes:
                 n.accept_visitor(self)
