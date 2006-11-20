@@ -17,3 +17,6 @@ class SyntaxException(MakoException):
         MakoException.__init__(self, message + " at line: %d char: %d" % (lineno, pos))
         self.lineno =lineno
         self.pos = pos
+        
+class TemplateLookupException(MakoException):
+    pass

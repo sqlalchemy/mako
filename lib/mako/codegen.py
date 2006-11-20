@@ -1,6 +1,5 @@
 """provides the Compiler object for generating module source code."""
 
-from StringIO import StringIO
 import time
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree
@@ -12,7 +11,7 @@ class Compiler(object):
         self.node = node
         self.filename = filename
     def render(self):
-        buf = StringIO()
+        buf = util.StringIO()
         printer = PythonPrinter(buf)
         
         # module-level names, python code
@@ -174,7 +173,7 @@ class _GenerateRenderMethod(object):
 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("context.include_file(%s, import=%s)" % (repr(node.attributes['file']), repr(node.attributes.get('import', False))))
+        self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (repr(node.attributes['file']), repr(node.attributes.get('import', False))))
     def visitNamespaceTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("def make_namespace():")

@@ -3,11 +3,11 @@ from mako import exceptions
 
 class Context(object):
     """provides runtime namespace and output buffer for templates."""
-    def __init__(self, buffer, **data):
+    def __init__(self, template, buffer, **data):
         self.buffer = buffer
         self.data = data
         # the Template instance currently rendering with this context.
-        self.with_template = None
+        self.with_template = template
     def __getitem__(self, key):
         return self.data[key]
     def get(self, key, default=None):
@@ -19,8 +19,7 @@ class Context(object):
         with the given keyword arguments."""
         x = self.data.copy()
         x.update(args)
-        c = Context(self.buffer, **x)
-        c.with_template = self.with_template
+        c = Context(self.with_template, self.buffer, **x)
         return c
         
 class Namespace(object):
@@ -53,4 +52,8 @@ class Namespace(object):
                 pass
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
         
+def include_file(context, uri, import_symbols):
+    lookup = context.with_template.lookup
+    template = lookup.get_template(uri)
+    template.render_context(context)
         

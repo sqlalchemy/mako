@@ -4,8 +4,8 @@ as well as template runtime operations."""
 from mako.lexer import Lexer
 from mako.codegen import Compiler
 from mako.runtime import Context
+from mako import util
 import imp, time, inspect, weakref, sys
-from StringIO import StringIO
 
 _modules = weakref.WeakValueDictionary()
 _inmemory_templates = weakref.WeakValueDictionary()
@@ -17,7 +17,7 @@ class _ModuleMarker(object):
 
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, module=None, identifier=None, filename=None, format_exceptions=True, error_handler=None):
+    def __init__(self, text=None, module=None, identifier=None, filename=None, format_exceptions=True, error_handler=None, lookup=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -46,6 +46,7 @@ class Template(object):
         self.callable_ = self.module.render
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
+        self.lookup = lookup
         _modules[module.__name__] = _ModuleMarker(module)
 
     source = property(lambda self:_get_template_source(self.callable_), doc="""return the template source code for this Template.""")
@@ -89,8 +90,8 @@ def _compile_text(text, identifier, filename):
     
 def _render(template, callable_, *args, **data):
     """given a Template and a callable_ from that template, create a Context and return the string output."""
-    buf = StringIO()
-    context = Context(buf, **data)
+    buf = util.StringIO()
+    context = Context(template, buf, **data)
     kwargs = {}
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
@@ -101,7 +102,6 @@ def _render(template, callable_, *args, **data):
     return buf.getvalue()
 
 def _render_context(template, callable_, context, *args, **kwargs):
-    context.with_template = template
     _exec_template(callable_, context, args=args, kwargs=kwargs)
 
 def _exec_template(callable_, context, args=None, kwargs=None):
