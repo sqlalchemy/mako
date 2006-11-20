@@ -35,7 +35,6 @@ class Compiler(object):
             module_identifiers = module_identifiers.branch(n)
             printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
             printer.write_indented_block(n.text)
-        
 
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.toplevelcomponents = module_identifiers.toplevelcomponents.union(main_identifiers.toplevelcomponents)
@@ -48,7 +47,6 @@ class Compiler(object):
             _GenerateRenderMethod(printer, module_identifiers, node)
             
         return buf.getvalue()
-    
 
 class _GenerateRenderMethod(object):
     def __init__(self, printer, identifiers, node):
@@ -78,22 +76,32 @@ class _GenerateRenderMethod(object):
         printer.write("\n\n")
 
     def write_variable_declares(self, identifiers):
-        """write variable declarations at the top of a function."""
+        """write variable declarations at the top of a function.
+        
+        the variable declarations are generated based on the names that are referenced
+        in the function body before they are assigned.  names that are re-assigned 
+        from an enclosing scope are also declared as local variables so that the assignment 
+        can proceed.
+        
+        locally defined components (i.e. closures) are also generated, as well as 'stub' callables 
+        referencing top-level components which are referenced in the function body."""
+        
+        # collection of all components available to us in this scope
         comp_idents = dict([(c.name, c) for c in identifiers.components])
 
         # write explicit "context.get()" statements for variables that are already in the 
         # local namespace, that we are going to re-assign
-        print "WVD", identifiers
         to_write = identifiers.declared.intersection(identifiers.locally_declared)
         
         # write "context.get()" for all variables we are going to need that arent in the namespace yet
         to_write = to_write.union(identifiers.undeclared)
         
         # write closure functions for closures that we define right here
-        to_write = to_write.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
-        
+        to_write = to_write.union(util.Set([c.name for c in identifiers.closurecomponents]))
+
+        # remove identifiers that are declared in the argument signature of the callable
         to_write = to_write.difference(identifiers.argument_declared)
-        
+
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
@@ -110,6 +118,7 @@ class _GenerateRenderMethod(object):
             self.last_source_line = node.lineno
 
     def write_component_decl(self, node, identifiers):
+        """write a locally-available callable referencing a top-level component"""
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
@@ -119,21 +128,20 @@ class _GenerateRenderMethod(object):
         self.printer.writeline(None)
         
     def write_inline_component(self, node, identifiers):
+        """write a locally-available component callable inside an enclosing component."""
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
         
-        print "INLINE NAME", node.name
+        #print "INLINE NAME", node.name
         identifiers = identifiers.branch(node)
-        print "IDENTIFIERES", identifiers
+        
         # if we assign to variables in this closure, then we have to nest inside
         # of another callable so that the "context" variable is copied into the local scope
         make_closure = len(identifiers.locally_declared) > 0
         
         if make_closure:
             self.printer.writeline("def %s(%s):" % (node.name, ",".join(['context'] + namedecls)))
-            self.write_variable_declares(identifiers)
-        else:
-            self.write_variable_declares(identifiers)
+        self.write_variable_declares(identifiers)
 
         for n in node.nodes:
             n.accept_visitor(self)
@@ -172,7 +180,6 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("def make_namespace():")
         export = []
         identifiers = self.identifiers #.branch(node)
-        print "NS IDENT", identifiers
         class NSComponentVisitor(object):
             def visitComponentTag(s, node):
                 self.write_inline_component(node, identifiers)
@@ -197,9 +204,10 @@ class _GenerateRenderMethod(object):
         pass
 
 class _Identifiers(object):
+    """tracks the status of identifier names as template code is rendered."""
     def __init__(self, node=None, parent=None):
         if parent is not None:
-            # things that have already been declared in the current namespace (i.e. names we can just use)
+            # things that have already been declared in an enclosing namespace (i.e. names we can just use)
             self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents]).union(parent.locally_declared)
             
             # top level components that are available
@@ -208,12 +216,14 @@ class _Identifiers(object):
             self.declared = util.Set()
             self.toplevelcomponents = util.Set()
         
-        # things within this level that are undeclared
+        # things within this level that are referenced before they are declared (e.g. assigned to)
         self.undeclared = util.Set()
         
-        # things that are declared locally
+        # things that are declared locally.  some of these things could be in the "undeclared"
+        # list as well if they are referenced before declared
         self.locally_declared = util.Set()
     
+        # things that are declared in the argument signature of the component callable
         self.argument_declared = util.Set()
         
         # closure components that are defined in this level
@@ -224,21 +234,21 @@ class _Identifiers(object):
             node.accept_visitor(self)
         
     def branch(self, node):
+        """create a new Identifiers for a new Node, with this Identifiers as the parent."""
         return _Identifiers(node, self)
         
     components = property(lambda s:s.toplevelcomponents.union(s.closurecomponents))
     
     def __repr__(self):
         return "Identifiers(%s, %s, %s, %s, %s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.toplevelcomponents]), repr([c.name for c in self.closurecomponents]))
-    
         
     def check_declared(self, node):
-        for ident in node.declared_identifiers():
-            self.locally_declared.add(ident)
+        """update the state of this Identifiers with the undeclared and declared identifiers of the given node."""
         for ident in node.undeclared_identifiers():
-            print "UNDECL IDENT IN NODE", node, ident
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
+        for ident in node.declared_identifiers():
+            self.locally_declared.add(ident)
                 
     def visitExpression(self, node):
         self.check_declared(node)
@@ -254,6 +264,7 @@ class _Identifiers(object):
             self.closurecomponents.add(node)
         for ident in node.declared_identifiers():
             self.argument_declared.add(ident)
+        # visit components only one level deep
         if node is self.node:
             for n in node.nodes:
                 n.accept_visitor(self)

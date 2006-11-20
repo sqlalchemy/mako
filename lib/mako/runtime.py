@@ -15,6 +15,8 @@ class Context(object):
     def write(self, string):
         self.buffer.write(string)
     def update(self, **args):
+        """produce a copy of this Context, updating the argument dictionary
+        with the given keyword arguments."""
         x = self.data.copy()
         x.update(args)
         c = Context(self.buffer, **x)

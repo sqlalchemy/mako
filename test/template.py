@@ -99,6 +99,30 @@ im c
         result = re.sub(r'[\s\n]+', ' ', result).strip()
         assert result == "y is None y is 7"
 
+    def test_local_names_3(self):
+        """test in place assignment/undeclared variable combinations
+        
+        
+        i.e. things like 'x=x+1', x is declared and undeclared at the same time"""
+        template = Template("""
+        hi
+    	<%component name="a">
+    	    y is ${y}
+
+            <%
+                x = x + y
+                a = 3
+            %>
+            
+            x is ${x}
+    	</%component>
+
+    	${a()}
+    """)
+        result = template.render(x=5, y=10)
+        result = re.sub(r'[\s\n]+', ' ', result).strip()
+        assert result == "hi y is 10 x is 15"
+
 class NestedComponentTest(unittest.TestCase):
     def test_nested_component(self):
         template = """

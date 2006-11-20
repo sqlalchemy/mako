@@ -61,8 +61,7 @@ class Lexer(object):
                 self.control_line.append(node)
             elif len(self.control_line) and not self.control_line[-1].is_ternary(node.keyword):
                 raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos)
-                
-                    
+
     def parse(self):
         length = len(self.text)
         while (True):

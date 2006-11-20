@@ -204,12 +204,12 @@ class Tag(Node):
 class IncludeTag(Tag):
     __keyword__ = 'include'
     def __init__(self, keyword, attributes, **kwargs):
-        super(IncludeTag, self).__init__(keyword, attributes, util.Set(['file', 'import']), util.Set([]), util.Set(['file']), **kwargs)
+        super(IncludeTag, self).__init__(keyword, attributes, ('file', 'import'), (), ('file',), **kwargs)
     
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
     def __init__(self, keyword, attributes, **kwargs):
-        super(NamespaceTag, self).__init__(keyword, attributes, util.Set(['file']), util.Set(['name']), util.Set(['name']), **kwargs)
+        super(NamespaceTag, self).__init__(keyword, attributes, ('file',), ('name',), ('name',), **kwargs)
         self.name = attributes['name']
     def declared_identifiers(self):
         return [self.name]
@@ -219,7 +219,7 @@ class NamespaceTag(Tag):
 class ComponentTag(Tag):
     __keyword__ = 'component'
     def __init__(self, keyword, attributes, **kwargs):
-        super(ComponentTag, self).__init__(keyword, attributes, util.Set([]), util.Set(['name']), util.Set(['name']), **kwargs)
+        super(ComponentTag, self).__init__(keyword, attributes, (), ('name',), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"
@@ -236,15 +236,15 @@ class ComponentTag(Tag):
 class CallTag(Tag):
     __keyword__ = 'call'
     def __init__(self, keyword, attributes, **kwargs):
-        super(CallTag, self).__init__(keyword, attributes, util.Set([]), util.Set(['expr']), util.Set(['expr']), **kwargs)
+        super(CallTag, self).__init__(keyword, attributes, (), ('expr',), ('expr',), **kwargs)
 
 class InheritTag(Tag):
     __keyword__ = 'inherit'
     def __init__(self, keyword, attributes, **kwargs):
-        super(InheritTag, self).__init__(keyword, attributes, util.Set(['file']), util.Set([]), util.Set(['file']), **kwargs)
+        super(InheritTag, self).__init__(keyword, attributes, ('file',), (), ('file',), **kwargs)
 
 class PageTag(Tag):
     __keyword__ = 'page'
     def __init__(self, keyword, attributes, **kwargs):
-        super(PageTag, self).__init__(keyword, attributes, util.Set([]), util.Set([]), util.Set([]), **kwargs)
+        super(PageTag, self).__init__(keyword, attributes, (), (), (), **kwargs)
     

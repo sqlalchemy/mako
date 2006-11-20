@@ -24,7 +24,7 @@ print "hello world, ", a, b
 print "Another expr", c
 """
         parsed = ast.PythonCode(code, 0, 0)
-        assert parsed.declared_identifiers == util.Set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar'])
+        assert parsed.declared_identifiers == util.Set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
         assert parsed.undeclared_identifiers == util.Set(['x', 'q', 'foo', 'gah', 'blah'])
     
         parsed = ast.PythonCode("x + 5 * (y-z)", 0, 0)
@@ -45,6 +45,19 @@ for x in data:
         assert parsed.undeclared_identifiers == util.Set(['get_data'])
         assert parsed.declared_identifiers == util.Set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
 
+    def test_locate_identifiers_3(self):
+        """test that combination assignment/expressions of the same identifier log the ident as 'undeclared'"""
+        code = """
+x = x + 5
+for y in range(1, y):
+    print "hi"
+[z for z in range(1, z)]
+(q for q in range (1, q))
+"""
+        parsed = ast.PythonCode(code, 0, 0)
+        print parsed.undeclared_identifiers
+        assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
+        
     def test_no_global_imports(self):
         code = """
 from foo import *

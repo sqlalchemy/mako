@@ -9,10 +9,16 @@ class PythonCode(object):
     """represents information about a string containing Python code"""
     def __init__(self, code, lineno, pos):
         self.code = code
+        
+        # represents all identifiers which are assigned to at some point in the code
         self.declared_identifiers = util.Set()
+        
+        # represents all identifiers which are referenced before their assignment, if any
         self.undeclared_identifiers = util.Set()
+        
+        # note that an identifier can be in both the undeclared and declared lists.
 
-        # note that using AST to parse instead of using code.co_varnames, code.co_names has several advantages:
+        # using AST to parse instead of using code.co_varnames, code.co_names has several advantages:
         # - we can locate an identifier as "undeclared" even if its declared later in the same block of code
         # - AST is less likely to break with version changes (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
@@ -23,8 +29,19 @@ class PythonCode(object):
             
         class FindIdentifiers(object):
             def visitAssName(s, node, *args):
-                if node.name not in self.undeclared_identifiers:
-                    self.declared_identifiers.add(node.name)
+#                if node.name not in self.undeclared_identifiers:
+                self.declared_identifiers.add(node.name)
+            def visitAssign(s, node, *args):
+                # flip around the visiting of Assign so the expression gets evaluated first, 
+                # in the case of a clause like "x=x+5" (x is undeclared)
+                s.visit(node.expr, *args)
+                for n in node.nodes:
+                    s.visit(n, *args)
+            def visitFor(s, node, *args):
+                # flip around visit
+                s.visit(node.list, *args)
+                s.visit(node.assign, *args)
+                s.visit(node.body, *args)
             def visitTryExcept(s, node, *args):
                 for (decl, s2, s3) in node.handlers:
                     if decl is not None:
@@ -100,7 +117,7 @@ class FunctionDecl(object):
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos)
     def get_argument_expressions(self, include_defaults=True):
-        """return the argument declarations of this FunctionDecl as a printable list"""
+        """return the argument declarations of this FunctionDecl as a printable list."""
         namedecls = []
         defaults = [d for d in self.defaults]
         kwargs = self.kwargs
