@@ -83,7 +83,12 @@ class _GenerateRenderMethod(object):
     def write_variable_declares(self, identifiers):
         comp_idents = dict([(c.name, c) for c in identifiers.components])
         print "Write variable declares, set is", identifiers.undeclared.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
-        for ident in identifiers.undeclared.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node])):
+
+        to_write = identifiers.declared.intersection(identifiers.locally_declared)
+        to_write = to_write.union(identifiers.undeclared)
+        to_write = to_write.union(util.Set([c.name for c in identifiers.closurecomponents if c.parent is self.node]))
+        
+        for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
                 if comp.is_root():
@@ -111,20 +116,18 @@ class _GenerateRenderMethod(object):
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
 
-            
         print "inline component, name", node.name, identifiers
         identifiers = identifiers.branch(node)
         print "updated", identifiers, "\n"
-        raise "hi"
-        make_closure = False #len(localdecl) > 0
+#        raise "hi"
+
+        make_closure = len(identifiers.locally_declared) > 0
         
-#        if make_closure:
-#            self.printer.writeline("def %s(%s):" % (node.name, ",".join(['context'] + namedecls)))
-#            (compdecl, compundecl) = _find_declared_identifiers(node.nodes, declared, localundecl)
-#        else:
-#            (compdecl, compundecl) = _find_declared_identifiers(node.nodes, declared, undeclared)
-#        raise "hi"    
-        self.write_variable_declares(identifiers)
+        if make_closure:
+            self.printer.writeline("def %s(%s):" % (node.name, ",".join(['context'] + namedecls)))
+            self.write_variable_declares(identifiers)
+        else:
+            self.write_variable_declares(identifiers)
 
         for n in node.nodes:
             n.accept_visitor(self)
@@ -186,7 +189,7 @@ class _GenerateRenderMethod(object):
 class _Identifiers(object):
     def __init__(self, node=None, parent=None):
         if parent is not None:
-            self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents])
+            self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents]).union(parent.locally_declared)
             self.undeclared = util.Set()
             self.toplevelcomponents = util.Set(parent.toplevelcomponents)
             self.closurecomponents = util.Set()
@@ -195,6 +198,7 @@ class _Identifiers(object):
             self.undeclared = util.Set()
             self.toplevelcomponents = util.Set()
             self.closurecomponents = util.Set()
+        self.locally_declared = util.Set()
         
         self.node = node
         if node is not None:
@@ -206,13 +210,14 @@ class _Identifiers(object):
     components = property(lambda s:s.toplevelcomponents.union(s.closurecomponents))
     
     def __repr__(self):
-        return "Identifiers(%s, %s, %s, %s)" % (repr(list(self.declared)), repr(list(self.undeclared)), repr([c.name for c in self.toplevelcomponents]), repr([c.name for c in self.closurecomponents]))
+        return "Identifiers(%s, %s, %s, %s, %s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.toplevelcomponents]), repr([c.name for c in self.closurecomponents]))
+    
         
     def check_declared(self, node):
         for ident in node.declared_identifiers():
-            self.declared.add(ident)
+            self.locally_declared.add(ident)
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and ident not in self.declared:
+            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
     def visitExpression(self, node):
         self.check_declared(node)
@@ -225,7 +230,7 @@ class _Identifiers(object):
         #print "component tag", node.name, "our node is:", getattr(self.node, 'name', self.node.__class__.__name__), (node is self.node or node.parent is self.node)
         if node.is_root():
             self.toplevelcomponents.add(node)
-        else:
+        elif node is not self.node:
             self.closurecomponents.add(node)
         self.check_declared(node)
         if node is self.node:

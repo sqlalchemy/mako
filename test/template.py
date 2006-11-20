@@ -62,6 +62,43 @@ im c
         # then test output
         assert template.render().strip() == "im b\nand heres a:  im a"
 
+    def test_local_names(self):
+        template = """
+
+        <%component name="a">
+            this is a, and y is ${y}
+        </%component>
+
+        ${a()}
+
+        <%
+            y = 7
+        %>
+
+        ${a()}
+
+"""
+        t = Template(template)
+        print t.code
+        result = t.render()
+        result = re.sub(r'[\s\n]+', ' ', result).strip()
+        assert result == "this is a, and y is None this is a, and y is 7"
+
+    def test_local_names_2(self):
+        template = """
+        y is ${y}
+
+        <%
+            y = 7
+        %>
+
+        y is ${y}
+"""
+        t = Template(template)
+        result = t.render()
+        result = re.sub(r'[\s\n]+', ' ', result).strip()
+        assert result == "y is None y is 7"
+
 class NestedComponentTest(unittest.TestCase):
     def test_nested_component(self):
         template = """
@@ -164,42 +201,6 @@ class NestedComponentTest(unittest.TestCase):
         t = Template(template)
         print t.code
         
-    def test_local_names(self):
-        template = """
-        
-        <%component name="a">
-            this is a, and y is ${y}
-        </%component>
-
-        ${a()}
-        
-        <%
-            y = 7
-        %>
-
-        ${a()}
-
-"""
-        t = Template(template)
-        #print t.code
-        result = t.render()
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "this is a, and y is None this is a, and y is 7"
-    
-    def test_local_names_2(self):
-        template = """
-        y is ${y}
-        
-        <%
-            y = 7
-        %>
-        
-        y is ${y}
-"""
-        t = Template(template)
-        result = t.render()
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "y is None y is 7"
         
     def test_local_local_names(self):
         """test assignment of variables inside nested components, which requires extra scoping logic"""
@@ -243,12 +244,12 @@ class NestedComponentTest(unittest.TestCase):
         
         heres y again: ${y}
 """
-        t = Template(template)
+        t = Template(template, format_exceptions=False)
         print t.code
         result = t.render(y=5)
-        print result
         result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 heres y again: 7"
+        print result
+        assert result == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
         
 class NamespaceTest(unittest.TestCase):
     def test_inline(self):
