@@ -4,7 +4,7 @@ from StringIO import StringIO
 import sys
 import timeit
 
-__all__ = ['myghty', 'django', 'kid', 'genshi', 'cheetah', 'mako']
+__all__ = ['mako', 'cheetah', 'django', 'myghty', 'genshi', 'kid']
 
 def genshi(dirname, verbose=False):
     from genshi.template import TemplateLoader

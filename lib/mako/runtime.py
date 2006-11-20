@@ -4,6 +4,7 @@ from mako import exceptions
 class Context(object):
     """provides runtime namespace and output buffer for templates."""
     def __init__(self, template, buffer, **data):
+        # TODO: not sure if Context should need template + buffer etc.
         self.buffer = buffer
         self.data = data
         # the Template instance currently rendering with this context.
