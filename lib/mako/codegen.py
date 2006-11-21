@@ -139,7 +139,8 @@ class _GenerateRenderMethod(object):
         make_closure = len(identifiers.locally_declared) > 0
         
         if make_closure:
-            self.printer.writeline("def %s(%s):" % (node.name, ",".join(['context'] + namedecls)))
+            self.printer.writeline("try:")
+            self.printer.writeline("context.push()")
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
@@ -148,10 +149,11 @@ class _GenerateRenderMethod(object):
         self.printer.writeline(None)
 
         if make_closure:
-            namedecls = node.function_decl.get_argument_expressions(include_defaults=False)
-            self.printer.writeline("return %s(%s)" % (node.name, ",".join(["%s=%s" % (x,x) for x in ['context'] + namedecls])))
+            self.printer.writeline("finally:")
+            self.printer.writeline("context.pop()")
             self.printer.writeline(None)
-
+            self.printer.writeline(None)
+            
     def visitExpression(self, node):
         self.write_source_comment(node)
         self.printer.writeline("context.write(unicode(%s))" % node.text)
@@ -169,7 +171,7 @@ class _GenerateRenderMethod(object):
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
             # replace the context with a new one that contains all the variable assignments we have made
-            self.printer.writeline('context = context.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
+            self.printer.writeline('context.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)

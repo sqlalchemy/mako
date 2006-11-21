@@ -310,6 +310,7 @@ class NestedComponentTest(unittest.TestCase):
         result = t.render(y=5)
         result = re.sub(r'[\s\n]+', ' ', result).strip()
         print result
+
         assert result == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
 
     def test_outer_scope(self):

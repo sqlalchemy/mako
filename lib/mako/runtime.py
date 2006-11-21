@@ -18,14 +18,11 @@ class Context(object):
     def update(self, **args):
         """produce a copy of this Context, updating the argument dictionary
         with the given keyword arguments."""
-        x = self.stack[-1].copy()
-        x.update(args)
-        c = Context(self.with_template, self.buffer, **x)
-        return c
+        self.stack[-1].update(args)
     def push(self, **args):
         x = self.stack[-1].copy()
         x.update(args)
-        self.stack.append(args)
+        self.stack.append(x)
     def pop(self):
         self.stack.pop()
         
