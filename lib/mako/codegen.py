@@ -178,7 +178,7 @@ class _GenerateRenderMethod(object):
         self.write_source_comment(node)
         self.printer.writeline("def make_namespace():")
         export = []
-        identifiers = self.identifiers #.branch(node)
+        identifiers = self.identifiers.branch(node)
         class NSComponentVisitor(object):
             def visitComponentTag(s, node):
                 self.write_inline_component(node, identifiers)
@@ -198,7 +198,28 @@ class _GenerateRenderMethod(object):
     def visitComponentTag(self, node):
         pass
     def visitCallTag(self, node):
-        pass
+        self.write_source_comment(node)
+        self.printer.writeline("def ccall():")
+        export = ['body']
+        identifiers = self.identifiers.branch(node)
+        self.write_variable_declares(identifiers)
+        class ComponentVisitor(object):
+            def visitComponentTag(s, node):
+                export.append(node.name)
+        vis = ComponentVisitor()
+        for n in node.nodes:
+            n.accept_visitor(vis)
+        self.printer.writeline("def body():")
+        for n in node.nodes:
+            n.accept_visitor(self)
+        self.printer.writeline("return ''")
+        self.printer.writeline(None)
+        self.printer.writeline("context.push(**{%s})" % (','.join(["%s:%s" % (repr(x), x) for x in export])))
+        self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
+        self.printer.writeline("context.pop()")
+        self.printer.writeline(None)
+        self.printer.writeline("ccall()")
+
     def visitInheritTag(self, node):
         pass
 
@@ -272,3 +293,12 @@ class _Identifiers(object):
         pass        
     def visitNamespaceTag(self, node):
         self.check_declared(node)
+        if node is self.node:
+            for n in node.nodes:
+                n.accept_visitor(self)
+                
+    def visitCallTag(self, node):
+        self.check_declared(node)
+        if node is self.node:
+            for n in node.nodes:
+                n.accept_visitor(self)

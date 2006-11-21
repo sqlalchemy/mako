@@ -36,6 +36,25 @@ class ComponentTest(unittest.TestCase):
         #print template.code
         assert template.render(variable='hi', a=5, b=6).strip() == """hello mycomp hi, 5, 6"""
 
+    def test_outer_scope(self):
+        t = Template("""
+
+        <%component name="a">
+            a: x is ${x}
+        </%component>
+
+        <%component name="b">
+            <%
+                x = 10
+            %>
+            b. x is ${x}.  ${a()}
+        </%component>
+
+        ${b()}
+""")
+        #print t.code
+        print t.render(x=5)
+
     def test_inter_component(self):
         """test components calling each other"""
         template = Template("""
@@ -292,26 +311,30 @@ class NestedComponentTest(unittest.TestCase):
         result = re.sub(r'[\s\n]+', ' ', result).strip()
         print result
         assert result == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
-        
-class NamespaceTest(unittest.TestCase):
-    def test_inline(self):
-        template = """
-        <%namespace name="x">
-            <%component name="a">
-                this is x a
+
+    def test_outer_scope(self):
+        t = Template("""
+
+        <%component name="a">
+            a: x is ${x}
+        </%component>
+
+        <%component name="b">
+            <%component name="c">
+            <%
+                x = 10
+            %>
+            c. x is ${x}.  ${a()}
             </%component>
-            <%component name="b">
-                this is x b, and heres ${x.a()}
-            </%component>
-        </%namespace>
-        
-        ${x.a()}
-        
-        ${x.b()}
-"""
-        t = Template(template)
+            
+            b. ${c()}
+        </%component>
+
+        ${b()}
+""")
         print t.code
-        print t.render()
+        print t.render(x=5)
+
             
 class ExceptionTest(unittest.TestCase):
     def test_raise(self):

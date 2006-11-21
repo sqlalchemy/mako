@@ -186,8 +186,8 @@ class Tag(Node):
                 for x in re.split(r'(\${.+?})', self.attributes[key]):
                     m = re.match(r'^\${(.+?)}$', x)
                     if m:
-                        code = ast.PythonCode(m.group(1), self.lineno, self.pos)
-                        undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
+                        #code = ast.PythonCode(m.group(1), self.lineno, self.pos)
+                        #undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
                         expr.append(m.group(1))
                     else:
                         expr.append(repr(x))
@@ -237,6 +237,11 @@ class CallTag(Tag):
     __keyword__ = 'call'
     def __init__(self, keyword, attributes, **kwargs):
         super(CallTag, self).__init__(keyword, attributes, (), ('expr',), ('expr',), **kwargs)
+        self.code = ast.PythonCode(attributes['expr'], self.lineno, self.pos)
+    def declared_identifiers(self):
+        return self.code.declared_identifiers
+    def undeclared_identifiers(self):
+        return self.code.undeclared_identifiers
 
 class InheritTag(Tag):
     __keyword__ = 'inherit'
