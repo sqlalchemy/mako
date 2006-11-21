@@ -38,7 +38,7 @@ class Namespace(object):
         self.module = module
         self.template = template
         if callables is not None:
-            self.callables = dict((c.func_name, c) for c in callables)
+            self.callables = dict([(c.func_name, c) for c in callables])
         else:
             self.callables = {}
         
