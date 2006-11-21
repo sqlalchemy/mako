@@ -117,8 +117,8 @@ class LexerTest(unittest.TestCase):
     result: <%call expr="foo.x(result)"/>
 """
         nodes = Lexer(template).parse()
-        #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n', (1, 1)), NamespaceTag('namespace', {'name': '"foo"'}, (2, 1), ["Text('\\n    ', (2, 24))", 'ComponentTag(\'component\', {\'name\': \'"x"\'}, (3, 5), ["Text(\'\\\\n        this is x\\\\n    \', (3, 26))"])', "Text('\\n    ', (5, 18))", 'ComponentTag(\'component\', {\'name\': \'"y"\'}, (6, 5), ["Text(\'\\\\n        this is y\\\\n    \', (6, 26))"])', "Text('\\n', (8, 18))"]), Text('\n\n', (9, 14)), Code('\nresult = []\ndata = get_data()\nfor x in data:\n    result.append(x+7)\n\n', False, (11, 1)), Text('\n\n    result: ', (16, 3)), CallTag('call', {'expr': '"foo.x(result)"'}, (18, 13), []), Text('\n', (18, 42))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n', (1, 1)), NamespaceTag('namespace', {'name': 'foo'}, (2, 1), ["Text('\\n    ', (2, 24))", 'ComponentTag(\'component\', {\'name\': \'x\'}, (3, 5), ["Text(\'\\\\n        this is x\\\\n    \', (3, 26))"])', "Text('\\n    ', (5, 18))", 'ComponentTag(\'component\', {\'name\': \'y\'}, (6, 5), ["Text(\'\\\\n        this is y\\\\n    \', (6, 26))"])', "Text('\\n', (8, 18))"]), Text('\n\n', (9, 14)), Code('\nresult = []\ndata = get_data()\nfor x in data:\n    result.append(x+7)\n\n', False, (11, 1)), Text('\n\n    result: ', (16, 3)), CallTag('call', {'expr': 'foo.x(result)'}, (18, 13), []), Text('\n', (18, 42))])"""
+
 
     def test_expression(self):
         template = """
@@ -215,8 +215,7 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag('namespace', {'name': '"foo"', 'file': '"somefile.html"'}, (1, 1), []), Text('\n', (1, 46)), Comment('inherit from foobar.html', (2, 1)), InheritTag('inherit', {'file': '"foobar.html"'}, (3, 1), []), Text('\n\n', (3, 31)), ComponentTag('component', {'name': '"header"'}, (5, 1), ["Text('\\n     <div>header</div>\\n', (5, 27))"]), Text('\n', (7, 14)), ComponentTag('component', {'name': '"footer"'}, (8, 1), ["Text('\\n    <div> footer</div>\\n', (8, 27))"]), Text('\n\n<table>\n', (10, 14)), ControlLine('for', 'for j in data():', False, (13, 1)), Text('    <tr>\n', (14, 1)), ControlLine('for', 'for x in j:', False, (15, 1)), Text('            <td>Hello ', (16, 1)), Expression('x', ['h'], (16, 23)), Text('</td>\n', (16, 30)), ControlLine('for', 'endfor', True, (17, 1)), Text('    </tr>\n', (18, 1)), ControlLine('for', 'endfor', True, (19, 1)), Text('</table>\n', (20, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag('namespace', {'name': 'foo', 'file': 'somefile.html'}, (1, 1), []), Text('\n', (1, 46)), Comment('inherit from foobar.html', (2, 1)), InheritTag('inherit', {'file': 'foobar.html'}, (3, 1), []), Text('\n\n', (3, 31)), ComponentTag('component', {'name': 'header'}, (5, 1), ["Text('\\n     <div>header</div>\\n', (5, 27))"]), Text('\n', (7, 14)), ComponentTag('component', {'name': 'footer'}, (8, 1), ["Text('\\n    <div> footer</div>\\n', (8, 27))"]), Text('\n\n<table>\n', (10, 14)), ControlLine('for', 'for j in data():', False, (13, 1)), Text('    <tr>\n', (14, 1)), ControlLine('for', 'for x in j:', False, (15, 1)), Text('            <td>Hello ', (16, 1)), Expression('x', ['h'], (16, 23)), Text('</td>\n', (16, 30)), ControlLine('for', 'endfor', True, (17, 1)), Text('    </tr>\n', (18, 1)), ControlLine('for', 'endfor', True, (19, 1)), Text('</table>\n', (20, 1))])"""
 
 if __name__ == '__main__':
     unittest.main()

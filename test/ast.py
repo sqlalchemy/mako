@@ -55,7 +55,6 @@ for y in range(1, y):
 (q for q in range (1, q))
 """
         parsed = ast.PythonCode(code, 0, 0)
-        print parsed.undeclared_identifiers
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
         
     def test_no_global_imports(self):

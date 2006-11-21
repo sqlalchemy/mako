@@ -1,6 +1,6 @@
 from mako.template import Template
 import unittest
-import re
+from util import flatten_result
 
 class ComponentTest(unittest.TestCase):
     def test_component_noargs(self):
@@ -13,7 +13,6 @@ class ComponentTest(unittest.TestCase):
         </%component>
         
         """)
-        print template.code
         assert template.render(variable='hi').strip() == """hello mycomp hi"""
 
     def test_component_blankargs(self):
@@ -23,7 +22,6 @@ class ComponentTest(unittest.TestCase):
         </%component>
 
         ${mycomp()}""")
-        #print template.code
         assert template.render(variable='hi').strip() == """hello mycomp hi"""
 
     def test_component_args(self):
@@ -33,7 +31,6 @@ class ComponentTest(unittest.TestCase):
         </%component>
 
         ${mycomp(5, 6)}""")
-        #print template.code
         assert template.render(variable='hi', a=5, b=6).strip() == """hello mycomp hi, 5, 6"""
 
     def test_outer_scope(self):
@@ -52,38 +49,35 @@ class ComponentTest(unittest.TestCase):
 
         ${b()}
 """)
-        #print t.code
-        print t.render(x=5)
-
+        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 10"
+        
     def test_inter_component(self):
         """test components calling each other"""
         template = Template("""
-${b()}
+        ${b()}
 
-<%component name="a">\
-im a
-</%component>
+        <%component name="a">\
+        im a
+        </%component>
 
-<%component name="b">
-im b
-and heres a:  ${a()}
-</%component>
+        <%component name="b">
+        im b
+        and heres a:  ${a()}
+        </%component>
 
-<%component name="c">
-im c
-</%component>
-        """)
-        #print template.code
+        <%component name="c">
+        im c
+        </%component>
+""")
         # check that "a" is declared in "b", but not in "c"
         assert "a" not in template.module.render_c.func_code.co_varnames
         assert "a" in template.module.render_b.func_code.co_varnames
         
         # then test output
-        assert template.render().strip() == "im b\nand heres a:  im a"
+        assert flatten_result(template.render()) == "im b and heres a: im a"
 
     def test_local_names(self):
-        template = """
-
+        t = Template("""
         <%component name="a">
             this is a, and y is ${y}
         </%component>
@@ -96,15 +90,11 @@ im c
 
         ${a()}
 
-"""
-        t = Template(template)
-        print t.code
-        result = t.render()
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "this is a, and y is None this is a, and y is 7"
+""")
+        assert flatten_result(t.render()) == "this is a, and y is None this is a, and y is 7"
 
     def test_local_names_2(self):
-        template = """
+        t = Template("""
         y is ${y}
 
         <%
@@ -112,15 +102,11 @@ im c
         %>
 
         y is ${y}
-"""
-        t = Template(template)
-        result = t.render()
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "y is None y is 7"
+""")
+        assert flatten_result(t.render()) == "y is None y is 7"
 
     def test_local_names_3(self):
         """test in place assignment/undeclared variable combinations
-        
         
         i.e. things like 'x=x+1', x is declared and undeclared at the same time"""
         template = Template("""
@@ -138,13 +124,11 @@ im c
 
     	${a()}
     """)
-        result = template.render(x=5, y=10)
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "hi y is 10 x is 15"
+        assert flatten_result(template.render(x=5, y=10)) == "hi y is 10 x is 15"
 
 class NestedComponentTest(unittest.TestCase):
     def test_nested_component(self):
-        template = """
+        t = Template("""
 
         ${hi()}
         
@@ -160,16 +144,11 @@ class NestedComponentTest(unittest.TestCase):
                 this is bar
             </%component>
         </%component>
-"""
-        t = Template(template)
-        print t.code
-        result = t.render()
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "hey, im hi. and heres this is foo , this is bar"
+""")
+        assert flatten_result(t.render()) == "hey, im hi. and heres this is foo , this is bar"
 
     def test_nested_with_args(self):
-        template = Template("""
-        
+        t = Template("""
         ${a()}
         <%component name="a">
             <%component name="b(x, y=2)">
@@ -177,13 +156,8 @@ class NestedComponentTest(unittest.TestCase):
             </%component>
             a ${b(5)}
         </%component>
-        
 """)
-        #print template.code
-        result = template.render()
-        #print result
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        assert result == "a b x is 5 y is 2"
+        assert flatten_result(t.render()) == "a b x is 5 y is 2"
         
     def test_nested_component_2(self):
         template = Template("""
@@ -198,10 +172,10 @@ class NestedComponentTest(unittest.TestCase):
             ${b()}
         </%component>
 """)
-        print template.code
-        
+        assert flatten_result(template.render()) == "comp c"
+
     def test_nested_nested_component(self):
-        template = """
+        t = Template("""
         
         ${a()}
         <%component name="a">
@@ -234,18 +208,12 @@ class NestedComponentTest(unittest.TestCase):
             
             ${b1()} ${b2()}  ${b3()}
         </%component>
-"""
+""")
 
-        t = Template(template, format_exceptions=False)
-        print t.code
-        result = t.render(x=5)
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        #print result
-        assert result == "a a_b1 a_b2 a_b2_c1 a_b3 a_b3_c1 heres x: 5 y is 7 a_b3_c2 y is None c1 is a_b3_c1 heres x: 5 y is 7"
+        assert flatten_result(t.render(x=5)) == "a a_b1 a_b2 a_b2_c1 a_b3 a_b3_c1 heres x: 5 y is 7 a_b3_c2 y is None c1 is a_b3_c1 heres x: 5 y is 7"
     
     def test_nested_nested_component_2(self):
-        template = """
-        
+        t = Template("""
         <%component name="a">
             this is a ${b()}
             <%component name="b">
@@ -258,14 +226,12 @@ class NestedComponentTest(unittest.TestCase):
             </%component>
         </%component>
         ${a()}
-"""    
-        t = Template(template)
-        print t.code
-        
+""" )
+        assert flatten_result(t.render()) == "this is a this is b this is c"
         
     def test_local_local_names(self):
         """test assignment of variables inside nested components, which requires extra scoping logic"""
-        template = """
+        t = Template("""
             heres y: ${y}
             
             <%component name="a">
@@ -304,18 +270,11 @@ class NestedComponentTest(unittest.TestCase):
         ${a()}
         
         heres y again: ${y}
-"""
-        t = Template(template, format_exceptions=False)
-        print t.code
-        result = t.render(y=5)
-        result = re.sub(r'[\s\n]+', ' ', result).strip()
-        print result
-
-        assert result == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
+""")
+        assert flatten_result(t.render(y=5)) == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
 
     def test_outer_scope(self):
         t = Template("""
-
         <%component name="a">
             a: x is ${x}
         </%component>
@@ -332,10 +291,10 @@ class NestedComponentTest(unittest.TestCase):
         </%component>
 
         ${b()}
+        
+        x is ${x}
 """)
-        print t.code
-        print t.render(x=5)
-
+        assert flatten_result(t.render(x=5)) == "b. c. x is 10. a: x is 10 x is 5"
             
 class ExceptionTest(unittest.TestCase):
     def test_raise(self):
