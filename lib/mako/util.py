@@ -13,6 +13,19 @@ except:
 try:
     from cStringIO import StringIO
 except:
-    from StringIO import StringIO
-    
+   from StringIO import StringIO
+
+
+class FastEncodingBuffer(object):
+    """a very rudimentary buffer that is faster than StringIO, but doesnt crash on unicode data like cStringIO."""
+    def __init__(self, encoding=None):
+        self.data = []
+        self.encoding = encoding
+    def write(self, text):
+        self.data.append(text)
+    def getvalue(self):
+        if self.encoding:
+            return u''.join(self.data).encode(self.encoding)
+        else:
+            return u''.join(self.data)
 

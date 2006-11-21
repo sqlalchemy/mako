@@ -7,6 +7,7 @@
 """provides the Compiler object for generating module source code."""
 
 import time
+import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree
 
@@ -17,7 +18,7 @@ class Compiler(object):
         self.node = node
         self.filename = filename
     def render(self):
-        buf = util.StringIO()
+        buf = util.FastEncodingBuffer()
         printer = PythonPrinter(buf)
         
         # module-level names, python code

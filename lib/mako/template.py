@@ -23,7 +23,7 @@ class _ModuleMarker(object):
 
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, module=None, identifier=None, filename=None, format_exceptions=True, error_handler=None, lookup=None):
+    def __init__(self, text=None, module=None, identifier=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -53,6 +53,7 @@ class Template(object):
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
         self.lookup = lookup
+        self.output_encoding = output_encoding
         _modules[module.__name__] = _ModuleMarker(module)
 
     source = property(lambda self:_get_template_source(self.callable_), doc="""return the template source code for this Template.""")
@@ -61,11 +62,17 @@ class Template(object):
     def render(self, *args, **data):
         """render the output of this template as a string.
         
+        if the template specifies an output encoding, the string will be encoded accordingly, else the output
+        is raw (raw output uses cStringIO and can't handle multibyte characters).
         a Context object is created corresponding to the given data.  Arguments that are explictly
         declared by this template's internal rendering method are also pulled from the given *args, **data 
         members."""
-        return _render(self, self.callable_, *args, **data)
+        return _render(self, self.callable_, args, data)
     
+    def render_unicode(self, *args, **data):
+        """render the output of this template as a unicode object."""
+        return _render(self, self.callable_, args, data, as_unicode=True)
+        
     def render_context(self, context, *args, **kwargs):
         """render this Template with the given context.  
         
@@ -93,10 +100,15 @@ def _compile_text(text, identifier, filename):
     code = compile(source, filename or cid, 'exec')
     exec code in module.__dict__, module.__dict__
     return (source, module)
-    
-def _render(template, callable_, *args, **data):
+
+def _render(template, callable_, args, data, as_unicode=False):
     """given a Template and a callable_ from that template, create a Context and return the string output."""
-    buf = util.StringIO()
+    if as_unicode:
+        buf = util.FastEncodingBuffer()
+    elif template.output_encoding:
+        buf = util.FastEncodingBuffer(template.output_encoding)
+    else:
+        buf = util.StringIO()
     context = Context(template, buf, **data)
     kwargs = {}
     argspec = inspect.getargspec(callable_)

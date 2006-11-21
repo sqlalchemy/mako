@@ -13,6 +13,7 @@ class ComponentTest(unittest.TestCase):
         </%component>
         
         """)
+        print template.code
         assert template.render(variable='hi').strip() == """hello mycomp hi"""
 
     def test_component_blankargs(self):
