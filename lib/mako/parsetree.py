@@ -1,3 +1,9 @@
+# parsetree.py
+# Copyright (C) 2006 Michael Bayer mike_mp@zzzcomputing.com
+#
+# This module is part of Mako and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
 """defines the parse tree components for Mako templates."""
 
 from mako import exceptions, ast, util

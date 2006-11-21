@@ -1,3 +1,9 @@
+# ast.py
+# Copyright (C) 2006 Michael Bayer mike_mp@zzzcomputing.com
+#
+# This module is part of Mako and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
 """utilities for analyzing expressions and blocks of Python code, as well as generating Python from AST nodes"""
 
 from compiler import ast, parse, visitor
