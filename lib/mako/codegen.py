@@ -100,9 +100,7 @@ class _GenerateRenderMethod(object):
         # collection of all components available to us in this scope
         comp_idents = dict([(c.name, c) for c in identifiers.components])
 
-        # write explicit "context.get()" statements for variables that are already in the 
-        # local namespace, that we are going to re-assign
-        to_write = identifiers.declared.intersection(identifiers.locally_declared)
+        to_write = util.Set()
         
         # write "context.get()" for all variables we are going to need that arent in the namespace yet
         to_write = to_write.union(identifiers.undeclared)
@@ -113,6 +111,11 @@ class _GenerateRenderMethod(object):
         # remove identifiers that are declared in the argument signature of the callable
         to_write = to_write.difference(identifiers.argument_declared)
 
+        # remove identifiers that we are going to assign to.  in this way we mimic Python's behavior,
+        # i.e. assignment to a variable within a block means that variable is now a "locally declared" var,
+        # which cannot be referenced beforehand.  
+        to_write = to_write.difference(identifiers.locally_declared)
+        
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
@@ -151,11 +154,11 @@ class _GenerateRenderMethod(object):
         
         # if we assign to variables in this closure, then we have to nest inside
         # of another callable so that the "context" variable is copied into the local scope
-        make_closure = len(identifiers.locally_declared) > 0
+        #make_closure = len(identifiers.locally_declared) > 0
         
-        if make_closure:
-            self.printer.writeline("try:")
-            self.printer.writeline("context.push()")
+        #if make_closure:
+        #    self.printer.writeline("try:")
+        #    self.printer.writeline("context.push()")
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
@@ -163,11 +166,11 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("return ''")
         self.printer.writeline(None)
 
-        if make_closure:
-            self.printer.writeline("finally:")
-            self.printer.writeline("context.pop()")
-            self.printer.writeline(None)
-            self.printer.writeline(None)
+        #if make_closure:
+        #    self.printer.writeline("finally:")
+        #    self.printer.writeline("context.pop()")
+        #    self.printer.writeline(None)
+        #    self.printer.writeline(None)
             
     def visitExpression(self, node):
         self.write_source_comment(node)
