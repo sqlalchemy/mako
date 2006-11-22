@@ -1,4 +1,5 @@
 from mako.template import Template
+from mako import lookup
 import unittest
 from util import flatten_result
 
@@ -34,24 +35,6 @@ class ComponentTest(unittest.TestCase):
         ${mycomp(5, 6)}""")
         assert template.render(variable='hi', a=5, b=6).strip() == """hello mycomp hi, 5, 6"""
 
-    def test_outer_scope(self):
-        t = Template("""
-
-        <%component name="a">
-            a: x is ${x}
-        </%component>
-
-        <%component name="b">
-            <%
-                x = 10
-            %>
-            b. x is ${x}.  ${a()}
-        </%component>
-
-        ${b()}
-""")
-        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 10"
-        
     def test_inter_component(self):
         """test components calling each other"""
         template = Template("""
@@ -77,7 +60,9 @@ class ComponentTest(unittest.TestCase):
         # then test output
         assert flatten_result(template.render()) == "im b and heres a: im a"
 
-    def test_local_names(self):
+class ScopeTest(unittest.TestCase):
+    """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
+    def test_scope_one(self):
         t = Template("""
         <%component name="a">
             this is a, and y is ${y}
@@ -92,9 +77,9 @@ class ComponentTest(unittest.TestCase):
         ${a()}
 
 """)
-        assert flatten_result(t.render()) == "this is a, and y is None this is a, and y is 7"
+        assert flatten_result(t.render(y=None)) == "this is a, and y is None this is a, and y is 7"
 
-    def test_local_names_2(self):
+    def test_scope_two(self):
         t = Template("""
         y is ${y}
 
@@ -104,9 +89,9 @@ class ComponentTest(unittest.TestCase):
 
         y is ${y}
 """)
-        assert flatten_result(t.render()) == "y is None y is 7"
+        assert flatten_result(t.render(y=None)) == "y is None y is 7"
 
-    def test_local_names_3(self):
+    def test_scope_three(self):
         """test in place assignment/undeclared variable combinations
         
         i.e. things like 'x=x+1', x is declared and undeclared at the same time"""
@@ -127,6 +112,143 @@ class ComponentTest(unittest.TestCase):
     """)
         assert flatten_result(template.render(x=5, y=10)) == "hi y is 10 x is 15"
 
+    def test_scope_four(self):
+        """test that variables are pulled from 'enclosing' scope before context."""
+        t = Template("""
+            <%
+                x = 5
+            %>
+            <%component name="a">
+                this is a. x is ${x}.
+            </%component>
+            
+            <%component name="b">
+                <%
+                    x = 9
+                %>
+                this is b. x is ${x}.
+                calling a. ${a()}
+            </%component>
+        
+            ${b()}
+""")
+        print t.code
+        print t.render()
+        assert flatten_result(t.render()) == "this is b. x is 9. calling a. this is a. x is 5."
+    
+    def test_scope_five(self):
+        """test that variables are pulled from 'enclosing' scope before context."""
+        # same as test four, but adds a scope around it.
+        t = Template("""
+            <%component name="enclosing">
+            <%
+                x = 5
+            %>
+            <%component name="a">
+                this is a. x is ${x}.
+            </%component>
+
+            <%component name="b">
+                <%
+                    x = 9
+                %>
+                this is b. x is ${x}.
+                calling a. ${a()}
+            </%component>
+
+            ${b()}
+            </%component>
+            ${enclosing()}
+""")
+        print t.code
+        print t.render()
+        assert flatten_result(t.render()) == "this is b. x is 9. calling a. this is a. x is 5."
+
+    def test_scope_six(self):
+        """test that the initial context counts as 'enclosing' scope, for plain components"""
+        t = Template("""
+
+        <%component name="a">
+            a: x is ${x}
+        </%component>
+
+        <%component name="b">
+            <%
+                x = 10
+            %>
+            b. x is ${x}.  ${a()}
+        </%component>
+
+        ${b()}
+    """)
+        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 5"
+
+    def test_scope_seven(self):
+        """test that the initial context counts as 'enclosing' scope, for nested components"""
+        t = Template("""
+        <%component name="enclosing">
+            <%component name="a">
+                a: x is ${x}
+            </%component>
+
+            <%component name="b">
+                <%
+                    x = 10
+                %>
+                b. x is ${x}.  ${a()}
+            </%component>
+
+            ${b()}
+        </%component>
+        ${enclosing()}
+    """)
+        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 5"
+
+    def test_scope_eight(self):
+        """test that the initial context counts as 'enclosing' scope, for nested components"""
+        t = Template("""
+        <%component name="enclosing">
+            <%component name="a">
+                a: x is ${x}
+            </%component>
+
+            <%component name="b">
+                <%
+                    x = 10
+                    context['x'] = x
+                %>
+                
+                b. x is ${x}.  ${a()}
+            </%component>
+
+            ${b()}
+        </%component>
+        ${enclosing()}
+    """)
+        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 10"
+
+    def test_scope_nine(self):
+        """test that 'enclosing scope' doesnt get exported to other templates"""
+        tmpl = {}
+        class LocalTmplCollection(lookup.TemplateCollection):
+            def get_template(self, uri):
+                return tmpl[uri]
+        collection = LocalTmplCollection()
+        
+        tmpl['main'] = Template("""
+        <%
+            x = 5
+        %>
+        this is main.  <%include file="secondary"/>
+""", lookup=collection)
+
+        tmpl['secondary'] = Template("""
+        this is secondary.  x is ${x}
+""", lookup=collection)
+
+        assert flatten_result(tmpl['main'].render(x=2)) == "this is main. this is secondary. x is 2"
+        
+        
 class NestedComponentTest(unittest.TestCase):
     def test_nested_component(self):
         t = Template("""
@@ -210,7 +332,7 @@ class NestedComponentTest(unittest.TestCase):
             ${b1()} ${b2()}  ${b3()}
         </%component>
 """)
-
+        print t.code
         assert flatten_result(t.render(x=5)) == "a a_b1 a_b2 a_b2_c1 a_b3 a_b3_c1 heres x: 5 y is 7 a_b3_c2 y is None c1 is a_b3_c1 heres x: 5 y is 7"
     
     def test_nested_nested_component_2(self):
@@ -229,7 +351,40 @@ class NestedComponentTest(unittest.TestCase):
         ${a()}
 """ )
         assert flatten_result(t.render()) == "this is a this is b this is c"
-        
+
+    def test_scope_ten(self):
+        t = Template("""
+            main/y: ${y}
+            
+            <%component name="a">
+                <%component name="b">
+                    b/y: ${y}
+                    <%
+                        y = 19
+                    %>
+                    b/c: ${c()}
+                    b/y: ${y}
+                </%component>
+                
+                a/y: ${y}
+                <%
+                    y = 10
+                    x  = 12
+                %>
+                a/y: ${y}
+                a/b: ${b()}
+                <%component name="c">
+                    c/y: ${y}
+                </%component>
+            </%component>
+
+            <%
+                y = 7
+            %>
+            main/y: ${y}
+            main/a: ${a}
+            main/y: ${y}
+""")
     def test_local_local_names(self):
         """test assignment of variables inside nested components, which requires extra scoping logic"""
         t = Template("""
@@ -272,6 +427,8 @@ class NestedComponentTest(unittest.TestCase):
         
         heres y again: ${y}
 """)
+        print t.code
+        print flatten_result(t.render(y=5))
         assert flatten_result(t.render(y=5)) == "heres y: 5 now heres y 7 a, heres y: 7 a, now heres y: 10 a, heres b: b, heres y: 10 b, heres c: this is c b, heres y again: 19 heres y again: 7"
 
     def test_outer_scope(self):

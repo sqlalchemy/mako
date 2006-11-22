@@ -9,7 +9,7 @@ import os
 from mako import exceptions
 from mako.template import Template
 
-class AbstractTemplateLookup(object):
+class TemplateCollection(object):
     def has_template(self, uri):
         try:
             self.get_template(uri)
@@ -19,7 +19,7 @@ class AbstractTemplateLookup(object):
     def get_template(self, uri):
         raise NotImplementedError()
         
-class TemplateLookup(AbstractTemplateLookup):
+class TemplateLookup(TemplateCollection):
     def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1):
         self.directories = directories or []
         self.module_directory = module_directory

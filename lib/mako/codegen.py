@@ -58,14 +58,16 @@ class _GenerateRenderMethod(object):
     def __init__(self, printer, identifiers, node):
         self.printer = printer
         self.last_source_line = -1
-
+        
         self.node = node
         if isinstance(node, parsetree.ComponentTag):
             name = "render_" + node.name
             args = node.function_decl.get_argument_expressions()
+            self.in_component = True
         else:
             name = "render"
             args = None
+            self.in_component = False
             
         if args is None:
             args = ['context']
@@ -74,6 +76,9 @@ class _GenerateRenderMethod(object):
             
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
         self.identifiers = identifiers.branch(node)
+        if len(self.identifiers.locally_declared) > 0:
+            printer.writeline("__locals = {}")
+
         self.write_variable_declares(self.identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
@@ -116,7 +121,7 @@ class _GenerateRenderMethod(object):
                 else:
                     self.write_inline_component(comp, identifiers)
             else:
-                self.printer.writeline("%s = context.get(%s, None)" % (ident, repr(ident)))
+                self.printer.writeline("%s = context.get(%s, runtime.UNDEFINED)" % (ident, repr(ident)))
         
     def write_source_comment(self, node):
         if self.last_source_line != node.lineno:
@@ -128,7 +133,10 @@ class _GenerateRenderMethod(object):
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
-        nameargs.insert(0, 'context')
+        if len(self.identifiers.locally_declared) > 0:
+            nameargs.insert(0, 'context.locals_(__locals)')
+        else:
+            nameargs.insert(0, 'context')
         self.printer.writeline("def %s(%s):" % (funcname, ",".join(namedecls)))
         self.printer.writeline("return render_%s(%s)" % (funcname, ",".join(nameargs)))
         self.printer.writeline(None)
@@ -177,8 +185,11 @@ class _GenerateRenderMethod(object):
         if not node.ismodule:
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
-            # replace the context with a new one that contains all the variable assignments we have made
-            self.printer.writeline('context.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
+
+            if not self.in_component:
+                # if we are the "template" component, fudge locally declared/modified variables into the "__locals" dictionary,
+                # which is used for component calls within the same template, to simulate "enclosing scope"
+                self.printer.writeline('__locals.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
@@ -223,7 +234,9 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
-        self.printer.writeline("context.push(**{%s})" % (','.join(["%s:%s" % (repr(x), x) for x in export])))
+        self.printer.writeline("context.push(**{%s})" % 
+            (','.join(["%s:%s" % (repr(x), x) for x in export] + ["'callargs':runtime.AttrDict(**{%s})" % ','.join(["%s:%s" % (repr(x), x) for x in export])]) )
+        )
         self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
         self.printer.writeline("context.pop()")
         self.printer.writeline(None)

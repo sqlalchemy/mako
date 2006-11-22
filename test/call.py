@@ -1,7 +1,7 @@
 from mako.template import Template
 import unittest
 
-class TestCall(unittest.TestCase):
+class CallTest(unittest.TestCase):
     def test_call(self):
         t = Template("""
         
@@ -26,8 +26,13 @@ class TestCall(unittest.TestCase):
             this is bar
         </%component>
         
+        <%component name="comp1">
+            this comp1 should not be called
+        </%component>
+        
         <%component name="foo">
-            hi im foo ${body()}
+            foo calling comp1: ${callargs.comp1()}
+            foo calling body: ${body()}
         </%component>
         
         <%call expr="foo()">
@@ -54,6 +59,35 @@ class TestCall(unittest.TestCase):
                 </%component>
                 <%component name="c">
                     this is c: ${body()}
+                </%component>
+            </%component>
+        ${a()}
+""")
+        print t.code
+        print t.render()
+
+    def test_call_in_nested_2(self):
+        t = Template("""
+            <%component name="a">
+                <%component name="d">
+                    not this d
+                </%component>
+                this is a ${b()}
+                <%component name="b">
+                    <%component name="d">
+                        not this d either
+                    </%component>
+                    this is b
+                    <%call expr="c()">
+                        <%component name="d">
+                            this is d
+                        </%component>
+                        this is the body in b's call
+                    </%call>
+                </%component>
+                <%component name="c">
+                    this is c: ${body()}
+                    the embedded "d" is: ${d()}
                 </%component>
             </%component>
         ${a()}

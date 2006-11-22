@@ -7,6 +7,7 @@
 """provides the Context class, the runtime namespace for templates."""
 from mako import exceptions
 
+        
 class Context(object):
     """provides runtime namespace and output buffer for templates."""
     def __init__(self, template, buffer, **data):
@@ -17,13 +18,13 @@ class Context(object):
         self.with_template = template
     def __getitem__(self, key):
         return self.stack[-1][key]
+    def __setitem__(self, key, value):
+        self.stack[-1][key] = value
     def get(self, key, default=None):
         return self.stack[-1].get(key, default)
     def write(self, string):
         self.buffer.write(string)
     def update(self, **args):
-        """produce a copy of this Context, updating the argument dictionary
-        with the given keyword arguments."""
         self.stack[-1].update(args)
     def push(self, **args):
         x = self.stack[-1].copy()
@@ -31,6 +32,31 @@ class Context(object):
         self.stack.append(x)
     def pop(self):
         self.stack.pop()
+    def locals_(self, d):
+        c = Context(self.with_template, self.buffer, **self.stack[-1])
+        c.update(**d)
+        return c
+        
+class Undefined(object):
+    """represtents undefined values"""
+    def __str__(self):
+        raise NameError("Undefined")
+UNDEFINED = Undefined()
+        
+class AttrDict(object):
+    """dictionary facade providing getattr access"""
+    def __init__(self, **data):
+        self.data = data
+    def __getattr__(self, key):
+        return self.data[key]
+    def __getitem__(self, key):
+        return self.data[key]
+    def __setitem__(self, key, value):
+        self.data[key] = value
+    def __iter__(self):
+        return self.data.keys()
+    def keys(self):
+        return self.data.keys()
         
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""

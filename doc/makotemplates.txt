@@ -174,20 +174,22 @@ Expressions usually use ${expr} syntax, and compile into literal Python.
     
 ### Variable Namespace
 
-A template executes with a single contextual dictionary.  This dictionary is completely transparent in the template itself.  AST parsing of all embedded Python is performed in order to locate all referenced variable names, which are pre-declared from the dictionary at runtime (or None if not present) before template-generated Python is executed.  So when a variable "x" is referenced, the searched hierarchy is:
+A template executes with a single contextual dictionary.  This dictionary is completely transparent in the template itself.  AST parsing of all embedded Python is performed in order to locate all referenced variable names, which are pre-declared from the dictionary at runtime (or a special "undefined" value if not present) before template-generated Python is executed.  So when a variable "x" is referenced, the searched hierarchy is:
 
-- Variables declared within control structures or locally embedded python code
-- Variables explicitly declared by the page or component
-- Variables declared in the template at the module-level
-- Components (callables) and namespaces (groups of callables) declared within the template
-- Variables passed to component calls, undeclared by the component or page
-- Variables passed to the template's context, undeclared by the component or page
+- Variables declared locally, or as part of a control structure (like say, a for loop)
+- Variables declared in an enclosing scope. 
+- Variables declared in the template at the module-level.
+- Names within the current context object.
 
-If you need to get at the context directly (such as if youve declared a module-level variable thats overriding a name), its available as `context`, and it follows dictionary conventions:
+Notice that the context is the lowest priority for scope.  This is to allow the most predictable behavior; when you create a template or component, the variables that are explicitly present regardless of the context's contents form part of the construction of that component.  It should not be possible to place a name into the context that causes code which was written against an explicit scope to suddenly function differently.
 
-    the context:  ${context['some key']}
+When variables from the context are what's specifically needed, just call them from the context explicitly:
 
-Other names that are sometimes used by default include `body`, within a component call, and `text`, within a filter call.
+    ${context['some key']}
+
+A convenience object `args` is also available which provides attribute-style access:
+
+    args.mykey
     
 ### Embedding Python
 #### Inline
