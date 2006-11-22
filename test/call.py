@@ -31,7 +31,7 @@ class CallTest(unittest.TestCase):
         </%component>
         
         <%component name="foo">
-            foo calling comp1: ${callargs.comp1()}
+            foo calling comp1: ${args.comp1()}
             foo calling body: ${body()}
         </%component>
         

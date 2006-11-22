@@ -193,7 +193,6 @@ class ScopeTest(unittest.TestCase):
             <%component name="b">
                 <%
                     x = 10
-                    context['x'] = x
                 %>
                 
                 b. x is ${x}.  ${a()}
@@ -203,7 +202,7 @@ class ScopeTest(unittest.TestCase):
         </%component>
         ${enclosing()}
     """)
-        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 10"
+        assert flatten_result(t.render(x=5)) == "b. x is 10. a: x is 5"
 
     def test_scope_nine(self):
         """test that 'enclosing scope' doesnt get exported to other templates"""

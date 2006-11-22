@@ -238,7 +238,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("return ''")
         self.printer.writeline(None)
         self.printer.writeline("context.push(**{%s})" % 
-            (','.join(["%s:%s" % (repr(x), x) for x in export] + ["'callargs':runtime.AttrDict(**{%s})" % ','.join(["%s:%s" % (repr(x), x) for x in export])]) )
+            (','.join(["%s:%s" % (repr(x), x) for x in export]) )
         )
         self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
         self.printer.writeline("context.pop()")
