@@ -206,7 +206,7 @@ Inline Python is embedded via the <% %> tags.  This is straight python so the wh
         </tr>
     </table>    
 
-Remember that you can reference any variable name from the template's context, and it will be pulled from the context automatically.  This works similarly to a global variable in Python; i.e. if you assign to the variable name first, then its a local variable.
+Remember that you can reference any variable name from the template's context, and it will be pulled from the context automatically.  
 
 Context:
 
@@ -224,6 +224,19 @@ Produces:
 
     X is one
     Y is hi there
+
+The scoping rules for variable assignment within blocks of Python are the same as that for Python callables; if you assign to a variable name, that variable becomes bound to the local scope, and you cannot access it in the block before that assignment, even if it is part of the context that was sent to the template.  (We tried different combinations in this area, trying to allow a reference to the enclosing scope which can be overridden through assignment; but it quickly leads to inconsistent behaviors...Python has got it right !).  If you *do* want to use a variable from the context, then reassign to it locally, just assign it from the context first:
+
+    <%
+        # pull y from the context.
+        y = context['y']
+    %>
+    y is ${y}
+    <% 
+        # now assign something different to y.
+        y = "hi there"
+    %>
+    y is ${y}
     
 #### Module Level
 
