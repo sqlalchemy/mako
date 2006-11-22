@@ -16,10 +16,7 @@ class Context(object):
         self.stack = [data]
         # the Template instance currently rendering with this context.
         self.with_template = template
-        class AttrFacade(object):
-            def __getattr__(s, key):
-                return self.stack[-1][key]
-        data.setdefault('args', AttrFacade())
+        data['args'] = _AttrFacade(self)
     def __getitem__(self, key):
         return self.stack[-1][key]
     def get(self, key, default=None):
@@ -36,7 +33,13 @@ class Context(object):
         c = Context(self.with_template, self.buffer, **self.stack[-1])
         c.stack[-1].update(**d)
         return c
-        
+
+class _AttrFacade(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+    def __getattr__(self, key):
+        return self.ctx[key]
+            
 class Undefined(object):
     """represtents undefined values"""
     def __str__(self):

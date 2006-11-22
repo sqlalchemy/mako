@@ -70,7 +70,7 @@ def mako(dirname, verbose=False):
     def render():
         return template.render(title="Just a test", user="joe", list_items=[u'Number %d' % num for num in range(1,15)])
     if verbose:
-        print render()
+        print template.code + render()
     return render
     
 def cheetah(dirname, verbose=False):

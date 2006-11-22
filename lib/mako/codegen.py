@@ -26,6 +26,7 @@ class Compiler(object):
         printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         printer.writeline("_modified_time = %s" % repr(time.time()))
         printer.writeline("_template_filename=%s" % repr(self.filename))
+        printer.writeline("UNDEFINED = runtime.UNDEFINED")
         printer.write("\n\n")
 
         module_code = []
@@ -76,7 +77,7 @@ class _GenerateRenderMethod(object):
             
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
         self.identifiers = identifiers.branch(node)
-        if len(self.identifiers.locally_declared) > 0:
+        if len(self.identifiers.locally_assigned) > 0:
             printer.writeline("__locals = {}")
 
         self.write_variable_declares(self.identifiers)
@@ -124,7 +125,7 @@ class _GenerateRenderMethod(object):
                 else:
                     self.write_inline_component(comp, identifiers)
             else:
-                self.printer.writeline("%s = context.get(%s, runtime.UNDEFINED)" % (ident, repr(ident)))
+                self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
         
     def write_source_comment(self, node):
         if self.last_source_line != node.lineno:
@@ -136,7 +137,7 @@ class _GenerateRenderMethod(object):
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
-        if len(self.identifiers.locally_declared) > 0:
+        if len(self.identifiers.locally_assigned) > 0:
             nameargs.insert(0, 'context.locals_(__locals)')
         else:
             nameargs.insert(0, 'context')
@@ -268,6 +269,10 @@ class _Identifiers(object):
         # list as well if they are referenced before declared
         self.locally_declared = util.Set()
     
+        # assignments made in explicit python blocks.  these will be propigated to 
+        # the context of local component calls.
+        self.locally_assigned = util.Set()
+        
         # things that are declared in the argument signature of the component callable
         self.argument_declared = util.Set()
         
@@ -302,6 +307,7 @@ class _Identifiers(object):
     def visitCode(self, node):
         if not node.ismodule:
             self.check_declared(node)
+            self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
     def visitComponentTag(self, node):
         if node.is_root():
             self.toplevelcomponents.add(node)
