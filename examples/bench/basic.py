@@ -34,7 +34,7 @@ from StringIO import StringIO
 import sys
 import timeit
 
-__all__ = ['mako', 'cheetah', 'django', 'myghty', 'genshi', 'kid']
+__all__ = ['mako', 'mako_inheritance', 'cheetah', 'django', 'myghty', 'genshi', 'kid']
 
 def genshi(dirname, verbose=False):
     from genshi.template import TemplateLoader
@@ -70,9 +70,10 @@ def mako(dirname, verbose=False):
     def render():
         return template.render(title="Just a test", user="joe", list_items=[u'Number %d' % num for num in range(1,15)])
     if verbose:
-        print template.code + render()
+        print render()
     return render
-    
+mako_inheritance = mako
+
 def cheetah(dirname, verbose=False):
     from Cheetah.Template import Template
     filename = os.path.join(dirname, 'template.tmpl')
@@ -83,6 +84,8 @@ def cheetah(dirname, verbose=False):
         return template.respond()
 
     if verbose:
+        print dir(template)
+        print template.generatedModuleCode()
         print render()
     return render
 

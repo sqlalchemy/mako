@@ -9,9 +9,9 @@ as well as template runtime operations."""
 
 from mako.lexer import Lexer
 from mako.codegen import Compiler
-from mako.runtime import Context
+from mako import runtime
 from mako import util
-import imp, time, inspect, weakref, sys
+import imp, time, weakref
 
 _modules = weakref.WeakValueDictionary()
 _inmemory_templates = weakref.WeakValueDictionary()
@@ -67,17 +67,17 @@ class Template(object):
         a Context object is created corresponding to the given data.  Arguments that are explictly
         declared by this template's internal rendering method are also pulled from the given *args, **data 
         members."""
-        return _render(self, self.callable_, args, data)
+        return runtime._render(self, self.callable_, args, data)
     
     def render_unicode(self, *args, **data):
         """render the output of this template as a unicode object."""
-        return _render(self, self.callable_, args, data, as_unicode=True)
+        return runtime._render(self, self.callable_, args, data, as_unicode=True)
         
     def render_context(self, context, *args, **kwargs):
         """render this Template with the given context.  
         
         the data is written to the context's buffer."""
-        _render_context(self, self.callable_, context, *args, **kwargs)
+        runtime._render_context(self, self.callable_, context, *args, **kwargs)
         
     def get_component(self, name):
         """return a component of this template as an individual Template of its own."""
@@ -101,55 +101,6 @@ def _compile_text(text, identifier, filename):
     exec code in module.__dict__, module.__dict__
     return (source, module)
 
-def _render(template, callable_, args, data, as_unicode=False):
-    """given a Template and a callable_ from that template, create a Context and return the string output."""
-    if as_unicode:
-        buf = util.FastEncodingBuffer()
-    elif template.output_encoding:
-        buf = util.FastEncodingBuffer(template.output_encoding)
-    else:
-        buf = util.StringIO()
-    context = Context(template, buf, **data)
-    kwargs = {}
-    argspec = inspect.getargspec(callable_)
-    namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
-    for arg in namedargs:
-        if arg != 'context' and arg in data:
-            kwargs[arg] = data[arg]
-    _render_context(template, callable_, context, *args, **kwargs)
-    return buf.getvalue()
-
-def _render_context(template, callable_, context, *args, **kwargs):
-    _exec_template(callable_, context, args=args, kwargs=kwargs)
-
-def _exec_template(callable_, context, args=None, kwargs=None):
-    """execute a rendering callable given the callable, a Context, and optional explicit arguments
-    
-    the contextual Template will be located if it exists, and the error handling options specified
-    on that Template will be interpreted here.
-    """
-    template = context.with_template
-    if template is not None and (template.format_exceptions or template.error_handler):
-        error = None
-        try:
-            callable_(context, *args, **kwargs)
-        except Exception, e:
-            error = e
-        except:                
-            e = sys.exc_info()[0]
-            error = e
-        if error:
-            if template.error_handler:
-                result = template.error_handler(context, error)
-                if not result:
-                    raise error
-            else:
-                # TODO
-                source = _get_template_source(callable_)
-                raise error
-    else:
-        callable_(context, *args, **kwargs)
-    
 def _get_template_source(callable_):
     """return the source code for the template that produced the given rendering callable"""
     name = callable_.func_globals['__name__']

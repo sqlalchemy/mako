@@ -20,14 +20,6 @@ class Compiler(object):
     def render(self):
         buf = util.FastEncodingBuffer()
         printer = PythonPrinter(buf)
-        
-        # module-level names, python code
-        printer.writeline("from mako import runtime")
-        printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
-        printer.writeline("_modified_time = %s" % repr(time.time()))
-        printer.writeline("_template_filename=%s" % repr(self.filename))
-        printer.writeline("UNDEFINED = runtime.UNDEFINED")
-        printer.write("\n\n")
 
         module_code = []
         class FindPyDecls(object):
@@ -40,11 +32,22 @@ class Compiler(object):
         module_identifiers = _Identifiers()
         for n in module_code:
             module_identifiers = module_identifiers.branch(n)
-            printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
-            printer.write_indented_block(n.text)
 
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.toplevelcomponents = module_identifiers.toplevelcomponents.union(main_identifiers.toplevelcomponents)
+
+        # module-level names, python code
+        printer.writeline("from mako import runtime")
+        printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
+        printer.writeline("_modified_time = %s" % repr(time.time()))
+        printer.writeline("_template_filename=%s" % repr(self.filename))
+        printer.writeline("UNDEFINED = runtime.UNDEFINED")
+        printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.toplevelcomponents]))
+        printer.write("\n\n")
+
+        for n in module_code:
+            printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
+            printer.write_indented_block(n.text)
 
         # print main render() method
         _GenerateRenderMethod(printer, module_identifiers, self.node)
@@ -55,6 +58,7 @@ class Compiler(object):
             
         return buf.getvalue()
 
+        
 class _GenerateRenderMethod(object):
     def __init__(self, printer, identifiers, node):
         self.printer = printer
@@ -74,18 +78,31 @@ class _GenerateRenderMethod(object):
             args = ['context']
         else:
             args = [a for a in ['context'] + args]
+
+        if not self.in_component:
+            self._inherit()
             
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
+        
         self.identifiers = identifiers.branch(node)
         if len(self.identifiers.locally_assigned) > 0:
             printer.writeline("__locals = {}")
-
         self.write_variable_declares(self.identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
         printer.writeline("return ''")
         printer.writeline(None)
         printer.write("\n\n")
+
+    def _inherit(self):
+        class FindInherit(object):
+            def visitInheritTag(s, node):
+                self.printer.writeline("def _inherit(context):")
+                self.printer.writeline("runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
+                self.printer.writeline(None)
+        f = FindInherit()
+        for n in self.node.nodes:
+            n.accept_visitor(f)
 
     def write_variable_declares(self, identifiers):
         """write variable declarations at the top of a function.
@@ -153,25 +170,12 @@ class _GenerateRenderMethod(object):
         #print "INLINE NAME", node.name
         identifiers = identifiers.branch(node)
         
-        # if we assign to variables in this closure, then we have to nest inside
-        # of another callable so that the "context" variable is copied into the local scope
-        #make_closure = len(identifiers.locally_declared) > 0
-        
-        #if make_closure:
-        #    self.printer.writeline("try:")
-        #    self.printer.writeline("context.push()")
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
-
-        #if make_closure:
-        #    self.printer.writeline("finally:")
-        #    self.printer.writeline("context.pop()")
-        #    self.printer.writeline(None)
-        #    self.printer.writeline(None)
             
     def visitExpression(self, node):
         self.write_source_comment(node)
@@ -212,12 +216,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("class %sNamespace(runtime.Namespace):" % node.name)
-        self.printer.writeline("def __getattr__(self, key):")
-        self.printer.writeline("return self.contextual_callable(context, key)")
-        self.printer.writeline(None)
-        self.printer.writeline(None)
-        self.printer.writeline("%s = %sNamespace(%s, callables=make_namespace())" % (node.name, node.name, repr(node.name)))
+        self.printer.writeline("%s = runtime.ContextualNamespace(%s, context, callables=make_namespace())" % (node.name, repr(node.name)))
         
     def visitComponentTag(self, node):
         pass
@@ -238,16 +237,13 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
-        self.printer.writeline("context.push(**{%s})" % 
+        self.printer.writeline("context.push({%s})" % 
             (','.join(["%s:%s" % (repr(x), x) for x in export]) )
         )
         self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
         self.printer.writeline("context.pop()")
         self.printer.writeline(None)
         self.printer.writeline("ccall()")
-
-    def visitInheritTag(self, node):
-        pass
 
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
