@@ -102,9 +102,7 @@ def _lookup_template(context, uri):
     return lookup.get_template(uri)
 
 def include_file(context, uri, import_symbols):
-    lookup = context.with_template.lookup
-    template = lookup.get_template(uri)
-    template.callable_(context)
+    _lookup_template(context, uri).callable_(context)
         
 def inherit_from(context, uri):
     template = _lookup_template(context, uri)

@@ -107,13 +107,15 @@ class _GenerateRenderMethod(object):
     def write_variable_declares(self, identifiers, first=None):
         """write variable declarations at the top of a function.
         
-        the variable declarations are generated based on the names that are referenced
-        in the function body before they are assigned.  names that are re-assigned 
-        from an enclosing scope are also declared as local variables so that the assignment 
-        can proceed.
+        the variable declarations are in the form of callable definitions for components and/or
+        name lookup within the function's context argument.  the names declared are based on the
+        names that are referenced in the function body, which don't otherwise have any explicit
+        assignment operation.  names that are assigned within the body are assumed to be 
+        locally-scoped variables and are not separately declared.
         
-        locally defined components (i.e. closures) are also generated, as well as 'stub' callables 
-        referencing top-level components which are referenced in the function body."""
+        for component callable definitions, if the component is a top-level callable then a 
+        'stub' callable is generated which wraps the current Context into a closure.  if the component
+        is not top-level, it is fully rendered as a local closure."""
         
         # collection of all components available to us in this scope
         comp_idents = dict([(c.name, c) for c in identifiers.components])
@@ -169,10 +171,8 @@ class _GenerateRenderMethod(object):
         """write a locally-available component callable inside an enclosing component."""
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
-        
-        #print "INLINE NAME", node.name
+
         identifiers = identifiers.branch(node)
-        
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
@@ -205,6 +205,7 @@ class _GenerateRenderMethod(object):
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (repr(node.attributes['file']), repr(node.attributes.get('import', False))))
+
     def visitNamespaceTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("def make_namespace():")
@@ -223,6 +224,7 @@ class _GenerateRenderMethod(object):
         
     def visitComponentTag(self, node):
         pass
+
     def visitCallTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("def ccall(context):")
