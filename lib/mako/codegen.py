@@ -206,7 +206,7 @@ class _GenerateRenderMethod(object):
 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (repr(node.attributes['file']), repr(node.attributes.get('import', False))))
+        self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (node.parsed_attributes['file'], repr(node.attributes.get('import', False))))
 
     def visitNamespaceTag(self, node):
         self.write_source_comment(node)
@@ -222,7 +222,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), repr(node.attributes['file'])))
+        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), node.parsed_attributes['file']))
         
     def visitComponentTag(self, node):
         pass
@@ -334,8 +334,7 @@ class _Identifiers(object):
             for n in node.nodes:
                 n.accept_visitor(self)
     def visitIncludeTag(self, node):
-        # TODO: expressions for attributes
-        pass        
+        self.check_declared(node)
     def visitNamespaceTag(self, node):
         self.check_declared(node)
         if node is self.node:

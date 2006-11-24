@@ -192,8 +192,8 @@ class Tag(Node):
                 for x in re.split(r'(\${.+?})', self.attributes[key]):
                     m = re.match(r'^\${(.+?)}$', x)
                     if m:
-                        #code = ast.PythonCode(m.group(1), self.lineno, self.pos)
-                        #undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
+                        code = ast.PythonCode(m.group(1), self.lineno, self.pos)
+                        undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
                         expr.append(m.group(1))
                     else:
                         expr.append(repr(x))
@@ -203,7 +203,12 @@ class Tag(Node):
                     raise exceptions.CompileException("Attibute '%s' in tag '%s' does not allow embedded expressions"  %(key, self.keyword), self.lineno, self.pos)
                 self.parsed_attributes[key] = repr(self.attributes[key])
             else:
-                raise exceptions.CompileException("Invalid attribute for tag '%s': '%s'" %(self.keyword, key), self.lineno, self.pos)        
+                raise exceptions.CompileException("Invalid attribute for tag '%s': '%s'" %(self.keyword, key), self.lineno, self.pos)
+        self.expression_undeclared_identifiers = undeclared_identifiers
+    def declared_identifiers(self):
+        return []
+    def undeclared_identifiers(self):
+        return self.expression_undeclared_identifiers
     def __repr__(self):
         return "%s(%s, %s, %s, %s)" % (self.__class__.__name__, repr(self.keyword), repr(self.attributes), repr((self.lineno, self.pos)), repr([repr(x) for x in self.nodes]))
         
@@ -219,8 +224,6 @@ class NamespaceTag(Tag):
         self.name = attributes['name']
     def declared_identifiers(self):
         return [self.name]
-    def undeclared_identifiers(self):
-        return []
         
 class ComponentTag(Tag):
     __keyword__ = 'component'

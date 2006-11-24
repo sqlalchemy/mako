@@ -95,7 +95,6 @@ ${next.body()}
         <%inherit file="base"/>
         this is index.
         a is: ${self.a()}
-        
         <%include file="secondary"/>
 """)
 
@@ -105,6 +104,7 @@ ${next.body()}
         a is: ${self.a()}
 """)
 
+        print collection.get_template("index").code
         print collection.get_template("index").render()
 
     def test_namespaces(self):
@@ -124,7 +124,7 @@ ${next.body()}
         collection.put_string("layout", """
         <html>
             <%inherit file="base"/>
-            <%component name="a">layout_a</%component>
+            <%component name="a()">layout_a</%component>
             This is the layout..
             ${next.body()}
         </html>
@@ -137,13 +137,17 @@ ${next.body()}
         a is: ${self.a()}
         sc.a is: ${sc.a()}
         sc.b is: ${sc.b()}
+        sc.c is: ${sc.c()}
+        sc.body is: ${sc.body()}
 """)
 
         collection.put_string("secondary","""
         <%inherit file="layout"/>
-        <%component name="c">secondary_c.  a is ${self.a()} b is ${self.b()}</%component>
+        <%component name="c">secondary_c.  a is ${self.a()} b is ${self.b()} d is ${self.d()}</%component>
+        <%component name="d">secondary_d.</%component>
         this is secondary.
         a is: ${self.a()}
+        c is: ${self.c()}
 """)
         print collection.get_template('index').render()
         
