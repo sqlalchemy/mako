@@ -222,7 +222,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), node.parsed_attributes['file']))
+        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), node.parsed_attributes.get('file', 'None')))
         
     def visitComponentTag(self, node):
         pass
