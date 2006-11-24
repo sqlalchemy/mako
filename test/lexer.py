@@ -28,6 +28,39 @@ class LexerTest(unittest.TestCase):
         except exceptions.SyntaxException, e:
             assert str(e) == "Unclosed tag: <%component> at line: 5 char: 9"
 
+    def test_onlyclosed_tag(self):
+        template = """
+            <%component name="foo">
+                foo
+            </%component>
+            
+            </%namespace>
+            
+            hi.
+        """
+        try:
+            nodes = Lexer(template).parse()
+            assert False
+        except exceptions.SyntaxException, e:
+            assert str(e) == "Closing tag without opening tag: </%namespace> at line: 6 char: 13"
+
+    def test_unmatched_tag(self):
+        template = """
+        <%namespace name="bar">
+        <%component name="foo">
+            foo
+            </%namespace>
+        </%component>
+        
+        
+        hi.
+"""
+        try:
+            nodes = Lexer(template).parse()
+            assert False
+        except exceptions.SyntaxException, e:
+            assert str(e) == "Closing tag </%namespace> does not match tag: <%component> at line: 5 char: 13"
+
     def test_nonexistent_tag(self):
         template = """
             <%lala x="5"/>

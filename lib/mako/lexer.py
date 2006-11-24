@@ -131,10 +131,15 @@ class Lexer(object):
             return False
         
     def match_tag_end(self):
-        if not len(self.tag):
-            return False
-        match = self.match(r'\</%\s*' + self.tag[-1].keyword + '\s*>')
+#        if not len(self.tag):
+#            return False
+#        match = self.match(r'\</%\s*(.+?)' + self.tag[-1].keyword + '\s*>')
+        match = self.match(r'\</%\s*(.+?)\s*>')
         if match:
+            if not len(self.tag):
+                raise exceptions.SyntaxException("Closing tag without opening tag: </%%%s>" % match.group(1), self.matched_lineno, self.matched_charpos)
+            elif self.tag[-1].keyword != match.group(1):
+                raise exceptions.SyntaxException("Closing tag </%%%s> does not match tag: <%%%s>" % (match.group(1), self.tag[-1].keyword), self.matched_lineno, self.matched_charpos)
             self.tag.pop()
             return True
         else:
