@@ -184,7 +184,14 @@ class _GenerateRenderMethod(object):
             
     def visitExpression(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("context.write(unicode(%s))" % node.text)
+        if len(node.escapes):
+            s = node.text
+            for e in node.escapes:
+                s = "%s(%s)" % (e, s)
+            self.printer.writeline("context.write(unicode(%s))" % s)
+        else:
+            self.printer.writeline("context.write(unicode(%s))" % node.text)
+            
     def visitControlLine(self, node):
         if node.isend:
             self.printer.writeline(None)

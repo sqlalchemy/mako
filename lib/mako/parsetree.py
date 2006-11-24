@@ -123,11 +123,15 @@ class Expression(Node):
         super(Expression, self).__init__(**kwargs)
         self.text = text
         self.escapes = escapes
+        self.escapes_code = [ast.PythonCode(x, self.lineno, self.pos) for x in self.escapes]
         self.code = ast.PythonCode(text, self.lineno, self.pos)
     def declared_identifiers(self):
         return []
     def undeclared_identifiers(self):
-        return list(self.code.undeclared_identifiers) + [n for n in self.escapes]    
+        l = []
+        for n in self.escapes_code:
+            l = l + list(n.undeclared_identifiers)
+        return list(self.code.undeclared_identifiers) + l
     def __repr__(self):
         return "Expression(%s, %s, %s)" % (repr(self.text), repr(self.escapes), repr((self.lineno, self.pos)))
         
@@ -228,12 +232,13 @@ class NamespaceTag(Tag):
 class ComponentTag(Tag):
     __keyword__ = 'component'
     def __init__(self, keyword, attributes, **kwargs):
-        super(ComponentTag, self).__init__(keyword, attributes, (), ('name',), ('name',), **kwargs)
+        super(ComponentTag, self).__init__(keyword, attributes, ('buffered'), ('name','filter'), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"
         self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos)
         self.name = self.function_decl.funcname
+        #self.filters = attributes['filter'].split(',')
     def declared_identifiers(self):
         return self.function_decl.argnames
     def undeclared_identifiers(self):

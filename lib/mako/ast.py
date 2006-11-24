@@ -73,6 +73,13 @@ class PythonCode(object):
         f = FindIdentifiers()
         visitor.walk(expr, f) #, walker=walker())
 
+class ArgumentList(object):
+    """parses a fragment of code as a comma-separated list of expressions"""
+    def __init__(self, code, lineno, pos):
+        class FindTuple(object):
+            def visitTuple(s, node, *args):
+                pass
+        
 class PythonFragment(PythonCode):
     """extends PythonCode to provide identifier lookups in partial control statements
     
