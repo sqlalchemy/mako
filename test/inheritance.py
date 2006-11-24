@@ -76,6 +76,32 @@ ${next.body()}
 
         print collection.get_template('main').render()
 
+    def test_includes(self):
+        collection = lookup.TemplateLookup()
+        
+        collection.put_string("base", """
+        <html>
+            <%component name="a">base_a</%component>
+            This is the base.
+            ${next.body()}
+        </html>
+""")
 
+        collection.put_string("index","""
+        <%inherit file="base"/>
+        this is index.
+        a is: ${self.a()}
+        
+        <%include file="secondary"/>
+""")
+
+        collection.put_string("secondary","""
+        <%inherit file="base"/>
+        this is secondary.
+        a is: ${self.a()}
+""")
+
+        print collection.get_template("index").render()
+        
 if __name__ == '__main__':
     unittest.main()

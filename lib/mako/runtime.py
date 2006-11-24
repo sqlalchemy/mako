@@ -13,7 +13,7 @@ class Context(object):
     def __init__(self, buffer, **data):
         self.buffer = buffer
         self._argstack = [data]
-        self.with_template = None
+        self._template_stack = []
         data['args'] = _AttrFacade(self)
     def keys(self):
         return self._argstack[-1].keys()
@@ -34,17 +34,26 @@ class Context(object):
     def pop(self):
         """pop a dictionary off this Context's stack of data."""
         self._argstack.pop()
-    def locals_(self, d):
-        """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
+    def _copy(self):
         c = Context.__new__(Context)
         c.buffer = self.buffer
         x = self._argstack[-1].copy()
-        x.update(d)
         c._argstack = [x]
-        c.with_template = self.with_template
+        c._template_stack = self._template_stack
         x['args'] = _AttrFacade(c)
         return c
-
+    def locals_(self, d):
+        """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
+        c = self._copy()
+        c._argstack[-1].update(d)
+        return c
+    def clean_inheritance_tokens(self):
+        c = self._copy()
+        c._argstack[-1].pop('self', None)
+        c._argstack[-1].pop('parent', None)
+        c._argstack[-1].pop('next', None)
+        return c
+        
 class _AttrFacade(object):
     def __init__(self, ctx):
         self.ctx = ctx
@@ -98,17 +107,23 @@ class Namespace(object):
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
 
 def _lookup_template(context, uri):
-    lookup = context.with_template.lookup
+    lookup = context._template_stack[0].lookup
     return lookup.get_template(uri)
 
 def include_file(context, uri, import_symbols):
-    _lookup_template(context, uri).callable_(context)
+    template = _lookup_template(context, uri)
+    callable_ = getattr(template.module, '_inherit', getattr(template.module, 'render'))
+    context._template_stack.append(template)
+    try:
+        callable_(context.clean_inheritance_tokens())
+    finally:
+        context._template_stack.pop()
         
 def inherit_from(context, uri):
     template = _lookup_template(context, uri)
     self_ns = context.get('self', None)
     if self_ns is None:
-        fromtempl = context.with_template
+        fromtempl = context._template_stack[-1]
         self_ns = Namespace('self:%s' % fromtempl.description, context, template=fromtempl)
         context._argstack[-1]['self'] = self_ns
     ih = self_ns
@@ -119,7 +134,15 @@ def inherit_from(context, uri):
     context._argstack[-1]['parent'] = ih.inherits
     callable_ = getattr(template.module, '_inherit', getattr(template.module, 'render'))
     callable_(lclcontext)
-    
+
+def populate_inheritance_namespace(context, template):
+    context._dont_exec = True
+    self_ns = Namespace('self:%s' % template.description, context, template=template)
+    context._argstack[-1]['self'] = self_ns
+    callable_ = getattr(template.module, '_inherit', None)
+    if callable_ is not None:
+        callable_(context)
+
 def _render(template, callable_, args, data, as_unicode=False):
     """given a Template and a callable_ from that template, create a Context and return the string output."""
     if as_unicode:
@@ -141,16 +164,18 @@ def _render(template, callable_, args, data, as_unicode=False):
     return buf.getvalue()
 
 def _render_context(template, callable_, context, *args, **kwargs):
-    context.with_template = template
-    _exec_template(callable_, context, args=args, kwargs=kwargs)
-
+    context._template_stack.append(template)
+    try:
+        _exec_template(callable_, context, args=args, kwargs=kwargs)
+    finally:
+        context._template_stack.pop()
 def _exec_template(callable_, context, args=None, kwargs=None):
     """execute a rendering callable given the callable, a Context, and optional explicit arguments
 
     the contextual Template will be located if it exists, and the error handling options specified
     on that Template will be interpreted here.
     """
-    template = context.with_template
+    template = context._template_stack[0]
     if template is not None and (template.format_exceptions or template.error_handler):
         error = None
         try:

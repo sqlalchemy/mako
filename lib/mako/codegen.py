@@ -220,7 +220,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.Namespace(%s, context, callables=make_namespace())" % (node.name, repr(node.name)))
+        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), callables=make_namespace())" % (node.name, repr(node.name)))
         
     def visitComponentTag(self, node):
         pass
