@@ -23,7 +23,7 @@ class _ModuleMarker(object):
 
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, module=None, identifier=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None):
+    def __init__(self, text=None, module=None, identifier=None, description=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -49,6 +49,7 @@ class Template(object):
             self._source = None
             self._code = None
         self.module = module
+        self.description = description
         self.callable_ = self.module.render
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler

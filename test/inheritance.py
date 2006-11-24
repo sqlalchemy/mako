@@ -31,44 +31,50 @@ body: ${self.body()}
 footer: ${self.footer()}
 
 <%component name="footer">
-    this is the footer
+    this is the footer. header again ${next.header()}
 </%component>
 """, lookup=collection)
 
         print tmpl['main'].render()
 
     def test_multilevel_nesting(self):
-        tmpl = {}
-        class LocalTmplCollection(lookup.TemplateCollection):
-            def get_template(self, uri):
-                return tmpl[uri]
-        collection = LocalTmplCollection()
+        collection = lookup.TemplateLookup()
 
-        tmpl['main'] = Template("""
+        collection.put_string('main', """
 <%inherit file="layout"/>
-main_body ${parent.footer()}
-""", lookup=collection)
+<%component name="d">main_d</%component>
+main_body ${parent.d()}
+full stack from the top:
+    ${self.name} ${parent.name} ${parent.context['parent'].name} ${parent.context['parent'].context['parent'].name}
+""")
         
-        tmpl['layout'] = Template("""
+        collection.put_string('layout', """
 <%inherit file="general"/>
+<%component name="d">layout_d</%component>
 layout_body
+parent name: ${parent.name}
+${parent.d()}
+${parent.context['parent'].d()}
 ${next.body()}
 """)
 
-        tmpl['general'] = Template("""
+        collection.put_string('general', """
 <%inherit file="base"/>
+<%component name="d">general_d</%component>
 general_body
+${next.d()}
+${next.context['next'].d()}
 ${next.body()}
 """)
-        tmpl['base'] = Template("""
+        collection.put_string('base', """
 base_body
+full stack from the base:
+    ${self.name} ${self.context['parent'].name} ${self.context['parent'].context['parent'].name} ${self.context['parent'].context['parent'].context['parent'].name}
 ${next.body()}
-<%component name="footer">
-    base footer
-</%component>
-""", lookup=collection)
+<%component name="d">base_d</%component>
+""")
 
-        print tmpl['main'].render()
+        print collection.get_template('main').render()
 
 
 if __name__ == '__main__':

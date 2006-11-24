@@ -104,7 +104,7 @@ class _GenerateRenderMethod(object):
         for n in self.node.nodes:
             n.accept_visitor(f)
 
-    def write_variable_declares(self, identifiers):
+    def write_variable_declares(self, identifiers, first=None):
         """write variable declarations at the top of a function.
         
         the variable declarations are generated based on the names that are referenced
@@ -142,7 +142,10 @@ class _GenerateRenderMethod(object):
                 else:
                     self.write_inline_component(comp, identifiers)
             else:
-                self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
+                if first is not None:
+                    self.printer.writeline("%s = %s.get(%s, context.get(%s, UNDEFINED))" % (ident, first, repr(ident), repr(ident)))
+                else:
+                    self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
         
     def write_source_comment(self, node):
         if self.last_source_line != node.lineno:
@@ -216,38 +219,42 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.ContextualNamespace(%s, context, callables=make_namespace())" % (node.name, repr(node.name)))
+        self.printer.writeline("%s = runtime.Namespace(%s, context, callables=make_namespace())" % (node.name, repr(node.name)))
         
     def visitComponentTag(self, node):
         pass
     def visitCallTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("def ccall():")
+        self.printer.writeline("def ccall(context):")
         export = ['body']
         identifiers = self.identifiers.branch(node)
-        self.write_variable_declares(identifiers)
         class ComponentVisitor(object):
             def visitComponentTag(s, node):
+                self.write_inline_component(node, identifiers)
                 export.append(node.name)
         vis = ComponentVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
-        self.printer.writeline("def body():")
+        self.printer.writeline("def body(**kwargs):")
+        body_identifiers = identifiers.branch(node, includecomponents=False, includenode=False)
+        self.write_variable_declares(body_identifiers, first="kwargs")
         for n in node.nodes:
             n.accept_visitor(self)
         self.printer.writeline("return ''")
         self.printer.writeline(None)
-        self.printer.writeline("context.push({%s})" % 
-            (','.join(["%s:%s" % (repr(x), x) for x in export]) )
-        )
+        self.printer.writeline("return [%s]" % (','.join(export)))
+        self.printer.writeline(None)
+        self.printer.writeline("__cl = context.locals_({})")
+        self.printer.writeline("context.push({'caller':runtime.Namespace('caller', __cl, callables=ccall(__cl))})")
+        self.printer.writeline("try:")
         self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
+        self.printer.writeline("finally:")
         self.printer.writeline("context.pop()")
         self.printer.writeline(None)
-        self.printer.writeline("ccall()")
 
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
-    def __init__(self, node=None, parent=None):
+    def __init__(self, node=None, parent=None, includecomponents=True, includenode=True):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
             self.declared = util.Set(parent.declared).union([c.name for c in parent.closurecomponents]).union(parent.locally_declared)
@@ -276,12 +283,17 @@ class _Identifiers(object):
         self.closurecomponents = util.Set()
         
         self.node = node
+        self.includecomponents = includecomponents
         if node is not None:
-            node.accept_visitor(self)
+            if includenode:
+                node.accept_visitor(self)
+            else:
+                for n in node.nodes:
+                    n.accept_visitor(self)
         
-    def branch(self, node):
+    def branch(self, node, **kwargs):
         """create a new Identifiers for a new Node, with this Identifiers as the parent."""
-        return _Identifiers(node, self)
+        return _Identifiers(node, self, **kwargs)
         
     components = property(lambda s:s.toplevelcomponents.union(s.closurecomponents))
     
@@ -305,6 +317,8 @@ class _Identifiers(object):
             self.check_declared(node)
             self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
     def visitComponentTag(self, node):
+        if not self.includecomponents:
+            return
         if node.is_root():
             self.toplevelcomponents.add(node)
         elif node is not self.node:

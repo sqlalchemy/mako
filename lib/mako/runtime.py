@@ -15,26 +15,34 @@ class Context(object):
         self._argstack = [data]
         self.with_template = None
         data['args'] = _AttrFacade(self)
+    def keys(self):
+        return self._argstack[-1].keys()
     def __getitem__(self, key):
         return self._argstack[-1][key]
+    def _put(self, key, value):
+        self._argstack[-1][key] = value
     def get(self, key, default=None):
         return self._argstack[-1].get(key, default)
     def write(self, string):
+        """write a string to this Context's underlying output buffer."""
         self.buffer.write(string)
     def push(self, args):
+        """push a dictionary of values onto this Context's stack of data."""
         x = self._argstack[-1].copy()
         x.update(args)
         self._argstack.append(x)
     def pop(self):
+        """pop a dictionary off this Context's stack of data."""
         self._argstack.pop()
     def locals_(self, d):
+        """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
         c = Context.__new__(Context)
         c.buffer = self.buffer
-        c._argstack = [x for x in self._argstack]
+        x = self._argstack[-1].copy()
+        x.update(d)
+        c._argstack = [x]
         c.with_template = self.with_template
-        if c.with_template is None:
-            raise "hi"
-        c.push(d)
+        x['args'] = _AttrFacade(c)
         return c
 
 class _AttrFacade(object):
@@ -52,8 +60,9 @@ UNDEFINED = Undefined()
         
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
-    def __init__(self, name, module=None, template=None, callables=None, inherits=None):
+    def __init__(self, name, context, module=None, template=None, callables=None, inherits=None):
         self.name = name
+        self.context = context
         self.module = module
         self.template = template
         self.inherits = inherits
@@ -62,7 +71,7 @@ class Namespace(object):
         else:
             self.callables = {}
         
-    def contextual_callable(self, context, key):
+    def __getattr__(self, key):
         if self.callables is not None:
             try:
                 return self.callables[key]
@@ -77,23 +86,16 @@ class Namespace(object):
                 except AttributeError:
                     callable_ = None
             if callable_ is not None:
-                return lambda *args, **kwargs:callable_(context, *args, **kwargs)
+                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
         if self.module is not None:
             try:
                 callable_ = getattr(self.module, key)
-                return lambda *args, **kwargs:callable_(context, *args, **kwargs)
+                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
             except AttributeError:
                 pass
         if self.inherits is not None:
-            return self.inherits.contextual_callable(context, key)
+            return getattr(self.inherits, key)
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
-
-class ContextualNamespace(Namespace):
-    def __init__(self, name, context, **kwargs):
-        super(ContextualNamespace, self).__init__(name, **kwargs)
-        self.context = context
-    def __getattr__(self, key):
-        return self.contextual_callable(self.context, key)
 
 def _lookup_template(context, uri):
     lookup = context.with_template.lookup
@@ -109,13 +111,13 @@ def inherit_from(context, uri):
     self_ns = context.get('self', None)
     if self_ns is None:
         fromtempl = context.with_template
-        self_ns = ContextualNamespace('self', context, template=fromtempl)
+        self_ns = Namespace('self:%s' % fromtempl.description, context, template=fromtempl)
         context._argstack[-1]['self'] = self_ns
     ih = self_ns
     while ih.inherits is not None:
         ih = ih.inherits
     lclcontext = context.locals_({'next':ih})
-    ih.inherits = ContextualNamespace('self', lclcontext, template = template)
+    ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template)
     context._argstack[-1]['parent'] = ih.inherits
     callable_ = getattr(template.module, '_inherit', getattr(template.module, 'render'))
     callable_(lclcontext)

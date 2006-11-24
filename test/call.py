@@ -7,16 +7,16 @@ class CallTest(unittest.TestCase):
         
         
         <%component name="foo">
-            hi im foo ${body()}
+            hi im foo ${caller.body(y=5)}
         </%component>
         
         <%call expr="foo()">
-            this is the body
+            this is the body, y is ${y}
         </%call>
         
 """)
         print t.code
-#        print t.render()
+        print t.render()
 
 
     def test_compound_call(self):
@@ -31,15 +31,15 @@ class CallTest(unittest.TestCase):
         </%component>
         
         <%component name="foo">
-            foo calling comp1: ${args.comp1()}
-            foo calling body: ${body()}
+            foo calling comp1: ${caller.comp1(x=5)}
+            foo calling body: ${caller.body()}
         </%component>
         
         <%call expr="foo()">
-            <%component name="comp1">
-                this is comp1
+            <%component name="comp1(x)">
+                this is comp1, ${x}
             </%component>
-            this is the body, ${comp1()}
+            this is the body, ${comp1(6)}
         </%call>
         ${bar()}
 
@@ -47,6 +47,49 @@ class CallTest(unittest.TestCase):
         print t.code
         print t.render()
 
+    def test_multi_call(self):
+        t = Template("""
+            <%component name="a">
+                this is a. 
+                <%call expr="b()">
+                    this is a's ccall.  heres my body: ${caller.body()}
+                </%call>
+            </%component>
+            <%component name="b">
+                this is b.  heres  my body: ${caller.body()}
+                whats in the body's caller's body ? ${caller.context['caller'].body()}
+            </%component>
+            
+            <%call expr="a()">
+                heres the main templ call
+            </%call>
+            
+""")
+        print t.code
+        print t.render()
+
+    def test_multi_call_in_nested(self):
+        t = Template("""
+            <%component name="embedded">
+            <%component name="a">
+                this is a. 
+                <%call expr="b()">
+                    this is a's ccall.  heres my body: ${caller.body()}
+                </%call>
+            </%component>
+            <%component name="b">
+                this is b.  heres  my body: ${caller.body()}
+            </%component>
+
+            <%call expr="a()">
+                heres the main templ call
+            </%call>
+            </%component>
+            ${embedded()}
+""")
+        print t.code
+        print t.render()
+        
     def test_call_in_nested(self):
         t = Template("""
             <%component name="a">
@@ -58,7 +101,7 @@ class CallTest(unittest.TestCase):
                     </%call>
                 </%component>
                 <%component name="c">
-                    this is c: ${body()}
+                    this is c: ${caller.body()}
                 </%component>
             </%component>
         ${a()}
@@ -86,8 +129,8 @@ class CallTest(unittest.TestCase):
                     </%call>
                 </%component>
                 <%component name="c">
-                    this is c: ${body()}
-                    the embedded "d" is: ${d()}
+                    this is c: ${caller.body()}
+                    the embedded "d" is: ${caller.d()}
                 </%component>
             </%component>
         ${a()}

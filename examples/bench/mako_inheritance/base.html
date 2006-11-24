@@ -11,10 +11,14 @@
       <p>hello ${name}!</p>
 </%component>
       
- <%include file="header.html"/>
+<div id="header">
+  <h1>${title}</h1>
+</div>
 
  ${self.body()}
 
-    <%include file="footer.html"/>
+ <div id="footer">
+ </div>
+
   </body>
 </html>
