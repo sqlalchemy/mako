@@ -21,8 +21,8 @@ Hyperfast and Lightweight Templating for the Python Platform
 - Python Server Pages.  Templates compile into Python modules for maximum performance.
 <li> <p>Insanely Fast.  An included bench suite, adapted from a suite included with Genshi, has these results for a simple three-sectioned layout:</p>
 <table>
-<tr><td>Mako:</td><td>0.51 ms</td></tr>
-<tr><td>Cheetah:</td><td>0.80 ms</td></tr>
+<tr><td>Mako:</td><td>0.66 ms</td></tr>
+<tr><td>Cheetah:</td><td>0.74 ms</td></tr>
 <tr><td>Django:</td><td>5.43 ms</td></tr>
 <tr><td>Myghty:</td><td>5.25 ms</td></tr>
 <tr><td>Genshi:</td><td>12.53 ms</td></tr>

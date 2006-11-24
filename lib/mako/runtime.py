@@ -13,7 +13,7 @@ class Context(object):
     def __init__(self, buffer, **data):
         self.buffer = buffer
         self._argstack = [data]
-        self._template_stack = []
+        self._with_template = None
         data['args'] = _AttrFacade(self)
     def keys(self):
         return self._argstack[-1].keys()
@@ -39,7 +39,7 @@ class Context(object):
         c.buffer = self.buffer
         x = self._argstack[-1].copy()
         c._argstack = [x]
-        c._template_stack = self._template_stack
+        c._with_template = self._with_template
         x['args'] = _AttrFacade(c)
         return c
     def locals_(self, d):
@@ -49,9 +49,10 @@ class Context(object):
         return c
     def clean_inheritance_tokens(self):
         c = self._copy()
-        c._argstack[-1].pop('self', None)
-        c._argstack[-1].pop('parent', None)
-        c._argstack[-1].pop('next', None)
+        x = c._argstack[-1]
+        x.pop('self', None)
+        x.pop('parent', None)
+        x.pop('next', None)
         return c
         
 class _AttrFacade(object):
@@ -69,16 +70,21 @@ UNDEFINED = Undefined()
         
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
-    def __init__(self, name, context, module=None, template=None, callables=None, inherits=None):
+    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True):
         self.name = name
-        self.context = context
         self.module = module
-        self.template = template
+        if templateuri is not None:
+            self.template = _lookup_template(context, templateuri)
+        else:
+            self.template = template
+        self.context = context
         self.inherits = inherits
         if callables is not None:
             self.callables = dict([(c.func_name, c) for c in callables])
         else:
             self.callables = {}
+        if populate_self and self.template is not None:
+            (lclcallable, self.context) = _populate_self_namespace(context, self.template, self_ns=self)
         
     def __getattr__(self, key):
         if self.callables is not None:
@@ -106,42 +112,39 @@ class Namespace(object):
             return getattr(self.inherits, key)
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
 
-def _lookup_template(context, uri):
-    lookup = context._template_stack[0].lookup
-    return lookup.get_template(uri)
 
 def include_file(context, uri, import_symbols):
     template = _lookup_template(context, uri)
-    callable_ = getattr(template.module, '_inherit', getattr(template.module, 'render'))
-    context._template_stack.append(template)
-    try:
-        callable_(context.clean_inheritance_tokens())
-    finally:
-        context._template_stack.pop()
+    (callable_, ctx) = _populate_self_namespace(context.clean_inheritance_tokens(), template)
+    callable_(ctx)
         
 def inherit_from(context, uri):
     template = _lookup_template(context, uri)
-    self_ns = context.get('self', None)
-    if self_ns is None:
-        fromtempl = context._template_stack[-1]
-        self_ns = Namespace('self:%s' % fromtempl.description, context, template=fromtempl)
-        context._argstack[-1]['self'] = self_ns
+    self_ns = context['self']
     ih = self_ns
     while ih.inherits is not None:
         ih = ih.inherits
     lclcontext = context.locals_({'next':ih})
-    ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template)
+    ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template, populate_self=False)
     context._argstack[-1]['parent'] = ih.inherits
-    callable_ = getattr(template.module, '_inherit', getattr(template.module, 'render'))
-    callable_(lclcontext)
-
-def populate_inheritance_namespace(context, template):
-    context._dont_exec = True
-    self_ns = Namespace('self:%s' % template.description, context, template=template)
-    context._argstack[-1]['self'] = self_ns
     callable_ = getattr(template.module, '_inherit', None)
-    if callable_ is not None:
-        callable_(context)
+    if callable_  is not None:
+        return callable_(lclcontext)
+    else:
+        return (template.callable_, lclcontext)
+
+def _lookup_template(context, uri):
+    lookup = context._with_template.lookup
+    return lookup.get_template(uri)
+
+def _populate_self_namespace(context, template, self_ns=None):
+    if self_ns is None:
+        self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
+    context._argstack[-1]['self'] = self_ns
+    if hasattr(template.module, '_inherit'):
+        return template.module._inherit(context)
+    else:
+        return (template.callable_, context)
 
 def _render(template, callable_, args, data, as_unicode=False):
     """given a Template and a callable_ from that template, create a Context and return the string output."""
@@ -153,8 +156,6 @@ def _render(template, callable_, args, data, as_unicode=False):
         buf = util.StringIO()
     context = Context(buf, **data)
     kwargs = {}
-    if callable_.__name__ == 'render':
-        callable_ = getattr(template.module, '_inherit', callable_)
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
@@ -164,18 +165,23 @@ def _render(template, callable_, args, data, as_unicode=False):
     return buf.getvalue()
 
 def _render_context(template, callable_, context, *args, **kwargs):
-    context._template_stack.append(template)
-    try:
+    context._with_template = template
+    # create polymorphic 'self' namespace for this template with possibly updated context
+    (inherit, lclcontext) = _populate_self_namespace(context, template)
+    if callable_.__name__ == 'render':
+        # if main render method, call from the base of the inheritance stack
+        _exec_template(inherit, lclcontext, args=args, kwargs=kwargs)
+    else:
+        # otherwise, call the actual rendering method specified
         _exec_template(callable_, context, args=args, kwargs=kwargs)
-    finally:
-        context._template_stack.pop()
+        
 def _exec_template(callable_, context, args=None, kwargs=None):
     """execute a rendering callable given the callable, a Context, and optional explicit arguments
 
     the contextual Template will be located if it exists, and the error handling options specified
     on that Template will be interpreted here.
     """
-    template = context._template_stack[0]
+    template = context._with_template
     if template is not None and (template.format_exceptions or template.error_handler):
         error = None
         try:

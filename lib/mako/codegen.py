@@ -42,9 +42,11 @@ class Compiler(object):
         printer.writeline("_modified_time = %s" % repr(time.time()))
         printer.writeline("_template_filename=%s" % repr(self.filename))
         printer.writeline("UNDEFINED = runtime.UNDEFINED")
+        module_identifiers.declared.add("UNDEFINED")
         printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.toplevelcomponents]))
         printer.write("\n\n")
 
+        
         for n in module_code:
             printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
             printer.write_indented_block(n.text)
@@ -98,7 +100,7 @@ class _GenerateRenderMethod(object):
         class FindInherit(object):
             def visitInheritTag(s, node):
                 self.printer.writeline("def _inherit(context):")
-                self.printer.writeline("runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
+                self.printer.writeline("return runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
                 self.printer.writeline(None)
         f = FindInherit()
         for n in self.node.nodes:
@@ -220,7 +222,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), callables=make_namespace())" % (node.name, repr(node.name)))
+        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), repr(node.attributes['file'])))
         
     def visitComponentTag(self, node):
         pass
