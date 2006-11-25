@@ -43,6 +43,10 @@ class PythonCode(object):
                 s.visit(node.expr, *args)
                 for n in node.nodes:
                     s.visit(n, *args)
+            def visitFunction(s,node, *args):
+                # just need the function name.  the contents of it are local to the function, dont parse those.
+                # TODO: parse the default values in the functions keyword arguments.
+                self.declared_identifiers.add(node.name)
             def visitFor(s, node, *args):
                 # flip around visit
                 s.visit(node.list, *args)
@@ -76,9 +80,29 @@ class PythonCode(object):
 class ArgumentList(object):
     """parses a fragment of code as a comma-separated list of expressions"""
     def __init__(self, code, lineno, pos):
+        self.codeargs = []
+        self.args = []
+        self.declared_identifiers = util.Set()
+        self.undeclared_identifiers = util.Set()
         class FindTuple(object):
             def visitTuple(s, node, *args):
-                pass
+                for n in node.nodes:
+                    p = PythonCode(n, lineno, pos)
+                    self.codeargs.append(p)
+                    self.args.append(ExpressionGenerator(n).value())
+                    self.declared_identifiers = self.declared_identifiers.union(p.declared_identifiers)
+                    self.undeclared_identifiers = self.undeclared_identifiers.union(p.undeclared_identifiers)
+        if isinstance(code, basestring):
+            if re.match(r"\S", code) and not re.match(r",\s*$", code):
+                # if theres text and no trailing comma, insure its parsed
+                # as a tuple by adding a trailing comma
+                code  += ","
+            expr = parse(code, "exec")
+        else:
+            expr = code
+
+        f = FindTuple()
+        visitor.walk(expr, f)
         
 class PythonFragment(PythonCode):
     """extends PythonCode to provide identifier lookups in partial control statements

@@ -11,7 +11,7 @@ import inspect
 class Context(object):
     """provides runtime namespace and output buffer for templates."""
     def __init__(self, buffer, **data):
-        self.buffer = buffer
+        self._buffer_stack = [buffer]
         self._argstack = [data]
         self._with_template = None
         data['args'] = _AttrFacade(self)
@@ -21,11 +21,15 @@ class Context(object):
         return self._argstack[-1][key]
     def _put(self, key, value):
         self._argstack[-1][key] = value
+    def push_buffer(self):
+        self._buffer_stack.append(util.FastEncodingBuffer())
+    def pop_buffer(self):
+        return self._buffer_stack.pop()
     def get(self, key, default=None):
         return self._argstack[-1].get(key, default)
     def write(self, string):
         """write a string to this Context's underlying output buffer."""
-        self.buffer.write(string)
+        self._buffer_stack[-1].write(string)
     def push(self, args):
         """push a dictionary of values onto this Context's stack of data."""
         x = self._argstack[-1].copy()
@@ -36,7 +40,7 @@ class Context(object):
         self._argstack.pop()
     def _copy(self):
         c = Context.__new__(Context)
-        c.buffer = self.buffer
+        c._buffer_stack = self._buffer_stack
         x = self._argstack[-1].copy()
         c._argstack = [x]
         c._with_template = self._with_template

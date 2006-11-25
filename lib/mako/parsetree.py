@@ -6,7 +6,7 @@
 
 """defines the parse tree components for Mako templates."""
 
-from mako import exceptions, ast, util
+from mako import exceptions, ast, util, filters
 import re
 
 class Node(object):
@@ -123,17 +123,15 @@ class Expression(Node):
         super(Expression, self).__init__(**kwargs)
         self.text = text
         self.escapes = escapes
-        self.escapes_code = [ast.PythonCode(x, self.lineno, self.pos) for x in self.escapes]
+        self.escapes_code = ast.ArgumentList(escapes, self.lineno, self.pos)
         self.code = ast.PythonCode(text, self.lineno, self.pos)
     def declared_identifiers(self):
         return []
     def undeclared_identifiers(self):
-        l = []
-        for n in self.escapes_code:
-            l = l + list(n.undeclared_identifiers)
-        return list(self.code.undeclared_identifiers) + l
+        # TODO: make the "filter" shortcut list configurable at parse/gen time
+        return self.code.undeclared_identifiers.union(self.escapes_code.undeclared_identifiers.difference(util.Set(filters.DEFAULT_ESCAPES.keys())))
     def __repr__(self):
-        return "Expression(%s, %s, %s)" % (repr(self.text), repr(self.escapes), repr((self.lineno, self.pos)))
+        return "Expression(%s, %s, %s)" % (repr(self.text), repr(self.escapes_code.args), repr((self.lineno, self.pos)))
         
 class _TagMeta(type):
     """metaclass to allow Tag to produce a subclass according to its keyword"""
@@ -238,15 +236,15 @@ class ComponentTag(Tag):
             name = name + "()"
         self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos)
         self.name = self.function_decl.funcname
-        #self.filters = attributes['filter'].split(',')
+        self.filter_args = ast.ArgumentList(attributes.get('filter', ''), self.lineno, self.pos)
     def declared_identifiers(self):
         return self.function_decl.argnames
     def undeclared_identifiers(self):
         res = []
         for c in self.function_decl.defaults:
             res += list(ast.PythonCode(c, self.lineno, self.pos).undeclared_identifiers)
-        return res
-        
+        return res + list(self.filter_args.undeclared_identifiers.difference(util.Set(filters.DEFAULT_ESCAPES.keys())))
+
 class CallTag(Tag):
     __keyword__ = 'call'
     def __init__(self, keyword, attributes, **kwargs):

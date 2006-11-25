@@ -56,6 +56,17 @@ for y in range(1, y):
 """
         parsed = ast.PythonCode(code, 0, 0)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
+    
+    def test_locate_identifiers_4(self):
+        code = """
+x = 5
+print y
+def mydef(mydefarg):
+    print "mda is", mydefarg
+"""    
+        parsed = ast.PythonCode(code, 0, 0)
+        assert parsed.undeclared_identifiers == util.Set(['y'])
+        assert parsed.declared_identifiers == util.Set(['mydef', 'x'])
         
     def test_no_global_imports(self):
         code = """
@@ -78,7 +89,15 @@ import x as bar
         parsed = ast.PythonFragment("except (MyException, e):", 0, 0)
         assert parsed.declared_identifiers == util.Set(['e'])
         assert parsed.undeclared_identifiers == util.Set()
-        
+    
+    def test_argument_list(self):
+        parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", 0, 0)
+        assert parsed.undeclared_identifiers == util.Set(['x', 'context'])
+        assert [x for x in parsed.args] == ["3", "5", "'hi'", "(x + 5)", "context.get('lala')"]
+
+        parsed = ast.ArgumentList("h", 0, 0)
+        assert parsed.args == ["h"]
+
     def test_function_decl(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, d='hi', e=x, f=y+7):pass"

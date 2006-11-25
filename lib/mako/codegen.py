@@ -9,7 +9,7 @@
 import time
 import re
 from mako.pygen import PythonPrinter
-from mako import util, ast, parsetree
+from mako import util, ast, parsetree, filters
 
 MAGIC_NUMBER = 1
 
@@ -42,7 +42,8 @@ class Compiler(object):
         printer.writeline("_modified_time = %s" % repr(time.time()))
         printer.writeline("_template_filename=%s" % repr(self.filename))
         printer.writeline("UNDEFINED = runtime.UNDEFINED")
-        module_identifiers.declared.add("UNDEFINED")
+        printer.writeline("from mako import filters")
+        [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
         printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.toplevelcomponents]))
         printer.write("\n\n")
 
@@ -71,10 +72,13 @@ class _GenerateRenderMethod(object):
             name = "render_" + node.name
             args = node.function_decl.get_argument_expressions()
             self.in_component = True
+            filtered = len(node.filter_args.args) > 0 
+            buffered = eval(node.attributes.get('buffered', 'False'))
         else:
             name = "render"
             args = None
             self.in_component = False
+            buffered = filtered = False
             
         if args is None:
             args = ['context']
@@ -83,17 +87,23 @@ class _GenerateRenderMethod(object):
 
         if not self.in_component:
             self._inherit()
-            
+
         printer.writeline("def %s(%s):" % (name, ','.join(args)))
-        
+        if buffered or filtered:
+            printer.writeline("context.push_buffer()")
+            printer.writeline("try:")
+            
         self.identifiers = identifiers.branch(node)
         if len(self.identifiers.locally_assigned) > 0:
             printer.writeline("__locals = {}")
+
         self.write_variable_declares(self.identifiers)
+
         for n in node.nodes:
             n.accept_visitor(self)
-        printer.writeline("return ''")
-        printer.writeline(None)
+
+        self.write_component_finish(node, buffered, filtered)
+
         printer.write("\n\n")
 
     def _inherit(self):
@@ -173,21 +183,46 @@ class _GenerateRenderMethod(object):
         """write a locally-available component callable inside an enclosing component."""
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
+        filtered = len(node.filter_args.args) > 0 
+        buffered = eval(node.attributes.get('buffered', 'False'))
+        if buffered or filtered:
+            printer.writeline("context.push_buffer()")
+            printer.writeline("try:")
 
         identifiers = identifiers.branch(node)
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
             n.accept_visitor(self)
-        self.printer.writeline("return ''")
+
+        self.write_component_finish(node, buffered, filtered)
+        
+    def write_component_finish(self, node, buffered, filtered):
+        if not buffered:
+            self.printer.writeline("return ''")
+        if buffered or filtered:
+            self.printer.writeline("finally:")
+            self.printer.writeline("_buf = context.pop_buffer()")
+            s = "_buf.getvalue()"
+            if filtered:
+                s = self.create_filter_callable(node.filter_args.args, s)
+            if buffered:
+                self.printer.writeline("return %s" % s)
+            else:
+                self.printer.writeline("context.write(%s)" % s)
         self.printer.writeline(None)
-            
+    
+    def create_filter_callable(self, args, target):
+        d = dict([(k, "filters." + v.func_name) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
+        for e in args:
+            e = d.get(e, e)
+            target = "%s(%s)" % (e, target)
+        return target
+        
     def visitExpression(self, node):
         self.write_source_comment(node)
         if len(node.escapes):
-            s = node.text
-            for e in node.escapes:
-                s = "%s(%s)" % (e, s)
+            s = self.create_filter_callable(node.escapes_code.args, node.text)
             self.printer.writeline("context.write(unicode(%s))" % s)
         else:
             self.printer.writeline("context.write(unicode(%s))" % node.text)
@@ -334,6 +369,9 @@ class _Identifiers(object):
             self.toplevelcomponents.add(node)
         elif node is not self.node:
             self.closurecomponents.add(node)
+        for ident in node.undeclared_identifiers():
+            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                self.undeclared.add(ident)
         for ident in node.declared_identifiers():
             self.argument_declared.add(ident)
         # visit components only one level deep
