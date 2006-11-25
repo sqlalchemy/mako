@@ -32,13 +32,11 @@ class FilterTest(unittest.TestCase):
         t = Template("""
             ${"this is <text>" | h}
 """)
-        print t.code
         assert flatten_result(t.render()) == "this is &lt;text&gt;"
         
         t = Template("""
             http://foo.com/arg1=${"hi! this is a string." | u}
 """)
-        print t.code
         assert flatten_result(t.render()) == "http://foo.com/arg1=hi%21+this+is+a+string."
 
 class BufferTest(unittest.TestCase):        
