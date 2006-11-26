@@ -87,6 +87,54 @@ class NamespaceTest(unittest.TestCase):
         """)
 
         print collection.get_template("main.html").render()
+
+    def test_in_remote_def(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("main.html", """
+            <%namespace name="foo" file="ns.html"/>
+
+            this is main.  ${bar()}
+            <%def name="bar">
+                this is bar, foo is ${foo.bar()}
+            </%def>
+        """)
+
+        collection.put_string("ns.html", """
+            <%def name="bar">
+                this is ns.html->bar
+            </%def>
+        """)
         
+        collection.put_string("index.html", """
+            <%namespace name="main" file="main.html"/>
+            
+            this is index
+            ${main.bar()}
+        """)
+
+        print collection.get_template("index.html").render()
+    
+    def test_inheritance(self):
+        """test namespace initialization in a base inherited template that doesnt otherwise access the namespace"""
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%namespace name="foo" file="ns.html" inheritable="True"/>
+            
+            ${next.body()}
+""")
+        collection.put_string("ns.html", """
+            <%def name="bar">
+                this is ns.html->bar
+            </%def>
+        """)
+
+        collection.put_string("index.html", """
+            <%inherit file="base.html"/>
+    
+            this is index
+            ${self.foo.bar()}
+        """)
+        
+        print collection.get_template("index.html").render()
 if __name__ == '__main__':
     unittest.main()

@@ -14,6 +14,7 @@ class Context(object):
         self._buffer_stack = [buffer]
         self._argstack = [data]
         self._with_template = None
+        self.namespaces = {}
         #data['args'] = _AttrFacade(self)
         data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
     def keys(self):
@@ -45,6 +46,7 @@ class Context(object):
         x = self._argstack[-1].copy()
         c._argstack = [x]
         c._with_template = self._with_template
+        c.namespaces = self.namespaces
         #x['args'] = _AttrFacade(c)
         return c
     def locals_(self, d):
@@ -150,6 +152,7 @@ def inherit_from(context, uri):
     if callable_  is not None:
         return callable_(lclcontext)
     else:
+        template.module.generate_namespaces(context)
         return (template.callable_, lclcontext)
 
 def _lookup_template(context, uri):

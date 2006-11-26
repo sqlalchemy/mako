@@ -21,53 +21,18 @@ class Compiler(object):
         buf = util.FastEncodingBuffer()
         printer = PythonPrinter(buf)
 
-        module_code = []
-        class FindPyDecls(object):
-            def visitCode(self, node):
-                if node.ismodule:
-                    module_code.append(node)
-        f = FindPyDecls()
-        self.node.accept_visitor(f)
-        
-        module_identifiers = _Identifiers()
-        for n in module_code:
-            module_identifiers = module_identifiers.branch(n)
+        _GenerateRenderMethod(printer, self, self.node)
 
-        main_identifiers = module_identifiers.branch(self.node)
-        module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
-
-        # module-level names, python code
-        printer.writeline("from mako import runtime")
-        printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
-        printer.writeline("_modified_time = %s" % repr(time.time()))
-        printer.writeline("_template_filename=%s" % repr(self.filename))
-        printer.writeline("UNDEFINED = runtime.UNDEFINED")
-        printer.writeline("from mako import filters")
-        [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
-        printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs]))
-        printer.write("\n\n")
-
-        
-        for n in module_code:
-            printer.writeline("# SOURCE LINE %d" % n.lineno, is_comment=True)
-            printer.write_indented_block(n.text)
-
-        # print main render() method
-        _GenerateRenderMethod(printer, module_identifiers, self.node)
-
-        # print render() for each top-level def
-        for node in main_identifiers.topleveldefs:
-            _GenerateRenderMethod(printer, module_identifiers, node)
-            
         return buf.getvalue()
 
         
 class _GenerateRenderMethod(object):
-    def __init__(self, printer, identifiers, node):
+    def __init__(self, printer, compiler, node):
         self.printer = printer
         self.last_source_line = -1
-        
+        self.compiler = compiler
         self.node = node
+        
         if isinstance(node, parsetree.DefTag):
             name = "render_" + node.name
             args = node.function_decl.get_argument_expressions()
@@ -86,36 +51,132 @@ class _GenerateRenderMethod(object):
             args = [a for a in ['context'] + args + ['**kwargs']]
 
         if not self.in_def:
-            self._inherit()
-
-        printer.writeline("def %s(%s):" % (name, ','.join(args)))
-        if buffered or filtered:
-            printer.writeline("context.push_buffer()")
-            printer.writeline("try:")
+            defs = self.write_toplevel()
+        else:
+            defs = None
             
-        self.identifiers = identifiers.branch(node)
-        if len(self.identifiers.locally_assigned) > 0:
-            printer.writeline("__locals = {}")
+        self.write_render_callable(name, args, buffered, filtered)
+        
+        if defs is not None:
+            for node in defs:
+                _GenerateRenderMethod(printer, compiler, node)
+            
+    def write_toplevel(self):
+        inherit = []
+        namespaces = {}
+        module_code = []
+        class FindTopLevel(object):
+            def visitInheritTag(s, node):
+                inherit.append(node)
+            def visitNamespaceTag(self, node):
+                namespaces[node.name] = node
+            def visitCode(self, node):
+                if node.ismodule:
+                    module_code.append(node)
+        f = FindTopLevel()
+        for n in self.node.nodes:
+            n.accept_visitor(f)
+        if len(module_code):
+            self.write_module_code(module_code)
+
+        self.compiler.namespaces = namespaces
+        
+        module_identifiers = _Identifiers()
+        for n in module_code:
+            module_identifiers = module_identifiers.branch(n)
+
+        # module-level names, python code
+        self.printer.writeline("from mako import runtime")
+        self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
+        self.printer.writeline("_modified_time = %s" % repr(time.time()))
+        self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
+        self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
+        self.printer.writeline("from mako import filters")
+
+        main_identifiers = module_identifiers.branch(self.node)
+        module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
+        [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
+        self.compiler.identifiers = module_identifiers
+        self.printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs]))
+        self.printer.write("\n\n")
+
+        if len(inherit):
+            self.write_namespaces(namespaces)
+            self.write_inherit(inherit[-1])
+        elif len(namespaces):
+            self.write_namespaces(namespaces)
+
+        return main_identifiers.topleveldefs
+
+    def write_render_callable(self, name, args, buffered, filtered):        
+        self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
+        if buffered or filtered:
+            self.printer.writeline("context.push_buffer()")
+            self.printer.writeline("try:")
+
+        self.identifiers = self.compiler.identifiers.branch(self.node)
+        if not self.in_def and len(self.identifiers.locally_assigned) > 0:
+            self.printer.writeline("__locals = {}")
 
         self.write_variable_declares(self.identifiers, first="kwargs")
 
-        for n in node.nodes:
+        for n in self.node.nodes:
             n.accept_visitor(self)
 
-        self.write_def_finish(node, buffered, filtered)
-        printer.writeline(None)
-        printer.write("\n\n")
+        self.write_def_finish(self.node, buffered, filtered)
+        self.printer.writeline(None)
+        self.printer.write("\n\n")
 
-    def _inherit(self):
-        class FindInherit(object):
-            def visitInheritTag(s, node):
-                self.printer.writeline("def _inherit(context):")
-                self.printer.writeline("return runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
+        
+    def write_module_code(self, module_code):
+        for n in module_code:
+            self.write_source_comment(n)
+            self.printer.write_indented_block(n.text)
+
+    def write_inherit(self, node):
+        self.printer.writeline("def _inherit(context):")
+        self.printer.writeline("generate_namespaces(context)")
+        self.printer.writeline("return runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
+        self.printer.writeline(None)
+
+    def write_namespaces(self, namespaces):
+        self.printer.writelines(
+            "def get_namespace(context, name):",
+            "try:",
+            "return context.namespaces[(render, name)]",
+            "except KeyError:",
+            "generate_namespaces(context)",
+            "return context.namespaces[(render, name)]",
+            None,None
+            )
+        self.printer.writeline("def generate_namespaces(context):")
+        for node in namespaces.values():
+            self.write_source_comment(node)
+            if len(node.nodes):
+                self.printer.writeline("def make_namespace():")
+                export = []
+                identifiers = self.compiler.identifiers.branch(node)
+                class NSDefVisitor(object):
+                    def visitDefTag(s, node):
+                        self.write_inline_def(node, identifiers)
+                        export.append(node.name)
+                vis = NSDefVisitor()
+                for n in node.nodes:
+                    n.accept_visitor(vis)
+                self.printer.writeline("return [%s]" % (','.join(export)))
                 self.printer.writeline(None)
-        f = FindInherit()
-        for n in self.node.nodes:
-            n.accept_visitor(f)
-
+                callable_name = "make_namespace()"
+            else:
+                callable_name = "None"
+            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
+            if eval(node.attributes.get('inheritable', "False")):
+                self.printer.writeline("context['self'].%s = ns" % (node.name))
+            self.printer.writeline("context.namespaces[(render, %s)] = ns" % repr(node.name))
+            self.printer.write("\n")
+        if not len(namespaces):
+            self.printer.writeline("pass")
+        self.printer.writeline(None)
+            
     def write_variable_declares(self, identifiers, first=None):
         """write variable declarations at the top of a function.
         
@@ -155,6 +216,8 @@ class _GenerateRenderMethod(object):
                     self.write_def_decl(comp, identifiers)
                 else:
                     self.write_inline_def(comp, identifiers)
+            elif ident in self.compiler.namespaces:
+                self.printer.writeline("%s = get_namespace(context, %s)" % (ident, repr(ident)))
             else:
                 if first is not None:
                     self.printer.writeline("%s = %s.get(%s, context.get(%s, UNDEFINED))" % (ident, first, repr(ident), repr(ident)))
@@ -171,7 +234,7 @@ class _GenerateRenderMethod(object):
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
-        if len(self.identifiers.locally_assigned) > 0:
+        if not self.in_def and len(self.identifiers.locally_assigned) > 0:
             nameargs.insert(0, 'context.locals_(__locals)')
         else:
             nameargs.insert(0, 'context')
@@ -253,28 +316,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (node.parsed_attributes['file'], repr(node.attributes.get('import', False))))
 
     def visitNamespaceTag(self, node):
-        self.write_source_comment(node)
-        if len(node.nodes):
-            self.printer.writeline("def make_namespace():")
-            export = []
-            identifiers = self.identifiers.branch(node)
-            class NSDefVisitor(object):
-                def visitDefTag(s, node):
-                    self.write_inline_def(node, identifiers)
-                    export.append(node.name)
-            vis = NSDefVisitor()
-            for n in node.nodes:
-                n.accept_visitor(vis)
-            self.printer.writeline("return [%s]" % (','.join(export)))
-            self.printer.writeline(None)
-            callable_name = "make_namespace()"
-        else:
-            callable_name = "None"
-        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s)" % (node.name, repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
-        if eval(node.attributes.get('inheritable', "False")):
-            self.printer.writeline("self.%s = %s" % (node.name, node.name))
-        if not self.in_def:
-            self.printer.writeline("__locals[%s] = %s" % (repr(node.name), node.name))
+        pass
             
     def visitDefTag(self, node):
         pass
@@ -395,13 +437,6 @@ class _Identifiers(object):
                 n.accept_visitor(self)
     def visitIncludeTag(self, node):
         self.check_declared(node)
-    def visitNamespaceTag(self, node):
-        self.check_declared(node)
-        self.locally_declared.add(node.name)
-        self.locally_assigned.add(node.name)
-        if node is self.node:
-            for n in node.nodes:
-                n.accept_visitor(self)
                 
     def visitCallTag(self, node):
         self.check_declared(node)

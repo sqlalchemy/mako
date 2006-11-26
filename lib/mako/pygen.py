@@ -45,7 +45,11 @@ class PythonPrinter(object):
         self.in_indent_lines = False
         for l in re.split(r'\r?\n', block):
             self.line_buffer.append(l)
-        
+    
+    def writelines(self, *lines):
+        for line in lines:
+            self.writeline(line)
+                
     def writeline(self, line, is_comment=False):
         """print a line of python, indenting it according to the current indent level.
         
