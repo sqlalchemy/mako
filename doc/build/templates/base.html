@@ -1,0 +1,36 @@
+# base.html - common to all documentation pages. intentionally separate 
+# from autohandler, which can be swapped out for a different one
+<%
+    if m.cache_self(key=m.request_component.file):
+        return
+    # bootstrap TOC structure from request args, or pickled file if not present.
+    import cPickle as pickle
+    import os, time
+    print "base.myt generating from table of contents for file %s" % ("<todo: get the file>")
+    toc = context.get('toc')
+    if toc is None:
+        filename = os.path.join(os.path.dirname(m.request_component.file), 'table_of_contents.pickle')
+        toc = pickle.load(file(filename))
+    version = toc.version
+    last_updated = toc.last_updated
+%>
+
+<%namespace name="formatting" file="formatting.html" inheritable="True"/>
+<%namespace name="tocns" file="toc.html" inheritable="True"/>
+<%namespace name="nav" file="nav.html" inheritable="True"/>
+
+<div style="position:absolute;left:0px;top:0px;"><a name="top"></a>&nbsp;</div>
+
+<div class="doccontainer">
+
+<div class="docheader">
+
+<h1><% toc.root.doctitle %></h1>
+<div class="">Version: <% version %>   Last Updated: <% time.strftime('%x %X', time.localtime(last_updated)) %></div>
+</div>
+
+% m.call_next(toc=toc, extension=extension)
+
+</div>
+
+

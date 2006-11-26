@@ -1,0 +1,16 @@
+### Caching
+
+Any template or component can be cached using the `cache` argument to the `%page` or `%def` directives:
+
+    <%page cache="true"/>
+    
+        template text
+        
+    <%def name="mycomp" cache="true" cache_timeout="30" cache_type="memory">
+        other text
+    </%def>
+
+Cache arguments:
+- cache="false|true" - turn caching on
+- cache_timeout - number of seconds in which to invalidate the cached data
+- cache_type - type of caching.  `memory`, `file`, `dbm`, or `memcached`.

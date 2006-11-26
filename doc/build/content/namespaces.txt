@@ -1,0 +1,50 @@
+Namespaces
+=============
+
+Namespaces are used to organize groups of components into categories, and also to "import" components from other files so that you don't have to type the full filename of the remote component file.
+
+If the file `components.html` defines these two components:
+
+    # components.html
+    <%def name="comp1">
+        this is comp1
+    </%def>
+    
+    <%def name="comp2">
+        this is comp2
+    </%def>
+    
+You can make another file, for example `index.html`, that pulls those two components into a namespace called `comp`:
+
+    # index.html
+    <%namespace name="comp" file="components.html"/>
+    
+    Heres comp1:  ${comp.comp1()}
+    Heres comp2:  ${comp.comp2()}
+    
+The `<%namespace>` tag is more powerful than that.  You can also declare `<%defs>` within the namespace:
+
+    # define a namespace
+    <%namespace name="stuff">
+        <%def name="comp1">
+            comp1
+        </%def>
+    </%namespace>
+    
+    # then call it
+    ${stuff:comp1()}
+
+Namespaces can also import modules containing regular Python callables.  These callables need to take at least one argument, `context`:
+
+A module file `some/module.py` might contain the callable:
+
+    def my_tag(context):
+        context.write("hello world")
+
+A template can use this module via:
+    
+    <%namespace name="hw" module="some.module"/>
+
+    ${hw.my_tag()}
+    
+Note that the `context` argument is not needed in the call; the `namespace` tag creates a locally-scoped callable which takes care of it.
