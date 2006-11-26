@@ -93,7 +93,7 @@ class Namespace(object):
         if callables is not None:
             self.callables = dict([(c.func_name, c) for c in callables])
         else:
-            self.callables = {}
+            self.callables = None
         if populate_self and self.template is not None:
             (lclcallable, self.context) = _populate_self_namespace(context, self.template, self_ns=self)
         

@@ -265,6 +265,8 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
         self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), node.parsed_attributes.get('file', 'None')))
+        if eval(node.attributes.get('inheritable', "False")):
+            self.printer.writeline("self.%s = %s" % (node.name, node.name))
         
     def visitDefTag(self, node):
         pass

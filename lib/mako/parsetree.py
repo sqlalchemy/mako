@@ -222,11 +222,16 @@ class IncludeTag(Tag):
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
     def __init__(self, keyword, attributes, **kwargs):
-        super(NamespaceTag, self).__init__(keyword, attributes, ('file',), ('name',), ('name',), **kwargs)
+        super(NamespaceTag, self).__init__(keyword, attributes, ('file',), ('name','inheritable'), ('name',), **kwargs)
         self.name = attributes['name']
     def declared_identifiers(self):
         return [self.name]
-        
+
+class TextTag(Tag):
+    __keyword__ = 'text'
+    def __init__(self, keyword, attributes, **kwargs):
+        super(TextTag, self).__init__(keyword, attributes, (), (), (), **kwargs)
+            
 class DefTag(Tag):
     __keyword__ = 'def'
     def __init__(self, keyword, attributes, **kwargs):

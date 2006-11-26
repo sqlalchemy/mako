@@ -71,6 +71,32 @@ class LexerTest(unittest.TestCase):
         except exceptions.CompileException, e:
             assert str(e) == "No such tag: 'lala' at line: 2 char: 13"
     
+    def test_text_tag(self):
+        template = """
+        # comment
+        % if foo:
+            hi
+        % endif
+        <%text>
+            # more code
+            
+            % more code
+            <%illegal compionent>/></>
+            <%def name="laal">def</%def>
+            
+            
+        </%text>
+
+        <%def name="foo">this is foo</%def>
+        
+        % if bar:
+            code
+        % endif
+        """
+        node = Lexer(template).parse()
+        print repr(node)
+        assert repr(node) == """TemplateNode({}, [Comment('comment', (1, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), []), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo'}, (16, 9), ["Text('this is foo', (16, 26))"]), Text('\n', (16, 44)), ControlLine('if', 'if bar:', False, (17, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
+        
     def test_def_syntax(self):
         template = """
         <%def lala>
@@ -162,7 +188,7 @@ class LexerTest(unittest.TestCase):
         ${hi()}
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), DefTag('def', {'name': 'hi'}, (3, 9), ["Text('\\n            give me ', (3, 31))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 22)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), DefTag('def', {'name': 'hi'}, (3, 9), ["Text('\\n            give me ', (3, 25))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 16)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
 
     def test_control_lines(self):
         template = """

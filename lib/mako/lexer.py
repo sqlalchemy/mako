@@ -103,9 +103,7 @@ class Lexer(object):
             
             (\w+)   # keyword
             
-            \s+     # some space
-            
-            ((?:\w+|=|".*?"|'.*?')*)  # attrname, = sign, string expression
+            ((?:\s+\w+|=|".*?"|'.*?')*)  # attrname, = sign, string expression
             
             \s*     # more whitespace
             
@@ -126,14 +124,17 @@ class Lexer(object):
             self.append_node(parsetree.Tag, keyword, attributes)
             if isend:
                 self.tag.pop()
+            else:
+                if keyword == 'text':
+                    match = self.match(r'.*?(?=\</%text>)',  re.S)
+                    if not match:
+                        raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos)
+                    return self.match_tag_end()
             return True
         else: 
             return False
         
     def match_tag_end(self):
-#        if not len(self.tag):
-#            return False
-#        match = self.match(r'\</%\s*(.+?)' + self.tag[-1].keyword + '\s*>')
         match = self.match(r'\</%\s*(.+?)\s*>')
         if match:
             if not len(self.tag):
