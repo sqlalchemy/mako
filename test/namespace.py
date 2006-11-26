@@ -7,12 +7,12 @@ class NamespaceTest(unittest.TestCase):
     def test_inline(self):
         t = Template("""
         <%namespace name="x">
-            <%component name="a">
+            <%def name="a">
                 this is x a
-            </%component>
-            <%component name="b">
+            </%def>
+            <%def name="b">
                 this is x b, and heres ${a()}
-            </%component>
+            </%def>
         </%namespace>
         
         ${x.a()}
@@ -25,20 +25,20 @@ class NamespaceTest(unittest.TestCase):
         collection = lookup.TemplateLookup()
 
         collection.put_string('main.html', """
-        <%namespace name="comp" file="components.html"/>
+        <%namespace name="comp" file="defs.html"/>
         
         this is main.  ${comp.def1("hi")}
         ${comp.def2("there")}
 """)
 
-        collection.put_string('components.html', """
-        <%component name="def1(s)">
+        collection.put_string('defs.html', """
+        <%def name="def1(s)">
             def1: ${s}
-        </%component>
+        </%def>
         
-        <%component name="def2(x)">
+        <%def name="def2(x)">
             def2: ${x}
-        </%component>
+        </%def>
 """)
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. def1: hi def2: there"
@@ -47,24 +47,24 @@ class NamespaceTest(unittest.TestCase):
         collection = lookup.TemplateLookup()
 
         collection.put_string('main.html', """
-        <%namespace name="comp" file="components.html">
-            <%component name="def1(x, y)">
+        <%namespace name="comp" file="defs.html">
+            <%def name="def1(x, y)">
                 overridden def1 ${x}, ${y}
-            </%component>
+            </%def>
         </%namespace>
 
         this is main.  ${comp.def1("hi", "there")}
         ${comp.def2("there")}
     """)
 
-        collection.put_string('components.html', """
-        <%component name="def1(s)">
+        collection.put_string('defs.html', """
+        <%def name="def1(s)">
             def1: ${s}
-        </%component>
+        </%def>
 
-        <%component name="def2(x)">
+        <%def name="def2(x)">
             def2: ${x}
-        </%component>
+        </%def>
     """)
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. overridden def1 hi, there def2: there"

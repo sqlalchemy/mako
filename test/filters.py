@@ -19,11 +19,11 @@ class FilterTest(unittest.TestCase):
             return lambda x: "MYFILTER->%s<-%s" % (x, y)
         assert flatten_result(t.render(x="this is x", myfilter=myfilter, y="this is y")) == "MYFILTER->this is x<-this is y"
 
-    def test_component(self):
+    def test_def(self):
         t = Template("""
-            <%component name="foo" filter="myfilter">
+            <%def name="foo" filter="myfilter">
                 this is foo
-            </%component>
+            </%def>
             ${foo()}
 """)
         assert flatten_result(t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)) == "MYFILTER-> this is foo <-MYFILTER"
@@ -40,20 +40,20 @@ class FilterTest(unittest.TestCase):
         assert flatten_result(t.render()) == "http://foo.com/arg1=hi%21+this+is+a+string."
 
 class BufferTest(unittest.TestCase):        
-    def test_buffered_component(self):
+    def test_buffered_def(self):
         t = Template("""
-            <%component name="foo" buffered="True">
+            <%def name="foo" buffered="True">
                 this is foo
-            </%component>
+            </%def>
             ${"hi->" + foo() + "<-hi"}
 """)
         assert flatten_result(t.render()) == "hi-> this is foo <-hi"
 
-    def test_unbuffered_component(self):
+    def test_unbuffered_def(self):
         t = Template("""
-            <%component name="foo" buffered="False">
+            <%def name="foo" buffered="False">
                 this is foo
-            </%component>
+            </%def>
             ${"hi->" + foo() + "<-hi"}
 """)
         assert flatten_result(t.render()) == "this is foo hi-><-hi"

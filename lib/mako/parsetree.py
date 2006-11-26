@@ -227,10 +227,10 @@ class NamespaceTag(Tag):
     def declared_identifiers(self):
         return [self.name]
         
-class ComponentTag(Tag):
-    __keyword__ = 'component'
+class DefTag(Tag):
+    __keyword__ = 'def'
     def __init__(self, keyword, attributes, **kwargs):
-        super(ComponentTag, self).__init__(keyword, attributes, ('buffered'), ('name','filter'), ('name',), **kwargs)
+        super(DefTag, self).__init__(keyword, attributes, ('buffered'), ('name','filter'), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"

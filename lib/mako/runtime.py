@@ -71,6 +71,12 @@ class Undefined(object):
         raise NameError("Undefined")
 UNDEFINED = Undefined()
         
+
+class _AttrGateway(object):
+    def __init__(self,ns):
+        self.ns = ns
+    def __getattr__(self, key):
+        return getattr(self.ns.template.module, key)
         
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
@@ -81,6 +87,7 @@ class Namespace(object):
             self.template = _lookup_template(context, templateuri)
         else:
             self.template = template
+        self.attributes = _AttrGateway(self)
         self.context = context
         self.inherits = inherits
         if callables is not None:
@@ -101,7 +108,7 @@ class Namespace(object):
                 callable_ = self.template.module.render
             else:
                 try:
-                    callable_ = self.template.get_component(key).callable_
+                    callable_ = self.template.get_def(key).callable_
                 except AttributeError:
                     callable_ = None
             if callable_ is not None:

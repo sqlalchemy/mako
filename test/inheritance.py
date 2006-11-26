@@ -14,9 +14,9 @@ class InheritanceTest(unittest.TestCase):
         tmpl['main'] = Template("""
 <%inherit file="base"/>
 
-<%component name="header">
+<%def name="header">
     main header.
-</%component>
+</%def>
 
 this is the content.
 """, lookup=collection)
@@ -30,9 +30,9 @@ body: ${self.body()}
 
 footer: ${self.footer()}
 
-<%component name="footer">
+<%def name="footer">
     this is the footer. header again ${next.header()}
-</%component>
+</%def>
 """, lookup=collection)
 
         assert result_lines(tmpl['main'].render()) == [
@@ -51,7 +51,7 @@ footer: ${self.footer()}
 
         collection.put_string('main', """
 <%inherit file="layout"/>
-<%component name="d">main_d</%component>
+<%def name="d">main_d</%def>
 main_body ${parent.d()}
 full stack from the top:
     ${self.name} ${parent.name} ${parent.context['parent'].name} ${parent.context['parent'].context['parent'].name}
@@ -59,7 +59,7 @@ full stack from the top:
         
         collection.put_string('layout', """
 <%inherit file="general"/>
-<%component name="d">layout_d</%component>
+<%def name="d">layout_d</%def>
 layout_body
 parent name: ${parent.name}
 ${parent.d()}
@@ -69,7 +69,7 @@ ${next.body()}
 
         collection.put_string('general', """
 <%inherit file="base"/>
-<%component name="d">general_d</%component>
+<%def name="d">general_d</%def>
 general_body
 ${next.d()}
 ${next.context['next'].d()}
@@ -80,7 +80,7 @@ base_body
 full stack from the base:
     ${self.name} ${self.context['parent'].name} ${self.context['parent'].context['parent'].name} ${self.context['parent'].context['parent'].context['parent'].name}
 ${next.body()}
-<%component name="d">base_d</%component>
+<%def name="d">base_d</%def>
 """)
 
         assert result_lines(collection.get_template('main').render()) == [
@@ -105,7 +105,7 @@ ${next.body()}
         collection = lookup.TemplateLookup()
         
         collection.put_string("base", """
-        <%component name="a">base_a</%component>
+        <%def name="a">base_a</%def>
         This is the base.
         ${next.body()}
         End base.
@@ -141,15 +141,15 @@ ${next.body()}
         collection = lookup.TemplateLookup()
         
         collection.put_string("base", """
-        <%component name="a">base_a</%component>
-        <%component name="b">base_b</%component>
+        <%def name="a">base_a</%def>
+        <%def name="b">base_b</%def>
         This is the base.
         ${next.body()}
 """)
 
         collection.put_string("layout", """
         <%inherit file="base"/>
-        <%component name="a()">layout_a</%component>
+        <%def name="a()">layout_a</%def>
         This is the layout..
         ${next.body()}
 """)
@@ -167,8 +167,8 @@ ${next.body()}
 
         collection.put_string("secondary","""
         <%inherit file="layout"/>
-        <%component name="c">secondary_c.  a is ${self.a()} b is ${self.b()} d is ${self.d()}</%component>
-        <%component name="d">secondary_d.</%component>
+        <%def name="c">secondary_c.  a is ${self.a()} b is ${self.b()} d is ${self.d()}</%def>
+        <%def name="d">secondary_d.</%def>
         this is secondary.
         a is: ${self.a()}
         c is: ${self.c()}

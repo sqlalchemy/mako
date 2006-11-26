@@ -80,17 +80,17 @@ class Template(object):
         the data is written to the context's buffer."""
         runtime._render_context(self, self.callable_, context, *args, **kwargs)
         
-    def get_component(self, name):
-        """return a component of this template as an individual Template of its own."""
-        return ComponentTemplate(self, getattr(self.module, "render_%s" % name))
+    def get_def(self, name):
+        """return a def of this template as an individual Template of its own."""
+        return DefTemplate(self, getattr(self.module, "render_%s" % name))
         
-class ComponentTemplate(Template):
-    """a Template which represents a callable component in a parent template."""
+class DefTemplate(Template):
+    """a Template which represents a callable def in a parent template."""
     def __init__(self, parent, callable_):
         self.parent = parent
         self.callable_ = callable_
-    def get_component(self, name):
-        return self.parent.get_component(name)
+    def get_def(self, name):
+        return self.parent.get_def(name)
         
 def _compile_text(text, identifier, filename):
     node = Lexer(text).parse()

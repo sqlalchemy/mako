@@ -6,7 +6,7 @@ def suite():
         'pygen',
         'lexer',
         'template',
-        'component',
+        'def',
         'namespace',
         'inheritance',
         'call'
