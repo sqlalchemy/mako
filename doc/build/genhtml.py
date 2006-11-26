@@ -35,13 +35,10 @@ def genfile(name, toc):
     outname = os.path.join(os.getcwd(), '../', name + ".html")
     outfile = file(outname, 'w')
     print infile, '->', outname
-#    outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
+    outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
     
-try:
-    for filename in files:
-        genfile(filename, root)
-except exception.Error, e:
-    sys.stderr.write(e.textformat())
+for filename in files:
+    genfile(filename, root)
 
 
         

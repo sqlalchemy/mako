@@ -11,18 +11,25 @@ class MakoException(Exception):
 
 class RuntimeException(MakoException):
     pass
+
+def _format_filepos(lineno, pos, filename):
+    if filename is None:
+        return " at line: %d char: %d" % (lineno, pos)
+    else:
+        return " in file '%s' at line: %d char: %d" % (filename, lineno, pos)     
 class CompileException(MakoException):
-    def __init__(self, message, lineno, pos):
-        MakoException.__init__(self, message + " at line: %d char: %d" % (lineno, pos))
+    def __init__(self, message, lineno, pos, filename):
+        MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
-
+        self.filename = filename
                     
 class SyntaxException(MakoException):
-    def __init__(self, message, lineno, pos):
-        MakoException.__init__(self, message + " at line: %d char: %d" % (lineno, pos))
+    def __init__(self, message, lineno, pos, filename):
+        MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
+        self.filename = filename
         
 class TemplateLookupException(MakoException):
     pass

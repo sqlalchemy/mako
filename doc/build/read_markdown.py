@@ -34,22 +34,15 @@ def dump_tree(elem, stream):
 
 def dump_mako_tag(elem, stream):
     tag = elem.tag[5:]
-    params = ', '.join(['%s=%s' % i for i in elem.items()])
-    pipe = ''
-    if elem.text or len(elem):
-        pipe = '|'
-    comma = ''
-    if params:
-        comma = ', '
-    stream.write('<&%s%s%s%s&>' % (pipe, tag, comma, params))
-    if pipe:
-        if elem.text:
-            stream.write(elem.text)
-        for n in elem:
-            dump_tree(n, stream)
-            if n.tail:
-                stream.write(n.tail)
-        stream.write("</&>")
+    params = ','.join(['%s=%s' % i for i in elem.items()])
+    stream.write('<%%call expr="%s(%s)">' % (tag, params))
+    if elem.text:
+        stream.write(elem.text)
+    for n in elem:
+        dump_tree(n, stream)
+        if n.tail:
+            stream.write(n.tail)
+    stream.write("</%call>")
 
 def create_toc(filename, tree, tocroot):
     title = [None]
@@ -81,7 +74,7 @@ def create_toc(filename, tree, tocroot):
 
             level[0] = taglevel
 
-            tag = et.Element("MAKO:formatting.section", path=literal(current[0].path), toc="toc")
+            tag = et.Element("MAKO:self.formatting.section", path=repr(current[0].path), toc="toc")
             tag.text = (node.tail or "") + '\n'
             tag.tail = '\n'
             tag[:] = content
@@ -92,9 +85,6 @@ def create_toc(filename, tree, tocroot):
     process(tree)
     return (title[0], tocroot.get_by_file(filename))
 
-def literal(s):
-    return '"%s"' % s
-    
 def index(parent, item):
     for n, i in enumerate(parent):
         if i is item:
@@ -124,9 +114,9 @@ def process_rel_href(tree):
             (bold, path) = m.group(1,2)
             text = a.text
             if text == path:
-                tag = et.Element("MAKO:nav.toclink", path=literal(path), toc="toc", extension="extension")
+                tag = et.Element("MAKO:self.nav.toclink", path=repr(path), toc="toc", extension="extension")
             else:
-                tag = et.Element("MAKO:nav.toclink", path=literal(path), description=literal(text), toc="toc", extension="extension")
+                tag = et.Element("MAKO:self.nav.toclink", path=repr(path), description=repr(text), toc="toc", extension="extension")
             a_parent = parent[a]
             if bold:
                 bold = et.Element('strong')
@@ -138,50 +128,30 @@ def process_rel_href(tree):
                 a_parent[index(a_parent, a)] = tag
 
 def replace_pre_with_mako(tree):
-    def splice_code_tag(pre, text, type=None, title=None):
-        doctest_directives = re.compile(r'#\s*doctest:\s*[+-]\w+(,[+-]\w+)*\s*$', re.M)
-        text = re.sub(doctest_directives, '', text)
-        # process '>>>' to have quotes around it, to work with the mako python
-        # syntax highlighter which uses the tokenize module
-        text = re.sub(r'>>> ', r'">>>" ', text)
-
-        # indent two spaces.  among other things, this helps comment lines "#  " from being 
-        # consumed as mako comments.
-        text = re.compile(r'^(?!<&)', re.M).sub('  ', text)
-
-        use_sliders = True
-        
-        opts = {}
-        if type == 'python':
-            opts['syntaxtype'] = literal('python')
-        else:
-            opts['syntaxtype'] = None
-
-        if title is not None:
-            opts['title'] = literal(title)
-    
-        if use_sliders:
-            opts['use_sliders'] = True
-    
-        tag = et.Element("MAKO:formatting.code", **opts)
-        tag.text = text
-
-        pre_parent = parents[pre]
-        tag.tail = pre.tail
-        pre_parent[reverse_parent(pre_parent, pre)] = tag
-
     parents = get_parent_map(tree)
 
     for precode in tree.findall('.//pre/code'):
-        m = re.match(r'\{(python|code)(?: title="(.*?)"){0,1}\}', precode.text.lstrip())
-        if m:
-            code = m.group(1)
-            title = m.group(2)
-            text = precode.text.lstrip()
-            text = re.sub(r'{(python|code).*?}(\n\s*)?', '', text)
-            splice_code_tag(parents[precode], text, type=code, title=title)
-        elif precode.text.lstrip().startswith('>>> '):
-            splice_code_tag(parents[precode], precode.text)
+        tag = et.Element("MAKO:self.formatting.code")
+        tag.text = precode.text
+        [tag.append(x) for x in precode]
+        pre = parents[precode]
+        tag.tail = pre.tail
+        
+        pre_parent = parents[pre]
+        pre_parent[reverse_parent(pre_parent, pre)] = tag
+        
+def safety_code(tree):
+    parents = get_parent_map(tree)
+    for code in tree.findall('.//code'):
+        tag = et.Element('%text')
+        tag.text = code.text
+        code.append(tag)
+        code.text = ""
+        #code.tail =None
+        #tag.text = code.text
+        #code_parent = parents[code]
+        #code_parent[reverse_parent(code_parent, code)] = tag
+        
 
 def reverse_parent(parent, item):
     for n, i in enumerate(parent):
@@ -215,6 +185,7 @@ def parse_markdown_files(toc, files):
         html = markdown.markdown(file(infile).read())
         tree = et.fromstring("<html>" + html + "</html>")
         (title, toc_element) = create_toc(inname, tree, toc)
+        safety_code(tree)
         replace_pre_with_mako(tree)
         process_rel_href(tree)
         outname = 'output/%s.html' % inname

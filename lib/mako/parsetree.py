@@ -11,9 +11,10 @@ import re
 
 class Node(object):
     """base class for a Node in the parse tree."""
-    def __init__(self, lineno, pos):
+    def __init__(self, lineno, pos, filename):
         self.lineno = lineno
         self.pos = pos
+        self.filename = filename
     def get_children(self):
         return []
     def accept_visitor(self, visitor):
@@ -25,8 +26,8 @@ class Node(object):
 
 class TemplateNode(Node):
     """a 'container' node that stores the overall collection of nodes."""
-    def __init__(self):
-        super(TemplateNode, self).__init__(0, 0)
+    def __init__(self, filename):
+        super(TemplateNode, self).__init__(0, 0, filename)
         self.nodes = []
         self.page_attributes = {}
     def get_children(self):
@@ -51,7 +52,7 @@ class ControlLine(Node):
             self._declared_identifiers = []
             self._undeclared_identifiers = []
         else:
-            code = ast.PythonFragment(text, self.lineno, self.pos)
+            code = ast.PythonFragment(text, self.lineno, self.pos, self.filename)
             (self._declared_identifiers, self._undeclared_identifiers) = (code.declared_identifiers, code.undeclared_identifiers)
     def declared_identifiers(self):
         return self._declared_identifiers
@@ -93,7 +94,7 @@ class Code(Node):
         super(Code, self).__init__(**kwargs)
         self.text = text
         self.ismodule = ismodule
-        self.code = ast.PythonCode(text, self.lineno, self.pos)
+        self.code = ast.PythonCode(text, self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return self.code.declared_identifiers
     def undeclared_identifiers(self):
@@ -123,8 +124,8 @@ class Expression(Node):
         super(Expression, self).__init__(**kwargs)
         self.text = text
         self.escapes = escapes
-        self.escapes_code = ast.ArgumentList(escapes, self.lineno, self.pos)
-        self.code = ast.PythonCode(text, self.lineno, self.pos)
+        self.escapes_code = ast.ArgumentList(escapes, self.lineno, self.pos, self.filename)
+        self.code = ast.PythonCode(text, self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return []
     def undeclared_identifiers(self):
@@ -144,7 +145,7 @@ class _TagMeta(type):
         try:
             cls = _TagMeta._classmap[keyword]
         except KeyError:
-            raise exceptions.CompileException("No such tag: '%s'" % keyword, kwargs['lineno'], kwargs['pos'])
+            raise exceptions.CompileException("No such tag: '%s'" % keyword, kwargs['lineno'], kwargs['pos'], kwargs['filename'])
         return type.__call__(cls, keyword, attributes, **kwargs)
         
 class Tag(Node):
@@ -178,7 +179,7 @@ class Tag(Node):
         self._parse_attributes(expressions, nonexpressions)
         missing = [r for r in required if r not in self.parsed_attributes]
         if len(missing):
-            raise exceptions.CompileException("Missing attribute(s): %s" % ",".join([repr(m) for m in missing]), self.lineno, self.pos)
+            raise exceptions.CompileException("Missing attribute(s): %s" % ",".join([repr(m) for m in missing]), self.lineno, self.pos, self.filename)
         self.parent = None
         self.nodes = []
     def is_root(self):
@@ -194,7 +195,7 @@ class Tag(Node):
                 for x in re.split(r'(\${.+?})', self.attributes[key]):
                     m = re.match(r'^\${(.+?)}$', x)
                     if m:
-                        code = ast.PythonCode(m.group(1), self.lineno, self.pos)
+                        code = ast.PythonCode(m.group(1), self.lineno, self.pos, self.filename)
                         undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
                         expr.append(m.group(1))
                     else:
@@ -202,10 +203,10 @@ class Tag(Node):
                 self.parsed_attributes[key] = " + ".join(expr)
             elif key in nonexpressions:
                 if re.search(r'${.+?}', self.attributes[key]):
-                    raise exceptions.CompileException("Attibute '%s' in tag '%s' does not allow embedded expressions"  %(key, self.keyword), self.lineno, self.pos)
+                    raise exceptions.CompileException("Attibute '%s' in tag '%s' does not allow embedded expressions"  %(key, self.keyword), self.lineno, self.pos, self.filename)
                 self.parsed_attributes[key] = repr(self.attributes[key])
             else:
-                raise exceptions.CompileException("Invalid attribute for tag '%s': '%s'" %(self.keyword, key), self.lineno, self.pos)
+                raise exceptions.CompileException("Invalid attribute for tag '%s': '%s'" %(self.keyword, key), self.lineno, self.pos, self.filename)
         self.expression_undeclared_identifiers = undeclared_identifiers
     def declared_identifiers(self):
         return []
@@ -225,7 +226,7 @@ class NamespaceTag(Tag):
         super(NamespaceTag, self).__init__(keyword, attributes, ('file',), ('name','inheritable'), ('name',), **kwargs)
         self.name = attributes['name']
     def declared_identifiers(self):
-        return [self.name]
+        return []
 
 class TextTag(Tag):
     __keyword__ = 'text'
@@ -239,22 +240,22 @@ class DefTag(Tag):
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"
-        self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos)
+        self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos, self.filename)
         self.name = self.function_decl.funcname
-        self.filter_args = ast.ArgumentList(attributes.get('filter', ''), self.lineno, self.pos)
+        self.filter_args = ast.ArgumentList(attributes.get('filter', ''), self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return self.function_decl.argnames
     def undeclared_identifiers(self):
         res = []
         for c in self.function_decl.defaults:
-            res += list(ast.PythonCode(c, self.lineno, self.pos).undeclared_identifiers)
+            res += list(ast.PythonCode(c, self.lineno, self.pos, self.filename).undeclared_identifiers)
         return res + list(self.filter_args.undeclared_identifiers.difference(util.Set(filters.DEFAULT_ESCAPES.keys())))
 
 class CallTag(Tag):
     __keyword__ = 'call'
     def __init__(self, keyword, attributes, **kwargs):
         super(CallTag, self).__init__(keyword, attributes, (), ('expr',), ('expr',), **kwargs)
-        self.code = ast.PythonCode(attributes['expr'], self.lineno, self.pos)
+        self.code = ast.PythonCode(attributes['expr'], self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return self.code.declared_identifiers
     def undeclared_identifiers(self):

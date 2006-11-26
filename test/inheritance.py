@@ -99,7 +99,6 @@ ${next.body()}
              'self:main self:layout self:general self:base'
         ]
         
-
     def test_includes(self):
         """test that an included template also has its full hierarchy invoked."""
         collection = lookup.TemplateLookup()

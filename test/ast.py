@@ -23,11 +23,11 @@ for lar in (1,2,3):
 print "hello world, ", a, b
 print "Another expr", c
 """
-        parsed = ast.PythonCode(code, 0, 0)
+        parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.declared_identifiers == util.Set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
         assert parsed.undeclared_identifiers == util.Set(['x', 'q', 'foo', 'gah', 'blah'])
     
-        parsed = ast.PythonCode("x + 5 * (y-z)", 0, 0)
+        parsed = ast.PythonCode("x + 5 * (y-z)", 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z'])
         assert parsed.declared_identifiers == util.Set()
 
@@ -41,7 +41,7 @@ data = get_data()
 for x in data:
     result.append(x+7)
 """
-        parsed = ast.PythonCode(code, 0, 0)
+        parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['get_data'])
         assert parsed.declared_identifiers == util.Set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
 
@@ -54,7 +54,7 @@ for y in range(1, y):
 [z for z in range(1, z)]
 (q for q in range (1, q))
 """
-        parsed = ast.PythonCode(code, 0, 0)
+        parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
     
     def test_locate_identifiers_4(self):
@@ -64,7 +64,7 @@ print y
 def mydef(mydefarg):
     print "mda is", mydefarg
 """    
-        parsed = ast.PythonCode(code, 0, 0)
+        parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['y'])
         assert parsed.declared_identifiers == util.Set(['mydef', 'x'])
         
@@ -74,41 +74,41 @@ from foo import *
 import x as bar
 """
         try:
-            parsed = ast.PythonCode(code, 0, 0)
+            parsed = ast.PythonCode(code, 0, 0, None)
             assert False
         except exceptions.CompileException, e:
             assert str(e).startswith("'import *' is not supported")
             
     def test_python_fragment(self):
-        parsed = ast.PythonFragment("for x in foo:", 0, 0)
+        parsed = ast.PythonFragment("for x in foo:", 0, 0, None)
         assert parsed.declared_identifiers == util.Set(['x'])
         assert parsed.undeclared_identifiers == util.Set(['foo'])
         
-        parsed = ast.PythonFragment("try:", 0, 0)
+        parsed = ast.PythonFragment("try:", 0, 0, None)
 
-        parsed = ast.PythonFragment("except (MyException, e):", 0, 0)
+        parsed = ast.PythonFragment("except (MyException, e):", 0, 0, None)
         assert parsed.declared_identifiers == util.Set(['e'])
         assert parsed.undeclared_identifiers == util.Set()
     
     def test_argument_list(self):
-        parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", 0, 0)
+        parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['x', 'context'])
         assert [x for x in parsed.args] == ["3", "5", "'hi'", "(x + 5)", "context.get('lala')"]
 
-        parsed = ast.ArgumentList("h", 0, 0)
+        parsed = ast.ArgumentList("h", 0, 0, None)
         assert parsed.args == ["h"]
 
     def test_function_decl(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, d='hi', e=x, f=y+7):pass"
-        parsed = ast.FunctionDecl(code, 0, 0)
+        parsed = ast.FunctionDecl(code, 0, 0, None)
         assert parsed.funcname=='foo'
         assert parsed.argnames==['a', 'b', 'c', 'd', 'e', 'f']
 
     def test_function_decl_2(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, *args, **kwargs):pass"
-        parsed = ast.FunctionDecl(code, 0, 0)
+        parsed = ast.FunctionDecl(code, 0, 0, None)
         assert parsed.funcname=='foo'
         assert parsed.argnames==['a', 'b', 'c', 'args', 'kwargs']
     

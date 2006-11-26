@@ -68,6 +68,25 @@ class NamespaceTest(unittest.TestCase):
     """)
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. overridden def1 hi, there def2: there"
+
+    def test_in_def(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("main.html", """
+            <%namespace name="foo" file="ns.html"/>
+            
+            this is main.  ${bar()}
+            <%def name="bar">
+                this is bar, foo is ${foo.bar()}
+            </%def>
+        """)
+        
+        collection.put_string("ns.html", """
+            <%def name="bar">
+                this is ns.html->bar
+            </%def>
+        """)
+
+        print collection.get_template("main.html").render()
         
 if __name__ == '__main__':
     unittest.main()

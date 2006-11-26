@@ -1,106 +1,88 @@
-<%doc>nav.myt - Provides page navigation elements that are derived from toc.TOCElement structures, including
-individual hyperlinks as well as navigational toolbars and table-of-content listings.</%doc>
+# nav.myt - Provides page navigation elements that are derived from toc.TOCElement structures, including
+# individual hyperlinks as well as navigational toolbars and table-of-content listings.
 
-<%method itemlink trim="both">
-    <%args>
-    item
-    anchor=True
-    </%args>
-    <%args scope="request">
-        extension='myt'
-    </%args>
-    <a href="<% item.get_link(extension=extension, anchor=anchor) %>"><% item.description %></a>
-</%method>
+<%namespace name="tocns" file="toc.html"/>
 
-<%method toclink trim="both">
-    <%args>
-        toc 
-        path
-        description=None
-        extension
-    </%args>
-    <%init>
+<%def name="itemlink(item, anchor=True)" filter="trim">
+    <a href="${ item.get_link(extension=extension, anchor=anchor) }">${ item.description }</a>
+</%def>
+
+<%def name="toclink(toc, path, description=None)" filter="trim">
+    <%
         item = toc.get_by_path(path)
         if description is None:
             if item:
                 description = item.description
             else:
                 description = path
-    </%init>
+    %>
 % if item:
-    <a href="<% item.get_link(extension=extension) %>"><% description %></a>
+    <a href="${ item.get_link(extension=extension) }">${ description }</a>
 % else:
-    <b><% description %></b>
-%
-</%method>
+    <b>${ description }</b>
+% endif
+</%def>
 
 
-<%method link trim="both">
-    <%args>
-        href
-        text
-        class_
-    </%args>
-    <a href="<% href %>" <% class_ and (('class=\"%s\"' % class_) or '')%>><% text %></a>
-</%method>
+<%def name="link" filter="trim(href, text, class_)">
+    <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
+</%def>
 
-<%method topnav>
-	<%args>
-		item
-		extension
-	</%args>
+<%def name="topnav(item)">
 <div class="topnav">
 
 <div class="topnavsectionlink">
 
-<a href="index.<% extension %>">Table of Contents</a>
+<a href="index.${ extension }">Table of Contents</a>
 
 <div class="prevnext">
 % if item.previous is not None:
-Previous: <& itemlink, item=item.previous, anchor=False &>
-%
+Previous: ${itemlink(item=item.previous, anchor=False)}
+% endif
 
 % if item.previous is not None and item.next is not None:
 &nbsp; | &nbsp;
-%
+% endif
 
 % if item.next is not None:
 
-Next: <& itemlink, item=item.next, anchor=False &>
-%
+Next: ${itemlink(item=item.next, anchor=False)}
+% endif
 
 </div>
 </div>
 
 <div class="topnavmain">
-	<div class="topnavheader"><% item.description %></div>
+	<div class="topnavheader">${ item.description }</div>
 	<div class="topnavitems">
-	<& toc.myt:printtoc, root=item, current=None, full=True, extension=extension, anchor_toplevel=True &>
+	% if tocns is UNDEFINED:
+	    <%
+	        raise "its undefined"
+	    %>
+	% endif
+	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
 	</div>
 </div>
 
 </div>
-</%method>
+</%def>
 
-<%method pagenav>
-<%args>
-    item
-</%args>
+<%def name="pagenav(item)">
 <div class="sectionnavblock">
 <div class="sectionnav">
 
 %       if item.previous is not None:
-        Previous: <& itemlink, item=item.previous &>
-%       # end if
+        Previous: ${itemlink(item=item.previous)}
+%       endif
 
 %       if item.next is not None:
 %               if item.previous is not None:
                 |
-%               # end if
+%               endif
 
-        Next: <& itemlink, item=item.next &>
-%       # end if
+        Next: ${itemlink(item=item.next)}
+%       endif
 
 </div>
 </div>
-</%method>
+</%def>

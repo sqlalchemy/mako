@@ -50,6 +50,7 @@ class Template(object):
             self._code = None
         self.module = module
         self.description = description
+        self.filename = filename
         self.callable_ = self.module.render
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
@@ -93,12 +94,12 @@ class DefTemplate(Template):
         return self.parent.get_def(name)
         
 def _compile_text(text, identifier, filename):
-    node = Lexer(text).parse()
-    source = Compiler(node).render()
-    #print source
+    node = Lexer(text, filename).parse()
+    source = Compiler(node, filename).render()
+    print source
     cid = identifier
     module = imp.new_module(cid)
-    code = compile(source, filename or cid, 'exec')
+    code = compile(source, cid, 'exec')
     exec code in module.__dict__, module.__dict__
     return (source, module)
 

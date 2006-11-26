@@ -35,11 +35,15 @@ def url_unescape(string):
         text = text.decode("utf8")
     return text
 
+def trim(string):
+    return string.strip()
+    
 # TODO: options to make this dynamic per-compilation will be added in a later release
 DEFAULT_ESCAPES = {
     'x':xml_escape,
     'h':html_escape,
-    'u':url_escape
+    'u':url_escape,
+    'trim':trim,
 }
 
 _ASCII_re = re.compile(r'\A[\x00-\x7f]*\Z')

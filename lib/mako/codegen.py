@@ -81,9 +81,9 @@ class _GenerateRenderMethod(object):
             buffered = filtered = False
             
         if args is None:
-            args = ['context']
+            args = ['context', '**kwargs']
         else:
-            args = [a for a in ['context'] + args]
+            args = [a for a in ['context'] + args + ['**kwargs']]
 
         if not self.in_def:
             self._inherit()
@@ -97,13 +97,13 @@ class _GenerateRenderMethod(object):
         if len(self.identifiers.locally_assigned) > 0:
             printer.writeline("__locals = {}")
 
-        self.write_variable_declares(self.identifiers)
+        self.write_variable_declares(self.identifiers, first="kwargs")
 
         for n in node.nodes:
             n.accept_visitor(self)
 
         self.write_def_finish(node, buffered, filtered)
-
+        printer.writeline(None)
         printer.write("\n\n")
 
     def _inherit(self):
@@ -196,6 +196,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
 
         self.write_def_finish(node, buffered, filtered)
+        self.printer.writeline(None)
         
     def write_def_finish(self, node, buffered, filtered):
         if not buffered:
@@ -210,7 +211,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("return %s" % s)
             else:
                 self.printer.writeline("context.write(%s)" % s)
-        self.printer.writeline(None)
+            self.printer.writeline(None)
     
     def create_filter_callable(self, args, target):
         d = dict([(k, "filters." + v.func_name) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
@@ -241,33 +242,40 @@ class _GenerateRenderMethod(object):
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
 
-            if not self.in_def:
+            if not self.in_def and len(self.identifiers.locally_assigned) > 0:
                 # if we are the "template" def, fudge locally declared/modified variables into the "__locals" dictionary,
                 # which is used for def calls within the same template, to simulate "enclosing scope"
-                self.printer.writeline('__locals.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
-
+                #self.printer.writeline('__locals.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
+                self.printer.writeline('__locals.update(dict([(k, v) for k, v in locals().iteritems() if k in [%s]]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
+                
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
         self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (node.parsed_attributes['file'], repr(node.attributes.get('import', False))))
 
     def visitNamespaceTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("def make_namespace():")
-        export = []
-        identifiers = self.identifiers.branch(node)
-        class NSDefVisitor(object):
-            def visitDefTag(s, node):
-                self.write_inline_def(node, identifiers)
-                export.append(node.name)
-        vis = NSDefVisitor()
-        for n in node.nodes:
-            n.accept_visitor(vis)
-        self.printer.writeline("return [%s]" % (','.join(export)))
-        self.printer.writeline(None)
-        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=make_namespace())" % (node.name, repr(node.name), node.parsed_attributes.get('file', 'None')))
+        if len(node.nodes):
+            self.printer.writeline("def make_namespace():")
+            export = []
+            identifiers = self.identifiers.branch(node)
+            class NSDefVisitor(object):
+                def visitDefTag(s, node):
+                    self.write_inline_def(node, identifiers)
+                    export.append(node.name)
+            vis = NSDefVisitor()
+            for n in node.nodes:
+                n.accept_visitor(vis)
+            self.printer.writeline("return [%s]" % (','.join(export)))
+            self.printer.writeline(None)
+            callable_name = "make_namespace()"
+        else:
+            callable_name = "None"
+        self.printer.writeline("%s = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s)" % (node.name, repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
         if eval(node.attributes.get('inheritable', "False")):
             self.printer.writeline("self.%s = %s" % (node.name, node.name))
-        
+        if not self.in_def:
+            self.printer.writeline("__locals[%s] = %s" % (repr(node.name), node.name))
+            
     def visitDefTag(self, node):
         pass
 
@@ -285,10 +293,15 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(vis)
         self.printer.writeline("def body(**kwargs):")
         body_identifiers = identifiers.branch(node, includedefs=False, includenode=False)
+        # TODO: figure out best way to specify buffering/nonbuffering (at call time would be better)
+        buffered = False
+        if buffered:
+            self.printer.writeline("context.push_buffer()")
+            self.printer.writeline("try:")
         self.write_variable_declares(body_identifiers, first="kwargs")
         for n in node.nodes:
             n.accept_visitor(self)
-        self.printer.writeline("return ''")
+        self.write_def_finish(node, buffered, False)
         self.printer.writeline(None)
         self.printer.writeline("return [%s]" % (','.join(export)))
         self.printer.writeline(None)
@@ -384,6 +397,8 @@ class _Identifiers(object):
         self.check_declared(node)
     def visitNamespaceTag(self, node):
         self.check_declared(node)
+        self.locally_declared.add(node.name)
+        self.locally_assigned.add(node.name)
         if node is self.node:
             for n in node.nodes:
                 n.accept_visitor(self)

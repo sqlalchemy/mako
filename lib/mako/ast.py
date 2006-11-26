@@ -6,14 +6,21 @@
 
 """utilities for analyzing expressions and blocks of Python code, as well as generating Python from AST nodes"""
 
-from compiler import ast, parse, visitor
+from compiler import ast, visitor
+from compiler import parse as compiler_parse
 from mako import util, exceptions
 from StringIO import StringIO
 import re
 
+def parse(code, mode, lineno, pos, filename):
+    try:
+        return compiler_parse(code, mode)
+    except SyntaxError, e:
+        raise exceptions.SyntaxException("(%s) %s" % (e.__class__.__name__, str(e)), lineno, pos, filename)
+    
 class PythonCode(object):
     """represents information about a string containing Python code"""
-    def __init__(self, code, lineno, pos):
+    def __init__(self, code, lineno, pos, filename):
         self.code = code
         
         # represents all identifiers which are assigned to at some point in the code
@@ -29,7 +36,7 @@ class PythonCode(object):
         # - AST is less likely to break with version changes (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
         if isinstance(code, basestring):
-            expr = parse(code, "exec")
+            expr = parse(code.lstrip(), "exec", lineno, pos, filename)
         else:
             expr = code
             
@@ -72,14 +79,14 @@ class PythonCode(object):
                         self.declared_identifiers.add(alias)
                     else:
                         if mod == '*':
-                            raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", lineno, pos)
+                            raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", lineno, pos, filename)
                         self.declared_identifiers.add(mod)
         f = FindIdentifiers()
         visitor.walk(expr, f) #, walker=walker())
 
 class ArgumentList(object):
     """parses a fragment of code as a comma-separated list of expressions"""
-    def __init__(self, code, lineno, pos):
+    def __init__(self, code, lineno, pos, filename):
         self.codeargs = []
         self.args = []
         self.declared_identifiers = util.Set()
@@ -87,7 +94,7 @@ class ArgumentList(object):
         class FindTuple(object):
             def visitTuple(s, node, *args):
                 for n in node.nodes:
-                    p = PythonCode(n, lineno, pos)
+                    p = PythonCode(n, lineno, pos, filename)
                     self.codeargs.append(p)
                     self.args.append(ExpressionGenerator(n).value())
                     self.declared_identifiers = self.declared_identifiers.union(p.declared_identifiers)
@@ -97,7 +104,7 @@ class ArgumentList(object):
                 # if theres text and no trailing comma, insure its parsed
                 # as a tuple by adding a trailing comma
                 code  += ","
-            expr = parse(code, "exec")
+            expr = parse(code, "exec", lineno, pos, filename)
         else:
             expr = code
 
@@ -113,10 +120,10 @@ class PythonFragment(PythonCode):
         except (MyException, e):
     etc.
     """
-    def __init__(self, code, lineno, pos):
-        m = re.match(r'^(\w+)(?:\s+(.*?))?:$', code)
+    def __init__(self, code, lineno, pos, filename):
+        m = re.match(r'^(\w+)(?:\s+(.*?))?:$', code.strip())
         if not m:
-            raise exceptions.CompileException("Fragment '%s' is not a partial control statement" % code, lineno, pos)
+            raise exceptions.CompileException("Fragment '%s' is not a partial control statement" % code, lineno, pos, filename)
         (keyword, expr) = m.group(1,2)
         if keyword in ['for','if', 'while']:
             code = code + "pass"
@@ -127,8 +134,8 @@ class PythonFragment(PythonCode):
         elif keyword == 'except':
             code = "try:pass\n" + code + "pass"
         else:
-            raise exceptions.CompileException("Unsupported control keyword: '%s'" % keyword, lineno, pos)
-        super(PythonFragment, self).__init__(code, lineno, pos)
+            raise exceptions.CompileException("Unsupported control keyword: '%s'" % keyword, lineno, pos, filename)
+        super(PythonFragment, self).__init__(code, lineno, pos, filename)
         
 class walker(visitor.ASTVisitor):
     def dispatch(self, node, *args):
@@ -138,9 +145,9 @@ class walker(visitor.ASTVisitor):
         
 class FunctionDecl(object):
     """function declaration"""
-    def __init__(self, code, lineno, pos):
+    def __init__(self, code, lineno, pos, filename):
         self.code = code
-        expr = parse(code, "exec")
+        expr = parse(code, "exec", lineno, pos, filename)
         class ParseFunc(object):
             def visitFunction(s, node, *args):
                 self.funcname = node.name
@@ -152,7 +159,7 @@ class FunctionDecl(object):
         f = ParseFunc()
         visitor.walk(expr, f)
         if not hasattr(self, 'funcname'):
-            raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos)
+            raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos, filename)
     def get_argument_expressions(self, include_defaults=True):
         """return the argument declarations of this FunctionDecl as a printable list."""
         namedecls = []

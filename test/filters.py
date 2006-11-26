@@ -58,7 +58,15 @@ class BufferTest(unittest.TestCase):
 """)
         assert flatten_result(t.render()) == "this is foo hi-><-hi"
 
-
+    def test_capture(self):
+        t = Template("""
+            <%def name="foo" buffered="False">
+                this is foo
+            </%def>
+            ${"hi->" + capture(foo) + "<-hi"}
+""")
+        assert flatten_result(t.render()) == "hi-> this is foo <-hi"
+        
 
 if __name__ == '__main__':
     unittest.main()
