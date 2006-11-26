@@ -23,6 +23,8 @@
 <div class="subsection" style="margin-left:${repr(item.depth * 10)}px;">
 
 <%
+    if caller is UNDEFINED:
+        raise "caller is undefined"
     content = caller.body()
     re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
     content = re2.sub(lambda m: m.group(1), content)

@@ -96,10 +96,13 @@ class DefTemplate(Template):
 def _compile_text(text, identifier, filename):
     node = Lexer(text, filename).parse()
     source = Compiler(node, filename).render()
-    print source
+    if filename is not None:
+        file(filename + ".py", "w").write(source)
+    else:
+        print source
     cid = identifier
     module = imp.new_module(cid)
-    code = compile(source, cid, 'exec')
+    code = compile(source, cid + " " + str(filename), 'exec')
     exec code in module.__dict__, module.__dict__
     return (source, module)
 

@@ -136,5 +136,68 @@ class NamespaceTest(unittest.TestCase):
         """)
         
         print collection.get_template("index.html").render()
+        
+    def test_ccall(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%namespace name="foo" file="ns.html" inheritable="True"/>
+
+            ${next.body()}
+    """)
+        collection.put_string("ns.html", """
+            <%def name="bar">
+                this is ns.html->bar
+                caller body: ${caller.body()}
+            </%def>
+        """)
+
+        collection.put_string("index.html", """
+            <%inherit file="base.html"/>
+
+            this is index
+            <%call expr="self.foo.bar()">
+                call body
+            </%call>
+        """)
+
+        print collection.get_template("index.html").render()
+
+    def test_ccall_2(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%namespace name="foo" file="ns1.html" inheritable="True"/>
+
+            ${next.body()}
+    """)
+        collection.put_string("ns1.html", """
+            <%namespace name="foo2" file="ns2.html"/>
+            <%def name="bar">
+                <%call expr="foo2.ns2_bar()">
+                this is ns1.html->bar
+                caller body: ${caller.body()}
+                </%call>
+            </%def>
+        """)
+
+        collection.put_string("ns2.html", """
+            <%def name="ns2_bar">
+                this is ns2.html->bar
+                caller body: ${caller.body()}
+            </%def>
+        """)
+
+        collection.put_string("index.html", """
+            <%inherit file="base.html"/>
+
+            this is index
+            <%call expr="self.foo.bar()">
+                call body
+            </%call>
+        """)
+
+        print collection.get_template("index.html").render()
+        
+        
+        
 if __name__ == '__main__':
     unittest.main()

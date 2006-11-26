@@ -338,22 +338,31 @@ class _GenerateRenderMethod(object):
         # TODO: figure out best way to specify buffering/nonbuffering (at call time would be better)
         buffered = False
         if buffered:
-            self.printer.writeline("context.push_buffer()")
-            self.printer.writeline("try:")
+            self.printer.writelines(
+                "context.push_buffer()",
+                "try:"
+            )
         self.write_variable_declares(body_identifiers, first="kwargs")
         for n in node.nodes:
             n.accept_visitor(self)
         self.write_def_finish(node, buffered, False)
-        self.printer.writeline(None)
-        self.printer.writeline("return [%s]" % (','.join(export)))
-        self.printer.writeline(None)
-        self.printer.writeline("__cl = context.locals_({})")
-        self.printer.writeline("context.push({'caller':runtime.Namespace('caller', __cl, callables=ccall(__cl))})")
-        self.printer.writeline("try:")
-        self.printer.writeline("context.write(unicode(%s))" % node.attributes['expr'])
-        self.printer.writeline("finally:")
-        self.printer.writeline("context.pop()")
-        self.printer.writeline(None)
+        self.printer.writelines(
+            None,
+            "return [%s]" % (','.join(export)),
+            None
+        )
+        self.printer.writelines(
+            # make local copy of our caller, if any
+            "__cl = context.locals_({'caller':context['caller'].target[-1]})",
+            # push on global "caller"
+            "context['caller'].push(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
+            "try:",
+                "context.write(unicode(%s))" % node.attributes['expr'],
+            "finally:",
+                # pop it off
+                "context['caller'].pop()",
+            None
+        )
 
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""

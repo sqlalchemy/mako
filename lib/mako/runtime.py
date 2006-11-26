@@ -17,6 +17,7 @@ class Context(object):
         self.namespaces = {}
         #data['args'] = _AttrFacade(self)
         data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
+        data['caller'] = _CallerFacade()
     def keys(self):
         return self._argstack[-1].keys()
     def __getitem__(self, key):
@@ -61,6 +62,16 @@ class Context(object):
         x.pop('parent', None)
         x.pop('next', None)
         return c
+
+class _CallerFacade(object):
+    def __init__(self):
+        self.target = [Undefined]
+    def push(self, obj):
+        self.target.append(obj)
+    def pop(self):
+        self.target.pop()
+    def __getattr__(self, key):
+        return getattr(self.target[-1], key)
         
 class _AttrFacade(object):
     def __init__(self, ctx):
@@ -152,7 +163,9 @@ def inherit_from(context, uri):
     if callable_  is not None:
         return callable_(lclcontext)
     else:
-        template.module.generate_namespaces(context)
+        gen_ns = getattr(template.module, 'generate_namespaces', None)
+        if gen_ns is not None:
+            gen_ns(context)
         return (template.callable_, lclcontext)
 
 def _lookup_template(context, uri):
