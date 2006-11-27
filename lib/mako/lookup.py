@@ -80,19 +80,9 @@ class TemplateLookup(TemplateCollection):
             return template
             
     def put_string(self, uri, text):
-        lock = sync.NameLock(uri)
-        lock.acquire()
-        try:
-            self.__collection[uri] = Template(text, lookup=self, description=uri, **self.template_args)
-        finally:
-            lock.release()
+        self.__collection[uri] = Template(text, lookup=self, description=uri, **self.template_args)
     def put_template(self, uri, template):
-        lock = sync.NameLock(uri)
-        lock.acquire()
-        try:
-            self.__collection[uri] = template
-        finally:
-            lock.release()
+        self.__collection[uri] = template
         
             
             
