@@ -11,7 +11,7 @@ from mako.lexer import Lexer
 from mako.codegen import Compiler
 from mako import runtime
 from mako import util
-import imp, time, weakref
+import imp, time, weakref, tempfile, shutil
 
 _modules = weakref.WeakValueDictionary()
 _inmemory_templates = weakref.WeakValueDictionary()
@@ -23,13 +23,10 @@ class _ModuleMarker(object):
 
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, module=None, identifier=None, description=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None):
+    def __init__(self, text=None,identifier=None, description=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
-        
-        module - a Python module, such as loaded via __import__ or similar.  the module should contain at least one
-        function render(context) that renders with the given context.  
         
         identifier - the "id" of this template.  defaults to the identifier of the given module, or for text
         the hex string of this Template's object id
@@ -45,9 +42,21 @@ class Template(object):
             _inmemory_templates[module.__name__] = self
             self._code = code
             self._source = text
+        elif filename is not None:
+            if module_directory is not None:
+                path = posixpath.join(module_directory, identifier + ".py")
+                if not os.access(path, os.F_OK):
+                    util.verify_directory(module_directory)
+                    _compile_module(text, identifier, filename, module_directory)
+                module = imp.load_source(self.identifier, path, file(path))
+                del sys.modules[self.identifier]
+            else:
+                (code, module) = _compile_text(file(filename), self.identifier, filename)
+                self._source = None
+                self._code = code
         else:
-            self._source = None
-            self._code = None
+            raise exceptions.RuntimeException("Template requires text or filename")
+
         self.module = module
         self.description = description
         self.filename = filename
@@ -96,40 +105,54 @@ class DefTemplate(Template):
 def _compile_text(text, identifier, filename):
     node = Lexer(text, filename).parse()
     source = Compiler(node, filename).render()
-    if filename is not None:
-        file(filename + ".py", "w").write(source)
-    else:
-        print source
+#    if filename is not None:
+#        file(filename + ".py", "w").write(source)
+#    else:
+#        print source
     cid = identifier
     module = imp.new_module(cid)
     code = compile(source, cid + " " + str(filename), 'exec')
     exec code in module.__dict__, module.__dict__
     return (source, module)
 
+def _compile_module(text, identifier, filename, outputpath):
+    
+    dest = tempfile.NamedTemporaryFile()
+
+    node = Lexer(text, filename).parse()
+    source = Compiler(node, filename).render()
+    dest.write(source)
+    dest.close()
+    shutil.move(dest.name, outputpath)
+
 def _get_template_source(callable_):
     """return the source code for the template that produced the given rendering callable"""
     name = callable_.func_globals['__name__']
     try:
         template = _inmemory_templates[name]
-        return template._source
+        if template._source  is not None:
+            return template._source
     except KeyError:
-        module = _modules[name].module
-        filename = module._template_filename
-        if filename is None:
-            if not filename:
-                raise exceptions.RuntimeException("Cant get source code or template filename for template: %s" % name)
-        return file(filename).read()
+        pass
+    module = _modules[name].module
+    filename = module._template_filename
+    if filename is None:
+        if not filename:
+            raise exceptions.RuntimeException("Cant get source code or template filename for template: %s" % name)
+    return file(filename).read()
 
 def _get_module_source(callable_):
     name = callable_.func_globals['__name__']
     try:
         template = _inmemory_templates[name]
-        return template._code
+        if template._code is not None:
+            return template._code
     except KeyError:
-        module = _modules[name].module
-        filename = module.__file__
-        if filename is None:
-            if not filename:
-                raise exceptions.RuntimeException("Cant get module source code or module filename for template: %s" % name)
-        return file(filename).read()
+        pass
+    module = _modules[name].module
+    filename = module.__file__
+    if filename is None:
+        if not filename:
+            raise exceptions.RuntimeException("Cant get module source code or module filename for template: %s" % name)
+    return file(filename).read()
                 

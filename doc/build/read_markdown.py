@@ -148,11 +148,6 @@ def safety_code(tree):
         tag.text = code.text
         code.append(tag)
         code.text = ""
-        #code.tail =None
-        #tag.text = code.text
-        #code_parent = parents[code]
-        #code_parent[reverse_parent(code_parent, code)] = tag
-        
 
 def reverse_parent(parent, item):
     for n, i in enumerate(parent):
