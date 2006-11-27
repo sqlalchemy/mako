@@ -1,6 +1,6 @@
 from mako.template import Template
 from mako import lookup
-from util import flatten_result
+from util import flatten_result, result_lines
 import unittest
 
 class NamespaceTest(unittest.TestCase):
@@ -86,7 +86,12 @@ class NamespaceTest(unittest.TestCase):
             </%def>
         """)
 
-        print collection.get_template("main.html").render()
+        assert result_lines(collection.get_template("main.html").render()) == [
+            "this is main.",
+            "this is bar, foo is" ,
+            "this is ns.html->bar"
+        ]
+
 
     def test_in_remote_def(self):
         collection = lookup.TemplateLookup()
@@ -112,7 +117,11 @@ class NamespaceTest(unittest.TestCase):
             ${main.bar()}
         """)
 
-        print collection.get_template("index.html").render()
+        assert result_lines(collection.get_template("index.html").render()) == [  
+            "this is index",
+            "this is bar, foo is" ,
+            "this is ns.html->bar"
+        ]
     
     def test_inheritance(self):
         """test namespace initialization in a base inherited template that doesnt otherwise access the namespace"""
@@ -135,7 +144,10 @@ class NamespaceTest(unittest.TestCase):
             ${self.foo.bar()}
         """)
         
-        print collection.get_template("index.html").render()
+        assert result_lines(collection.get_template("index.html").render()) == [
+            "this is index",
+            "this is ns.html->bar"
+        ]
         
     def test_ccall(self):
         collection = lookup.TemplateLookup()
@@ -160,7 +172,12 @@ class NamespaceTest(unittest.TestCase):
             </%call>
         """)
 
-        print collection.get_template("index.html").render()
+        assert result_lines(collection.get_template("index.html").render()) == [
+            "this is index",
+            "this is ns.html->bar",
+            "caller body:",
+            "call body"
+        ]
 
     def test_ccall_2(self):
         collection = lookup.TemplateLookup()
@@ -195,7 +212,14 @@ class NamespaceTest(unittest.TestCase):
             </%call>
         """)
 
-        print collection.get_template("index.html").render()
+        assert result_lines(collection.get_template("index.html").render()) == [
+            "this is index",
+            "this is ns2.html->bar",
+            "caller body:",
+            "this is ns1.html->bar",
+            "caller body:",
+            "call body"
+        ]
         
         
         

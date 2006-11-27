@@ -2,6 +2,7 @@ import unittest
 
 def suite():
     modules_to_test = (
+        'lru',
         'ast',
         'pygen',
         'lexer',

@@ -40,7 +40,6 @@ class GlobalsTest(unittest.TestCase):
             %>
         y is ${y}
 """)
-        print t.code
         assert t.render().strip() == "y is hi"
         
 if __name__ == '__main__':
