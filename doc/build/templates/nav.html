@@ -55,11 +55,6 @@ Next: ${itemlink(item=item.next, anchor=False)}
 <div class="topnavmain">
 	<div class="topnavheader">${ item.description }</div>
 	<div class="topnavitems">
-	% if tocns is UNDEFINED:
-	    <%
-	        raise "its undefined"
-	    %>
-	% endif
 	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
 	</div>
 </div>

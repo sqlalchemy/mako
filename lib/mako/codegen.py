@@ -20,11 +20,8 @@ class Compiler(object):
     def render(self):
         buf = util.FastEncodingBuffer()
         printer = PythonPrinter(buf)
-
         _GenerateRenderMethod(printer, self, self.node)
-
         return buf.getvalue()
-
         
 class _GenerateRenderMethod(object):
     def __init__(self, printer, compiler, node):
@@ -87,12 +84,11 @@ class _GenerateRenderMethod(object):
         module_identifiers.declared = module_ident
         
         # module-level names, python code
-        self.printer.writeline("from mako import runtime")
+        self.printer.writeline("from mako import runtime, filters")
+        self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         self.printer.writeline("_modified_time = %s" % repr(time.time()))
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
-        self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
-        self.printer.writeline("from mako import filters")
 
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
@@ -138,22 +134,22 @@ class _GenerateRenderMethod(object):
             self.printer.write_indented_block(n.text)
 
     def write_inherit(self, node):
-        self.printer.writeline("def _inherit(context):")
-        self.printer.writeline("generate_namespaces(context)")
+        self.printer.writeline("def _mako_inherit(context):")
+        self.printer.writeline("_mako_generate_namespaces(context)")
         self.printer.writeline("return runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):
         self.printer.writelines(
-            "def get_namespace(context, name):",
+            "def _mako_get_namespace(context, name):",
             "try:",
             "return context.namespaces[(render, name)]",
             "except KeyError:",
-            "generate_namespaces(context)",
+            "_mako_generate_namespaces(context)",
             "return context.namespaces[(render, name)]",
             None,None
             )
-        self.printer.writeline("def generate_namespaces(context):")
+        self.printer.writeline("def _mako_generate_namespaces(context):")
         for node in namespaces.values():
             self.write_source_comment(node)
             if len(node.nodes):
@@ -221,7 +217,7 @@ class _GenerateRenderMethod(object):
                 else:
                     self.write_inline_def(comp, identifiers)
             elif ident in self.compiler.namespaces:
-                self.printer.writeline("%s = get_namespace(context, %s)" % (ident, repr(ident)))
+                self.printer.writeline("%s = _mako_get_namespace(context, %s)" % (ident, repr(ident)))
             else:
                 if first is not None:
                     self.printer.writeline("%s = %s.get(%s, context.get(%s, UNDEFINED))" % (ident, first, repr(ident), repr(ident)))
@@ -230,7 +226,7 @@ class _GenerateRenderMethod(object):
         
     def write_source_comment(self, node):
         if self.last_source_line != node.lineno:
-            self.printer.writeline("# SOURCE LINE %d" % node.lineno, is_comment=True)
+            self.printer.writeline("# SOURCE LINE %d" % node.lineno)
             self.last_source_line = node.lineno
 
     def write_def_decl(self, node, identifiers):
@@ -331,7 +327,6 @@ class _GenerateRenderMethod(object):
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
                 # if we are the "template" def, fudge locally declared/modified variables into the "__locals" dictionary,
                 # which is used for def calls within the same template, to simulate "enclosing scope"
-                #self.printer.writeline('__locals.update(%s)' % (",".join(["%s=%s" % (x, x) for x in node.declared_identifiers()])))
                 self.printer.writeline('__locals.update(dict([(k, v) for k, v in locals().iteritems() if k in [%s]]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
                 
     def visitIncludeTag(self, node):

@@ -4,7 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import os, stat, posixpath, re
+import os, stat, posixpath
 from mako import exceptions, util
 from mako.template import Template
 
@@ -24,7 +24,7 @@ class TemplateCollection(object):
         raise NotImplementedError()
         
 class TemplateLookup(TemplateCollection):
-    def __init__(self, directories=None, module_directory=None, filesystem_checks=False, collection_size=60, format_exceptions=False, error_handler=None, output_encoding=None):
+    def __init__(self, directories=None, module_directory=None, filesystem_checks=False, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None):
         self.directories = directories or []
         self.module_directory = module_directory
         self.filesystem_checks = filesystem_checks
@@ -50,9 +50,6 @@ class TemplateLookup(TemplateCollection):
                 else:
                     raise exceptions.TemplateLookupException("Cant locate template for uri '%s'" % uri)
 
-    def __ident_from_uri(self, uri):
-        return re.sub(r"\W", "_", uri)
-        
     def __load(self, filename, uri):
         self._mutex.acquire()
         try:
@@ -62,7 +59,7 @@ class TemplateLookup(TemplateCollection):
             except KeyError:
                 pass
             try:
-                self.__collection[uri] = Template(identifier=self.__ident_from_uri(uri), description=uri, filename=filename, lookup=self, **self.template_args)
+                self.__collection[uri] = Template(identifier=uri, description=uri, filename=filename, lookup=self, **self.template_args)
                 return self.__collection[uri]
             except:
                 self.__collection.pop(uri, None)

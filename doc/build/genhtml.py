@@ -28,7 +28,7 @@ pickle.dump(root, file('./output/table_of_contents.pickle', 'w'))
 template_dirs = ['./templates', './output']
 output = os.path.dirname(os.getcwd())
 
-lookup = TemplateLookup(template_dirs)
+lookup = TemplateLookup(template_dirs, module_directory='./modules')
 
 def genfile(name, toc):
     infile = name + ".html"
@@ -38,7 +38,12 @@ def genfile(name, toc):
     outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
     
 for filename in files:
-    genfile(filename, root)
+    try:
+        genfile(filename, root)
+    except Exception, e:
+        import mako.exceptions
+        print mako.exceptions.get_error_template().render(error=e)
+        break
 
 
         

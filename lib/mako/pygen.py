@@ -38,7 +38,7 @@ class PythonPrinter(object):
         self.stream.write(text)
         
     def write_indented_block(self, block):
-        """print a line or lines of python which already contains indentation.
+        """print a line or lines of python which already contain indentation.
         
         The indentation of the total block of lines will be adjusted to that of
         the current indent level.""" 
@@ -47,10 +47,11 @@ class PythonPrinter(object):
             self.line_buffer.append(l)
     
     def writelines(self, *lines):
+        """print a series of lines of python."""
         for line in lines:
             self.writeline(line)
                 
-    def writeline(self, line, is_comment=False):
+    def writeline(self, line):
         """print a line of python, indenting it according to the current indent level.
         
         this also adjusts the indentation counter according to the content of the line."""
@@ -69,6 +70,8 @@ class PythonPrinter(object):
         else:
             hastext = True
 
+        is_comment = line and len(line) and line[0] == '#'
+        
         # see if this line should decrease the indentation level
         if (not decreased_indent and 
             not is_comment and 

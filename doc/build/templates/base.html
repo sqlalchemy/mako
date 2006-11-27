@@ -4,10 +4,10 @@
     # bootstrap TOC structure from request args, or pickled file if not present.
     import cPickle as pickle
     import os, time
-    print "base.myt generating from table of contents for file %s" % ("<todo: get the file>")
+    print "%s generating from table of contents for file %s" % (local.filename, self.filename)
     toc = context.get('toc')
     if toc is None:
-        filename = os.path.join(os.path.dirname(self.template.filename), 'table_of_contents.pickle')
+        filename = os.path.join(os.path.dirname(self.filename), 'table_of_contents.pickle')
         toc = pickle.load(file(filename))
     version = toc.version
     last_updated = toc.last_updated
@@ -23,8 +23,8 @@
 
 <div class="docheader">
 
-<h1><% toc.root.doctitle %></h1>
-<div class="">Version: <% version %>   Last Updated: <% time.strftime('%x %X', time.localtime(last_updated)) %></div>
+<h1>${toc.root.doctitle}</h1>
+<div class="">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
 </div>
 
 ${next.body(toc=toc)}
