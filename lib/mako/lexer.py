@@ -193,7 +193,7 @@ class Lexer(object):
             return False
             
     def match_expression(self):
-        match = self.match(r"\${(.+?)(?:\|\s*(.+?)\s*)?}", re.S)
+        match = self.match(r"\${(.+?)(?:\|\s*([^\|]+?)\s*)?}", re.S)
         if match:
             escapes = match.group(2)
             self.append_node(parsetree.Expression, match.group(1), escapes or "")

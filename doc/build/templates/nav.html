@@ -16,11 +16,11 @@
             else:
                 description = path
     %>
-% if item:
-    <a href="${ item.get_link(extension=extension) }">${ description }</a>
-% else:
-    <b>${ description }</b>
-% endif
+    % if item:
+        <a href="${ item.get_link(extension=extension) }">${ description }</a>
+    % else:
+        <b>${ description }</b>
+    % endif
 </%def>
 
 
@@ -29,55 +29,50 @@
 </%def>
 
 <%def name="topnav(item)">
-<div class="topnav">
+    <div class="topnav">
+    <div class="topnavsectionlink">
 
-<div class="topnavsectionlink">
+        <a href="index.${ extension }">Table of Contents</a>
 
-<a href="index.${ extension }">Table of Contents</a>
+        <div class="prevnext">
+            % if item.previous is not None:
+                Previous: ${itemlink(item=item.previous, anchor=False)}
+            % endif
 
-<div class="prevnext">
-% if item.previous is not None:
-Previous: ${itemlink(item=item.previous, anchor=False)}
-% endif
+            % if item.previous is not None and item.next is not None:
+                &nbsp; | &nbsp;
+            % endif
 
-% if item.previous is not None and item.next is not None:
-&nbsp; | &nbsp;
-% endif
+            % if item.next is not None:
+                Next: ${itemlink(item=item.next, anchor=False)}
+            % endif
 
-% if item.next is not None:
+        </div>
+    </div>
 
-Next: ${itemlink(item=item.next, anchor=False)}
-% endif
+    <div class="topnavmain">
+    	<div class="topnavheader">${ item.description }</div>
+    	<div class="topnavitems">
+    	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
+    	</div>
+    </div>
 
-</div>
-</div>
-
-<div class="topnavmain">
-	<div class="topnavheader">${ item.description }</div>
-	<div class="topnavitems">
-	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
-	</div>
-</div>
-
-</div>
+    </div>
 </%def>
 
 <%def name="pagenav(item)">
-<div class="sectionnavblock">
-<div class="sectionnav">
+    <div class="sectionnavblock">
+        <div class="sectionnav">
 
-%       if item.previous is not None:
-        Previous: ${itemlink(item=item.previous)}
-%       endif
+            % if item.previous is not None:
+                Previous: ${itemlink(item=item.previous)}
+            % endif
 
-%       if item.next is not None:
-%               if item.previous is not None:
-                |
-%               endif
+            % if item.next is not None:
+                <% context.write(item.previous is not None and "|" or "") %>
+                Next: ${itemlink(item=item.next)}
+            % endif
 
-        Next: ${itemlink(item=item.next)}
-%       endif
-
-</div>
-</div>
+        </div>
+    </div>
 </%def>

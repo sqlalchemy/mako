@@ -14,89 +14,64 @@
 <%namespace name="nav" file="nav.html"/>
 
 <%def name="section(toc, path, description=None)">
-# Main section formatting element.
-<%
-    item = toc.get_by_path(path)
-    if item is None:
-        raise "path: " + path
-%>
+    # Main section formatting element.
+    <%
+        item = toc.get_by_path(path)
+        if item is None:
+            raise "path: " + path
+    %>
 
-<A name="${item.path}"></a>
+    <A name="${item.path}"></a>
 
-<div class="subsection" style="margin-left:${repr(item.depth * 10)}px;">
+    <div class="subsection" style="margin-left:${repr(item.depth * 10)}px;">
 
-<%
-    if caller is UNDEFINED:
-        raise "caller is undefined"
-    content = caller.body()
-    re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
-    content = re2.sub(lambda m: m.group(1), content)
-%>
+    <%
+        content = caller.body()
+        re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
+        content = re2.sub(lambda m: m.group(1), content)
+    %>
 
-% if item.depth > 1:
-<h3>${description or item.description}</h3>
-% endif
+    % if item.depth > 1:
+        <h3>${description or item.description}</h3>
+    % endif
 
     <div class="sectiontext">
     ${content}
     </div>
 
-% if item.depth > 1:
-%   if (item.next and item.next.depth >= item.depth):
-    <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
-%   endif
-% else:
-    <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
-    ${nav.pagenav(item=item)}
-% endif
-</div>
+    % if item.depth > 1:
+        %   if (item.next and item.next.depth >= item.depth):
+            <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
+        %   endif
+    % else:
+        <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
+        ${nav.pagenav(item=item)}
+    % endif
+    </div>
 
 </%def>
 
 
 <%def name="formatplain" filter="plainfilter">
-${ caller.body() | h}
+    ${ caller.body() | h}
 </%def>
 
 
 <%def name="codeline" filter="trim,h">
-<span class="codeline">${ m.content() }</span>
+    <span class="codeline">${ m.content() }</span>
 </%def>
 
 <%def name="code(title=None, syntaxtype='python', html_escape=False, use_sliders=False)">
-<%
-    def fix_indent(f):
-        f =string.expandtabs(f, 4)
-        g = ''
-        lines = string.split(f, "\n")
-        whitespace = None
-        for line in lines:
-            if whitespace is None:
-                match = re.match(r"^([ ]*).+", line)
-                if match is not None:
-                    whitespace = match.group(1)
+    <%
+        content = "<pre>" + capture(caller.body) + "</pre>"
+    %>
 
-            if whitespace is not None:
-                line = re.sub(r"^%s" % whitespace, "", line)
-
-            if whitespace is not None or re.search(r"\w", line) is not None:
-                g += (line + "\n")
-
-
-        return g.rstrip()
-
-    p = re.compile(r'<pre>(.*?)</pre>', re.S)
-    def hlight(match):
-        return "<pre>" + highlight.highlight(fix_indent(match.group(1)), html_escape = html_escape, syntaxtype = syntaxtype) + "</pre>"
-    #content = p.sub(hlight, "<pre>" + capture(caller.body) + "</pre>")
-    content = "<pre>" + capture(caller.body) + "</pre>"
-%>
-
-<div class="${ use_sliders and "sliding_code" or "code" }">
-% if title is not None:
-    <div class="codetitle">${ title }</div>
-% endif
-${ content }</div>
+    <div class="${ use_sliders and "sliding_code" or "code" }">
+        % if title is not None:
+            <div class="codetitle">${ title }</div>
+        % endif
+        ${ content }
+    </div>
 </%def>
 
 

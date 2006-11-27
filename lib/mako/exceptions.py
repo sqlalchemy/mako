@@ -75,8 +75,10 @@ def rich_traceback():
             mods[filename] = (line_map, template_lines)
 
         template_ln = line_map[lineno]
-        template_line = template_lines[template_ln - 1]
-        
+        if template_ln <= len(template_lines):
+            template_line = template_lines[template_ln - 1]
+        else:
+            template_line = None
         new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line))
     return (type, value, new_trcback)
     
@@ -99,6 +101,8 @@ ${str(type)} - ${value}
 % for (filename, lineno, function, line, template_filename, template_ln, template_line) in trcback:
         % if template_line:
         ${template_filename} ${template_ln} ${template_line} <br/>
+        % else:
+        ${filename} ${lineno} ${line} ${template_filename} ${template_ln}<br/>
         % endif
 % endfor
 </body>

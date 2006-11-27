@@ -16,7 +16,7 @@ def parse(code, mode, lineno, pos, filename):
     try:
         return compiler_parse(code, mode)
     except SyntaxError, e:
-        raise exceptions.SyntaxException("(%s) %s" % (e.__class__.__name__, str(e)), lineno, pos, filename)
+        raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), lineno, pos, filename)
     
 class PythonCode(object):
     """represents information about a string containing Python code"""
