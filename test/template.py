@@ -32,5 +32,16 @@ class ControlTest(unittest.TestCase):
             "yes x has test"
         ]
 
+class GlobalsTest(unittest.TestCase):
+    def test_globals(self):
+        t= Template("""
+            <%!
+                y = "hi"
+            %>
+        y is ${y}
+""")
+        print t.code
+        assert t.render().strip() == "y is hi"
+        
 if __name__ == '__main__':
     unittest.main()

@@ -128,9 +128,10 @@ class Lexer(object):
                 self.tag.pop()
             else:
                 if keyword == 'text':
-                    match = self.match(r'.*?(?=\</%text>)',  re.S)
+                    match = self.match(r'(.*?)(?=\</%text>)',  re.S)
                     if not match:
                         raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos, self.filename)
+                    self.append_node(parsetree.Text, match.group(1))
                     return self.match_tag_end()
             return True
         else: 

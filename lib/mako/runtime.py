@@ -12,73 +12,59 @@ class Context(object):
     """provides runtime namespace and output buffer for templates."""
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
-        self._argstack = [data]
+        self._data = data
         self._with_template = None
         self.namespaces = {}
-        #data['args'] = _AttrFacade(self)
+        
+        # "capture" function to buffer def calls
         data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
-        data['caller'] = _CallerFacade()
+        
+        # "caller" stack used by def calls with content
+        self.caller_stack = [Undefined]
+        data['caller'] = _StackFacade(self.caller_stack)
+
     def keys(self):
-        return self._argstack[-1].keys()
+        return self._data.keys()
     def __getitem__(self, key):
-        return self._argstack[-1][key]
+        return self._data[key]
     def _put(self, key, value):
-        self._argstack[-1][key] = value
+        self._data[key] = value
     def push_buffer(self):
         self._buffer_stack.append(util.FastEncodingBuffer())
     def pop_buffer(self):
         return self._buffer_stack.pop()
     def get(self, key, default=None):
-        return self._argstack[-1].get(key, default)
+        return self._data.get(key, default)
     def write(self, string):
         """write a string to this Context's underlying output buffer."""
         self._buffer_stack[-1].write(string)
-    def push(self, args):
-        """push a dictionary of values onto this Context's stack of data."""
-        x = self._argstack[-1].copy()
-        x.update(args)
-        self._argstack.append(x)
-    def pop(self):
-        """pop a dictionary off this Context's stack of data."""
-        self._argstack.pop()
     def _copy(self):
         c = Context.__new__(Context)
         c._buffer_stack = self._buffer_stack
-        x = self._argstack[-1].copy()
-        c._argstack = [x]
+        c._data = self._data.copy()
         c._with_template = self._with_template
         c.namespaces = self.namespaces
-        #x['args'] = _AttrFacade(c)
+        c.caller_stack = self.caller_stack
         return c
     def locals_(self, d):
         """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
         c = self._copy()
-        c._argstack[-1].update(d)
+        c._data.update(d)
         return c
     def clean_inheritance_tokens(self):
         c = self._copy()
-        x = c._argstack[-1]
+        x = c._data
         x.pop('self', None)
         x.pop('parent', None)
         x.pop('next', None)
         return c
 
-class _CallerFacade(object):
-    def __init__(self):
-        self.target = [Undefined]
-    def push(self, obj):
-        self.target.append(obj)
-    def pop(self):
-        self.target.pop()
+class _StackFacade(object):
+    def __init__(self, stack):
+        self.target = stack
     def __getattr__(self, key):
         return getattr(self.target[-1], key)
         
-class _AttrFacade(object):
-    def __init__(self, ctx):
-        self.ctx = ctx
-    def __getattr__(self, key):
-        return self.ctx[key]
-            
 class Undefined(object):
     """represtents undefined values"""
     def __str__(self):
@@ -158,7 +144,7 @@ def inherit_from(context, uri):
         ih = ih.inherits
     lclcontext = context.locals_({'next':ih})
     ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template, populate_self=False)
-    context._argstack[-1]['parent'] = ih.inherits
+    context._data['parent'] = ih.inherits
     callable_ = getattr(template.module, '_inherit', None)
     if callable_  is not None:
         return callable_(lclcontext)
@@ -175,7 +161,7 @@ def _lookup_template(context, uri):
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
         self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
-    context._argstack[-1]['self'] = self_ns
+    context._data['self'] = self_ns
     if hasattr(template.module, '_inherit'):
         return template.module._inherit(context)
     else:

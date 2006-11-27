@@ -76,15 +76,16 @@ class _GenerateRenderMethod(object):
         f = FindTopLevel()
         for n in self.node.nodes:
             n.accept_visitor(f)
-        if len(module_code):
-            self.write_module_code(module_code)
 
         self.compiler.namespaces = namespaces
-        
-        module_identifiers = _Identifiers()
-        for n in module_code:
-            module_identifiers = module_identifiers.branch(n)
 
+        module_ident = util.Set()
+        for n in module_code:
+            module_ident = module_ident.union(n.declared_identifiers())
+
+        module_identifiers = _Identifiers()
+        module_identifiers.declared = module_ident
+        
         # module-level names, python code
         self.printer.writeline("from mako import runtime")
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
@@ -99,6 +100,9 @@ class _GenerateRenderMethod(object):
         self.compiler.identifiers = module_identifiers
         self.printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs]))
         self.printer.write("\n\n")
+
+        if len(module_code):
+            self.write_module_code(module_code)
 
         if len(inherit):
             self.write_namespaces(namespaces)
@@ -249,8 +253,10 @@ class _GenerateRenderMethod(object):
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))
         if buffered or filtered:
-            printer.writeline("context.push_buffer()")
-            printer.writeline("try:")
+            printer.writelines(
+                "context.push_buffer()",
+                "try:"
+                )
 
         identifiers = identifiers.branch(node)
         self.write_variable_declares(identifiers)
@@ -300,6 +306,23 @@ class _GenerateRenderMethod(object):
     def visitText(self, node):
         self.write_source_comment(node)
         self.printer.writeline("context.write(%s)" % repr(node.content))
+    def visitTextTag(self, node):
+        filtered = len(node.filter_args.args) > 0
+        if filtered:
+            self.printer.writelines(
+                "context.push_buffer()",
+                "try:",
+            )
+        for n in node.nodes:
+            n.accept_visitor(self)
+        if filtered:
+            self.printer.writelines(
+                "finally:",
+                "_buf = context.pop_buffer()",
+                "context.write(%s)" % self.create_filter_callable(node.filter_args.args, "_buf.getvalue()"),
+                None
+                )
+        
     def visitCode(self, node):
         if not node.ismodule:
             self.write_source_comment(node)
@@ -352,15 +375,15 @@ class _GenerateRenderMethod(object):
             None
         )
         self.printer.writelines(
-            # make local copy of our caller, if any
-            "__cl = context.locals_({'caller':context['caller'].target[-1]})",
-            # push on global "caller"
-            "context['caller'].push(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
+            # preserve local instance of current caller in local scope
+            "__cl = context.locals_({'caller':context.caller_stack[-1]})",
+            # push on global "caller" to be picked up by the next ccall
+            "context.caller_stack.append(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
             "try:",
                 "context.write(unicode(%s))" % node.attributes['expr'],
             "finally:",
                 # pop it off
-                "context['caller'].pop()",
+                "context.caller_stack.pop()",
             None
         )
 
@@ -396,6 +419,7 @@ class _Identifiers(object):
         
         self.node = node
         self.includedefs = includedefs
+        
         if node is not None:
             if includenode:
                 node.accept_visitor(self)

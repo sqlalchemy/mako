@@ -94,8 +94,7 @@ class LexerTest(unittest.TestCase):
         % endif
         """
         node = Lexer(template).parse()
-        print repr(node)
-        assert repr(node) == """TemplateNode({}, [Comment('comment', (1, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), []), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo'}, (16, 9), ["Text('this is foo', (16, 26))"]), Text('\n', (16, 44)), ControlLine('if', 'if bar:', False, (17, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
+        assert repr(node) == r"""TemplateNode({}, [Comment('comment', (1, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), ['Text(\'\\n            # more code\\n            \\n            % more code\\n            <%illegal compionent>/></>\\n            <%def name="laal">def</%def>\\n            \\n            \\n        \', (6, 16))']), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo'}, (16, 9), ["Text('this is foo', (16, 26))"]), Text('\n', (16, 44)), ControlLine('if', 'if bar:', False, (17, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
         
     def test_def_syntax(self):
         template = """

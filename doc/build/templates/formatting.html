@@ -2,6 +2,7 @@
 <%!
     import string, re
     #import highlight
+    from mako import filters
     
     def plainfilter(f):
         f = re.sub(r'\n[\s\t]*\n[\s\t]*', '</p>\n<p>', f)
@@ -9,6 +10,8 @@
         return f
     
 %>
+
+<%namespace name="nav" file="nav.html"/>
 
 <%def name="section(toc, path, description=None)">
 # Main section formatting element.
@@ -56,7 +59,7 @@ ${ caller.body() | h}
 </%def>
 
 
-<%def name="codeline" filter="trim">
+<%def name="codeline" filter="trim,h">
 <span class="codeline">${ m.content() }</span>
 </%def>
 

@@ -231,8 +231,9 @@ class NamespaceTag(Tag):
 class TextTag(Tag):
     __keyword__ = 'text'
     def __init__(self, keyword, attributes, **kwargs):
-        super(TextTag, self).__init__(keyword, attributes, (), (), (), **kwargs)
-            
+        super(TextTag, self).__init__(keyword, attributes, (), ('filter'), (), **kwargs)
+        self.filter_args = ast.ArgumentList(attributes.get('filter', ''), self.lineno, self.pos, self.filename)
+        
 class DefTag(Tag):
     __keyword__ = 'def'
     def __init__(self, keyword, attributes, **kwargs):
