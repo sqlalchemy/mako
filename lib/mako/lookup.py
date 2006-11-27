@@ -29,7 +29,7 @@ class TemplateLookup(TemplateCollection):
         self.module_directory = module_directory
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
-        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding}
+        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory}
         if collection_size == -1:
             self.__collection = {}
         else:
@@ -62,7 +62,7 @@ class TemplateLookup(TemplateCollection):
         
     def __load(self, filename, uri):
         try:
-            self.__collection[uri] = Template(file(filename).read(), identifier=self.__ident_from_uri(uri), description=uri, filename=filename, lookup=self, **self.template_args)
+            self.__collection[uri] = Template(identifier=self.__ident_from_uri(uri), description=uri, filename=filename, lookup=self, **self.template_args)
             return self.__collection[uri]
         except:
             self.__collection.pop(uri, None)

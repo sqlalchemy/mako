@@ -9,9 +9,8 @@ as well as template runtime operations."""
 
 from mako.lexer import Lexer
 from mako.codegen import Compiler
-from mako import runtime
-from mako import util
-import imp, time, weakref, tempfile, shutil
+from mako import runtime, util, exceptions
+import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys
 
 _modules = weakref.WeakValueDictionary()
 _inmemory_templates = weakref.WeakValueDictionary()
@@ -45,13 +44,14 @@ class Template(object):
         elif filename is not None:
             if module_directory is not None:
                 path = posixpath.join(module_directory, identifier + ".py")
-                if not os.access(path, os.F_OK):
+                filemtime = os.stat(filename)[stat.ST_MTIME]
+                if not os.access(path, os.F_OK) or os.stat(path)[stat.ST_MTIME] < filemtime:
                     util.verify_directory(module_directory)
-                    _compile_module(text, identifier, filename, module_directory)
+                    _compile_module_file(file(filename).read(), identifier, filename, path)
                 module = imp.load_source(self.identifier, path, file(path))
                 del sys.modules[self.identifier]
             else:
-                (code, module) = _compile_text(file(filename), self.identifier, filename)
+                (code, module) = _compile_text(file(filename).read(), self.identifier, filename)
                 self._source = None
                 self._code = code
         else:
@@ -115,15 +115,13 @@ def _compile_text(text, identifier, filename):
     exec code in module.__dict__, module.__dict__
     return (source, module)
 
-def _compile_module(text, identifier, filename, outputpath):
-    
-    dest = tempfile.NamedTemporaryFile()
-
+def _compile_module_file(text, identifier, filename, outputpath):
+    (dest, name) = tempfile.mkstemp()
     node = Lexer(text, filename).parse()
     source = Compiler(node, filename).render()
-    dest.write(source)
-    dest.close()
-    shutil.move(dest.name, outputpath)
+    os.write(dest, source)
+    os.close(dest)
+    shutil.move(name, outputpath)
 
 def _get_template_source(callable_):
     """return the source code for the template that produced the given rendering callable"""
