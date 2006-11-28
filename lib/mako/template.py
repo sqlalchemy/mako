@@ -12,31 +12,7 @@ from mako.codegen import Compiler
 from mako import runtime, util, exceptions
 import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys, re
 
-_modules = weakref.WeakValueDictionary()
-_inmemory_templates = weakref.WeakValueDictionary()
 
-class _ModuleInfo(object):
-    def __init__(self, module, module_filename, template, template_filename, module_source, template_source):
-        self.module = module
-        self.module_filename = module_filename
-        self.template_filename = template_filename
-        self.module_source = module_source
-        self.template_source = template_source
-        _modules[module.__name__] = template._mmarker = self
-        if module_filename:
-            _modules[module_filename] = self
-    def _get_code(self):
-        if self.module_source is not None:
-            return self.module_source
-        else:
-            return file(self.module_filename).read()
-    code = property(_get_code)
-    def _get_source(self):
-        if self.template_source is not None:
-            return self.template_source
-        else:
-            return file(self.template_filename).read()
-    source = property(_get_source)
     
 class Template(object):
     """a compiled template"""
@@ -61,10 +37,9 @@ class Template(object):
             
         if text is not None:
             (code, module) = _compile_text(text, self.identifier, filename)
-            _inmemory_templates[module.__name__] = self
             self._code = code
             self._source = text
-            _ModuleInfo(module, None, self, filename, code, text)
+            ModuleInfo(module, None, self, filename, code, text)
         elif filename is not None:
             if module_directory is not None:
                 path = posixpath.join(module_directory, self.identifier + ".py")
@@ -74,12 +49,12 @@ class Template(object):
                     _compile_module_file(file(filename).read(), identifier, filename, path)
                 module = imp.load_source(self.identifier, path, file(path))
                 del sys.modules[self.identifier]
-                _ModuleInfo(module, path, self, filename, None, None)
+                ModuleInfo(module, path, self, filename, None, None)
             else:
                 (code, module) = _compile_text(file(filename).read(), self.identifier, filename)
                 self._source = None
                 self._code = code
-                _ModuleInfo(module, None, self, filename, code, None)
+                ModuleInfo(module, None, self, filename, code, None)
         else:
             raise exceptions.RuntimeException("Template requires text or filename")
 
@@ -92,8 +67,8 @@ class Template(object):
         self.lookup = lookup
         self.output_encoding = output_encoding
 
-    source = property(lambda self:_get_template_source(self.callable_), doc="""return the template source code for this Template.""")
-    code = property(lambda self:_get_module_source_from_callable(self.callable_), doc="""return the module source code for this Template""")
+    source = property(lambda self:_get_module_info_from_callable(self.callable_).source, doc="""return the template source code for this Template.""")
+    code = property(lambda self:_get_module_info_from_callable(self.callable_).code, doc="""return the module source code for this Template""")
         
     def render(self, *args, **data):
         """render the output of this template as a string.
@@ -113,6 +88,8 @@ class Template(object):
         """render this Template with the given context.  
         
         the data is written to the context's buffer."""
+        if getattr(context, '_with_template', None) is None:
+            context._with_template = self
         runtime._render_context(self, self.callable_, context, *args, **kwargs)
         
     def get_def(self, name):
@@ -126,6 +103,32 @@ class DefTemplate(Template):
         self.callable_ = callable_
     def get_def(self, name):
         return self.parent.get_def(name)
+
+class ModuleInfo(object):
+    """stores information about a module currently loaded into memory."""
+    _modules = weakref.WeakValueDictionary()
+
+    def __init__(self, module, module_filename, template, template_filename, module_source, template_source):
+        self.module = module
+        self.module_filename = module_filename
+        self.template_filename = template_filename
+        self.module_source = module_source
+        self.template_source = template_source
+        self._modules[module.__name__] = template._mmarker = self
+        if module_filename:
+            self._modules[module_filename] = self
+    def _get_code(self):
+        if self.module_source is not None:
+            return self.module_source
+        else:
+            return file(self.module_filename).read()
+    code = property(_get_code)
+    def _get_source(self):
+        if self.template_source is not None:
+            return self.template_source
+        else:
+            return file(self.template_filename).read()
+    source = property(_get_source)
         
 def _compile_text(text, identifier, filename):
     node = Lexer(text, filename).parse()
@@ -148,5 +151,5 @@ def _get_module_info_from_callable(callable_):
     return _get_module_info(callable_.func_globals['__name__'])
     
 def _get_module_info(filename):
-    return _modules[filename]
+    return ModuleInfo._modules[filename]
         

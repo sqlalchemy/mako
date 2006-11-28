@@ -6,7 +6,7 @@
 
 """provides the Context class, the runtime namespace for templates."""
 from mako import exceptions, util
-import inspect
+import inspect, sys
         
 class Context(object):
     """provides runtime namespace, output buffer, and various callstacks for templates."""
@@ -179,6 +179,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     else:
         buf = util.StringIO()
     context = Context(buf, **data)
+    context._with_template = template
     kwargs = {}
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
@@ -186,10 +187,9 @@ def _render(template, callable_, args, data, as_unicode=False):
         if arg != 'context' and arg in data:
             kwargs[arg] = data[arg]
     _render_context(template, callable_, context, *args, **kwargs)
-    return buf.getvalue()
+    return context.pop_buffer().getvalue()
 
 def _render_context(template, callable_, context, *args, **kwargs):
-    context._with_template = template
     # create polymorphic 'self' namespace for this template with possibly updated context
     (inherit, lclcontext) = _populate_self_namespace(context, template)
     if callable_.__name__ == 'render':
@@ -221,8 +221,9 @@ def _exec_template(callable_, context, args=None, kwargs=None):
                 if not result:
                     raise error
             else:
-                # TODO - friendly error formatting
-                source = _get_template_source(callable_)
-                raise error
+                context._buffer_stack = [util.StringIO()]
+                error_template = exceptions.html_error_template()
+                context._with_template = error_template
+                error_template.render_context(context, error=error)
     else:
         callable_(context, *args, **kwargs)

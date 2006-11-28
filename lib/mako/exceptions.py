@@ -49,6 +49,7 @@ def rich_traceback():
     # rawrecords = traceback.extract_stack() + rawrecords 
     new_trcback = []
     for filename, lineno, function, line in rawrecords:
+        #print "TB", filename, lineno, function, line
         try:
             (line_map, template_lines) = mods[filename]
         except KeyError:
@@ -56,9 +57,9 @@ def rich_traceback():
                 info = mako.template._get_module_info(filename)
                 module_source = info.code
                 template_source = info.source
-                template_filename = info.template_filename
+                template_filename = info.template_filename or filename
             except KeyError:
-                new_trcback.append((filename, lineno, function, line, None, None, None))
+                new_trcback.append((filename, lineno, function, line, None, None, None, None))
                 continue
 
             template_ln = module_ln = 1
@@ -79,19 +80,16 @@ def rich_traceback():
             template_line = template_lines[template_ln - 1]
         else:
             template_line = None
-        new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line))
+        new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line, template_source))
     return (type, value, new_trcback)
-    
-# TODO: this is scratch, make a module for exception reporting templates
-def get_error_template():
+
+def text_error_template():
     import mako.template
-    return mako.template.Template("""
+    return mako.template.Template(r"""
 <%!
     from mako.exceptions import rich_traceback
 %>
-<html>
-<body>
-    Error !
+Error !
 <%
     (type, value, trcback) = rich_traceback()
 %>
@@ -99,10 +97,43 @@ def get_error_template():
 ${str(type)} - ${value}
 
 % for (filename, lineno, function, line, template_filename, template_ln, template_line) in trcback:
+    % if template_line:
+    ${template_filename} ${template_ln} ${template_line}
+    % else:
+    ${filename} ${lineno} ${line}
+    % endif
+% endfor
+""")
+
+def html_error_template():
+    import mako.template
+    return mako.template.Template(r"""
+<%!
+    from mako.exceptions import rich_traceback
+%>
+<html>
+<body>
+    Error !
+<%
+    (errtype, value, trcback) = rich_traceback()
+    src = trcback[-1][7]
+    line = trcback[-1][5]
+    lines = src.split('\n')
+    trcback.reverse()
+    
+%>
+
+${str(error)}
+
+<div>
+${'\n'.join(lines[line-5:line+5])}
+</div>
+
+% for (filename, lineno, function, line, template_filename, template_ln, template_line, src) in trcback:
         % if template_line:
         ${template_filename} ${template_ln} ${template_line} <br/>
         % else:
-        ${filename} ${lineno} ${line} ${template_filename} ${template_ln}<br/>
+        ${filename} ${lineno} ${line}<br/>
         % endif
 % endfor
 </body>

@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from mako.template import Template
-import unittest
+import unittest, re
 from util import flatten_result, result_lines
 
 class EncodingTest(unittest.TestCase):
@@ -41,6 +41,19 @@ class GlobalsTest(unittest.TestCase):
         y is ${y}
 """)
         assert t.render().strip() == "y is hi"
+
+class FormatExceptionTest(unittest.TestCase):
+    def test_html(self):
+        t = Template("""
         
+            hi there.
+            <%
+                raise "hello"
+            %>
+        """, format_exceptions=True)
+        res = t.render()
+        print res
+    
+            
 if __name__ == '__main__':
     unittest.main()

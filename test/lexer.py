@@ -208,6 +208,13 @@ class LexerTest(unittest.TestCase):
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Code("print 'hi %>' \n", False, (1, 1))])"""
         
+        template = r"""
+        <%
+            lines = src.split('\n')
+        %>
+"""
+        nodes = Lexer(template).parse()
+        
     def test_control_lines(self):
         template = """
 text text la la
