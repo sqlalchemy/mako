@@ -74,6 +74,9 @@ class LRUCache(dict):
         item.timestamp = time.time()
         return item.value
 
+    def values(self):
+        return [i.value for i in dict.values(self)]
+        
     def __setitem__(self, key, value):
         item = dict.get(self, key)
         if item is None:
@@ -85,7 +88,7 @@ class LRUCache(dict):
 
     def _manage_size(self):
         while len(self) > self.capacity + self.capacity * self.threshold:
-            bytime = self.values()
+            bytime = dict.values(self)
             bytime.sort(lambda a, b: cmp(b.timestamp, a.timestamp))
             for item in bytime[self.capacity:]:
                 try:
