@@ -188,6 +188,26 @@ class LexerTest(unittest.TestCase):
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), DefTag('def', {'name': 'hi'}, (3, 9), ["Text('\\n            give me ', (3, 25))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 16)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
 
+    def test_tricky_expression(self):
+        template = """
+        
+            ${x and "|" or "hi"}
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n            ', (1, 1)), Expression('x and "|" or "hi"', [], (3, 13)), Text('\n        ', (3, 33))])"""
+
+        template = """
+        
+            ${hello + '''heres '{|}' text | | }''' | escape1}
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n            ', (1, 1)), Expression("hello + '''heres '{|}' text | | }''' ", ['escape1'], (3, 13)), Text('\n        ', (3, 62))])"""
+
+    def test_tricky_code(self):
+        template = """<% print 'hi %>' %>"""
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Code("print 'hi %>' \n", False, (1, 1))])"""
+        
     def test_control_lines(self):
         template = """
 text text la la

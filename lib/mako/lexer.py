@@ -49,9 +49,26 @@ class Lexer(object):
         #print "MATCH:", regexp, "\n", self.text[mp : mp + 15], (match and "TRUE" or "FALSE")
         return match
     
+    def parse_until_text(self, *text):
+        startpos = self.match_position
+        while True:
+            match = self.match(r'(\"\"\"|\'\'\'|\"|\')')
+            if match:
+                m = self.match(r'.*?%s' % match.group(1), re.S)
+                if not m:
+                    raise exceptions.SyntaxException("Unmatched '%s'" % match.group(1), self.matched_lineno, self.matched_charpos, self.filename)
+            else:
+                match = self.match(r'(%s)' % r'|'.join(text))
+                if match:
+                    return (self.text[startpos:self.match_position-len(match.group(1))], match.group(1))
+                else:
+                    match = self.match(r".*?(?=\"|\'|%s)" % r'|'.join(text), re.S)
+                    if not match:
+                        raise exceptions.SyntaxException("Expected: %s" % ','.join(text), self.matched_lineno, self.matched_charpos, self.filename)
+                
     def append_node(self, nodecls, *args, **kwargs):
-        kwargs['lineno'] = self.matched_lineno
-        kwargs['pos'] = self.matched_charpos
+        kwargs.setdefault('lineno', self.matched_lineno)
+        kwargs.setdefault('pos', self.matched_charpos)
         kwargs['filename'] = self.filename
         node = nodecls(*args, **kwargs)
         if len(self.tag):
@@ -184,19 +201,26 @@ class Lexer(object):
             return False
     
     def match_python_block(self):
-        match = self.match(r"<%(!)?(.*?)%>", re.S)
+        match = self.match(r"<%(!)?")
         if match:
-            text = adjust_whitespace(match.group(2))
-            self.append_node(parsetree.Code, text, match.group(1)=='!')
+            (line, pos) = (self.matched_lineno, self.matched_charpos)
+            (text, end) = self.parse_until_text(r'%>')
+            text = adjust_whitespace(text)
+            self.append_node(parsetree.Code, text, match.group(1)=='!', lineno=line, pos=pos)
             return True
         else:
             return False
             
     def match_expression(self):
-        match = self.match(r"\${(.+?)(?:\|\s*([^\|]+?)\s*)?}", re.S)
+        match = self.match(r"\${")
         if match:
-            escapes = match.group(2)
-            self.append_node(parsetree.Expression, match.group(1), escapes or "")
+            (line, pos) = (self.matched_lineno, self.matched_charpos)
+            (text, end) = self.parse_until_text(r'\|', r'}')
+            if end == '|':
+                (escapes, end) = self.parse_until_text(r'}')
+            else:
+                escapes = ""
+            self.append_node(parsetree.Expression, text, escapes.strip(), lineno=line, pos=pos)
             return True
         else:
             return False
