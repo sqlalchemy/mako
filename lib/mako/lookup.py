@@ -4,7 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import os, stat, posixpath
+import os, stat, posixpath, re
 from mako import exceptions, util
 from mako.template import Template
 
@@ -43,8 +43,9 @@ class TemplateLookup(TemplateCollection):
                 else:
                     return self.__collection[uri]
             except KeyError:
+                u = re.sub(r'^\/+', '', uri)
                 for dir in self.directories:
-                    srcfile = posixpath.join(dir, uri)
+                    srcfile = posixpath.join(dir, u)
                     if os.access(srcfile, os.F_OK):
                         return self.__load(srcfile, uri)
                 else:
@@ -75,7 +76,7 @@ class TemplateLookup(TemplateCollection):
             raise exceptions.TemplateLookupException("Cant locate template for uri '%s'" % uri)
         elif template.module._modified_time < os.stat(template.filename)[stat.ST_MTIME]:
             self.__collection.pop(uri, None)
-            return __load(template.filename, uri)
+            return self.__load(template.filename, uri)
         else:
             return template
             
