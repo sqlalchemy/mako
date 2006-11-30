@@ -37,17 +37,15 @@ class TemplateLookupException(MakoException):
     pass
     
 class RichTraceback(object):
-    def __init__(self, error):
-        self.error = error
-        (self.type, self.value, self.records) = self._init()
-        if isinstance(error, CompileException) or isinstance(error, SyntaxException):
-            self.source = file(error.filename).read()
-            self.lineno = error.lineno
-        else:
-            self.source = ""
-            self.lineno = 0
+    """pulls the current exception from the sys traceback and extracts Mako-specific information."""
+    def __init__(self):
+        (self.source, self.lineno) = ("", 0)
+        (self.type, self.error, self.records) = self._init()
+        if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
+            self.source = file(self.error.filename).read()
+            self.lineno = self.error.lineno
         self.reverse_records = [r for r in self.records]
-        self.reverse_records.reverse()        
+        self.reverse_records.reverse()
     def _init(self):
         """format a traceback from sys.exc_info() into 7-item tuples, containing
         the regular four traceback tuple items, plus the original template 
@@ -70,8 +68,6 @@ class RichTraceback(object):
                     module_source = info.code
                     template_source = info.source
                     template_filename = info.template_filename or filename
-                    self.source = template_source
-                    self.lineno = lineno
                 except KeyError:
                     new_trcback.append((filename, lineno, function, line, None, None, None, None))
                     continue
@@ -92,6 +88,8 @@ class RichTraceback(object):
             template_ln = line_map[lineno]
             if template_ln <= len(template_lines):
                 template_line = template_lines[template_ln - 1]
+                self.source = template_source
+                self.lineno = template_ln
             else:
                 template_line = None
             new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line, template_source))
@@ -135,10 +133,29 @@ def html_error_template(lookup=None):
         }
         .stacktrace {
             margin:10px 30px 10px 30px;
-            font-size:small;
+        }
+        .highlight {
+            padding:0px 10px 0px 10px;
+            background-color:#9F9FDF;
+        }
+        .nonhighlight {
+            padding:0px;
+            background-color:#DFDFDF;
         }
         .sample {
-        
+            padding:10px;
+            margin:10px 40px 10px 40px;
+            font-family:monospace;
+        }
+        .sampleline {
+            padding:0px 10px 0px 10px;
+        }
+        .sourceline {
+            font-size:80%;
+            margin-bottom:10px;
+        }
+        .location {
+            font-size:80%;
         }
     </style>
 </head>
@@ -146,7 +163,7 @@ def html_error_template(lookup=None):
 
         <h2>Error !</h2>
 <%
-    tback = RichTraceback(error)
+    tback = RichTraceback()
     src = tback.source
     line = tback.lineno
     if src:
@@ -155,21 +172,34 @@ def html_error_template(lookup=None):
         lines = None
 %>
 <p>
-${str(error)}
+${str(tback.error.__class__.__name__)}: ${str(tback.error)}
 </p>
 
 % if lines:
     <div class="sample">
-    ${'\n'.join(lines[line-5:line+5])}
+    <div class="nonhighlight">
+% for index in range(max(0, line-4),min(len(lines), line+5)):
+    % if index + 1 == line:
+<div class="highlight">${index + 1} ${lines[index] | h}</div>
+    % else:
+<div class="sampleline">${index + 1} ${lines[index] | h}</div>
+    % endif
+% endfor
+    </div>
     </div>
 % endif
+
+<%def name="traceline(filename, lineno, source)">
+    <div class="location">${filename} ${lineno}:</div>
+    <div class="sourceline">${source}</div>
+</%def>
 
 <div class="stacktrace">
 % for (filename, lineno, function, line, template_filename, template_ln, template_line, src) in tback.reverse_records:
         % if template_line:
-        ${template_filename} ${template_ln} ${template_line} <br/>
+            ${traceline(template_filename, template_ln, template_line)}
         % else:
-        ${filename} ${lineno} ${line}<br/>
+            ${traceline(filename, lineno, line)}
         % endif
 % endfor
 </div>
