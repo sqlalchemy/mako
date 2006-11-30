@@ -11,9 +11,9 @@ def serve(environ, start_response):
             environ = environ,
             keep_blank_values = True
     )
-    d = dict([(k, formatfield(fieldstorage[k])) for k in fieldstorage])
+    d = dict([(k, getfield(fieldstorage[k])) for k in fieldstorage])
+
     uri = environ.get('PATH_INFO', '/')
-    
     try:
         template = lookup.get_template(uri)
         start_response("200 OK", [('Content-type','text/html')])
@@ -26,14 +26,15 @@ def serve(environ, start_response):
         error_template = exceptions.html_error_template(lookup)
         return [error_template.render()]
 
-def formatfield(f):
+def getfield(f):
     if isinstance(f, list):
-        return [formatfield(x) for x in f]
+        return [getfield(x) for x in f]
     else:
         return f.value
             
-server = wsgiServer.WSGIServer (('localhost', 8000), {'/': serve})
-print "Server listening on port 8000"
-server.serve_forever()
+if __name__ == '__main__':
+    server = wsgiServer.WSGIServer (('localhost', 8000), {'/': serve})
+    print "Server listening on port 8000"
+    server.serve_forever()
 
 
