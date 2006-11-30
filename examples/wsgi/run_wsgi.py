@@ -23,8 +23,7 @@ def serve(environ, start_response):
         return ["Cant find template '%s'" % uri]
     except:
         start_response("200 OK", [('Content-type','text/html')])
-        error_template = exceptions.html_error_template(lookup)
-        return [error_template.render()]
+        return [exceptions.html_error_template().render()]
 
 def getfield(f):
     if isinstance(f, list):
