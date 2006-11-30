@@ -21,10 +21,10 @@ def serve(environ, start_response):
     except exceptions.TemplateLookupException:
         start_response("404 Not Found", [])
         return ["Cant find template '%s'" % uri]
-    except Exception, e:
+    except:
         start_response("200 OK", [('Content-type','text/html')])
         error_template = exceptions.html_error_template(lookup)
-        return [error_template.render(error=e)]
+        return [error_template.render()]
     
 server = wsgiServer.WSGIServer (('localhost', 8000), {'/': serve})
 print "Server listening on port 8000"
