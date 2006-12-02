@@ -182,7 +182,11 @@ def inherit_from(context, uri, calling_filename):
 
 def _lookup_template(context, uri, relativeto):
     lookup = context._with_template.lookup
-    return lookup.get_template(uri, relativeto)
+    uri = lookup.adjust_uri(uri, relativeto)
+    try:
+        return lookup.get_template(uri)
+    except exceptions.TopLevelLookupException, e:
+        raise exceptions.TemplateLookupException(str(e))
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:

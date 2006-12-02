@@ -22,46 +22,70 @@ class TemplateCollection(object):
             return False
     def get_template(self, uri, relativeto=None):
         raise NotImplementedError()
+    def adjust_uri(self, uri, filename):
+        """adjust the given uri based on the calling filename.
+        
+        when this method is called from the runtime, the 'filename' parameter 
+        is taken directly to the 'filename' attribute of the calling 
+        template.  Therefore a custom TemplateCollection subclass can place any string 
+        identifier desired in the "filename" parameter of the Template objects it constructs
+        and have them come back here."""
+        return uri
         
 class TemplateLookup(TemplateCollection):
     def __init__(self, directories=None, module_directory=None, filesystem_checks=False, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None):
-        self.directories = directories or []
+        self.directories = [posixpath.normpath(d) for d in directories or []]
         self.module_directory = module_directory
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
         self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory}
         if collection_size == -1:
             self.__collection = {}
+            self.__uri_convert = {}
         else:
             self.__collection = util.LRUCache(collection_size)
+            self.__uri_convert = util.LRUCache(collection_size)
         self._mutex = threading.Lock()
         
-    def get_template(self, uri, relativeto=None):
-            try:
-                if self.filesystem_checks:
-                    return self.__check(uri, self.__collection[uri])
-                else:
-                    return self.__collection[uri]
-            except KeyError:
-                if uri[0] != '/':
-                    u = uri
-                    if relativeto is not None:
-                        for dir in self.directories:
-                            print relativeto[0:len(dir)]
-                            if relativeto[0:len(dir)] == dir:
-                                u = posixpath.join(posixpath.dirname(relativeto[len(dir) + 1:]), u)
-                                break
-                else:
-                    u = re.sub(r'^\/+', '', uri)
+    def get_template(self, uri):
+        try:
+            if self.filesystem_checks:
+                return self.__check(uri, self.__collection[uri])
+            else:
+                return self.__collection[uri]
+        except KeyError:
+            u = re.sub(r'^\/+', '', uri)
+            for dir in self.directories:
+                srcfile = posixpath.join(dir, u)
+                if os.access(srcfile, os.F_OK):
+                    return self.__load(srcfile, uri)
+            else:
+                raise exceptions.TopLevelLookupException("Cant locate template for uri '%s'" % uri)
 
-                for dir in self.directories:
-                    
-                    srcfile = posixpath.join(dir, u)
-                    if os.access(srcfile, os.F_OK):
-                        return self.__load(srcfile, uri)
-                else:
-                    raise exceptions.TemplateLookupException("Cant locate template for uri '%s'" % uri)
-
+    def adjust_uri(self, uri, filename):
+        """adjust the given uri based on the calling filename."""
+        try:
+            return self.__uri_convert[uri]
+        except KeyError:
+            if uri[0] != '/':
+                u = posixpath.normpath(uri)
+                if filename is not None:
+                    rr = self.__relativeize(filename)
+                    if rr is not None:
+                        u = posixpath.dirname(rr) + u
+                return self.__uri_convert.setdefault(uri, u)
+            else:
+                return self.__uri_convert.setdefault(uri, uri)
+                
+    def __relativeize(self, filename):
+        """return the portion of a filename that is 'relative' to the directories in this lookup."""
+        filename = posixpath.normpath(filename)
+        for dir in self.directories:
+            if filename[0:len(dir)] == dir:
+                return filename[len(dir) + 1:]
+        else:
+            return None
+            
     def __load(self, filename, uri):
         self._mutex.acquire()
         try:
@@ -71,7 +95,7 @@ class TemplateLookup(TemplateCollection):
             except KeyError:
                 pass
             try:
-                self.__collection[uri] = Template(identifier=uri, description=uri, filename=filename, lookup=self, **self.template_args)
+                self.__collection[uri] = Template(identifier=self.__relativeize(filename), description=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
                 return self.__collection[uri]
             except:
                 self.__collection.pop(uri, None)

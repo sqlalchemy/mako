@@ -30,6 +30,9 @@ class LookupTest(unittest.TestCase):
             "this is sub index",
             "this is include 2"
         ]
+        assert tl.get_template('/subdir/index.html').identifier == 'subdir_index_html'
+
+        t2 = tl.get_template('./subdir/index.html')
         
 if __name__ == '__main__':
     unittest.main()

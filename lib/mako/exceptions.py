@@ -35,6 +35,9 @@ class SyntaxException(MakoException):
         
 class TemplateLookupException(MakoException):
     pass
+
+class TopLevelLookupException(TemplateLookupException):
+    pass
     
 class RichTraceback(object):
     """pulls the current exception from the sys traceback and extracts Mako-specific information."""

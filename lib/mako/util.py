@@ -76,7 +76,14 @@ class LRUCache(dict):
 
     def values(self):
         return [i.value for i in dict.values(self)]
-        
+    
+    def setdefault(self, key, value):
+        if key in self:
+            return self[key]
+        else:
+            self[key] = value
+            return value
+                
     def __setitem__(self, key, value):
         item = dict.get(self, key)
         if item is None:
