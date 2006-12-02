@@ -206,24 +206,20 @@ class ScopeTest(unittest.TestCase):
 
     def test_scope_nine(self):
         """test that 'enclosing scope' doesnt get exported to other templates"""
-        tmpl = {}
-        class LocalTmplCollection(lookup.TemplateCollection):
-            def get_template(self, uri):
-                return tmpl[uri]
-        collection = LocalTmplCollection()
         
-        tmpl['main'] = Template("""
+        l = lookup.TemplateLookup()
+        l.put_string('main', """
         <%
             x = 5
         %>
         this is main.  <%include file="secondary"/>
-""", lookup=collection)
+""")
 
-        tmpl['secondary'] = Template("""
+        l.put_string('secondary', """
         this is secondary.  x is ${x}
-""", lookup=collection)
+""")
 
-        assert flatten_result(tmpl['main'].render(x=2)) == "this is main. this is secondary. x is 2"
+        assert flatten_result(l.get_template('main').render(x=2)) == "this is main. this is secondary. x is 2"
         
     def test_scope_ten(self):
         t = Template("""

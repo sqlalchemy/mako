@@ -220,8 +220,106 @@ class NamespaceTest(unittest.TestCase):
             "caller body:",
             "call body"
         ]
+
+    def test_import(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("functions.html","""
+            <%def name="foo">
+                this is foo
+            </%def>
+            
+            <%def name="bar">
+                this is bar
+            </%def>
+            
+            <%def name="lala">
+                this is lala
+            </%def>
+        """)
+
+        collection.put_string("func2.html", """
+            <%def name="a">
+                this is a
+            </%def>
+            <%def name="b">
+                this is b
+            </%def>
+        """)
+        collection.put_string("index.html", """
+            <%namespace name="func" file="functions.html" import="*"/>
+            <%namespace name="func2" file="func2.html" import="a, b"/>
+            ${foo()}
+            ${bar()}
+            ${lala()}
+            ${a()}
+            ${b()}
+            ${x}
+        """)
+        assert result_lines(collection.get_template("index.html").render(bar="this is bar", x="this is x")) == [
+            "this is foo",
+            "this is bar",
+            "this is lala",
+            "this is a",
+            "this is b",
+            "this is x"
+        ]
         
+    def test_closure_import(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("functions.html","""
+            <%def name="foo">
+                this is foo
+            </%def>
+            
+            <%def name="bar">
+                this is bar
+            </%def>
+        """)
         
+        collection.put_string("index.html", """
+            <%namespace name="func" file="functions.html" import="*"/>
+            <%def name="cl1">
+                ${foo()}
+            </%def>
+            
+            <%def name="cl2">
+                ${bar()}
+            </%def>
+            
+            ${cl1()}
+            ${cl2()}
+        """)
+        assert result_lines(collection.get_template("index.html").render(bar="this is bar", x="this is x")) == [
+            "this is foo",
+            "this is bar",
+        ]
+
+    def test_ccall_import(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("functions.html","""
+            <%def name="foo">
+                this is foo
+            </%def>
+            
+            <%def name="bar">
+                this is bar.
+                ${caller.body()}
+                ${caller.lala()}
+            </%def>
+        """)
         
+        collection.put_string("index.html", """
+            <%namespace name="func" file="functions.html" import="*"/>
+            <%call expr="bar()">
+                this is index embedded
+                foo is ${foo()}
+                <%def name="lala">
+                     this is lala ${foo()}
+                </%def>
+            </%call>
+        """)
+        print collection.get_template("index.html").code
+        print collection.get_template("index.html").render()
+
 if __name__ == '__main__':
     unittest.main()

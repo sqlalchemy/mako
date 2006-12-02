@@ -20,7 +20,7 @@ class TemplateCollection(object):
             return True
         except exceptions.TemplateLookupException, e:
             return False
-    def get_template(self, uri):
+    def get_template(self, uri, relativeto=None):
         raise NotImplementedError()
         
 class TemplateLookup(TemplateCollection):
@@ -36,15 +36,26 @@ class TemplateLookup(TemplateCollection):
             self.__collection = util.LRUCache(collection_size)
         self._mutex = threading.Lock()
         
-    def get_template(self, uri):
+    def get_template(self, uri, relativeto=None):
             try:
                 if self.filesystem_checks:
                     return self.__check(uri, self.__collection[uri])
                 else:
                     return self.__collection[uri]
             except KeyError:
-                u = re.sub(r'^\/+', '', uri)
+                if uri[0] != '/':
+                    u = uri
+                    if relativeto is not None:
+                        for dir in self.directories:
+                            print relativeto[0:len(dir)]
+                            if relativeto[0:len(dir)] == dir:
+                                u = posixpath.join(posixpath.dirname(relativeto[len(dir) + 1:]), u)
+                                break
+                else:
+                    u = re.sub(r'^\/+', '', uri)
+
                 for dir in self.directories:
+                    
                     srcfile = posixpath.join(dir, u)
                     if os.access(srcfile, os.F_OK):
                         return self.__load(srcfile, uri)

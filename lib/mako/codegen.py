@@ -118,7 +118,7 @@ class _GenerateRenderMethod(object):
         if not self.in_def and len(self.identifiers.locally_assigned) > 0:
             self.printer.writeline("__locals = {}")
 
-        self.write_variable_declares(self.identifiers, first="kwargs")
+        self.write_variable_declares(self.identifiers, toplevel=True)
 
         for n in self.node.nodes:
             n.accept_visitor(self)
@@ -136,7 +136,7 @@ class _GenerateRenderMethod(object):
     def write_inherit(self, node):
         self.printer.writeline("def _mako_inherit(context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
-        self.printer.writeline("return runtime.inherit_from(context, %s)" % (repr(node.attributes['file'])))
+        self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (repr(node.attributes['file'])))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):
@@ -151,6 +151,8 @@ class _GenerateRenderMethod(object):
             )
         self.printer.writeline("def _mako_generate_namespaces(context):")
         for node in namespaces.values():
+            if node.attributes.has_key('import'):
+                self.compiler.has_ns_imports = True
             self.write_source_comment(node)
             if len(node.nodes):
                 self.printer.writeline("def make_namespace():")
@@ -168,7 +170,7 @@ class _GenerateRenderMethod(object):
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
-            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
+            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_filename=_template_filename)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
             self.printer.writeline("context.namespaces[(render, %s)] = ns" % repr(node.name))
@@ -177,7 +179,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("pass")
         self.printer.writeline(None)
             
-    def write_variable_declares(self, identifiers, first=None):
+    def write_variable_declares(self, identifiers, toplevel=False):
         """write variable declarations at the top of a function.
         
         the variable declarations are in the form of callable definitions for defs and/or
@@ -209,6 +211,13 @@ class _GenerateRenderMethod(object):
         # which cannot be referenced beforehand.  
         to_write = to_write.difference(identifiers.locally_declared)
         
+        if toplevel and getattr(self.compiler, 'has_ns_imports', False):
+            self.printer.writeline("_import_ns = {}")
+            self.compiler.has_imports = True
+            for ident, ns in self.compiler.namespaces.iteritems():
+                if ns.attributes.has_key('import'):
+                    self.printer.writeline("_mako_get_namespace(context, %s).populate(_import_ns, %s)" % (repr(ident),  repr(re.split(r'\s*,\s*', ns.attributes['import']))))
+                        
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
@@ -219,10 +228,10 @@ class _GenerateRenderMethod(object):
             elif ident in self.compiler.namespaces:
                 self.printer.writeline("%s = _mako_get_namespace(context, %s)" % (ident, repr(ident)))
             else:
-                if first is not None:
-                    self.printer.writeline("%s = %s.get(%s, context.get(%s, UNDEFINED))" % (ident, first, repr(ident), repr(ident)))
+                if getattr(self.compiler, 'has_ns_imports', False):
+                    self.printer.writeline("%s = _import_ns.get(%s, kwargs.get(%s, context.get(%s, UNDEFINED)))" % (ident, repr(ident), repr(ident), repr(ident)))
                 else:
-                    self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
+                    self.printer.writeline("%s = kwargs.get(%s, context.get(%s, UNDEFINED))" % (ident, repr(ident), repr(ident)))
         
     def write_source_comment(self, node):
         if self.last_source_line != node.lineno:
@@ -331,7 +340,7 @@ class _GenerateRenderMethod(object):
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("runtime.include_file(context, %s, import_symbols=%s)" % (node.parsed_attributes['file'], repr(node.attributes.get('import', False))))
+        self.printer.writeline("runtime.include_file(context, %s, _template_filename)" % (node.parsed_attributes['file']))
 
     def visitNamespaceTag(self, node):
         pass
@@ -360,7 +369,7 @@ class _GenerateRenderMethod(object):
                 "context.push_buffer()",
                 "try:"
             )
-        self.write_variable_declares(body_identifiers, first="kwargs")
+        self.write_variable_declares(body_identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
         self.write_def_finish(node, buffered, False)

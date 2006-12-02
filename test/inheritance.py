@@ -5,13 +5,9 @@ from util import flatten_result, result_lines
 
 class InheritanceTest(unittest.TestCase):
     def test_basic(self):
-        tmpl = {}
-        class LocalTmplCollection(lookup.TemplateCollection):
-            def get_template(self, uri):
-                return tmpl[uri]
-        collection = LocalTmplCollection()
+        collection = lookup.TemplateLookup()
 
-        tmpl['main'] = Template("""
+        collection.put_string('main', """
 <%inherit file="base"/>
 
 <%def name="header">
@@ -19,9 +15,9 @@ class InheritanceTest(unittest.TestCase):
 </%def>
 
 this is the content.
-""", lookup=collection)
+""")
 
-        tmpl['base'] = Template("""
+        collection.put_string('base', """
 This is base.
 
 header: ${self.header()}
@@ -33,9 +29,9 @@ footer: ${self.footer()}
 <%def name="footer">
     this is the footer. header again ${next.header()}
 </%def>
-""", lookup=collection)
+""")
 
-        assert result_lines(tmpl['main'].render()) == [
+        assert result_lines(collection.get_template('main').render()) == [
             'This is base.',
              'header:',
              'main header.',

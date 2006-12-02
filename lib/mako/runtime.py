@@ -77,11 +77,11 @@ UNDEFINED = Undefined()
    
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
-    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True):
+    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_filename=None):
         self.name = name
         self._module = module
         if templateuri is not None:
-            self.template = _lookup_template(context, templateuri)
+            self.template = _lookup_template(context, templateuri, calling_filename)
         else:
             self.template = template
         self.context = context
@@ -96,6 +96,29 @@ class Namespace(object):
     module = property(lambda s:s._module or s.template.module)
     filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
     
+    def populate(self, d, l):
+        for ident in l:
+            if ident == '*':
+                for (k, v) in self._get_star():
+                    d[k] = v
+            else:
+                d[ident] = getattr(self, ident)
+    
+    def _get_star(self):
+        if self.callables is not None:
+            for k in self.callables:
+                yield (k, self.callables[key])
+        if self.template is not None:
+            def get(key):
+                callable_ = self.template.get_def(key).callable_
+                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
+            for k in self.template.module._exports:
+                yield (k, get(k))
+        if self.module is not None:
+            for k in dir(self.module):
+                if k[0] != '_':
+                    yield (k, getattr(self.module, k))
+                            
     def __getattr__(self, key):
         if self.callables is not None:
             try:
@@ -131,16 +154,16 @@ def capture(context, callable_, *args, **kwargs):
         buf = context.pop_buffer()
         return buf.getvalue()
         
-def include_file(context, uri, import_symbols):
+def include_file(context, uri, calling_filename):
     """locate the template from the given uri and include it in the current output."""
-    template = _lookup_template(context, uri)
+    template = _lookup_template(context, uri, calling_filename)
     (callable_, ctx) = _populate_self_namespace(context.clean_inheritance_tokens(), template)
     callable_(ctx)
         
-def inherit_from(context, uri):
+def inherit_from(context, uri, calling_filename):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
     of a template's execution."""
-    template = _lookup_template(context, uri)
+    template = _lookup_template(context, uri, calling_filename)
     self_ns = context['self']
     ih = self_ns
     while ih.inherits is not None:
@@ -157,9 +180,9 @@ def inherit_from(context, uri):
             gen_ns(context)
         return (template.callable_, lclcontext)
 
-def _lookup_template(context, uri):
+def _lookup_template(context, uri, relativeto):
     lookup = context._with_template.lookup
-    return lookup.get_template(uri)
+    return lookup.get_template(uri, relativeto)
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
