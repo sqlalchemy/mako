@@ -134,7 +134,7 @@ class _GenerateRenderMethod(object):
             self.printer.write_indented_block(n.text)
 
     def write_inherit(self, node):
-        self.printer.writeline("def _mako_inherit(context):")
+        self.printer.writeline("def _mako_inherit(template, context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
         self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (node.parsed_attributes['file']))
         self.printer.writeline(None)

@@ -175,7 +175,7 @@ def inherit_from(context, uri, calling_filename):
     context._data['parent'] = lclcontext._data['local'] = ih.inherits
     callable_ = getattr(template.module, '_mako_inherit', None)
     if callable_ is not None:
-        ret = callable_(lclcontext)
+        ret = callable_(template, lclcontext)
         if ret:
             return ret
 
@@ -197,7 +197,7 @@ def _populate_self_namespace(context, template, self_ns=None):
         self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
     context._data['self'] = context._data['local'] = self_ns
     if hasattr(template.module, '_mako_inherit'):
-        ret = template.module._mako_inherit(context)
+        ret = template.module._mako_inherit(template, context)
         if ret:
             return ret
     return (template.callable_, context)

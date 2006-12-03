@@ -1,10 +1,13 @@
-"""adds autohandler functionality to Mako templates"""
+"""adds autohandler functionality to Mako templates.
+
+requires that the TemplateLookup class is used with templates.
+"""
 
 import posixpath, os, re
 
-def autohandler(context, _template_filename, name='autohandler'):
+def autohandler(template, context, name='autohandler'):
     lookup = context.lookup
-    
+    _template_filename = template.module._template_filename
     if not lookup.filesystem_checks:
         try:
             return lookup._uri_cache[(autohandler, _template_filename, name)]
