@@ -22,7 +22,7 @@ class Context(object):
         # "caller" stack used by def calls with content
         self.caller_stack = [Undefined]
         data['caller'] = _StackFacade(self.caller_stack)
-
+    lookup = property(lambda self:self._with_template.lookup)
     def keys(self):
         return self._data.keys()
     def __getitem__(self, key):

@@ -22,6 +22,10 @@ class TemplateCollection(object):
             return False
     def get_template(self, uri, relativeto=None):
         raise NotImplementedError()
+    def filename_to_uri(self, uri, filename):
+        """convert the given filename to a uri relative to this TemplateCollection."""
+        return uri
+        
     def adjust_uri(self, uri, filename):
         """adjust the given uri based on the calling filename.
         
@@ -65,24 +69,32 @@ class TemplateLookup(TemplateCollection):
     def adjust_uri(self, uri, filename):
         """adjust the given uri based on the calling filename."""
         try:
-            return self.__uri_convert[uri]
+            return self.__uri_convert[(uri, filename)]
         except KeyError:
             if uri[0] != '/':
                 u = posixpath.normpath(uri)
                 if filename is not None:
                     rr = self.__relativeize(filename)
                     if rr is not None:
-                        u = posixpath.dirname(rr) + u
-                return self.__uri_convert.setdefault(uri, u)
+                        u = posixpath.join(posixpath.dirname(rr), u)
+                    else:
+                        u = posixpath.join('/', u)
+                return self.__uri_convert.setdefault((uri, filename), u)
             else:
-                return self.__uri_convert.setdefault(uri, uri)
-                
+                return self.__uri_convert.setdefault((uri, filename), uri)
+    
+    def filename_to_uri(self, filename):
+        try:
+            return self.__uri_convert[filename]
+        except KeyError:
+            return self.__uri_convert.setdefault(filename, self.__relativeize(filename))
+                    
     def __relativeize(self, filename):
         """return the portion of a filename that is 'relative' to the directories in this lookup."""
         filename = posixpath.normpath(filename)
         for dir in self.directories:
             if filename[0:len(dir)] == dir:
-                return filename[len(dir) + 1:]
+                return filename[len(dir):]
         else:
             return None
             

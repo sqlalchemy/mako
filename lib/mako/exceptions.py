@@ -43,7 +43,9 @@ class RichTraceback(object):
     """pulls the current exception from the sys traceback and extracts Mako-specific information."""
     def __init__(self):
         (self.source, self.lineno) = ("", 0)
-        (self.type, self.error, self.records) = self._init()
+        (t, self.error, self.records) = self._init()
+        if self.error is None:
+            self.error = t
         if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
             self.source = file(self.error.filename).read()
             self.lineno = self.error.lineno

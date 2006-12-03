@@ -29,10 +29,17 @@ class LookupTest(unittest.TestCase):
         assert result_lines(t.render()) == [
             "this is sub index",
             "this is include 2"
-        ]
-        assert tl.get_template('/subdir/index.html').identifier == 'subdir_index_html'
 
-        t2 = tl.get_template('./subdir/index.html')
+        ]
+
+        assert tl.get_template('/subdir/index.html').identifier == '_subdir_index_html'
+        
+    def test_uri_adjust(self):
+        tl = lookup.TemplateLookup(directories=['/foo/bar'])
+        assert tl.filename_to_uri('/foo/bar/etc/lala/index.html') == '/etc/lala/index.html'
+
+        tl = lookup.TemplateLookup(directories=['./foo/bar'])
+        assert tl.filename_to_uri('./foo/bar/etc/index.html') == '/etc/index.html'
         
 if __name__ == '__main__':
     unittest.main()
