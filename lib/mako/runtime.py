@@ -163,6 +163,8 @@ def include_file(context, uri, calling_filename):
 def inherit_from(context, uri, calling_filename):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
     of a template's execution."""
+    if uri is None:
+        return None
     template = _lookup_template(context, uri, calling_filename)
     self_ns = context['self']
     ih = self_ns
@@ -193,7 +195,7 @@ def _populate_self_namespace(context, template, self_ns=None):
         self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
     context._data['self'] = context._data['local'] = self_ns
     if hasattr(template.module, '_mako_inherit'):
-        return template.module._mako_inherit(context)
+        return template.module._mako_inherit(context) or (template.callable_, context)
     else:
         return (template.callable_, context)
 

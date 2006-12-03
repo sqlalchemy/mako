@@ -136,7 +136,7 @@ class _GenerateRenderMethod(object):
     def write_inherit(self, node):
         self.printer.writeline("def _mako_inherit(context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
-        self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (repr(node.attributes['file'])))
+        self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (node.parsed_attributes['file']))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):

@@ -180,7 +180,30 @@ ${next.body()}
          'a is: layout_a',
          'c is: secondary_c. a is layout_a b is base_b d is secondary_d.'
          ]
-        
-        
+
+    def test_dynamic(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base", """
+            this is the base.
+            ${next.body()}
+        """)
+        collection.put_string("index", """
+            <%!
+                def dyn(context):
+                    if context.get('base', None) is not None:
+                        return 'base'
+                    else:
+                        return None
+            %>
+            <%inherit file="${dyn(context)}"/>
+            this is index.
+        """)
+        assert result_lines(collection.get_template('index').render()) == [
+            'this is index.'
+        ]
+        assert result_lines(collection.get_template('index').render(base=True)) == [
+            'this is the base.',
+            'this is index.'
+        ]
 if __name__ == '__main__':
     unittest.main()

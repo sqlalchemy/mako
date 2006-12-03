@@ -199,7 +199,8 @@ class Tag(Node):
                         undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
                         expr.append(m.group(1))
                     else:
-                        expr.append(repr(x))
+                        if x:
+                            expr.append(repr(x))
                 self.parsed_attributes[key] = " + ".join(expr)
             elif key in nonexpressions:
                 if re.search(r'${.+?}', self.attributes[key]):
