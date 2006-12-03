@@ -40,6 +40,11 @@ class LookupTest(unittest.TestCase):
 
         tl = lookup.TemplateLookup(directories=['./foo/bar'])
         assert tl.filename_to_uri('./foo/bar/etc/index.html') == '/etc/index.html'
+    
+    def test_uri_cache(self):
+        """test that the _uri_cache dictionary is available"""
+        tl._uri_cache[('foo', 'bar')] = '/some/path'
+        assert tl._uri_cache[('foo', 'bar')] == '/some/path'
         
 if __name__ == '__main__':
     unittest.main()

@@ -174,13 +174,15 @@ def inherit_from(context, uri, calling_filename):
     ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template, populate_self=False)
     context._data['parent'] = lclcontext._data['local'] = ih.inherits
     callable_ = getattr(template.module, '_mako_inherit', None)
-    if callable_  is not None:
-        return callable_(lclcontext)
-    else:
-        gen_ns = getattr(template.module, '_mako_generate_namespaces', None)
-        if gen_ns is not None:
-            gen_ns(context)
-        return (template.callable_, lclcontext)
+    if callable_ is not None:
+        ret = callable_(lclcontext)
+        if ret:
+            return ret
+
+    gen_ns = getattr(template.module, '_mako_generate_namespaces', None)
+    if gen_ns is not None:
+        gen_ns(context)
+    return (template.callable_, lclcontext)
 
 def _lookup_template(context, uri, relativeto):
     lookup = context._with_template.lookup
@@ -195,9 +197,10 @@ def _populate_self_namespace(context, template, self_ns=None):
         self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
     context._data['self'] = context._data['local'] = self_ns
     if hasattr(template.module, '_mako_inherit'):
-        return template.module._mako_inherit(context) or (template.callable_, context)
-    else:
-        return (template.callable_, context)
+        ret = template.module._mako_inherit(context)
+        if ret:
+            return ret
+    return (template.callable_, context)
 
 def _render(template, callable_, args, data, as_unicode=False):
     """create a Context and return the string output of the given template and template callable."""

@@ -45,10 +45,10 @@ class TemplateLookup(TemplateCollection):
         self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory}
         if collection_size == -1:
             self.__collection = {}
-            self.__uri_convert = {}
+            self._uri_cache = {}
         else:
             self.__collection = util.LRUCache(collection_size)
-            self.__uri_convert = util.LRUCache(collection_size)
+            self._uri_cache = util.LRUCache(collection_size)
         self._mutex = threading.Lock()
         
     def get_template(self, uri):
@@ -69,7 +69,7 @@ class TemplateLookup(TemplateCollection):
     def adjust_uri(self, uri, filename):
         """adjust the given uri based on the calling filename."""
         try:
-            return self.__uri_convert[(uri, filename)]
+            return self._uri_cache[(uri, filename)]
         except KeyError:
             if uri[0] != '/':
                 u = posixpath.normpath(uri)
@@ -79,15 +79,15 @@ class TemplateLookup(TemplateCollection):
                         u = posixpath.join(posixpath.dirname(rr), u)
                     else:
                         u = posixpath.join('/', u)
-                return self.__uri_convert.setdefault((uri, filename), u)
+                return self._uri_cache.setdefault((uri, filename), u)
             else:
-                return self.__uri_convert.setdefault((uri, filename), uri)
+                return self._uri_cache.setdefault((uri, filename), uri)
     
     def filename_to_uri(self, filename):
         try:
-            return self.__uri_convert[filename]
+            return self._uri_cache[filename]
         except KeyError:
-            return self.__uri_convert.setdefault(filename, self.__relativeize(filename))
+            return self._uri_cache.setdefault(filename, self.__relativeize(filename))
                     
     def __relativeize(self, filename):
         """return the portion of a filename that is 'relative' to the directories in this lookup."""
