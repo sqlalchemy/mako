@@ -24,6 +24,7 @@ class Compiler(object):
         return buf.getvalue()
         
 class _GenerateRenderMethod(object):
+    """a template visitor object which generates the full module source for a template."""
     def __init__(self, printer, compiler, node):
         self.printer = printer
         self.last_source_line = -1
@@ -58,6 +59,8 @@ class _GenerateRenderMethod(object):
                 _GenerateRenderMethod(printer, compiler, node)
             
     def write_toplevel(self):
+        """traverse a template structure for module-level directives and generate the
+        start of module-level code."""
         inherit = []
         namespaces = {}
         module_code = []
@@ -112,6 +115,9 @@ class _GenerateRenderMethod(object):
         return (pagetag[0], main_identifiers.topleveldefs)
 
     def write_render_callable(self, name, args, buffered, filtered, cached):
+        """write a top-level render callable.
+        
+        this could be the main render() method or that of a top-level def."""
         self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
         if buffered or filtered or cached:
             self.printer.writeline("context.push_buffer()")
@@ -133,17 +139,21 @@ class _GenerateRenderMethod(object):
             self.write_cache_decorator(name, buffered)
         
     def write_module_code(self, module_code):
+        """write module-level template code, i.e. that which is enclosed in <%! %> tags
+        in the template."""
         for n in module_code:
             self.write_source_comment(n)
             self.printer.write_indented_block(n.text)
 
     def write_inherit(self, node):
+        """write the module-level inheritance-determination callable."""
         self.printer.writeline("def _mako_inherit(template, context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
         self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (node.parsed_attributes['file']))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):
+        """write the module-level namespace-generating callable."""
         self.printer.writelines(
             "def _mako_get_namespace(context, name):",
             "try:",
@@ -238,6 +248,7 @@ class _GenerateRenderMethod(object):
                     self.printer.writeline("%s = kwargs.get(%s, context.get(%s, UNDEFINED))" % (ident, repr(ident), repr(ident)))
         
     def write_source_comment(self, node):
+        """write a source comment containing the line number of the corresponding template line."""
         if self.last_source_line != node.lineno:
             self.printer.writeline("# SOURCE LINE %d" % node.lineno)
             self.last_source_line = node.lineno
@@ -280,6 +291,11 @@ class _GenerateRenderMethod(object):
             self.write_cache_decorator(node.name, False)
         
     def write_def_finish(self, node, buffered, filtered, cached):
+        """write the end section of a rendering function, either outermost or inline.
+        
+        this takes into account if the rendering function was filtered, buffered, etc.
+        and closes the corresponding try: block if any, and writes code to retrieve captured content, 
+        apply filters, send proper return value."""
         if not buffered and not cached and not filtered:
             self.printer.writeline("return ''")
         if buffered or filtered or cached:
@@ -295,6 +311,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline(None)
 
     def write_cache_decorator(self, name, buffered):
+        """write a post-function decorator to replace a rendering callable with a cached version of itself."""
         self.printer.writeline("__%s = %s" % (name, name))
         if buffered:
             self.printer.writelines(
@@ -311,6 +328,8 @@ class _GenerateRenderMethod(object):
             )
 
     def create_filter_callable(self, args, target):
+        """write a filter-applying expression based on the filters present in the given 
+        filter names, adjusting for the global 'default' filter aliases as needed."""
         d = dict([(k, "filters." + v.func_name) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
         for e in args:
             e = d.get(e, e)
