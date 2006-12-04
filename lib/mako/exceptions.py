@@ -105,7 +105,7 @@ def text_error_template(lookup=None):
     import mako.template
     return mako.template.Template(r"""
 <%!
-    from mako.exceptions import rich_traceback
+    from mako.exceptions import RichTraceback
 %>
 Error !
 <%

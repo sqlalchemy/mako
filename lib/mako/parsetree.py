@@ -224,8 +224,10 @@ class IncludeTag(Tag):
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
     def __init__(self, keyword, attributes, **kwargs):
-        super(NamespaceTag, self).__init__(keyword, attributes, (), ('name','inheritable','file','import'), ('name',), **kwargs)
-        self.name = attributes['name']
+        super(NamespaceTag, self).__init__(keyword, attributes, (), ('name','inheritable','file','import'), (), **kwargs)
+        self.name = attributes.get('name', '__anon_%s' % hex(id(self)))
+        if not 'name' in attributes and not 'import' in attributes:
+            raise exceptions.CompileException("'name' and/or 'import' attributes are required for <%namespace>", self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return []
 

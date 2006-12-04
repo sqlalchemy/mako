@@ -147,6 +147,8 @@ class Namespace(object):
 
 def capture(context, callable_, *args, **kwargs):
     """execute the given template def, capturing the output into a buffer."""
+    if not callable(callable_):
+        raise exceptions.RuntimeException("capture() function expects a callable as its argument (i.e. capture(func, *args, **kwargs))")
     context.push_buffer()
     try:
         callable_(*args, **kwargs)

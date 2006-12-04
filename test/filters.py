@@ -67,6 +67,21 @@ class BufferTest(unittest.TestCase):
 """)
         assert flatten_result(t.render()) == "hi-> this is foo <-hi"
         
+    def test_capture_ccall(self):
+        t = Template("""
+            <%def name="foo">
+                <%
+                    x = capture(caller.body)
+                %>
+                this is foo.  body: ${x}
+            </%def>
 
+            <%call expr="foo()">
+                ccall body
+            </%call>
+""")
+        
+        print t.render()
+        
 if __name__ == '__main__':
     unittest.main()

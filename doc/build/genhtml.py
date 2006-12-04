@@ -10,6 +10,7 @@ import read_markdown, toc
 
 files = [
     'index',
+    'defs',
     'namespaces',
     'caching',
     ]
@@ -38,12 +39,7 @@ def genfile(name, toc):
     outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
     
 for filename in files:
-    try:
-        genfile(filename, root)
-    except Exception, e:
-        import mako.exceptions
-        print mako.exceptions.get_error_template().render(error=e)
-        break
+    genfile(filename, root)
 
 
         

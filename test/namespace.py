@@ -43,6 +43,30 @@ class NamespaceTest(unittest.TestCase):
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. def1: hi def2: there"
     
+    def test_context(self):
+        """test that namespace callables get access to the current context"""
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('main.html', """
+        <%namespace name="comp" file="defs.html"/>
+
+        this is main.  ${comp.def1()}
+        ${comp.def2("there")}
+""")
+
+        collection.put_string('defs.html', """
+        <%def name="def1">
+            def1: x is ${x}
+        </%def>
+
+        <%def name="def2(x)">
+            def2: x is ${x}
+        </%def>
+""")
+
+        print collection.get_template('main.html').render(x="context x")
+        assert flatten_result(collection.get_template('main.html').render(x="context x")) == "this is main. def1: x is context x def2: x is there"
+        
     def test_overload(self):
         collection = lookup.TemplateLookup()
 
@@ -246,8 +270,8 @@ class NamespaceTest(unittest.TestCase):
             </%def>
         """)
         collection.put_string("index.html", """
-            <%namespace name="func" file="functions.html" import="*"/>
-            <%namespace name="func2" file="func2.html" import="a, b"/>
+            <%namespace file="functions.html" import="*"/>
+            <%namespace file="func2.html" import="a, b"/>
             ${foo()}
             ${bar()}
             ${lala()}
@@ -255,6 +279,7 @@ class NamespaceTest(unittest.TestCase):
             ${b()}
             ${x}
         """)
+        print collection.get_template('index.html').code
         assert result_lines(collection.get_template("index.html").render(bar="this is bar", x="this is x")) == [
             "this is foo",
             "this is bar",
@@ -277,7 +302,7 @@ class NamespaceTest(unittest.TestCase):
         """)
         
         collection.put_string("index.html", """
-            <%namespace name="func" file="functions.html" import="*"/>
+            <%namespace file="functions.html" import="*"/>
             <%def name="cl1">
                 ${foo()}
             </%def>

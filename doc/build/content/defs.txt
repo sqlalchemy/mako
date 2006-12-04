@@ -1,0 +1,247 @@
+Defs
+=============
+
+The def is the single tag used to demarcate any block of text and/or code.  It exists within generated Python as a callable function. 
+
+    <%def name="hello">
+        hello world
+    </%def>
+
+They are normally called as expressions.
+
+    the def:  ${hello()}
+
+If the `<%def>` is not nested inside of another `<%def>`, its known as a top level def and can be accessed anywhere in the template, including above where it was defined.  
+
+All defs, top level or not, have access to the current contextual namespace in exactly the same way their parent template does.  Suppose the template below is executed with the variables `username` and `accountdata` inside the context:
+
+    Hello there ${username}, how are ya.  Lets see what your account says:
+    
+    ${account()}
+
+    <%def name="account">
+        Account for ${username}:<br/>
+    
+        % for row in accountdata:
+            Value: ${row}<br/>
+        % endfor
+    </%def>
+
+Since defs are just Python functions, you can define and pass arguments to them as well:
+
+    ${account(name='john')}
+    
+    <%def name="account(accountname, type='regular')">
+        account name: ${accountname}, type ${type}
+    </%def>
+
+When you declare an argument signature for your def, they are required following normal Python conventions (i.e., all arguments are required except keyword arguments with a default value).  This is in contrast to using context-level variables, which evaluate to `UNDEFINED` if you reference a name that does not exist.
+
+#### Calling defs from Other Files {@name=remotedefs}
+
+Top level `<%defs>` are **exported** by your template's module, and can be called from the outside; including from other templates, as well as normal Python code.  Calling a `<%def>` from another template is something like using an `<%include>` - except you are calling a specific function within the template, not the whole template.
+
+Calling a remote def is a little like calling other modules in Python.  There is an "import" step to pull the names from another template into your own template; then the function or functions are available.
+
+To import another template, use the `<%namespace>` tag:
+
+    <%namespace name="mystuff" file="mystuff.html"/>
+
+The namespace tag is declared once per template, and adds a local variable "mystuff" to the current scope.
+
+Then, just call the defs off of `mystuff`:
+
+    ${mystuff.somedef(x=5,y=7)}
+
+The `<%namespace>` tag also supports some of the other semantics of Python's `import` statement, including pulling names into the local variable space, or using `*` to represent all names:
+
+    <%namespace file="mystuff.html" import="account, printtotal"/>
+    
+    your account is: ${account()}
+    your total is ${printtotal()}
+
+As you might guess from the above code, the callables that you import also get access to the current context (the callables imported from the namespace are generated in the scope of the current context).
+
+Heres an example using `*`:
+    
+    <%namespace file="otherstuff.html" import="*"/>
+    
+    ${callsomething('test')}
+
+#### Defs within Defs {@name=nesteddefs}
+
+The def model follows regular Python rules for closures.  Declaring `<%def>` inside another `<%def>` declares it within the parent's **enclosing scope**:
+
+    <%def name="mydef">
+        <%def name="subdef">
+            a sub def
+        </%def>
+        
+        im the def, and the subcomopnent is ${subdef()}
+    </%def>
+
+Just like Python, names that exist outside the inner `<%def>` exist inside it as well:
+
+    <%
+        x = 12
+    %>
+    <%def name="outer">
+        <%
+            y = 15
+        %>
+        <%def name="inner">
+            inner, x is ${x}, y is ${y}
+        </%def>
+
+        outer, x is ${x}, y is ${y}
+    </%def>
+
+Assigning to a name inside of a def declares that name as local to the scope of that def (again, like Python itself).  This means the following code will raise an error:
+
+    <%
+        x = 10
+    %>
+    <%def name="somedef">
+        # error !
+        somedef, x is ${x}  
+        <%
+            x = 27  
+        %>
+    </%def>
+
+...because the assignment to `x` declares x as local to the scope of `somedef`, rendering the "outer" version unreachable in the expression that tries to render it.
+    
+#### Calling a def with embedded content and/or other defs {@name=defswithcontent}
+
+A flip-side to def within def is a def call with content.  This is where you call a def, and at the same time declare a block of content (or multiple blocks) that can be used by the def being called.  To achieve this, the target def is invoked using the `<%call>` tag instead of the normal `${}` syntax.  The target def then gets a variable `caller` placed in its context which contains references to the body of the `<%call>` tag.  The default body of the tag is available via the name `body`:
+
+    <%def name="buildtable">
+        <table>
+            <tr><td>
+                ${caller.body()}
+            </td></tr>
+        </table>
+    </%def>
+    
+    <%call expr="buildtable">
+        I am the table body.
+    </%call>
+    
+This produces the output:
+
+    <table>
+        <tr><td>
+            I am the table body.
+        </td></tr>
+    </table>
+
+The `body` name is executed each time its referenced.  This means you can use def-call-with-content to build iterators, conditionals, etc:
+
+    <%def name="lister(count)">
+        % for x in range(1,count):
+            ${caller.body()}
+        % endfor
+    </%def>
+    
+    <%call expr="lister(3)">
+        hi
+    </%call>
+    
+Produces:
+    
+    hi
+    hi
+    hi
+
+A custom "conditional" tag:
+    
+    <%def name="conditional(expr)">
+        % if expr:
+            ${body()}
+        %
+    </%def>
+
+    <%call expr="conditional(4==4)">
+        im the result
+    </%call>
+
+Produces:
+
+    im the result
+
+But that's not all.  The `body()` function also can handle arguments, which will augment the local namespace of the body callable:
+
+    <%def name="layoutdata(somedata)">
+        <table>
+        % for item in somedata:
+            <tr>
+            % for col in item:
+                <td>${body(col=col)}</td>\
+            % endfor
+            </tr>
+        % endfor
+        </table>
+    </%def>
+    
+    <%call expr="layoutdata([[1,2,3],[4,5,6],[7,8,9]])">
+        Body data: ${col}
+    </%call>
+    
+Produces:
+
+    <table>
+        <tr>
+            <td>Body data: 1</td><td>Body data: 2</td><td>Body data: 3</td>
+            <td>Body data: 2</td><td>Body data: 5</td><td>Body data: 6</td>
+            <td>Body data: 3</td><td>Body data: 8</td><td>Body data: 9</td>
+        </tr>
+    </table>
+    
+You don't have to stick to calling just the `body()` function.  The caller can define any number of callables, allowing the `<%call>` tag to produce whole layouts:
+
+    <%def name="layout">
+        # a layout def
+        <div class="mainlayout">
+            <div class="header">
+                ${caller.header()}
+            </div>
+            <div class="sidebar">
+                ${caller.sidebar()}
+            </div>
+            <div class="content">
+                ${caller.body()}
+            </div>
+        </div>
+    </%def>
+
+    # calls the layout def
+    <%call expr="layout">
+        <%def name="header">
+            I am the header
+        </%def>
+        <%def name="sidebar">
+            <ul>
+                <li>sidebar 1</li>
+                <li>sidebar 2</li>
+            </ul>
+        </%def>
+        
+            this is the body
+    </%call>
+    
+The above layout would produce:
+
+    <div class="mainlayout">
+        <div class="header">
+            I am the header
+        </div>
+        <div class="sidebar">
+            <ul>
+                <li>sidebar 1</li>
+                <li>sidebar 2</li>
+            </ul>
+        </div>
+        <div class="content">
+            this is the body
+        </div>
+    </div>
