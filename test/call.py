@@ -144,6 +144,32 @@ class CallTest(unittest.TestCase):
         ${a()}
 """)
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call", 'the embedded "d" is:', 'this is d']
+
+class SelfCacheTest(unittest.TestCase):
+    def test_basic(self):
+        t = Template("""
+        <%!
+            cached = None
+        %>
+        <%def name="foo">
+            <% 
+                global cached
+                if cached:
+                    return "cached: " + cached
+                context.push_buffer()
+            %>
+            this is foo
+            <%
+                buf = context.pop_buffer()
+                cached = buf.getvalue()
+                return cached
+            %>
+        </%def>
+        
+        ${foo()}
+        ${foo()}
+""")
+        print t.render()
         
 if __name__ == '__main__':
     unittest.main()

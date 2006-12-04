@@ -29,30 +29,29 @@ class _GenerateRenderMethod(object):
         self.last_source_line = -1
         self.compiler = compiler
         self.node = node
-        
-        if isinstance(node, parsetree.DefTag):
+
+        self.in_def = isinstance(node, parsetree.DefTag)
+
+        if self.in_def:
             name = "render_" + node.name
             args = node.function_decl.get_argument_expressions()
-            self.in_def = True
             filtered = len(node.filter_args.args) > 0 
             buffered = eval(node.attributes.get('buffered', 'False'))
+            cached = eval(node.attributes.get('cached', 'False'))
+            defs = None
         else:
+            (pagetag, defs) = self.write_toplevel()
             name = "render"
             args = None
-            self.in_def = False
             buffered = filtered = False
-            
+            cached = pagetag is not None and eval(pagetag.attributes.get('cached', 'False'))
         if args is None:
             args = ['context', '**kwargs']
         else:
             args = [a for a in ['context'] + args + ['**kwargs']]
 
-        if not self.in_def:
-            defs = self.write_toplevel()
-        else:
-            defs = None
             
-        self.write_render_callable(name, args, buffered, filtered)
+        self.write_render_callable(name, args, buffered, filtered, cached)
         
         if defs is not None:
             for node in defs:
@@ -62,11 +61,14 @@ class _GenerateRenderMethod(object):
         inherit = []
         namespaces = {}
         module_code = []
+        pagetag = [None]
         class FindTopLevel(object):
             def visitInheritTag(s, node):
                 inherit.append(node)
             def visitNamespaceTag(self, node):
                 namespaces[node.name] = node
+            def visitPageTag(self, node):
+                pagetag[0] = node
             def visitCode(self, node):
                 if node.ismodule:
                     module_code.append(node)
@@ -84,12 +86,13 @@ class _GenerateRenderMethod(object):
         module_identifiers.declared = module_ident
         
         # module-level names, python code
-        self.printer.writeline("from mako import runtime, filters")
+        self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         self.printer.writeline("_modified_time = %s" % repr(time.time()))
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
-
+        self.printer.writeline("_template_cache=cache.Cache(__name__)")
+        
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
         [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
@@ -106,11 +109,11 @@ class _GenerateRenderMethod(object):
         elif len(namespaces):
             self.write_namespaces(namespaces)
 
-        return main_identifiers.topleveldefs
+        return (pagetag[0], main_identifiers.topleveldefs)
 
-    def write_render_callable(self, name, args, buffered, filtered):        
+    def write_render_callable(self, name, args, buffered, filtered, cached):
         self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
-        if buffered or filtered:
+        if buffered or filtered or cached:
             self.printer.writeline("context.push_buffer()")
             self.printer.writeline("try:")
 
@@ -123,10 +126,11 @@ class _GenerateRenderMethod(object):
         for n in self.node.nodes:
             n.accept_visitor(self)
 
-        self.write_def_finish(self.node, buffered, filtered)
+        self.write_def_finish(self.node, buffered, filtered, cached)
         self.printer.writeline(None)
         self.printer.write("\n\n")
-
+        if cached:
+            self.write_cache_decorator(name, buffered)
         
     def write_module_code(self, module_code):
         for n in module_code:
@@ -257,7 +261,8 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))
-        if buffered or filtered:
+        cached = eval(node.attributes.get('cached', 'False'))
+        if buffered or filtered or cached:
             printer.writelines(
                 "context.push_buffer()",
                 "try:"
@@ -269,24 +274,42 @@ class _GenerateRenderMethod(object):
         for n in node.nodes:
             n.accept_visitor(self)
 
-        self.write_def_finish(node, buffered, filtered)
+        self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
+        if cached:
+            self.write_cache_decorator(node.name, False)
         
-    def write_def_finish(self, node, buffered, filtered):
-        if not buffered:
+    def write_def_finish(self, node, buffered, filtered, cached):
+        if not buffered and not cached and not filtered:
             self.printer.writeline("return ''")
-        if buffered or filtered:
+        if buffered or filtered or cached:
             self.printer.writeline("finally:")
             self.printer.writeline("_buf = context.pop_buffer()")
             s = "_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s)
-            if buffered:
+            if buffered or cached:
                 self.printer.writeline("return %s" % s)
             else:
                 self.printer.writeline("context.write(%s)" % s)
             self.printer.writeline(None)
-    
+
+    def write_cache_decorator(self, name, buffered):
+        self.printer.writeline("__%s = %s" % (name, name))
+        if buffered:
+            self.printer.writelines(
+                "def %s(context, *args, **kwargs):" % name,
+                    "return _template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs))" % (repr(name), name),
+                None
+            )
+        else:
+            self.printer.writelines(
+                "def %s(context, *args, **kwargs):" % name,
+                    "context.write(_template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs)))" % (repr(name), name),
+                    "return ''",
+                None
+            )
+
     def create_filter_callable(self, args, target):
         d = dict([(k, "filters." + v.func_name) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
         for e in args:
@@ -372,7 +395,7 @@ class _GenerateRenderMethod(object):
         self.write_variable_declares(body_identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
-        self.write_def_finish(node, buffered, False)
+        self.write_def_finish(node, buffered, False, False)
         self.printer.writelines(
             None,
             "return [%s]" % (','.join(export)),

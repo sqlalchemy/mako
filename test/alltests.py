@@ -7,10 +7,12 @@ def suite():
         'pygen',
         'lexer',
         'template',
+        'lookup',
         'def',
         'namespace',
         'inheritance',
-        'call'
+        'call',
+	'cache'
         )
     alltests = unittest.TestSuite()
     for name in modules_to_test:

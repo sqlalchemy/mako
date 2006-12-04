@@ -238,7 +238,7 @@ class TextTag(Tag):
 class DefTag(Tag):
     __keyword__ = 'def'
     def __init__(self, keyword, attributes, **kwargs):
-        super(DefTag, self).__init__(keyword, attributes, ('buffered'), ('name','filter'), ('name',), **kwargs)
+        super(DefTag, self).__init__(keyword, attributes, ('buffered', 'cached'), ('name','filter'), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             name = name + "()"
@@ -271,5 +271,5 @@ class InheritTag(Tag):
 class PageTag(Tag):
     __keyword__ = 'page'
     def __init__(self, keyword, attributes, **kwargs):
-        super(PageTag, self).__init__(keyword, attributes, (), (), (), **kwargs)
+        super(PageTag, self).__init__(keyword, attributes, ('cached'), (), (), **kwargs)
     
