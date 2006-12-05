@@ -20,8 +20,6 @@ class CacheTest(unittest.TestCase):
         ${foo()}
         callcount: ${callcount}
 """)
-        print t.code
-        print t.render()
         assert result_lines(t.render()) == [
             'this is foo',
             'this is foo',
@@ -41,7 +39,6 @@ class CacheTest(unittest.TestCase):
         %>
         callcount: ${callcount}
 """)
-        print t.code
         print t.render()
         print t.render()
         print t.render()
