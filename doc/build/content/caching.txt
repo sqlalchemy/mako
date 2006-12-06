@@ -1,16 +1,31 @@
 ### Caching
 
-Any template or component can be cached using the `cache` argument to the `%page` or `%def` directives:
+Any template or component can be cached using the `cache` argument to the `<%page>` or `<%def>` directives:
 
     <%page cache="true"/>
     
-        template text
-        
+    template text
+    
+The above template, after being executed the first time, will store its content within a cache that by default is scoped within memory.  Subsequent calls to the template's `render()` method will return content directly from the cache.  When the `Template` object itself falls out of scope, its corresponding cache is garbage collected along with the template.
+
+Caching requires that the `myghtyutils` package be installed on the system.
+
+The cache flag can also be assigned to any `<%def>`:
+
     <%def name="mycomp" cache="true" cache_timeout="30" cache_type="memory">
         other text
     </%def>
 
+Above, we also illustrate a few more options which are also available on the `<%page>` tag.
+
 Cache arguments:
+
 - cache="false|true" - turn caching on
 - cache_timeout - number of seconds in which to invalidate the cached data
 - cache_type - type of caching.  `memory`, `file`, `dbm`, or `memcached`.
+- cache_key - the "key" used to uniquely identify this content in the cache.  it defaults to the name of the function (TODO: support for multiple defs with the same name).  It is an evaluable tag, so you can put a Python expression to calculate the value of the key on the fly.  For example, heres a page that caches any page which inherits from it, based on the filename of the calling template:
+    
+        <%page cache="true", cache_key="${self.filename}"/>
+    
+        ${next.body()}
+    

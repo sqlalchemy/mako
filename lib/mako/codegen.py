@@ -40,6 +40,7 @@ class _GenerateRenderMethod(object):
             buffered = eval(node.attributes.get('buffered', 'False'))
             cached = eval(node.attributes.get('cached', 'False'))
             defs = None
+            pagetag = None
         else:
             (pagetag, defs) = self.write_toplevel()
             name = "render"
@@ -52,7 +53,7 @@ class _GenerateRenderMethod(object):
             args = [a for a in ['context'] + args + ['**kwargs']]
 
             
-        self.write_render_callable(name, args, buffered, filtered, cached)
+        self.write_render_callable(pagetag or node, name, args, buffered, filtered, cached)
         
         if defs is not None:
             for node in defs:
@@ -114,7 +115,7 @@ class _GenerateRenderMethod(object):
 
         return (pagetag[0], main_identifiers.topleveldefs)
 
-    def write_render_callable(self, name, args, buffered, filtered, cached):
+    def write_render_callable(self, node, name, args, buffered, filtered, cached):
         """write a top-level render callable.
         
         this could be the main render() method or that of a top-level def."""
@@ -136,7 +137,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline(None)
         self.printer.write("\n\n")
         if cached:
-            self.write_cache_decorator(name, buffered)
+            self.write_cache_decorator(node, name, buffered, self.identifiers)
         
     def write_module_code(self, module_code):
         """write module-level template code, i.e. that which is enclosed in <%! %> tags
@@ -193,7 +194,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("pass")
         self.printer.writeline(None)
             
-    def write_variable_declares(self, identifiers, toplevel=False):
+    def write_variable_declares(self, identifiers, toplevel=False, limit=None):
         """write variable declarations at the top of a function.
         
         the variable declarations are in the form of callable definitions for defs and/or
@@ -225,6 +226,11 @@ class _GenerateRenderMethod(object):
         # which cannot be referenced beforehand.  
         to_write = to_write.difference(identifiers.locally_declared)
         
+        # if a limiting set was sent, constraint to those items in that list
+        # (this is used for the caching decorator)
+        if limit is not None:
+            to_write = to_write.intersection(limit)
+            
         if toplevel and getattr(self.compiler, 'has_ns_imports', False):
             self.printer.writeline("_import_ns = {}")
             self.compiler.has_imports = True
@@ -288,7 +294,7 @@ class _GenerateRenderMethod(object):
         self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
         if cached:
-            self.write_cache_decorator(node.name, False)
+            self.write_cache_decorator(node, node.name, False, identifiers)
         
     def write_def_finish(self, node, buffered, filtered, cached):
         """write the end section of a rendering function, either outermost or inline.
@@ -310,19 +316,21 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("context.write(%s)" % s)
             self.printer.writeline(None)
 
-    def write_cache_decorator(self, name, buffered):
+    def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
         self.printer.writeline("__%s = %s" % (name, name))
+        cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
+        self.printer.writeline("def %s(context, *args, **kwargs):" % name)
+        print "LIMIT", node_or_pagetag.undeclared_identifiers()
+        self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
             self.printer.writelines(
-                "def %s(context, *args, **kwargs):" % name,
-                    "return _template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs))" % (repr(name), name),
+                    "return _template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs))" % (cachekey, name),
                 None
             )
         else:
             self.printer.writelines(
-                "def %s(context, *args, **kwargs):" % name,
-                    "context.write(_template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs)))" % (repr(name), name),
+                    "context.write(_template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs)))" % (cachekey, name),
                     "return ''",
                 None
             )
@@ -516,7 +524,8 @@ class _Identifiers(object):
                 n.accept_visitor(self)
     def visitIncludeTag(self, node):
         self.check_declared(node)
-                
+    def visitPageTag(self, node):
+        self.check_declared(node)            
     def visitCallTag(self, node):
         self.check_declared(node)
         if node is self.node:

@@ -1,7 +1,7 @@
 Namespaces
 =============
 
-Namespaces are used to organize groups of components into categories, and also to "import" components from other files so that you don't have to type the full filename of the remote component file.
+Namespaces are used to organize groups of components into categories, and also to "import" components from other files.
 
 If the file `components.html` defines these two components:
 
@@ -21,20 +21,28 @@ You can make another file, for example `index.html`, that pulls those two compon
     
     Heres comp1:  ${comp.comp1()}
     Heres comp2:  ${comp.comp2()}
-    
-The `<%namespace>` tag is more powerful than that.  You can also declare `<%defs>` within the namespace:
 
-    # define a namespace
-    <%namespace name="stuff">
-        <%def name="comp1">
-            comp1
-        </%def>
-    </%namespace>
-    
-    # then call it
-    ${stuff:comp1()}
+The `comp` variable above is an instance of `mako.runtime.Namespace`, a **proxy object** which delivers method calls to the underlying template callable using the current context.
 
-Namespaces can also import modules containing regular Python callables.  These callables need to take at least one argument, `context`:
+`<%namespace>` also provides an `import` attribute which can be used to pull the names into the local namespace, removing the need to call it via the ".".  When `import` is used, the `name` attribute is optional.
+
+    <%namespace file="components.html" import="comp1, comp2"/>
+    
+    Heres comp1:  ${comp1()}
+    Heres comp2:  ${comp2()}
+    
+`import` also supports the "*" operator:
+
+    <%namespace file="components.html" import="*"/>
+
+    Heres comp1:  ${comp1()}
+    Heres comp2:  ${comp2()}
+
+The names imported by the `import` attribute take precedence over any names that exist within the current context.
+
+### Namespaces from Regular Python Modules
+
+Namespaces can also import regular Python functions from modules.  These callables need to take at least one argument, `context`:
 
 A module file `some/module.py` might contain the callable:
 
@@ -48,3 +56,18 @@ A template can use this module via:
     ${hw.my_tag()}
     
 Note that the `context` argument is not needed in the call; the `namespace` tag creates a locally-scoped callable which takes care of it.
+
+### Declaring defs in namespaces.
+
+The `<%namespace>` tag supports the definition of `<%defs>` directly inside the tag.  These defs become part of the namespace like any other function, and will override the definitions pulled in from a remote template or module:
+    
+    # define a namespace
+    <%namespace name="stuff">
+        <%def name="comp1">
+            comp1
+        </%def>
+    </%namespace>
+    
+    # then call it
+    ${stuff:comp1()}
+
