@@ -6,6 +6,7 @@ from mako import exceptions
 
 root = './'
 port = 8000
+error_style = 'html' # select 'text' for plaintext error reporting
 
 lookup = TemplateLookup(directories=[root + 'templates', root + 'htdocs'], filesystem_checks=True, module_directory='./modules')
 
@@ -33,8 +34,12 @@ def serve(environ, start_response):
             start_response("404 Not Found", [])
             return ["Cant find template '%s'" % uri]
         except:
-            start_response("200 OK", [('Content-type','text/html')])
-            return [exceptions.html_error_template().render()]
+            if error_style == 'text':
+                start_response("200 OK", [('Content-type','text/plain')])
+                return [exceptions.text_error_template().render()]
+            else:
+                start_response("200 OK", [('Content-type','text/html')])
+                return [exceptions.html_error_template().render()]
     else:
         u = re.sub(r'^\/+', '', uri)
         filename = os.path.join(root, u)

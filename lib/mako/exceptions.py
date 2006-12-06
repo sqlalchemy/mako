@@ -40,7 +40,28 @@ class TopLevelLookupException(TemplateLookupException):
     pass
     
 class RichTraceback(object):
-    """pulls the current exception from the sys traceback and extracts Mako-specific information."""
+    """pulls the current exception from the sys traceback and extracts Mako-specific 
+    template information.
+    
+    Usage:
+    
+    RichTraceback()
+    
+    Properties:
+    
+    error - the exception instance.  
+    source - source code of the file where the error occured.  if the error occured within a compiled template,
+    this is the template source.
+    lineno - line number where the error occured.  if the error occured within a compiled template, the line number
+    is adjusted to that of the template source
+    records - a list of 8-tuples containing the original python traceback elements, plus the 
+    filename, line number, source line, and full template source for the traceline mapped back to its originating source
+    template, if any for that traceline (else the fields are None).
+    reverse_records - the list of records in reverse
+    traceback - a list of 4-tuples, in the same format as a regular python traceback, with template-corresponding 
+    traceback records replacing the originals
+    reverse_traceback - the traceback list in reverse
+    """
     def __init__(self):
         (self.source, self.lineno) = ("", 0)
         (t, self.error, self.records) = self._init()
@@ -49,8 +70,22 @@ class RichTraceback(object):
         if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
             self.source = file(self.error.filename).read()
             self.lineno = self.error.lineno
+            self._has_source = True
         self.reverse_records = [r for r in self.records]
         self.reverse_records.reverse()
+    def _get_reformatted_records(self, records):
+        for rec in records:
+            if rec[6]:
+                yield (rec[4], rec[5], rec[2], rec[6])
+            else:
+                yield tuple(rec[0:4])
+    traceback = property(lambda self:self._get_reformatted_records(self.records), doc="""
+        return a list of 4-tuple traceback records (i.e. normal python format)
+        with template-corresponding lines remapped to the originating template
+    """)
+    reverse_traceback = property(lambda self:self._get_reformatted_records(self.reverse_records), doc="""
+        return the same data as traceback, except in reverse order
+    """)
     def _init(self):
         """format a traceback from sys.exc_info() into 7-item tuples, containing
         the regular four traceback tuple items, plus the original template 
@@ -60,8 +95,6 @@ class RichTraceback(object):
         mods = {}
         (type, value, trcback) = sys.exc_info()
         rawrecords = traceback.extract_tb(trcback)
-        # this line extends the stack all the way back....shouldnt be needed...
-        #rawrecords = traceback.extract_stack() + rawrecords 
         new_trcback = []
         for filename, lineno, function, line in rawrecords:
             #print "TB", filename, lineno, function, line
@@ -93,37 +126,43 @@ class RichTraceback(object):
             template_ln = line_map[lineno]
             if template_ln <= len(template_lines):
                 template_line = template_lines[template_ln - 1]
-                self.source = template_source
-                self.lineno = template_ln
             else:
                 template_line = None
             new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line, template_source))
+        if not self.source:
+            if new_trcback[-1][5]:
+                self.source = template_source
+                self.lineno = template_ln
+            else:
+                self.source = file(new_trcback[-1][0]).read()
+                self.lineno = new_trcback[-1][1]
         return (type, value, new_trcback)
 
                 
 def text_error_template(lookup=None):
+    """provides a template that renders a stack trace in a similar format to the Python interpreter,
+    substituting source template filenames, line numbers and code for that of the originating
+    source template, as applicable."""
     import mako.template
     return mako.template.Template(r"""
 <%!
     from mako.exceptions import RichTraceback
-%>
-Error !
+%>\
 <%
-    (type, value, trcback) = rich_traceback()
-%>
-
-${str(type)} - ${value}
-
-% for (filename, lineno, function, line, template_filename, template_ln, template_line) in trcback:
-    % if template_line:
-    ${template_filename} ${template_ln} ${template_line}
-    % else:
-    ${filename} ${lineno} ${line}
-    % endif
+    tback = RichTraceback()
+%>\
+Traceback (most recent call last):
+% for (filename, lineno, function, line) in tback.traceback:
+  File "${filename}", line ${lineno}, in ${function or '?'}
+    ${line.strip()}
 % endfor
-""", lookup=lookup)
+${str(tback.error.__class__.__name__)}: ${str(tback.error)}
+""")
 
-def html_error_template(lookup=None):
+def html_error_template():
+    """provides a template that renders a stack trace in an HTML format, providing an excerpt of 
+    code as well as substituting source template filenames, line numbers and code 
+    for that of the originating source template, as applicable."""
     import mako.template
     return mako.template.Template(r"""
 <%!
@@ -133,40 +172,19 @@ def html_error_template(lookup=None):
 <head>
     <title>Mako Runtime Error</title>
     <style>
-        body {
-            font-family:verdana;
-        }
-        .stacktrace {
-            margin:10px 30px 10px 30px;
-        }
-        .highlight {
-            padding:0px 10px 0px 10px;
-            background-color:#9F9FDF;
-        }
-        .nonhighlight {
-            padding:0px;
-            background-color:#DFDFDF;
-        }
-        .sample {
-            padding:10px;
-            margin:10px 40px 10px 40px;
-            font-family:monospace;
-        }
-        .sampleline {
-            padding:0px 10px 0px 10px;
-        }
-        .sourceline {
-            font-size:80%;
-            margin-bottom:10px;
-        }
-        .location {
-            font-size:80%;
-        }
+        body { font-family:verdana; margin:10px 30px 10px 30px;}
+        .stacktrace { margin:5px 5px 5px 5px; }
+        .highlight { padding:0px 10px 0px 10px; background-color:#9F9FDF; }
+        .nonhighlight { padding:0px; background-color:#DFDFDF; }
+        .sample { padding:10px; margin:10px 10px 10px 10px; font-family:monospace; }
+        .sampleline { padding:0px 10px 0px 10px; }
+        .sourceline { margin:5px 5px 10px 5px; font-family:monospace;}
+        .location { font-size:80%; }
     </style>
 </head>
 <body>
 
-        <h2>Error !</h2>
+<h2>Error !</h2>
 <%
     tback = RichTraceback()
     src = tback.source
@@ -176,9 +194,7 @@ def html_error_template(lookup=None):
     else:
         lines = None
 %>
-<p>
-${str(tback.error.__class__.__name__)}: ${str(tback.error)}
-</p>
+<h3>${str(tback.error.__class__.__name__)}: ${str(tback.error)}</h3>
 
 % if lines:
     <div class="sample">
@@ -194,21 +210,13 @@ ${str(tback.error.__class__.__name__)}: ${str(tback.error)}
     </div>
 % endif
 
-<%def name="traceline(filename, lineno, source)">
-    <div class="location">${filename} ${lineno}:</div>
-    <div class="sourceline">${source}</div>
-</%def>
-
 <div class="stacktrace">
-% for (filename, lineno, function, line, template_filename, template_ln, template_line, src) in tback.reverse_records:
-        % if template_line:
-            ${traceline(template_filename, template_ln, template_line)}
-        % else:
-            ${traceline(filename, lineno, line)}
-        % endif
+% for (filename, lineno, function, line) in tback.reverse_traceback:
+    <div class="location">${filename}, line ${lineno}:</div>
+    <div class="sourceline">${line | h}</div>
 % endfor
 </div>
 
 </body>
 </html>
-""", lookup=lookup)
+""")
