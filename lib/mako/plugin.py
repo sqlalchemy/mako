@@ -15,6 +15,8 @@ class TGPlugin(object):
         for k, v in options.iteritems():
             if k.startswith('mako.'):
                 tmpl_options[k[5:]] = v
+            elif k in ['directories', 'filesystem_checks', 'module_directory']:
+                tmpl_options[k] = v
         self.lookup = TemplateLookup(**tmpl_options)
 
     def load_template(self, templatename):
