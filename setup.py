@@ -37,4 +37,8 @@ The latest version is available in a `Subversion repository
       install_requires=[
           'MyghtyUtils',
       ],
+      entry_points="""
+      [python.templating.engines]
+      mako = mako.plugin:TGPlugin
+      """,
 )
