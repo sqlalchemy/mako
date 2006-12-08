@@ -26,9 +26,6 @@ class TGPlugin(object):
         if '/' and '.' not in template:
             template = '/' + template.replace('.', '/') + '.' + self.extension
 
-        if not template.startswith('/'):
-            template = '/' + template
-
         # Load extra vars func if provided
         if self.extra_vars_func:
             info.update(self.extra_vars_func())
