@@ -28,50 +28,33 @@
 </%def>
 
 <%def name="topnav(item, extension='html')">
-    <div class="topnav">
-    <div class="topnavsectionlink">
+    <a href="index.${ extension }">Table of Contents</a>
 
-        <a href="index.${ extension }">Table of Contents</a>
+    <div class="prevnext">
+        % if item.previous is not None:
+            Previous: ${itemlink(item=item.previous, anchor=False)}
+        % endif
 
-        <div class="prevnext">
-            % if item.previous is not None:
-                Previous: ${itemlink(item=item.previous, anchor=False)}
-            % endif
+        % if item.previous is not None and item.next is not None:
+            &nbsp; | &nbsp;
+        % endif
 
-            % if item.previous is not None and item.next is not None:
-                &nbsp; | &nbsp;
-            % endif
-
-            % if item.next is not None:
-                Next: ${itemlink(item=item.next, anchor=False)}
-            % endif
-
-        </div>
-    </div>
-
-    <div class="topnavmain">
-    	<div class="topnavheader">${ item.description }</div>
-    	<div class="topnavitems">
-    	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
-    	</div>
-    </div>
+        % if item.next is not None:
+            Next: ${itemlink(item=item.next, anchor=False)}
+        % endif
 
     </div>
+	${ item.description }
+	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
 </%def>
 
 <%def name="pagenav(item)">
-    <div class="sectionnavblock">
-        <div class="sectionnav">
+    % if item.previous is not None:
+        Previous: ${itemlink(item=item.previous)}
+    % endif
 
-            % if item.previous is not None:
-                Previous: ${itemlink(item=item.previous)}
-            % endif
-
-            % if item.next is not None:
-                ${item.previous is not None and "|" or ""}
-                Next: ${itemlink(item=item.next)}
-            % endif
-
-        </div>
-    </div>
+    % if item.next is not None:
+        ${item.previous is not None and "|" or ""}
+        Next: ${itemlink(item=item.next)}
+    % endif
 </%def>

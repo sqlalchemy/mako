@@ -130,9 +130,11 @@ class RichTraceback(object):
                 template_line = None
             new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line, template_source))
         if not self.source:
-            if new_trcback[-1][5]:
-                self.source = template_source
-                self.lineno = template_ln
+            for l in range(len(new_trcback)-1, 0, -1):
+                if new_trcback[l][5]:
+                    self.source = new_trcback[l][7]
+                    self.lineno = new_trcback[l][5]
+                    break
             else:
                 self.source = file(new_trcback[-1][0]).read()
                 self.lineno = new_trcback[-1][1]

@@ -22,7 +22,7 @@
     %>
     <A name="${item.path}"></a>
 
-    <div class="subsection" style="margin-left:${repr(item.depth * 10)}px;">
+    <div class="section" style="margin-left:${repr(item.depth * 10)}px;">
     <%
         content = capture(caller.body)
         re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
@@ -31,17 +31,18 @@
     % if item.depth > 1:
         <h3>${description or item.description}</h3>
     % endif
-    <div class="sectiontext">
+
     ${content}
-    </div>
+
     % if item.depth > 1:
         %   if (item.next and item.next.depth >= item.depth):
-            <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
+            <a href="#${ item.get_page_root().path }">back to section top</a>
         %   endif
     % else:
-        <a href="#${ item.get_page_root().path }" class="toclink">back to section top</a>
+        <a href="#${ item.get_page_root().path }">back to section top</a>
         ${nav.pagenav(item=item)}
     % endif
+    
     </div>
 
 </%def>
@@ -63,7 +64,7 @@
 
     <div class="${ use_sliders and "sliding_code" or "code" }">
         % if title is not None:
-            <div class="codetitle">${ title }</div>
+            ${title}
         % endif
         ${ content }
     </div>

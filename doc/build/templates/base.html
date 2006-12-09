@@ -2,7 +2,13 @@
     from mako.ext.autohandler import autohandler
 %>
 <%inherit file="${autohandler(template, context)}"/>
-<%page cached="True" cache_key="${self.filename}"/>
+<%page cached="False" cache_key="${self.filename}"/>
+
+<%def name="style">
+    ${parent.style()}
+    <link rel="stylesheet" href="docs.css"></link>
+</%def>
+
 # base.html - common to all documentation pages. intentionally separate 
 # from autohandler, which can be swapped out for a different one
 <%
@@ -16,24 +22,16 @@
         toc = pickle.load(file(filename))
     version = toc.version
     last_updated = toc.last_updated
+
 %>
 
-<%namespace name="formatting" file="formatting.html" inheritable="True"/>
-<%namespace name="tocns" file="toc.html" inheritable="True"/>
-<%namespace name="nav" file="nav.html" inheritable="True"/>
-
-<div style="position:absolute;left:0px;top:0px;"><a name="top"></a>&nbsp;</div>
-
-<div class="doccontainer">
-
-<div class="docheader">
+<div id="topanchor"><a name="top"></a>&nbsp;</div>
 
 <h1>${toc.root.doctitle}</h1>
-<div class="">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
-</div>
+
+<div class="versionheader">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
 
 ${next.body(toc=toc)}
 
-</div>
 
 

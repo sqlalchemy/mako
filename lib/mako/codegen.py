@@ -317,6 +317,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("return %s" % s)
             else:
                 self.printer.writeline("context.write(%s)" % s)
+                self.printer.writeline("return ''")
             self.printer.writeline(None)
 
     def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers):
@@ -402,7 +403,6 @@ class _GenerateRenderMethod(object):
         pass
 
     def visitCallTag(self, node):
-        self.write_source_comment(node)
         self.printer.writeline("def ccall(context):")
         export = ['body']
         identifiers = self.identifiers.branch(node)
@@ -436,7 +436,9 @@ class _GenerateRenderMethod(object):
             "__cl = context.locals_({'caller':context.caller_stack[-1]})",
             # push on global "caller" to be picked up by the next ccall
             "context.caller_stack.append(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
-            "try:",
+            "try:")
+        self.write_source_comment(node)
+        self.printer.writelines(
                 "context.write(unicode(%s))" % node.attributes['expr'],
             "finally:",
                 # pop it off
