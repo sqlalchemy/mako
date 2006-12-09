@@ -109,7 +109,7 @@ class TemplateLookup(TemplateCollection):
             except KeyError:
                 pass
             try:
-                self.__collection[uri] = Template(identifier=self.__relativeize(filename), description=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
+                self.__collection[uri] = Template(identifier=self.__relativeize(filename), uri=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
                 return self.__collection[uri]
             except:
                 self.__collection.pop(uri, None)
@@ -130,7 +130,7 @@ class TemplateLookup(TemplateCollection):
             return template
             
     def put_string(self, uri, text):
-        self.__collection[uri] = Template(text, lookup=self, description=uri, **self.template_args)
+        self.__collection[uri] = Template(text, lookup=self, uri=uri, **self.template_args)
     def put_template(self, uri, template):
         self.__collection[uri] = template
             

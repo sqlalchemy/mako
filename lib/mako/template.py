@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, identifier=None, description=None, filename=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None):
+    def __init__(self, text=None, identifier=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -59,8 +59,8 @@ class Template(object):
             raise exceptions.RuntimeException("Template requires text or filename")
 
         self.module = module
-        self.description = description
         self.filename = filename
+        self.uri = uri
         self.callable_ = self.module.render
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler

@@ -173,7 +173,7 @@ def inherit_from(context, uri, calling_filename):
     while ih.inherits is not None:
         ih = ih.inherits
     lclcontext = context.locals_({'next':ih})
-    ih.inherits = Namespace("self:%s" % template.description, lclcontext, template = template, populate_self=False)
+    ih.inherits = Namespace("self:%s" % template.uri, lclcontext, template = template, populate_self=False)
     context._data['parent'] = lclcontext._data['local'] = ih.inherits
     callable_ = getattr(template.module, '_mako_inherit', None)
     if callable_ is not None:
@@ -196,7 +196,7 @@ def _lookup_template(context, uri, relativeto):
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
-        self_ns = Namespace('self:%s' % template.description, context, template=template, populate_self=False)
+        self_ns = Namespace('self:%s' % template.uri, context, template=template, populate_self=False)
     context._data['self'] = context._data['local'] = self_ns
     if hasattr(template.module, '_mako_inherit'):
         ret = template.module._mako_inherit(template, context)
