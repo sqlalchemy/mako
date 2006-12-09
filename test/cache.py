@@ -39,9 +39,12 @@ class CacheTest(unittest.TestCase):
         %>
         callcount: ${callcount}
 """)
-        print t.render()
-        print t.render()
-        print t.render()
+        t.render()
+        t.render()
+        assert result_lines(t.render()) == [
+            "this is foo",
+            "callcount: [1]"
+        ]
         
 
         

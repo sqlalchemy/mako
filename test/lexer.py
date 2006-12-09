@@ -14,7 +14,6 @@ class LexerTest(unittest.TestCase):
         and some more text.
 """
         node = Lexer(template).parse()
-        print repr(node)
         assert repr(node) == r"""TemplateNode({}, [Text('\n<b>Hello world</b>\n        ', (1, 1)), DefTag('def', {'name': 'foo'}, (3, 9), ["Text('\\n                this is a def.\\n        ', (3, 26))"]), Text('\n        \n        and some more text.\n', (5, 16))])"""
 
     def test_unclosed_tag(self):

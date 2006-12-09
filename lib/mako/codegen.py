@@ -30,7 +30,8 @@ class _GenerateRenderMethod(object):
         self.last_source_line = -1
         self.compiler = compiler
         self.node = node
-
+        self.identifier_stack = [None]
+        
         self.in_def = isinstance(node, parsetree.DefTag)
 
         if self.in_def:
@@ -58,7 +59,9 @@ class _GenerateRenderMethod(object):
         if defs is not None:
             for node in defs:
                 _GenerateRenderMethod(printer, compiler, node)
-            
+    
+    identifiers = property(lambda self:self.identifier_stack[-1])
+    
     def write_toplevel(self):
         """traverse a template structure for module-level directives and generate the
         start of module-level code."""
@@ -127,7 +130,8 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("context.push_buffer()")
             self.printer.writeline("try:")
 
-        self.identifiers = self.compiler.identifiers.branch(self.node)
+        self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
+
         if not self.in_def and len(self.identifiers.locally_assigned) > 0:
             self.printer.writeline("__locals = {}")
 
@@ -289,11 +293,14 @@ class _GenerateRenderMethod(object):
                 )
 
         identifiers = identifiers.branch(node, nested=nested)
-        self.write_variable_declares(identifiers)
 
+        self.write_variable_declares(identifiers)
+        
+        self.identifier_stack.append(identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
-
+        self.identifier_stack.pop()
+        
         self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
         if cached:
@@ -325,7 +332,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("__%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
         self.printer.writeline("def %s(context, *args, **kwargs):" % name)
-        print "LIMIT", node_or_pagetag.undeclared_identifiers()
+
         self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
             self.printer.writelines(
@@ -403,18 +410,25 @@ class _GenerateRenderMethod(object):
         pass
 
     def visitCallTag(self, node):
-        self.printer.writeline("def ccall(context):")
+        self.printer.writeline("def ccall(caller):")
         export = ['body']
-        identifiers = self.identifiers.branch(node, includedefs=True, nested=True)
-        body_identifiers = identifiers.branch(node, includedefs=True, nested=False)
+        callable_identifiers = self.identifiers.branch(node, includedefs=True, nested=True)
+        body_identifiers = callable_identifiers.branch(node, includedefs=False, nested=False)
+        body_identifiers.add_declared('caller')
+        callable_identifiers.add_declared('caller')
+        
+        self.identifier_stack.append(body_identifiers)
         class DefVisitor(object):
             def visitDefTag(s, node):
-                self.write_inline_def(node, identifiers, nested=False)
+                self.write_inline_def(node, callable_identifiers, nested=False)
                 export.append(node.name)
         vis = DefVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
-        self.printer.writeline("def body(**kwargs):")
+        self.identifier_stack.pop()
+        
+        bodyargs = node.body_decl.get_argument_expressions()    
+        self.printer.writeline("def body(%s):" % ','.join(bodyargs))
         # TODO: figure out best way to specify buffering/nonbuffering (at call time would be better)
         buffered = False
         if buffered:
@@ -423,8 +437,11 @@ class _GenerateRenderMethod(object):
                 "try:"
             )
         self.write_variable_declares(body_identifiers)
+        self.identifier_stack.append(body_identifiers)
         for n in node.nodes:
             n.accept_visitor(self)
+        self.identifier_stack.pop()
+        
         self.write_def_finish(node, buffered, False, False)
         self.printer.writelines(
             None,
@@ -432,17 +449,9 @@ class _GenerateRenderMethod(object):
             None
         )
 
-        self.printer.writeline(
-        # preserve local instance of current caller in local scope
-        "__cl = context.locals_({'caller':context.caller_stack[-1]})",
-        )
-
         self.printer.writelines(
             # push on global "caller" to be picked up by the next ccall
-            "context.caller_stack.append(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
-            # TODO: clean this up - insure proper caller is set
-            "context._data['caller'] = runtime._StackFacade(context.caller_stack)",
-            #"context.write('GOING TO CALL %s WITH CONTEXT ID '+ repr(id(context)) + ' CALLER ' + repr(context.get('caller')))" % node.attributes['expr'],
+            "context.caller_stack.append(runtime.Namespace('caller', context, callables=ccall(context.caller_stack[-1])))",
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
@@ -458,7 +467,7 @@ class _Identifiers(object):
     def __init__(self, node=None, parent=None, includedefs=True, includenode=True, nested=False):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
-            self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs]).union(parent.locally_declared)
+            self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs]).union(parent.locally_declared).union(parent.argument_declared)
             
             # if these identifiers correspond to a "nested" scope, it means whatever the 
             # parent identifiers had as undeclared will have been declared by that parent, 
@@ -506,7 +515,7 @@ class _Identifiers(object):
     defs = property(lambda s:s.topleveldefs.union(s.closuredefs))
     
     def __repr__(self):
-        return "Identifiers(%s, %s, %s, %s, %s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.topleveldefs]), repr([c.name for c in self.closuredefs]))
+        return "Identifiers(declared=%s, locally_declared=%s, undeclared=%s, topleveldefs=%s, closuredefs=%s, argumenetdeclared=%s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.topleveldefs]), repr([c.name for c in self.closuredefs]), repr(self.argument_declared))
         
     def check_declared(self, node):
         """update the state of this Identifiers with the undeclared and declared identifiers of the given node."""
@@ -515,7 +524,12 @@ class _Identifiers(object):
                 self.undeclared.add(ident)
         for ident in node.declared_identifiers():
             self.locally_declared.add(ident)
-                
+    
+    def add_declared(self, ident):
+        self.declared.add(ident)
+        if ident in self.undeclared:
+            self.undeclared.remove(ident)
+                        
     def visitExpression(self, node):
         self.check_declared(node)
     def visitControlLine(self, node):
@@ -534,10 +548,10 @@ class _Identifiers(object):
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
-        for ident in node.declared_identifiers():
-            self.argument_declared.add(ident)
         # visit defs only one level deep
         if node is self.node:
+            for ident in node.declared_identifiers():
+                self.argument_declared.add(ident)
             for n in node.nodes:
                 n.accept_visitor(self)
     def visitIncludeTag(self, node):
@@ -545,7 +559,16 @@ class _Identifiers(object):
     def visitPageTag(self, node):
         self.check_declared(node)            
     def visitCallTag(self, node):
-        self.check_declared(node)
         if node is self.node:
+            for ident in node.undeclared_identifiers():
+                if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                    self.undeclared.add(ident)
+            for ident in node.declared_identifiers():
+                self.argument_declared.add(ident)
             for n in node.nodes:
                 n.accept_visitor(self)
+        else:
+            for ident in node.undeclared_identifiers():
+                if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                    self.undeclared.add(ident)
+                

@@ -9,12 +9,10 @@ class CallTest(unittest.TestCase):
             hi im foo ${caller.body(y=5)}
         </%def>
         
-        <%call expr="foo()">
+        <%call expr="foo()" args="y, **kwargs">
             this is the body, y is ${y}
         </%call>
 """)
-        print t.code
-        print t.render()
         assert result_lines(t.render()) == ['hi im foo', 'this is the body, y is 5']
 
 
@@ -43,10 +41,11 @@ class CallTest(unittest.TestCase):
         ${bar()}
 
 """)
-        print t.code
+
         assert result_lines(t.render()) == ['foo calling comp1:', 'this is comp1, 5', 'foo calling body:', 'this is the body,', 'this is comp1, 6', 'this is bar']
 
-    def test_multi_call(self):
+    def test_chained_call(self):
+        """test %calls that are chained through their targets"""
         t = Template("""
             <%def name="a">
                 this is a. 
@@ -56,7 +55,8 @@ class CallTest(unittest.TestCase):
             </%def>
             <%def name="b">
                 this is b.  heres  my body: ${caller.body()}
-                whats in the body's caller's body ? ${caller.context['caller'].body()}
+                whats in the body's caller's body ?
+                ${context.caller_stack[-2].body()}
             </%def>
             
             <%call expr="a()">
@@ -64,7 +64,6 @@ class CallTest(unittest.TestCase):
             </%call>
             
 """)
-        print t.render()
         assert result_lines(t.render()) == [
             'this is a.',
             'this is b. heres my body:',
@@ -74,7 +73,66 @@ class CallTest(unittest.TestCase):
             'heres the main templ call'
         ]
 
-    def test_multi_call_in_nested(self):
+    def test_nested_call(self):
+        """test %calls that are nested inside each other"""
+        t = Template("""
+            <%def name="foo">
+                ${caller.body(x=10)}
+            </%def>
+
+            x is ${x}
+            <%def name="bar">
+                bar: ${caller.body()}
+            </%def>
+
+            <%call expr="foo()" args="x">
+                this is foo body: ${x}
+
+                <%call expr="bar()">
+                    this is bar body: ${x}
+                </%call>
+            </%call>
+""")
+        assert result_lines(t.render(x=5)) == [
+            "x is 5",
+            "this is foo body: 10",
+            "bar:",
+            "this is bar body: 10"
+        ]
+        
+    def test_nested_call_2(self):
+        t = Template("""
+            x is ${x}
+            <%def name="foo">
+                ${caller.foosub(x=10)}
+            </%def>
+
+            <%def name="bar">
+                bar: ${caller.barsub()}
+            </%def>
+
+            <%call expr="foo()">
+                <%def name="foosub(x)">
+                this is foo body: ${x}
+                
+                <%call expr="bar()">
+                    <%def name="barsub">
+                    this is bar body: ${x}
+                    </%def>
+                </%call>
+                
+                </%def>
+
+            </%call>
+""")
+        assert result_lines(t.render(x=5)) == [
+            "x is 5",
+            "this is foo body: 10",
+            "bar:",
+            "this is bar body: 10"
+        ]
+        
+    def test_chained_call_in_nested(self):
         t = Template("""
             <%def name="embedded">
             <%def name="a">
@@ -85,7 +143,7 @@ class CallTest(unittest.TestCase):
             </%def>
             <%def name="b">
                 this is b.  heres  my body: ${caller.body()}
-                whats in the body's caller's body ? ${caller.context['caller'].body()}
+                whats in the body's caller's body ? ${context.caller_stack[-2].body()}
             </%def>
 
             <%call expr="a()">
@@ -94,7 +152,6 @@ class CallTest(unittest.TestCase):
             </%def>
             ${embedded()}
 """)
-        print t.render()
         assert result_lines(t.render()) == [
             'this is a.',
             'this is b. heres my body:',
@@ -122,43 +179,6 @@ class CallTest(unittest.TestCase):
 """)
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call"]
 
-    def test_ccall_args(self):
-        t = Template("""
-            <%def name="foo">
-                foo context id: ${id(context)}
-                foo cstack: ${repr(context.caller_stack)}
-                foo, ccaller is ${context.get('caller')}
-                foo, context data is ${repr(context._data)}
-                ${caller.body(x=10)}
-            </%def>
-            
-            <%def name="bar">
-                bar context id: ${id(context)}
-                bar cstack: ${repr(context.caller_stack)}
-                bar, cs is ${context.caller_stack[-1]}
-                bar, caller is ${caller}
-                bar, ccaller is ${context.get('caller')}
-                bar, body is ${context.caller_stack[-1].body()}
-                bar, context data is ${repr(context._data)}
-            </%def>
-            
-            x is: ${x}
-
-            main context id: ${id(context)}
-            main cstack: ${repr(context.caller_stack)}
-            
-            <%call expr="foo()">
-                this is foo body: ${x}
-                
-                foocall context id: ${id(context)}
-                foocall cstack: ${repr(context.caller_stack)}
-                <%call expr="bar()">
-                    this is bar body: ${x}
-                </%call>
-            </%call>
-""")
-        print t.code
-        print t.render(x=5)
         
     def test_call_in_nested_2(self):
         t = Template("""
@@ -212,7 +232,11 @@ class SelfCacheTest(unittest.TestCase):
         ${foo()}
         ${foo()}
 """)
-        print t.render()
+        assert result_lines(t.render()) == [
+            "this is foo",
+            "cached:",
+            "this is foo"
+        ]
         
 if __name__ == '__main__':
     unittest.main()

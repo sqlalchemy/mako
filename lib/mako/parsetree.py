@@ -258,10 +258,11 @@ class DefTag(Tag):
 class CallTag(Tag):
     __keyword__ = 'call'
     def __init__(self, keyword, attributes, **kwargs):
-        super(CallTag, self).__init__(keyword, attributes, (), ('expr',), ('expr',), **kwargs)
+        super(CallTag, self).__init__(keyword, attributes, ('args'), ('expr',), ('expr',), **kwargs)
         self.code = ast.PythonCode(attributes['expr'], self.lineno, self.pos, self.filename)
+        self.body_decl = ast.FunctionArgs(attributes.get('args', ''), self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
-        return self.code.declared_identifiers
+        return self.code.declared_identifiers.union(self.body_decl.argnames)
     def undeclared_identifiers(self):
         return self.code.undeclared_identifiers
 

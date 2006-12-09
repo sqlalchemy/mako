@@ -64,7 +64,6 @@ class NamespaceTest(unittest.TestCase):
         </%def>
 """)
 
-        print collection.get_template('main.html').render(x="context x")
         assert flatten_result(collection.get_template('main.html').render(x="context x")) == "this is main. def1: x is context x def2: x is there"
         
     def test_overload(self):
@@ -279,7 +278,7 @@ class NamespaceTest(unittest.TestCase):
             ${b()}
             ${x}
         """)
-        print collection.get_template('index.html').code
+
         assert result_lines(collection.get_template("index.html").render(bar="this is bar", x="this is x")) == [
             "this is foo",
             "this is bar",
@@ -343,9 +342,16 @@ class NamespaceTest(unittest.TestCase):
                 </%def>
             </%call>
         """)
-        print collection.get_template("index.html").code
-        print collection.get_template("functions.html").code
-        print collection.get_template("index.html").render()
+        #print collection.get_template("index.html").code
+        #print collection.get_template("functions.html").code
+        assert result_lines(collection.get_template("index.html").render()) == [
+            "this is bar.",
+            "this is index embedded",
+            "foo is",
+            "this is foo",
+            "this is lala",
+            "this is foo"
+        ]
 
 if __name__ == '__main__':
     unittest.main()

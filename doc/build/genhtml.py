@@ -5,6 +5,7 @@ import cPickle as pickle
 sys.path = ['../../lib', './lib/'] + sys.path
 
 from mako.lookup import TemplateLookup
+from mako import exceptions
 
 import read_markdown, toc
 
@@ -39,7 +40,10 @@ def genfile(name, toc):
     outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
     
 for filename in files:
-    genfile(filename, root)
+    try:
+        genfile(filename, root)
+    except:
+        print exceptions.text_error_template().render()
 
 
         

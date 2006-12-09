@@ -183,7 +183,13 @@ class FunctionDecl(object):
             else:
                 namedecls.insert(0, arg)
         return namedecls
+
+class FunctionArgs(FunctionDecl):
+    """the argument portion of a function declaration"""
+    def __init__(self, code, lineno, pos, filename):
+        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, lineno, pos, filename)
         
+            
 class ExpressionGenerator(object):
     """given an AST node, generates an equivalent literal Python expression."""
     def __init__(self, astnode):

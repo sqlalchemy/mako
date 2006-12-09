@@ -1,7 +1,7 @@
 from mako.template import Template
 from mako import lookup
 import unittest
-from util import flatten_result
+from util import flatten_result, result_lines
 
 class DefTest(unittest.TestCase):
     def test_def_noargs(self):
@@ -251,6 +251,24 @@ class ScopeTest(unittest.TestCase):
     """)
         assert flatten_result(t.render()) == "main/a: a/y: 10 a/b: b/c: c/y: 10 b/y: 19 main/y: 7"
 
+    def test_scope_eleven(self):
+        t = Template("""
+            x is ${x}
+            <%def name="a(x)">
+                this is a, ${b()}
+                <%def name="b">
+                    this is b, x is ${x}
+                </%def>
+            </%def>
+            
+            ${a(x=5)}
+""")
+        assert result_lines(t.render(x=10)) == [
+            "x is 10",
+            "this is a,", 
+            "this is b, x is 5"
+        ]
+
     def test_unbound_scope(self):
         t = Template("""
             <%
@@ -329,8 +347,8 @@ class NestedDefTest(unittest.TestCase):
             </%def>
             ${a()}
 """)
-        print t.code
-        print t.render(x=10)
+        
+        assert flatten_result(t.render(x=10)) == "x is 10 this is a, x is 10 this is b: 10"
         
     def test_nested_with_args(self):
         t = Template("""

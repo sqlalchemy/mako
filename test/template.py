@@ -57,17 +57,6 @@ class GlobalsTest(unittest.TestCase):
 """)
         assert t.render().strip() == "y is hi"
 
-class FormatExceptionTest(unittest.TestCase):
-    def test_html(self):
-        t = Template("""
-        
-            hi there.
-            <%
-                raise "hello"
-            %>
-        """, format_exceptions=True)
-        res = t.render()
-        print res
     
             
 if __name__ == '__main__':
