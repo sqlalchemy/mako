@@ -87,7 +87,9 @@ class TemplateLookup(TemplateCollection):
         try:
             return self._uri_cache[filename]
         except KeyError:
-            return self._uri_cache.setdefault(filename, self.__relativeize(filename))
+            value = self.__relativeize(filename)
+            self._uri_cache[filename] = value
+            return value
                     
     def __relativeize(self, filename):
         """return the portion of a filename that is 'relative' to the directories in this lookup."""
