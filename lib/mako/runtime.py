@@ -26,6 +26,8 @@ class Context(object):
     def keys(self):
         return self._data.keys()
     def __getitem__(self, key):
+        if key == 'caller':
+            return _StackFacade(self.caller_stack)
         return self._data[key]
     def _put(self, key, value):
         self._data[key] = value
@@ -47,6 +49,8 @@ class Context(object):
         c._with_template = self._with_template
         c.namespaces = self.namespaces
         c.caller_stack = self.caller_stack
+        if not c._data.has_key('caller'):
+            raise "WTF"
         return c
     def locals_(self, d):
         """create a new Context with a copy of this Context's current state, updated with the given dictionary."""

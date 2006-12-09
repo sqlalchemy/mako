@@ -344,6 +344,7 @@ class NamespaceTest(unittest.TestCase):
             </%call>
         """)
         print collection.get_template("index.html").code
+        print collection.get_template("functions.html").code
         print collection.get_template("index.html").render()
 
 if __name__ == '__main__':

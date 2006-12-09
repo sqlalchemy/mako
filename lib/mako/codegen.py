@@ -178,7 +178,7 @@ class _GenerateRenderMethod(object):
                 identifiers = self.compiler.identifiers.branch(node)
                 class NSDefVisitor(object):
                     def visitDefTag(s, node):
-                        self.write_inline_def(node, identifiers)
+                        self.write_inline_def(node, identifiers, nested=False)
                         export.append(node.name)
                 vis = NSDefVisitor()
                 for n in node.nodes:
@@ -247,7 +247,7 @@ class _GenerateRenderMethod(object):
                 if comp.is_root():
                     self.write_def_decl(comp, identifiers)
                 else:
-                    self.write_inline_def(comp, identifiers)
+                    self.write_inline_def(comp, identifiers, nested=True)
             elif ident in self.compiler.namespaces:
                 self.printer.writeline("%s = _mako_get_namespace(context, %s)" % (ident, repr(ident)))
             else:
@@ -275,7 +275,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("return render_%s(%s)" % (funcname, ",".join(nameargs)))
         self.printer.writeline(None)
         
-    def write_inline_def(self, node, identifiers):
+    def write_inline_def(self, node, identifiers, nested):
         """write a locally-available def callable inside an enclosing def."""
         namedecls = node.function_decl.get_argument_expressions()
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
@@ -288,7 +288,7 @@ class _GenerateRenderMethod(object):
                 "try:"
                 )
 
-        identifiers = identifiers.branch(node)
+        identifiers = identifiers.branch(node, nested=nested)
         self.write_variable_declares(identifiers)
 
         for n in node.nodes:
@@ -405,16 +405,16 @@ class _GenerateRenderMethod(object):
     def visitCallTag(self, node):
         self.printer.writeline("def ccall(context):")
         export = ['body']
-        identifiers = self.identifiers.branch(node)
+        identifiers = self.identifiers.branch(node, includedefs=True, nested=True)
+        body_identifiers = identifiers.branch(node, includedefs=True, nested=False)
         class DefVisitor(object):
             def visitDefTag(s, node):
-                self.write_inline_def(node, identifiers)
+                self.write_inline_def(node, identifiers, nested=False)
                 export.append(node.name)
         vis = DefVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
         self.printer.writeline("def body(**kwargs):")
-        body_identifiers = identifiers.branch(node, includedefs=False, includenode=False)
         # TODO: figure out best way to specify buffering/nonbuffering (at call time would be better)
         buffered = False
         if buffered:
@@ -431,11 +431,18 @@ class _GenerateRenderMethod(object):
             "return [%s]" % (','.join(export)),
             None
         )
+
+        self.printer.writeline(
+        # preserve local instance of current caller in local scope
+        "__cl = context.locals_({'caller':context.caller_stack[-1]})",
+        )
+
         self.printer.writelines(
-            # preserve local instance of current caller in local scope
-            "__cl = context.locals_({'caller':context.caller_stack[-1]})",
             # push on global "caller" to be picked up by the next ccall
             "context.caller_stack.append(runtime.Namespace('caller', __cl, callables=ccall(__cl)))",
+            # TODO: clean this up - insure proper caller is set
+            "context._data['caller'] = runtime._StackFacade(context.caller_stack)",
+            #"context.write('GOING TO CALL %s WITH CONTEXT ID '+ repr(id(context)) + ' CALLER ' + repr(context.get('caller')))" % node.attributes['expr'],
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
@@ -448,10 +455,16 @@ class _GenerateRenderMethod(object):
 
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
-    def __init__(self, node=None, parent=None, includedefs=True, includenode=True):
+    def __init__(self, node=None, parent=None, includedefs=True, includenode=True, nested=False):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
             self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs]).union(parent.locally_declared)
+            
+            # if these identifiers correspond to a "nested" scope, it means whatever the 
+            # parent identifiers had as undeclared will have been declared by that parent, 
+            # and therefore we have them in our scope.
+            if nested:
+                self.declared = self.declared.union(parent.undeclared)
             
             # top level defs that are available
             self.topleveldefs = util.Set(parent.topleveldefs)

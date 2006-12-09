@@ -317,6 +317,21 @@ class NestedDefTest(unittest.TestCase):
 """)
         assert flatten_result(t.render()) == "hey, im hi. and heres this is foo , this is bar"
 
+    def test_nested_2(self):
+        t = Template("""
+            x is ${x}
+            <%def name="a">
+                this is a, x is ${x}
+                ${b()}
+                <%def name="b">
+                    this is b: ${x}
+                </%def>
+            </%def>
+            ${a()}
+""")
+        print t.code
+        print t.render(x=10)
+        
     def test_nested_with_args(self):
         t = Template("""
         ${a()}
