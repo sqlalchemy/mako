@@ -38,7 +38,7 @@
     </ul>
 </%def>
 
-<%def name="printtocelement(item, anchor_toplevel, bold=False, full=False, children=True)">
+<%def name="printtocelement(item, anchor_toplevel, bold=False, full=False, children=True, extension='html')">
     # prints a TOCElement as a table of contents item and prints its immediate child items
     <li><A style="${bold and "font-weight:bold;" or "" }" href="${item.get_link(extension=extension, anchor=anchor_toplevel) }">${item.description}</a></li>
     
@@ -51,7 +51,7 @@
     % endif
 </%def>
 
-<%def name="printsmtocelem(item, children=False)">
+<%def name="printsmtocelem(item, children=False, extension='html')">
     <li><A href="${item.get_link(extension=extension)}">${item.description}</a></li>
 
     % if children:

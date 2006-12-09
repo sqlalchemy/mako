@@ -1,9 +1,8 @@
 # nav.myt - Provides page navigation elements that are derived from toc.TOCElement structures, including
 # individual hyperlinks as well as navigational toolbars and table-of-content listings.
-
 <%namespace name="tocns" file="toc.html"/>
 
-<%def name="itemlink(item, anchor=True)" filter="trim">
+<%def name="itemlink(item, anchor=True, extension='html')" filter="trim">
     <a href="${ item.get_link(extension=extension, anchor=anchor) }">${ item.description }</a>
 </%def>
 
@@ -28,7 +27,7 @@
     <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
 </%def>
 
-<%def name="topnav(item)">
+<%def name="topnav(item, extension='html')">
     <div class="topnav">
     <div class="topnavsectionlink">
 

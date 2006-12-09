@@ -1,3 +1,7 @@
+<%!
+    from mako.ext.autohandler import autohandler
+%>
+<%inherit file="${autohandler(template, context)}"/>
 <%page cached="True" cache_key="${self.filename}"/>
 # base.html - common to all documentation pages. intentionally separate 
 # from autohandler, which can be swapped out for a different one

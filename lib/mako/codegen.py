@@ -98,7 +98,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         self.printer.writeline("_modified_time = %s" % repr(time.time()))
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
-        self.printer.writeline("_template_cache=cache.Cache(__name__)")
+        self.printer.writeline("_template_cache=cache.Cache(__name__, _modified_time)")
         
         main_identifiers = module_identifiers.branch(self.node)
         module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)

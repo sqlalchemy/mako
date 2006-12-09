@@ -1,4 +1,3 @@
-<%inherit file="base.html"/>
 <html>
 <head>
 	<title>${self.title()}</title>

@@ -21,8 +21,9 @@ except ImportError:
     }
 
 class Cache(object):
-    def __init__(self, id):
+    def __init__(self, id, starttime):
         self.id = id
+        self.starttime = starttime
         if container is not None:
             self.context = container.ContainerContext()
         self._containers = {}
@@ -36,5 +37,5 @@ class Cache(object):
         except KeyError:
             if container is None:
                 raise exceptions.RuntimeException("myghtyutils package is required to use cache functionality.")
-            return self._containers.setdefault(key, clsmap[type](key, self.context, self.id, **kwargs))
+            return self._containers.setdefault(key, clsmap[type](key, self.context, self.id, starttime=self.starttime, **kwargs))
     
