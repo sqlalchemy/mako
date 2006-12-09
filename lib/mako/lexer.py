@@ -88,7 +88,12 @@ class Lexer(object):
                 raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
 
     def parse(self):
+        encoding = self.match_encoding()
+        if encoding:
+            self.text = self.text.decode(encoding)
+
         length = len(self.text)
+            
         while (True):
             if self.match_position > length: 
                 break
@@ -116,6 +121,13 @@ class Lexer(object):
             raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos, self.filename)
         return self.template
 
+    def match_encoding(self):
+        match = self.match(r'#\s*-\*- encoding: (.+?) -\*-\n')
+        if match:
+            return match.group(1)
+        else:
+            return None
+            
     def match_tag_start(self):
         match = self.match(r'''
             \<%     # opening tag

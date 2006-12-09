@@ -1,8 +1,13 @@
 # -*- encoding: utf-8 -*-
 
 from mako.template import Template
-import unittest, re
+import unittest, re, os
 from util import flatten_result, result_lines
+
+if not os.access('./test_htdocs', os.F_OK):
+    os.mkdir('./test_htdocs')
+file('./test_htdocs/unicode.html', 'w').write("""# -*- encoding: utf-8 -*-
+Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
 
 class EncodingTest(unittest.TestCase):
     def test_unicode(self):
@@ -14,6 +19,16 @@ class EncodingTest(unittest.TestCase):
         template = Template("${val}")
         assert template.render_unicode(val=val) == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
+    def test_unicode_file(self):
+        template = Template(filename='./test_htdocs/unicode.html', module_directory='./test_htdocs')
+        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_memory(self):
+        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        val = "# -*- encoding: utf-8 -*-\n" + val.encode('utf-8')
+        template = Template(val)
+        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        
 class ControlTest(unittest.TestCase):
     def test_control(self):
         t = Template("""

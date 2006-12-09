@@ -66,6 +66,8 @@ class _GenerateRenderMethod(object):
         namespaces = {}
         module_code = []
         pagetag = [None]
+        encoding =[None]
+
         class FindTopLevel(object):
             def visitInheritTag(s, node):
                 inherit.append(node)
@@ -76,6 +78,7 @@ class _GenerateRenderMethod(object):
             def visitCode(self, node):
                 if node.ismodule:
                     module_code.append(node)
+            
         f = FindTopLevel()
         for n in self.node.nodes:
             n.accept_visitor(f)

@@ -7,16 +7,18 @@ import os
 
 if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
-    file('./test_htdocs/index.html', 'w').write("this is index")
-    file('./test_htdocs/incl.html', 'w').write("this is include 1")
+file('./test_htdocs/index.html', 'w').write("this is index")
+file('./test_htdocs/incl.html', 'w').write("this is include 1")
+if not os.access('./test_htdocs/subdir', os.F_OK):
     os.mkdir('./test_htdocs/subdir')
-    file('./test_htdocs/subdir/incl.html', 'w').write("""
-        this is include 2
-    """)
-    file('./test_htdocs/subdir/index.html', 'w').write("""
-        this is sub index
-        <%include file="incl.html"/>
-    """)
+file('./test_htdocs/subdir/incl.html', 'w').write("""
+    this is include 2
+""")
+file('./test_htdocs/subdir/index.html', 'w').write("""
+    this is sub index
+    <%include file="incl.html"/>
+""")
+
 tl = lookup.TemplateLookup(directories=['./test_htdocs'])
 class LookupTest(unittest.TestCase):
     def test_basic(self):
