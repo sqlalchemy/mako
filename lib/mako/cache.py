@@ -2,23 +2,23 @@ from mako import exceptions
 
 try:
     import myghtyutils.container as container
+    try:
+        import myghtyutils.ext.memcached as memcached
+        clsmap = {
+            'memory':container.MemoryContainer,
+            'dbm':container.DBMContainer,
+            'file':container.FileContainer,
+            'memcached':memcached.MemcachedContainer
+        }
+    except ImportError:
+        clsmap = {
+            'memory':container.MemoryContainer,
+            'dbm':container.DBMContainer,
+            'file':container.FileContainer,
+        }
 except ImportError:
     container = None
-    
-try:
-    import myghtyutils.ext.memcached as memcached
-    clsmap = {
-        'memory':container.MemoryContainer,
-        'dbm':container.DBMContainer,
-        'file':container.FileContainer,
-        'memcached':memcached.MemcachedContainer
-    }
-except ImportError:
-    clsmap = {
-        'memory':container.MemoryContainer,
-        'dbm':container.DBMContainer,
-        'file':container.FileContainer,
-    }
+    clsmap = {}
 
 class Cache(object):
     def __init__(self, id, starttime):
