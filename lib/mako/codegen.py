@@ -412,8 +412,8 @@ class _GenerateRenderMethod(object):
     def visitCallTag(self, node):
         self.printer.writeline("def ccall(caller):")
         export = ['body']
-        callable_identifiers = self.identifiers.branch(node, includedefs=True, nested=True)
-        body_identifiers = callable_identifiers.branch(node, includedefs=False, nested=False)
+        callable_identifiers = self.identifiers.branch(node, nested=True)
+        body_identifiers = callable_identifiers.branch(node, nested=False)
         body_identifiers.add_declared('caller')
         callable_identifiers.add_declared('caller')
         
@@ -464,7 +464,7 @@ class _GenerateRenderMethod(object):
 
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
-    def __init__(self, node=None, parent=None, includedefs=True, includenode=True, nested=False):
+    def __init__(self, node=None, parent=None, nested=False):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
             self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs]).union(parent.locally_declared).union(parent.argument_declared)
@@ -499,14 +499,9 @@ class _Identifiers(object):
         self.closuredefs = util.Set()
         
         self.node = node
-        self.includedefs = includedefs
         
         if node is not None:
-            if includenode:
-                node.accept_visitor(self)
-            else:
-                for n in node.nodes:
-                    n.accept_visitor(self)
+            node.accept_visitor(self)
         
     def branch(self, node, **kwargs):
         """create a new Identifiers for a new Node, with this Identifiers as the parent."""
@@ -539,8 +534,6 @@ class _Identifiers(object):
             self.check_declared(node)
             self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
     def visitDefTag(self, node):
-        if not self.includedefs:
-            return
         if node.is_root():
             self.topleveldefs.add(node)
         elif node is not self.node:
