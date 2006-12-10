@@ -37,13 +37,16 @@ class Template(object):
         else:
             self.module_id = "memory:" + hex(id(self))
             self.uri = self.module_id
-            
+        
+        # if plain text, compile code in memory only
         if text is not None:
             (code, module) = _compile_text(text, self.module_id, filename, self.uri)
             self._code = code
             self._source = text
             ModuleInfo(module, None, self, filename, code, text)
         elif filename is not None:
+            # if template filename and a module directory, load
+            # a filesystem-based module file, generating if needed
             if module_directory is not None:
                 u = self.uri
                 if u[0] == '/':
@@ -58,6 +61,8 @@ class Template(object):
                 del sys.modules[self.module_id]
                 ModuleInfo(module, path, self, filename, None, None)
             else:
+                # template filename and no module directory, compile code
+                # in memory
                 (code, module) = _compile_text(file(filename).read(), self.module_id, filename, self.uri)
                 self._source = None
                 self._code = code
@@ -111,7 +116,9 @@ class DefTemplate(Template):
         return self.parent.get_def(name)
 
 class ModuleInfo(object):
-    """stores information about a module currently loaded into memory."""
+    """stores information about a module currently loaded into memory,
+    provides reverse lookups of template source, module source code based on
+    a module's identifier."""
     _modules = weakref.WeakValueDictionary()
 
     def __init__(self, module, module_filename, template, template_filename, module_source, template_source):

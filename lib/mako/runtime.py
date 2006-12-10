@@ -8,8 +8,6 @@
 from mako import exceptions, util
 import inspect, sys
 
-x = 0
-
 class Context(object):
     """provides runtime namespace, output buffer, and various callstacks for templates."""
     def __init__(self, buffer, **data):
@@ -50,13 +48,6 @@ class Context(object):
         c.namespaces = self.namespaces
         c.caller_stack = self.caller_stack
         return c
-    def localize_caller_stack(self):
-        global x
-        x += 1
-        if x > 20:
-            raise "HI"
-        print "LOCALIZE!"
-        return self
     def locals_(self, d):
         """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
         c = self._copy()
