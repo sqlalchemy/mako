@@ -34,7 +34,7 @@ class LookupTest(unittest.TestCase):
 
         ]
 
-        assert tl.get_template('/subdir/index.html').identifier == '_subdir_index_html'
+        assert tl.get_template('/subdir/index.html').module_id == '_subdir_index_html'
         
     def test_uri_adjust(self):
         tl = lookup.TemplateLookup(directories=['/foo/bar'])

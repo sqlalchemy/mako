@@ -66,22 +66,17 @@ class TemplateLookup(TemplateCollection):
             else:
                 raise exceptions.TopLevelLookupException("Cant locate template for uri '%s'" % uri)
 
-    def adjust_uri(self, uri, filename):
+    def adjust_uri(self, uri, relativeto):
         """adjust the given uri based on the calling filename."""
-        try:
-            return self._uri_cache[(uri, filename)]
-        except KeyError:
-            if uri[0] != '/':
-                u = posixpath.normpath(uri)
-                if filename is not None:
-                    rr = self.__relativeize(filename)
-                    if rr is not None:
-                        u = posixpath.join(posixpath.dirname(rr), u)
-                    else:
-                        u = posixpath.join('/', u)
-                return self._uri_cache.setdefault((uri, filename), u)
+        
+        if uri[0] != '/':
+            if relativeto is not None:
+                return posixpath.join(posixpath.dirname(relativeto), uri)
             else:
-                return self._uri_cache.setdefault((uri, filename), uri)
+                return '/' + uri
+        else:
+            return uri
+            
     
     def filename_to_uri(self, filename):
         try:
@@ -109,7 +104,7 @@ class TemplateLookup(TemplateCollection):
             except KeyError:
                 pass
             try:
-                self.__collection[uri] = Template(identifier=self.__relativeize(filename), uri=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
+                self.__collection[uri] = Template(uri=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
                 return self.__collection[uri]
             except:
                 self.__collection.pop(uri, None)

@@ -86,11 +86,11 @@ UNDEFINED = Undefined()
    
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
-    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_filename=None):
+    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_uri=None):
         self.name = name
         self._module = module
         if templateuri is not None:
-            self.template = _lookup_template(context, templateuri, calling_filename)
+            self.template = _lookup_template(context, templateuri, calling_uri)
         else:
             self.template = template
         self.context = context
@@ -165,18 +165,18 @@ def capture(context, callable_, *args, **kwargs):
         buf = context.pop_buffer()
         return buf.getvalue()
         
-def include_file(context, uri, calling_filename):
+def include_file(context, uri, calling_uri):
     """locate the template from the given uri and include it in the current output."""
-    template = _lookup_template(context, uri, calling_filename)
+    template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context.clean_inheritance_tokens(), template)
     callable_(ctx)
         
-def inherit_from(context, uri, calling_filename):
+def inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
     of a template's execution."""
     if uri is None:
         return None
-    template = _lookup_template(context, uri, calling_filename)
+    template = _lookup_template(context, uri, calling_uri)
     self_ns = context['self']
     ih = self_ns
     while ih.inherits is not None:

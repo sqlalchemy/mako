@@ -13,15 +13,16 @@ from mako import util, ast, parsetree, filters
 
 MAGIC_NUMBER = 1
 
-class Compiler(object):
-    def __init__(self, node, filename=None):
-        self.node = node
+def compile(node, uri, filename=None):
+    buf = util.FastEncodingBuffer()
+    printer = PythonPrinter(buf)
+    _GenerateRenderMethod(printer, _CompileContext(uri, filename), node)
+    return buf.getvalue()
+
+class _CompileContext(object):
+    def __init__(self, uri, filename):
+        self.uri = uri
         self.filename = filename
-    def render(self):
-        buf = util.FastEncodingBuffer()
-        printer = PythonPrinter(buf)
-        _GenerateRenderMethod(printer, self, self.node)
-        return buf.getvalue()
         
 class _GenerateRenderMethod(object):
     """a template visitor object which generates the full module source for a template."""
@@ -101,6 +102,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         self.printer.writeline("_modified_time = %s" % repr(time.time()))
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
+        self.printer.writeline("_template_uri=%s" % repr(self.compiler.uri))
         self.printer.writeline("_template_cache=cache.Cache(__name__, _modified_time)")
         
         main_identifiers = module_identifiers.branch(self.node)
@@ -157,7 +159,7 @@ class _GenerateRenderMethod(object):
         """write the module-level inheritance-determination callable."""
         self.printer.writeline("def _mako_inherit(template, context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
-        self.printer.writeline("return runtime.inherit_from(context, %s, _template_filename)" % (node.parsed_attributes['file']))
+        self.printer.writeline("return runtime.inherit_from(context, %s, _template_uri)" % (node.parsed_attributes['file']))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):
@@ -192,7 +194,7 @@ class _GenerateRenderMethod(object):
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
-            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_filename=_template_filename)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
+            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
             self.printer.writeline("context.namespaces[(render, %s)] = ns" % repr(node.name))
@@ -401,7 +403,7 @@ class _GenerateRenderMethod(object):
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("runtime.include_file(context, %s, _template_filename)" % (node.parsed_attributes['file']))
+        self.printer.writeline("runtime.include_file(context, %s, _template_uri)" % (node.parsed_attributes['file']))
 
     def visitNamespaceTag(self, node):
         pass
