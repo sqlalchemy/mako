@@ -99,8 +99,13 @@ class Namespace(object):
 
     def get_namespace(self, filename):
         """return a namespace corresponding to the given template filename."""
-        # TODO: add a caching layer here
-        return Namespace(filename, self.context, templateuri=filename, calling_uri=self._templateuri) 
+        key = (self, filename)
+        if self.context.namespaces.has_key(key):
+            return context.namespaces[key]
+        else:
+            ns = Namespace(filename, self.context, templateuri=filename, calling_uri=self._templateuri) 
+            self.context.namespaces[key] = ns
+            return ns
     
     def populate(self, d, l):
         for ident in l:
