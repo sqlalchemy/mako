@@ -14,32 +14,22 @@
 <%namespace name="nav" file="nav.html"/>
 
 <%def name="section(toc, path, description=None)">
-    FORMATTING SECTION ${path}
     # Main section formatting element.
     <%
-        import sys, traceback
-        try:
-            item = toc.get_by_path(path)
-        except:
-            context.write("EXCEPTION GETTING ITEM")
-            context.write(repr(sys.exc_info()[1].args))
-            context.write(repr(traceback.extract_tb(sys.exc_info()[2])))
+        item = toc.get_by_path(path)
+        subsection = item.depth > 1
     %>
-    CHECK1 ITEM ${item}
     <A name="${item.path}"></a>
 
-    <div class="section" style="margin-left:${repr(item.depth * 10)}px;">
+    <div class="${subsection and 'subsection' or 'section'}">
     <%
         content = capture(caller.body)
         re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
         content = re2.sub(lambda m: m.group(1), content)
     %>
-    CHECK2
-    % if item.depth > 1:
-        <h3>${description or item.description}</h3>
-    % endif
 
-    CHECK3
+    <h3>${description or item.description}</h3>
+
     ${content}
 
     % if item.depth > 1:
@@ -50,7 +40,6 @@
         <a href="#${ item.get_page_root().path }">back to section top</a>
         ${nav.pagenav(item=item)}
     % endif
-    CHECK4
     </div>
 
 </%def>

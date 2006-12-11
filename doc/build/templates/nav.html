@@ -28,7 +28,7 @@
 </%def>
 
 <%def name="topnav(item, extension='html')">
-    <a href="index.${ extension }">Table of Contents</a>
+    <div class="topnav">
 
     <div class="prevnext">
         % if item.previous is not None:
@@ -42,10 +42,14 @@
         % if item.next is not None:
             Next: ${itemlink(item=item.next, anchor=False)}
         % endif
-
     </div>
-	${ item.description }
+
+    <h3 class="tableofcontents"><a href="index.${ extension }">Table of Contents</a></h3>
+
+	<h3>${ item.description }</h3>
+	
 	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
+	</div>
 </%def>
 
 <%def name="pagenav(item)">

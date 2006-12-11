@@ -4,62 +4,28 @@
 	<div class="maintoc">
 
 	<a name="table_of_contents"></a>
-	<h2>Table of Contents</h2>
-	&nbsp;&nbsp;
-	<a href="#full_index">(view full table)</a>
-	<br/><br/>
+	<h2>Table of Contents&nbsp;&nbsp;<a class="smalllink" href="#full_index">(view full)</a></h2>
 	
-	<div style="margin-left:50px;">
 	${printtoc(root=toc,current=None,full=False,children=False,anchor_toplevel=False)}
-	</div>
 
-	</div>
-
-	<div class="maintoc">
 	<a name="full_index"></a>
-	<h2>Table of Contents: Full</h2>
-	&nbsp;&nbsp;
-	<a href="#table_of_contents">(view brief table)</a>
-	<br/><br/>
-
-	<div style="margin-left:50px;">
+	<h2>Table of Contents&nbsp;&nbsp;<a class="smalllink" href="#table_of_contents">(view brief)</a></h2>
+	
 	${printtoc(root=toc,current=None,full=True,children=True,anchor_toplevel=False)}
-	</div>
 
 	</div>
 </%def>
 
 
-<%def name="printtoc(root,current=None,full=False,children=True,anchor_toplevel=False)">
-    <ul class="toc_list">
-    % for i in root.children:
-        ${printtocelement(item=i, bold = (i == current), full = full, children=children, anchor_toplevel=anchor_toplevel)}
+<%def name="printtoc(root,current=None,full=False,children=True,anchor_toplevel=False,extension='html')">
+    <ul>
+    % for item in root.children:
+        <li><A style="${item is current and "font-weight:bold;" or "" }" href="${item.get_link(extension=extension,anchor=anchor_toplevel) }">${item.description}</a></li>
+        
+        % if children:
+            ${printtoc(item, current=current, full=full,children=True,anchor_toplevel=anchor_toplevel)}
+        % endif
     % endfor
     </ul>
 </%def>
 
-<%def name="printtocelement(item, anchor_toplevel, bold=False, full=False, children=True, extension='html')">
-    # prints a TOCElement as a table of contents item and prints its immediate child items
-    <li><A style="${bold and "font-weight:bold;" or "" }" href="${item.get_link(extension=extension, anchor=anchor_toplevel) }">${item.description}</a></li>
-    
-    % if children:  
-        <ul class="small_toc_list">
-        % for i in item.children:
-            ${printsmtocelem(item=i, children=full)}
-        % endfor
-        </ul>
-    % endif
-</%def>
-
-<%def name="printsmtocelem(item, children=False, extension='html')">
-    <li><A href="${item.get_link(extension=extension)}">${item.description}</a></li>
-
-    % if children:
-        <ul class="small_toc_list">
-      % for i in item.children:
-            ${printsmtocelem(item=i)}
-      % endfor
-        </ul>
-    % endif
-
-</%def>
