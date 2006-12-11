@@ -2,8 +2,8 @@
 # individual hyperlinks as well as navigational toolbars and table-of-content listings.
 <%namespace name="tocns" file="toc.html"/>
 
-<%def name="itemlink(item, anchor=True, extension='html')" filter="trim">
-    <a href="${ item.get_link(extension=extension, anchor=anchor) }">${ item.description }</a>
+<%def name="itemlink(item, anchor=True, extension='html', paged=True)" filter="trim">
+    <a href="${ item.get_link(extension=extension, anchor=anchor, usefilename=paged) }">${ item.description }</a>
 </%def>
 
 <%def name="toclink(toc, path, description=None)" filter="trim">
@@ -27,38 +27,28 @@
     <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
 </%def>
 
-<%def name="topnav(item, extension='html')">
+<%def name="topnav(item, extension='html', paged=True)">
     <div class="topnav">
 
     <div class="prevnext">
-        % if item.previous is not None:
-            Previous: ${itemlink(item=item.previous, anchor=False)}
-        % endif
-
-        % if item.previous is not None and item.next is not None:
-            &nbsp; | &nbsp;
-        % endif
-
-        % if item.next is not None:
-            Next: ${itemlink(item=item.next, anchor=False)}
-        % endif
+        ${pagenav(item, paged=paged)}
     </div>
 
     <h3><a href="index.${ extension }">Table of Contents</a></h3>
     <br/>
 	<h3>${ item.description }</h3>
 	
-	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
+	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True, paged=paged)}
 	</div>
 </%def>
 
-<%def name="pagenav(item)">
+<%def name="pagenav(item, paged=True)">
     % if item.previous is not None:
-        Previous: ${itemlink(item=item.previous)}
+        Previous: ${itemlink(item=item.previous, paged=paged)}
     % endif
 
     % if item.next is not None:
         ${item.previous is not None and "|" or ""}
-        Next: ${itemlink(item=item.next)}
+        Next: ${itemlink(item=item.next, paged=paged)}
     % endif
 </%def>

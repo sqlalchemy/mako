@@ -74,7 +74,7 @@ def create_toc(filename, tree, tocroot):
 
             level[0] = taglevel
 
-            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path), toc="toc")
+            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path), toc="toc", paged="paged")
             tag.text = (node.tail or "") + '\n'
             tag.tail = '\n'
             tag[:] = content

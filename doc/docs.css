@@ -57,6 +57,9 @@ h2 {
 .smalllink {
     font-size:.80em;
 }
+code {
+    font-size:1.1em;
+}
 .code {
     font-family:monospace;
 }
@@ -78,7 +81,7 @@ pre {
     line-height:1em;
     background-color: #eee;
     border: 1px solid #ccc;
-    width:450px;
+    width:600px;
     overflow:auto;
 }
 

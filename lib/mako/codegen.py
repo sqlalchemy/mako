@@ -135,7 +135,7 @@ class _GenerateRenderMethod(object):
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
 
         if not self.in_def and len(self.identifiers.locally_assigned) > 0:
-            self.printer.writeline("__locals = {}")
+            self.printer.writeline("__locals = kwargs")
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 

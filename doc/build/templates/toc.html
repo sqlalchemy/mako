@@ -1,24 +1,24 @@
 # toc.myt - prints full table of contents listings given toc.TOCElement strucures
 
-<%def name="toc(toc)">
+<%def name="toc(toc, paged=True)">
 	<div class="topnav">
 
 	<a name="full_index"></a>
 	<h3>Table of Contents</h3>
 	
-	${printtoc(root=toc,current=None,full=True,children=True,anchor_toplevel=False)}
+	${printtoc(root=toc,current=None,full=True,children=True,anchor_toplevel=False, paged=paged)}
 
 	</div>
 </%def>
 
 
-<%def name="printtoc(root,current=None,full=False,children=True,anchor_toplevel=False,extension='html')">
+<%def name="printtoc(root,current=None,full=False,children=True,anchor_toplevel=False,extension='html',paged=True)">
     <ul>
     % for item in root.children:
-        <li><A style="${item is current and "font-weight:bold;" or "" }" href="${item.get_link(extension=extension,anchor=anchor_toplevel) }">${item.description}</a></li>
+        <li><A style="${item is current and "font-weight:bold;" or "" }" href="${item.get_link(extension=extension,anchor=anchor_toplevel, usefilename=paged) }">${item.description}</a></li>
         
         % if children:
-            ${printtoc(item, current=current, full=full,children=True,anchor_toplevel=anchor_toplevel)}
+            ${printtoc(item, current=current, full=full,children=True,anchor_toplevel=True, paged=paged)}
         % endif
     % endfor
     </ul>

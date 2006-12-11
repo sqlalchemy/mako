@@ -57,11 +57,15 @@ class TOCElement(object):
     def get_by_file(self, filename):
         return self.toc_by_file[filename]
 
-    def get_link(self, extension='html', anchor=True):
-        if anchor:
-            return "%s.%s#%s" % (self.filename, extension, self.path) 
+    def get_link(self, extension='html', anchor=True, usefilename=True):
+        if usefilename:
+            if anchor:
+                return "%s.%s#%s" % (self.filename, extension, self.path) 
+            else:
+                return "%s.%s" % (self.filename, extension)
         else:
-            return "%s.%s" % (self.filename, extension)
+            return "#%s" % (self.path) 
+
 
     def _create_path(self):
         elem = self

@@ -23,6 +23,10 @@
     version = toc.version
     last_updated = toc.last_updated
 
+    if paged is UNDEFINED:
+        ispaged = True
+    else:
+        ispaged = paged
 %>
 
 <div id="topanchor"><a name="top"></a>&nbsp;</div>
@@ -33,7 +37,7 @@
 
 <div class="versionheader">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
 
-${next.body(toc=toc)}
+${next.body(toc=toc, paged=ispaged)}
 
 
 
