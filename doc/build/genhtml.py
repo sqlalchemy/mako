@@ -11,6 +11,7 @@ import read_markdown, toc
 
 files = [
     'index',
+    'documentation',
     'defs',
     'namespaces',
     'caching',
@@ -22,6 +23,7 @@ version = '0.1.0'
 root = toc.TOCElement('', 'root', '', version=version, doctitle=title)
 
 shutil.copy('./content/index.html', './output/index.html')
+shutil.copy('./content/documentation.html', './output/documentation.html')
 
 read_markdown.parse_markdown_files(root, files)
 

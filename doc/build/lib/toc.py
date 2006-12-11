@@ -8,6 +8,7 @@ import time
 
 toc_by_file = {}
 toc_by_path = {}
+filenames = []
 
 class TOCElement(object):
     def __init__(self, filename, name, description, parent=None, version=None, last_updated=None, doctitle=None, **kwargs):
@@ -16,6 +17,7 @@ class TOCElement(object):
         self.description = description
         self.parent = parent
         self.content = None
+        self.filenames = filenames
         self.toc_by_path = toc_by_path
         self.toc_by_file = toc_by_file
         self.last_updated = time.time()
@@ -31,7 +33,9 @@ class TOCElement(object):
         self.is_top = (self.parent is not None and self.parent.filename != self.filename) or self.parent is None
         if self.is_top:
             toc_by_file[self.filename] = self
-
+            if self.filename:
+                filenames.append(self.filename)
+                
         self.root = self.parent or self
 
         self.content = None

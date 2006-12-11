@@ -74,7 +74,7 @@ class Undefined(object):
         raise NameError("Undefined")
 UNDEFINED = Undefined()
 
-   
+    
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
     def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_uri=None):
@@ -84,6 +84,7 @@ class Namespace(object):
             self.template = _lookup_template(context, templateuri, calling_uri)
         else:
             self.template = template
+        self._templateuri = templateuri
         self.context = context
         self.inherits = inherits
         if callables is not None:
@@ -95,6 +96,11 @@ class Namespace(object):
 
     module = property(lambda s:s._module or s.template.module)
     filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
+
+    def get_namespace(self, filename):
+        """return a namespace corresponding to the given template filename."""
+        # TODO: add a caching layer here
+        return Namespace(filename, self.context, templateuri=filename, calling_uri=self._templateuri) 
     
     def populate(self, d, l):
         for ident in l:

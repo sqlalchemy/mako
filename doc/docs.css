@@ -22,7 +22,7 @@ h2 {
     margin:10px 0px 10px 0px;
 }
 
-h3.tableofcontents {
+.topnav h3 {
     font-weight:normal;
     margin:0px 0px 0px 0px;
 }
@@ -37,19 +37,12 @@ h3.tableofcontents {
     margin:0px 0px 0px 20px;
 }
 
-.maintoc {
-    background-color: #eee;
-    border: 1px solid #ccc;
-}
-
-.maintoc li {
+.topnav li {
     font-size:.9em;
     list-style-type:none;
 }
-.maintoc li li {
-    font-size:.8em;
-}
-.maintoc ul {
+
+.topnav ul {
     padding:0px 0px 0px 20px;
     margin:0px 0px 0px 0px;
 }
