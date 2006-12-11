@@ -4,7 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""provides the Compiler object for generating module source code."""
+"""provides functionality for rendering a parsetree constructing into module source code."""
 
 import time
 import re
@@ -14,6 +14,7 @@ from mako import util, ast, parsetree, filters
 MAGIC_NUMBER = 1
 
 def compile(node, uri, filename=None):
+    """generate module source code given a parsetree node, uri, and optional source filename"""
     buf = util.FastEncodingBuffer()
     printer = PythonPrinter(buf)
     _GenerateRenderMethod(printer, _CompileContext(uri, filename), node)
@@ -50,10 +51,11 @@ class _GenerateRenderMethod(object):
             buffered = filtered = False
             cached = pagetag is not None and eval(pagetag.attributes.get('cached', 'False'))
         if args is None:
-            args = ['context', '**kwargs']
+            args = ['context']
         else:
-            args = [a for a in ['context'] + args + ['**kwargs']]
-
+            args = [a for a in ['context'] + args]
+        if not self.in_def:
+            args.append('**kwargs')
             
         self.write_render_callable(pagetag or node, name, args, buffered, filtered, cached)
         
@@ -134,8 +136,10 @@ class _GenerateRenderMethod(object):
 
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
 
+        if not self.in_def:
+            self.printer.writeline("context = context.locals_(kwargs)")
         if not self.in_def and len(self.identifiers.locally_assigned) > 0:
-            self.printer.writeline("__locals = kwargs")
+            self.printer.writeline("__locals = {}")
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
@@ -159,7 +163,7 @@ class _GenerateRenderMethod(object):
         """write the module-level inheritance-determination callable."""
         self.printer.writeline("def _mako_inherit(template, context):")
         self.printer.writeline("_mako_generate_namespaces(context)")
-        self.printer.writeline("return runtime.inherit_from(context, %s, _template_uri)" % (node.parsed_attributes['file']))
+        self.printer.writeline("return runtime._inherit_from(context, %s, _template_uri)" % (node.parsed_attributes['file']))
         self.printer.writeline(None)
 
     def write_namespaces(self, namespaces):
@@ -194,7 +198,7 @@ class _GenerateRenderMethod(object):
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
-            self.printer.writeline("ns = runtime.Namespace(%s, context.clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
+            self.printer.writeline("ns = runtime.Namespace(%s, context._clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
             self.printer.writeline("context.namespaces[(render, %s)] = ns" % repr(node.name))
@@ -245,7 +249,7 @@ class _GenerateRenderMethod(object):
             self.compiler.has_imports = True
             for ident, ns in self.compiler.namespaces.iteritems():
                 if ns.attributes.has_key('import'):
-                    self.printer.writeline("_mako_get_namespace(context, %s).populate(_import_ns, %s)" % (repr(ident),  repr(re.split(r'\s*,\s*', ns.attributes['import']))))
+                    self.printer.writeline("_mako_get_namespace(context, %s)._populate(_import_ns, %s)" % (repr(ident),  repr(re.split(r'\s*,\s*', ns.attributes['import']))))
                         
         for ident in to_write:
             if ident in comp_idents:
@@ -258,9 +262,9 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("%s = _mako_get_namespace(context, %s)" % (ident, repr(ident)))
             else:
                 if getattr(self.compiler, 'has_ns_imports', False):
-                    self.printer.writeline("%s = _import_ns.get(%s, kwargs.get(%s, context.get(%s, UNDEFINED)))" % (ident, repr(ident), repr(ident), repr(ident)))
+                    self.printer.writeline("%s = _import_ns.get(%s, context.get(%s, UNDEFINED))" % (ident, repr(ident), repr(ident)))
                 else:
-                    self.printer.writeline("%s = kwargs.get(%s, context.get(%s, UNDEFINED))" % (ident, repr(ident), repr(ident)))
+                    self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
         
     def write_source_comment(self, node):
         """write a source comment containing the line number of the corresponding template line."""
@@ -403,7 +407,7 @@ class _GenerateRenderMethod(object):
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("runtime.include_file(context, %s, _template_uri)" % (node.parsed_attributes['file']))
+        self.printer.writeline("runtime._include_file(context, %s, _template_uri)" % (node.parsed_attributes['file']))
 
     def visitNamespaceTag(self, node):
         pass

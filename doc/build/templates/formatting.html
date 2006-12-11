@@ -13,7 +13,7 @@
 
 <%namespace name="nav" file="nav.html"/>
 
-<%def name="section(toc, path, description=None)">
+<%def name="section(toc, path, description=None, paged=True)">
     # Main section formatting element.
     <%
         item = toc.get_by_path(path)

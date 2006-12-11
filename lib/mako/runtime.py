@@ -4,7 +4,8 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""provides the Context class, the runtime namespace for templates."""
+"""provides runtime services for templates, including Context, Namespace, and various helper functions."""
+
 from mako import exceptions, util
 import inspect, sys
 
@@ -50,10 +51,12 @@ class Context(object):
         return c
     def locals_(self, d):
         """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
+        if len(d) == 0:
+            return self
         c = self._copy()
         c._data.update(d)
         return c
-    def clean_inheritance_tokens(self):
+    def _clean_inheritance_tokens(self):
         """create a new copy of this Context with tokens related to inheritance state removed."""
         c = self._copy()
         x = c._data
@@ -96,18 +99,23 @@ class Namespace(object):
 
     module = property(lambda s:s._module or s.template.module)
     filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
-
-    def get_namespace(self, filename):
+    uri = property(lambda s:s.template.uri)
+    
+    def get_namespace(self, uri):
         """return a namespace corresponding to the given template filename."""
-        key = (self, filename)
+        key = (self, uri)
         if self.context.namespaces.has_key(key):
             return context.namespaces[key]
         else:
-            ns = Namespace(filename, self.context, templateuri=filename, calling_uri=self._templateuri) 
+            ns = Namespace(uri, self.context, templateuri=uri, calling_uri=self._templateuri) 
             self.context.namespaces[key] = ns
             return ns
     
-    def populate(self, d, l):
+    def include_file(self, uri):
+        """include a file at the given uri"""
+        _include_file(self.context, uri, self._templateuri)
+        
+    def _populate(self, d, l):
         for ident in l:
             if ident == '*':
                 for (k, v) in self._get_star():
@@ -167,13 +175,13 @@ def capture(context, callable_, *args, **kwargs):
         buf = context.pop_buffer()
         return buf.getvalue()
         
-def include_file(context, uri, calling_uri):
+def _include_file(context, uri, calling_uri):
     """locate the template from the given uri and include it in the current output."""
     template = _lookup_template(context, uri, calling_uri)
-    (callable_, ctx) = _populate_self_namespace(context.clean_inheritance_tokens(), template)
+    (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
     callable_(ctx)
         
-def inherit_from(context, uri, calling_uri):
+def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
     of a template's execution."""
     if uri is None:

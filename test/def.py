@@ -313,7 +313,45 @@ class ScopeTest(unittest.TestCase):
             assert False
         except UnboundLocalError:
             assert True
+
+    def test_canget_kwargs(self):
+        """test that arguments passed to the body() function are accessible by top-level defs"""
+        l = lookup.TemplateLookup()
+        l.put_string("base", """
         
+        ${next.body(x=12)}
+        
+        """)
+        
+        l.put_string("main", """
+            <%inherit file="base"/>
+            this is main.  x is ${x}
+            
+            ${a()}
+            
+            <%def name="a(**args)">
+                this is a, x is ${x}
+            </%def>
+        """)
+        
+        # test via inheritance
+        print l.get_template("main").code
+        assert result_lines(l.get_template("main").render()) == [
+            "this is main. x is 12",
+            "this is a, x is 12"
+        ]
+
+        l.put_string("another", """
+            <%namespace name="ns" file="main"/>
+            
+            ${ns.body(x=15)}
+        """)
+        # test via namespace
+        assert result_lines(l.get_template("another").render()) == [
+            "this is main. x is 15",
+            "this is a, x is 15"
+        ]
+
 class NestedDefTest(unittest.TestCase):
     def test_nested_def(self):
         t = Template("""
