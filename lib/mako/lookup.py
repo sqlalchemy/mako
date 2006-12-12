@@ -37,12 +37,12 @@ class TemplateCollection(object):
         return uri
         
 class TemplateLookup(TemplateCollection):
-    def __init__(self, directories=None, module_directory=None, filesystem_checks=False, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None):
+    def __init__(self, directories=None, module_directory=None, filesystem_checks=False, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, cache_type=None, cache_dir=None):
         self.directories = [posixpath.normpath(d) for d in directories or []]
         self.module_directory = module_directory
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
-        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory}
+        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory, 'cache_type':cache_type, 'cache_dir':cache_dir or module_directory}
         if collection_size == -1:
             self.__collection = {}
             self._uri_cache = {}

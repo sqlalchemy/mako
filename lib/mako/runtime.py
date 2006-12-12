@@ -111,6 +111,14 @@ class Namespace(object):
             self.context.namespaces[key] = ns
             return ns
     
+    def get_cached(self, key, **kwargs):
+        if self.template:
+            if self.template.cache_dir:
+                kwargs.setdefault('data_dir', self.template.cache_dir)
+            if self.template.cache_type:
+                kwargs.setdefault('type', self.template.cache_type)
+        return self.template.module._template_cache.get(key, **kwargs)
+        
     def include_file(self, uri):
         """include a file at the given uri"""
         _include_file(self.context, uri, self._templateuri)

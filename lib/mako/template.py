@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -77,6 +77,8 @@ class Template(object):
         self.error_handler = error_handler
         self.lookup = lookup
         self.output_encoding = output_encoding
+        self.cache_type = cache_type
+        self.cache_dir = cache_dir
 
     source = property(lambda self:_get_module_info_from_callable(self.callable_).source, doc="""return the template source code for this Template.""")
     code = property(lambda self:_get_module_info_from_callable(self.callable_).code, doc="""return the module source code for this Template""")

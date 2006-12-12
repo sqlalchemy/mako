@@ -49,6 +49,7 @@ class _GenerateRenderMethod(object):
             name = "render"
             args = None
             buffered = filtered = False
+            self.compiler.pagetag = pagetag
             cached = pagetag is not None and eval(pagetag.attributes.get('cached', 'False'))
         if args is None:
             args = ['context']
@@ -337,17 +338,28 @@ class _GenerateRenderMethod(object):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
         self.printer.writeline("__%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
+        cacheargs = {}
+        for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir')):
+            val = node_or_pagetag.parsed_attributes.get(arg[0], None)
+            if val is not None:
+                cacheargs[arg[1]] = val
+            else:
+                if self.compiler.pagetag is not None:
+                    val = self.compiler.pagetag.parsed_attributes.get(arg[0], None)
+                    if val is not None:
+                        cacheargs[arg[1]] = val
+            
         self.printer.writeline("def %s(context, *args, **kwargs):" % name)
 
         self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
             self.printer.writelines(
-                    "return _template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs))" % (cachekey, name),
+                    "return context.get('local').get_cached(%s, %screatefunc=lambda:__%s(context, *args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name),
                 None
             )
         else:
             self.printer.writelines(
-                    "context.write(_template_cache.get(%s, createfunc=lambda:__%s(context, *args, **kwargs)))" % (cachekey, name),
+                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__%s(context, *args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name),
                     "return ''",
                 None
             )
