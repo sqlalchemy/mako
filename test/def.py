@@ -9,7 +9,7 @@ class DefTest(unittest.TestCase):
         
         ${mycomp()}
         
-        <%def name="mycomp">
+        <%def name="mycomp()">
             hello mycomp ${variable}
         </%def>
         
@@ -39,16 +39,16 @@ class DefTest(unittest.TestCase):
         template = Template("""
         ${b()}
 
-        <%def name="a">\
+        <%def name="a()">\
         im a
         </%def>
 
-        <%def name="b">
+        <%def name="b()">
         im b
         and heres a:  ${a()}
         </%def>
 
-        <%def name="c">
+        <%def name="c()">
         im c
         </%def>
 """)
@@ -63,7 +63,7 @@ class ScopeTest(unittest.TestCase):
     """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
     def test_scope_one(self):
         t = Template("""
-        <%def name="a">
+        <%def name="a()">
             this is a, and y is ${y}
         </%def>
 
@@ -100,11 +100,11 @@ class ScopeTest(unittest.TestCase):
             <%
                 x = 5
             %>
-            <%def name="a">
+            <%def name="a()">
                 this is a. x is ${x}.
             </%def>
             
-            <%def name="b">
+            <%def name="b()">
                 <%
                     x = 9
                 %>
@@ -120,15 +120,15 @@ class ScopeTest(unittest.TestCase):
         """test that variables are pulled from 'enclosing' scope before context."""
         # same as test four, but adds a scope around it.
         t = Template("""
-            <%def name="enclosing">
+            <%def name="enclosing()">
             <%
                 x = 5
             %>
-            <%def name="a">
+            <%def name="a()">
                 this is a. x is ${x}.
             </%def>
 
-            <%def name="b">
+            <%def name="b()">
                 <%
                     x = 9
                 %>
@@ -146,11 +146,11 @@ class ScopeTest(unittest.TestCase):
         """test that the initial context counts as 'enclosing' scope, for plain defs"""
         t = Template("""
 
-        <%def name="a">
+        <%def name="a()">
             a: x is ${x}
         </%def>
 
-        <%def name="b">
+        <%def name="b()">
             <%
                 x = 10
             %>
@@ -164,12 +164,12 @@ class ScopeTest(unittest.TestCase):
     def test_scope_seven(self):
         """test that the initial context counts as 'enclosing' scope, for nested defs"""
         t = Template("""
-        <%def name="enclosing">
-            <%def name="a">
+        <%def name="enclosing()">
+            <%def name="a()">
                 a: x is ${x}
             </%def>
 
-            <%def name="b">
+            <%def name="b()">
                 <%
                     x = 10
                 %>
@@ -185,12 +185,12 @@ class ScopeTest(unittest.TestCase):
     def test_scope_eight(self):
         """test that the initial context counts as 'enclosing' scope, for nested defs"""
         t = Template("""
-        <%def name="enclosing">
-            <%def name="a">
+        <%def name="enclosing()">
+            <%def name="a()">
                 a: x is ${x}
             </%def>
 
-            <%def name="b">
+            <%def name="b()">
                 <%
                     x = 10
                 %>
@@ -223,15 +223,15 @@ class ScopeTest(unittest.TestCase):
         
     def test_scope_ten(self):
         t = Template("""
-            <%def name="a">
-                <%def name="b">
+            <%def name="a()">
+                <%def name="b()">
                     <%
                         y = 19
                     %>
                     b/c: ${c()}
                     b/y: ${y}
                 </%def>
-                <%def name="c">
+                <%def name="c()">
                     c/y: ${y}
                 </%def>
 
@@ -256,7 +256,7 @@ class ScopeTest(unittest.TestCase):
             x is ${x}
             <%def name="a(x)">
                 this is a, ${b()}
-                <%def name="b">
+                <%def name="b()">
                     this is b, x is ${x}
                 </%def>
             </%def>
@@ -274,7 +274,7 @@ class ScopeTest(unittest.TestCase):
             <%
                 y = 10
             %>
-            <%def name="a">
+            <%def name="a()">
                 y is: ${y}
                 <%
                     # should raise error ?
@@ -292,11 +292,11 @@ class ScopeTest(unittest.TestCase):
 
     def test_unbound_scope_two(self):
         t = Template("""
-            <%def name="enclosing">
+            <%def name="enclosing()">
             <%
                 y = 10
             %>
-            <%def name="a">
+            <%def name="a()">
                 y is: ${y}
                 <%
                     # should raise error ?
@@ -335,7 +335,7 @@ class ScopeTest(unittest.TestCase):
         """)
         
         # test via inheritance
-        print l.get_template("main").code
+        #print l.get_template("main").code
         assert result_lines(l.get_template("main").render()) == [
             "this is main. x is 12",
             "this is a, x is 12"
@@ -358,15 +358,15 @@ class NestedDefTest(unittest.TestCase):
 
         ${hi()}
         
-        <%def name="hi">
+        <%def name="hi()">
             hey, im hi.
             and heres ${foo()}, ${bar()}
             
-            <%def name="foo">
+            <%def name="foo()">
                 this is foo
             </%def>
             
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar
             </%def>
         </%def>
@@ -376,10 +376,10 @@ class NestedDefTest(unittest.TestCase):
     def test_nested_2(self):
         t = Template("""
             x is ${x}
-            <%def name="a">
+            <%def name="a()">
                 this is a, x is ${x}
                 ${b()}
-                <%def name="b">
+                <%def name="b()">
                     this is b: ${x}
                 </%def>
             </%def>
@@ -391,7 +391,7 @@ class NestedDefTest(unittest.TestCase):
     def test_nested_with_args(self):
         t = Template("""
         ${a()}
-        <%def name="a">
+        <%def name="a()">
             <%def name="b(x, y=2)">
                 b x is ${x} y is ${y}
             </%def>
@@ -403,9 +403,9 @@ class NestedDefTest(unittest.TestCase):
     def test_nested_def_2(self):
         template = Template("""
         ${a()}
-        <%def name="a">
-            <%def name="b">
-                <%def name="c">
+        <%def name="a()">
+            <%def name="b()">
+                <%def name="c()">
                     comp c
                 </%def>
                 ${c()}
@@ -419,27 +419,27 @@ class NestedDefTest(unittest.TestCase):
         t = Template("""
         
         ${a()}
-        <%def name="a">
+        <%def name="a()">
             a
-            <%def name="b1">
+            <%def name="b1()">
                 a_b1
             </%def>
-            <%def name="b2">
+            <%def name="b2()">
                 a_b2 ${c1()}
-                <%def name="c1">
+                <%def name="c1()">
                     a_b2_c1
                 </%def>
             </%def>
-            <%def name="b3">
+            <%def name="b3()">
                 a_b3 ${c1()}
-                <%def name="c1">
+                <%def name="c1()">
                     a_b3_c1 heres x: ${x}
                     <%
                         y = 7
                     %>
                     y is ${y}
                 </%def>
-                <%def name="c2">
+                <%def name="c2()">
                     a_b3_c2
                     y is ${y}
                     c1 is ${c1()}
@@ -454,14 +454,14 @@ class NestedDefTest(unittest.TestCase):
     
     def test_nested_nested_def_2(self):
         t = Template("""
-        <%def name="a">
+        <%def name="a()">
             this is a ${b()}
-            <%def name="b">
+            <%def name="b()">
                 this is b
                 ${c()}
             </%def>
             
-            <%def name="c">
+            <%def name="c()">
                 this is c
             </%def>
         </%def>
@@ -471,12 +471,12 @@ class NestedDefTest(unittest.TestCase):
 
     def test_outer_scope(self):
         t = Template("""
-        <%def name="a">
+        <%def name="a()">
             a: x is ${x}
         </%def>
 
-        <%def name="b">
-            <%def name="c">
+        <%def name="b()">
+            <%def name="c()">
             <%
                 x = 10
             %>

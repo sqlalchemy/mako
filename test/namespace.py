@@ -7,10 +7,10 @@ class NamespaceTest(unittest.TestCase):
     def test_inline(self):
         t = Template("""
         <%namespace name="x">
-            <%def name="a">
+            <%def name="a()">
                 this is x a
             </%def>
-            <%def name="b">
+            <%def name="b()">
                 this is x b, and heres ${a()}
             </%def>
         </%namespace>
@@ -55,7 +55,7 @@ class NamespaceTest(unittest.TestCase):
 """)
 
         collection.put_string('defs.html', """
-        <%def name="def1">
+        <%def name="def1()">
             def1: x is ${x}
         </%def>
 
@@ -98,13 +98,13 @@ class NamespaceTest(unittest.TestCase):
             <%namespace name="foo" file="ns.html"/>
             
             this is main.  ${bar()}
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar, foo is ${foo.bar()}
             </%def>
         """)
         
         collection.put_string("ns.html", """
-            <%def name="bar">
+            <%def name="bar()">
                 this is ns.html->bar
             </%def>
         """)
@@ -122,13 +122,13 @@ class NamespaceTest(unittest.TestCase):
             <%namespace name="foo" file="ns.html"/>
 
             this is main.  ${bar()}
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar, foo is ${foo.bar()}
             </%def>
         """)
 
         collection.put_string("ns.html", """
-            <%def name="bar">
+            <%def name="bar()">
                 this is ns.html->bar
             </%def>
         """)
@@ -155,7 +155,7 @@ class NamespaceTest(unittest.TestCase):
             ${next.body()}
 """)
         collection.put_string("ns.html", """
-            <%def name="bar">
+            <%def name="bar()">
                 this is ns.html->bar
             </%def>
         """)
@@ -180,7 +180,7 @@ class NamespaceTest(unittest.TestCase):
             ${next.body()}
     """)
         collection.put_string("ns.html", """
-            <%def name="bar">
+            <%def name="bar()">
                 this is ns.html->bar
                 caller body: ${caller.body()}
             </%def>
@@ -211,7 +211,7 @@ class NamespaceTest(unittest.TestCase):
     """)
         collection.put_string("ns1.html", """
             <%namespace name="foo2" file="ns2.html"/>
-            <%def name="bar">
+            <%def name="bar()">
                 <%call expr="foo2.ns2_bar()">
                 this is ns1.html->bar
                 caller body: ${caller.body()}
@@ -220,7 +220,7 @@ class NamespaceTest(unittest.TestCase):
         """)
 
         collection.put_string("ns2.html", """
-            <%def name="ns2_bar">
+            <%def name="ns2_bar()">
                 this is ns2.html->bar
                 caller body: ${caller.body()}
             </%def>
@@ -247,24 +247,24 @@ class NamespaceTest(unittest.TestCase):
     def test_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
-            <%def name="foo">
+            <%def name="foo()">
                 this is foo
             </%def>
             
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar
             </%def>
             
-            <%def name="lala">
+            <%def name="lala()">
                 this is lala
             </%def>
         """)
 
         collection.put_string("func2.html", """
-            <%def name="a">
+            <%def name="a()">
                 this is a
             </%def>
-            <%def name="b">
+            <%def name="b()">
                 this is b
             </%def>
         """)
@@ -291,22 +291,22 @@ class NamespaceTest(unittest.TestCase):
     def test_closure_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
-            <%def name="foo">
+            <%def name="foo()">
                 this is foo
             </%def>
             
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar
             </%def>
         """)
         
         collection.put_string("index.html", """
             <%namespace file="functions.html" import="*"/>
-            <%def name="cl1">
+            <%def name="cl1()">
                 ${foo()}
             </%def>
             
-            <%def name="cl2">
+            <%def name="cl2()">
                 ${bar()}
             </%def>
             
@@ -321,11 +321,11 @@ class NamespaceTest(unittest.TestCase):
     def test_ccall_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
-            <%def name="foo">
+            <%def name="foo()">
                 this is foo
             </%def>
             
-            <%def name="bar">
+            <%def name="bar()">
                 this is bar.
                 ${caller.body()}
                 ${caller.lala()}
@@ -337,7 +337,7 @@ class NamespaceTest(unittest.TestCase):
             <%call expr="bar()">
                 this is index embedded
                 foo is ${foo()}
-                <%def name="lala">
+                <%def name="lala()">
                      this is lala ${foo()}
                 </%def>
             </%call>

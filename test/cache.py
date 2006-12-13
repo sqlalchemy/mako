@@ -21,7 +21,7 @@ class CacheTest(unittest.TestCase):
         <%!
             callcount = [0]
         %>
-        <%def name="foo" cached="True">
+        <%def name="foo()" cached="True">
             this is foo
             <%
             callcount[0] += 1
@@ -69,7 +69,7 @@ class CacheTest(unittest.TestCase):
                 <%!
                     callcount = [0]
                 %>
-                <%def name="foo" cached="True" cache_type='dbm'>
+                <%def name="foo()" cached="True" cache_type='dbm'>
                     this is foo
                     <%
                     callcount[0] += 1
@@ -96,7 +96,7 @@ class CacheTest(unittest.TestCase):
         <%!
             callcount = [0]
         %>
-        <%def name="foo" cached="True" cache_type='file' cache_dir='./test_htdocs'>
+        <%def name="foo()" cached="True" cache_type='file' cache_dir='./test_htdocs'>
             this is foo
             <%
             callcount[0] += 1
@@ -123,7 +123,7 @@ class CacheTest(unittest.TestCase):
         <%!
             callcount = [0]
         %>
-        <%def name="foo" cached="True">
+        <%def name="foo()" cached="True">
             this is foo
             <%
             callcount[0] += 1
@@ -150,7 +150,7 @@ class CacheTest(unittest.TestCase):
                 <%!
                     callcount = [0]
                 %>
-                <%def name="foo" cached="True">
+                <%def name="foo()" cached="True">
                     this is foo
                     <%
                     callcount[0] += 1

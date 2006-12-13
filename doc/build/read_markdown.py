@@ -162,7 +162,7 @@ def header(toc, title, filename):
 <%%inherit file="content_layout.html"/>
 <%%namespace  name="formatting" file="formatting.html"/>
 <%%namespace  name="nav" file="nav.html"/>
-<%%def name="title">%s - %s</%%def>
+<%%def name="title()">%s - %s</%%def>
 <%%!
     filename = '%s'
 %%>

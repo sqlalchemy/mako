@@ -5,7 +5,7 @@ from util import result_lines
 class CallTest(unittest.TestCase):
     def test_call(self):
         t = Template("""
-        <%def name="foo">
+        <%def name="foo()">
             hi im foo ${caller.body(y=5)}
         </%def>
         
@@ -19,15 +19,15 @@ class CallTest(unittest.TestCase):
     def test_compound_call(self):
         t = Template("""
 
-        <%def name="bar">
+        <%def name="bar()">
             this is bar
         </%def>
         
-        <%def name="comp1">
+        <%def name="comp1()">
             this comp1 should not be called
         </%def>
         
-        <%def name="foo">
+        <%def name="foo()">
             foo calling comp1: ${caller.comp1(x=5)}
             foo calling body: ${caller.body()}
         </%def>
@@ -47,13 +47,13 @@ class CallTest(unittest.TestCase):
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
         t = Template("""
-            <%def name="a">
+            <%def name="a()">
                 this is a. 
                 <%call expr="b()">
                     this is a's ccall.  heres my body: ${caller.body()}
                 </%call>
             </%def>
-            <%def name="b">
+            <%def name="b()">
                 this is b.  heres  my body: ${caller.body()}
                 whats in the body's caller's body ?
                 ${context.caller_stack[-2].body()}
@@ -76,12 +76,12 @@ class CallTest(unittest.TestCase):
     def test_nested_call(self):
         """test %calls that are nested inside each other"""
         t = Template("""
-            <%def name="foo">
+            <%def name="foo()">
                 ${caller.body(x=10)}
             </%def>
 
             x is ${x}
-            <%def name="bar">
+            <%def name="bar()">
                 bar: ${caller.body()}
             </%def>
 
@@ -103,11 +103,11 @@ class CallTest(unittest.TestCase):
     def test_nested_call_2(self):
         t = Template("""
             x is ${x}
-            <%def name="foo">
+            <%def name="foo()">
                 ${caller.foosub(x=10)}
             </%def>
 
-            <%def name="bar">
+            <%def name="bar()">
                 bar: ${caller.barsub()}
             </%def>
 
@@ -116,7 +116,7 @@ class CallTest(unittest.TestCase):
                 this is foo body: ${x}
                 
                 <%call expr="bar()">
-                    <%def name="barsub">
+                    <%def name="barsub()">
                     this is bar body: ${x}
                     </%def>
                 </%call>
@@ -134,14 +134,14 @@ class CallTest(unittest.TestCase):
         
     def test_chained_call_in_nested(self):
         t = Template("""
-            <%def name="embedded">
-            <%def name="a">
+            <%def name="embedded()">
+            <%def name="a()">
                 this is a. 
                 <%call expr="b()">
                     this is a's ccall.  heres my body: ${caller.body()}
                 </%call>
             </%def>
-            <%def name="b">
+            <%def name="b()">
                 this is b.  heres  my body: ${caller.body()}
                 whats in the body's caller's body ? ${context.caller_stack[-2].body()}
             </%def>
@@ -163,15 +163,15 @@ class CallTest(unittest.TestCase):
         
     def test_call_in_nested(self):
         t = Template("""
-            <%def name="a">
+            <%def name="a()">
                 this is a ${b()}
-                <%def name="b">
+                <%def name="b()">
                     this is b
                     <%call expr="c()">
                         this is the body in b's call
                     </%call>
                 </%def>
-                <%def name="c">
+                <%def name="c()">
                     this is c: ${caller.body()}
                 </%def>
             </%def>
@@ -182,24 +182,24 @@ class CallTest(unittest.TestCase):
         
     def test_call_in_nested_2(self):
         t = Template("""
-            <%def name="a">
-                <%def name="d">
+            <%def name="a()">
+                <%def name="d()">
                     not this d
                 </%def>
                 this is a ${b()}
-                <%def name="b">
-                    <%def name="d">
+                <%def name="b()">
+                    <%def name="d()">
                         not this d either
                     </%def>
                     this is b
                     <%call expr="c()">
-                        <%def name="d">
+                        <%def name="d()">
                             this is d
                         </%def>
                         this is the body in b's call
                     </%call>
                 </%def>
-                <%def name="c">
+                <%def name="c()">
                     this is c: ${caller.body()}
                     the embedded "d" is: ${caller.d()}
                 </%def>
@@ -214,7 +214,7 @@ class SelfCacheTest(unittest.TestCase):
         <%!
             cached = None
         %>
-        <%def name="foo">
+        <%def name="foo()">
             <% 
                 global cached
                 if cached:

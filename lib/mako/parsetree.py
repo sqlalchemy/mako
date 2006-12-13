@@ -243,7 +243,7 @@ class DefTag(Tag):
         super(DefTag, self).__init__(keyword, attributes, ('buffered', 'cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir'), ('name','filter'), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
-            name = name + "()"
+            raise exceptions.CompileException("Missing parenthesis in %def", self.lineno, self.pos, self.filename)
         self.function_decl = ast.FunctionDecl("def " + name + ":pass", self.lineno, self.pos, self.filename)
         self.name = self.function_decl.funcname
         self.filter_args = ast.ArgumentList(attributes.get('filter', ''), self.lineno, self.pos, self.filename)
