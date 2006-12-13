@@ -102,7 +102,9 @@ class Namespace(object):
     uri = property(lambda s:s.template.uri)
     
     def get_namespace(self, uri):
-        """return a namespace corresponding to the given template filename."""
+        """return a namespace corresponding to the given template uri.
+        
+        if a relative uri, it is adjusted to that of the template of this namespace"""
         key = (self, uri)
         if self.context.namespaces.has_key(key):
             return context.namespaces[key]
