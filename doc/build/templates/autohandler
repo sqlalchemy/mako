@@ -14,7 +14,7 @@ ${next.body()}
 </html>
 
 
-<%def name="title">
+<%def name="title()">
 Documentation
 </%def>
 

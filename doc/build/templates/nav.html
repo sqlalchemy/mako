@@ -23,7 +23,7 @@
 </%def>
 
 
-<%def name="link" filter="trim(href, text, class_)">
+<%def name="link()" filter="trim(href, text, class_)">
     <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
 </%def>
 

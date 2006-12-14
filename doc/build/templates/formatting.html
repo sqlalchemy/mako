@@ -51,12 +51,12 @@
 </%def>
 
 
-<%def name="formatplain" filter="plainfilter">
+<%def name="formatplain()" filter="plainfilter">
     ${ caller.body() | h}
 </%def>
 
 
-<%def name="codeline" filter="trim,h">
+<%def name="codeline()" filter="trim,h">
     <span class="codeline">${ caller.body() }</span>
 </%def>
 
