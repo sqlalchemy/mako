@@ -72,7 +72,7 @@ class Template(object):
 
         self.module = module
         self.filename = filename
-        self.callable_ = self.module.render
+        self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
         self.lookup = lookup

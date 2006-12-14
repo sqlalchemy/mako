@@ -46,7 +46,7 @@ class _GenerateRenderMethod(object):
             pagetag = None
         else:
             (pagetag, defs) = self.write_toplevel()
-            name = "render"
+            name = "render_body"
             args = None
             buffered = filtered = False
             self.compiler.pagetag = pagetag
@@ -172,10 +172,10 @@ class _GenerateRenderMethod(object):
         self.printer.writelines(
             "def _mako_get_namespace(context, name):",
             "try:",
-            "return context.namespaces[(render, name)]",
+            "return context.namespaces[(__name__, name)]",
             "except KeyError:",
             "_mako_generate_namespaces(context)",
-            "return context.namespaces[(render, name)]",
+            "return context.namespaces[(__name__, name)]",
             None,None
             )
         self.printer.writeline("def _mako_generate_namespaces(context):")
@@ -202,7 +202,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("ns = runtime.Namespace(%s, context._clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
-            self.printer.writeline("context.namespaces[(render, %s)] = ns" % repr(node.name))
+            self.printer.writeline("context.namespaces[(__name__, %s)] = ns" % repr(node.name))
             self.printer.write("\n")
         if not len(namespaces):
             self.printer.writeline("pass")

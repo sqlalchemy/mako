@@ -85,9 +85,11 @@ class Namespace(object):
         self._module = module
         if templateuri is not None:
             self.template = _lookup_template(context, templateuri, calling_uri)
+            self._templateuri = self.template.module._template_uri
         else:
             self.template = template
-        self._templateuri = templateuri
+            if self.template is not None:
+                self._templateuri = self.template.module._template_uri
         self.context = context
         self.inherits = inherits
         if callables is not None:
@@ -113,6 +115,9 @@ class Namespace(object):
             self.context.namespaces[key] = ns
             return ns
     
+    def get_template(self, uri):
+        return _lookup_template(self.context, uri, self._templateuri)
+        
     def get_cached(self, key, **kwargs):
         if self.template:
             if self.template.cache_dir:
@@ -155,15 +160,11 @@ class Namespace(object):
             except KeyError:
                 pass
         if self.template is not None:
-            if key == 'body':
-                callable_ = self.template.module.render
-            else:
-                try:
-                    callable_ = self.template.get_def(key).callable_
-                except AttributeError:
-                    callable_ = None
-            if callable_ is not None:
+            try:
+                callable_ = self.template.get_def(key).callable_
                 return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
+            except AttributeError:
+                pass
         if self._module is not None:
             try:
                 callable_ = getattr(self._module, key)
@@ -252,14 +253,16 @@ def _render(template, callable_, args, data, as_unicode=False):
     _render_context(template, callable_, context, *args, **kwargs)
     return context.pop_buffer().getvalue()
 
-def _render_context(template, callable_, context, *args, **kwargs):
+def _render_context(tmpl, callable_, context, *args, **kwargs):
+    import mako.template as template
     # create polymorphic 'self' namespace for this template with possibly updated context
-    (inherit, lclcontext) = _populate_self_namespace(context, template)
-    if callable_.__name__ == 'render':
+    if not isinstance(tmpl, template.DefTemplate):
         # if main render method, call from the base of the inheritance stack
+        (inherit, lclcontext) = _populate_self_namespace(context, tmpl)
         _exec_template(inherit, lclcontext, args=args, kwargs=kwargs)
     else:
         # otherwise, call the actual rendering method specified
+        (inherit, lclcontext) = _populate_self_namespace(context, tmpl.parent)
         _exec_template(callable_, context, args=args, kwargs=kwargs)
         
 def _exec_template(callable_, context, args=None, kwargs=None):
