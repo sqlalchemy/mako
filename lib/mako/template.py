@@ -59,6 +59,10 @@ class Template(object):
                     _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
                 module = imp.load_source(self.module_id, path, file(path))
                 del sys.modules[self.module_id]
+                if module._magic_number != codegen.MAGIC_NUMBER:
+                    _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
+                    module = imp.load_source(self.module_id, path, file(path))
+                    del sys.modules[self.module_id]
                 ModuleInfo(module, path, self, filename, None, None)
             else:
                 # template filename and no module directory, compile code
