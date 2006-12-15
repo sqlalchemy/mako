@@ -13,9 +13,10 @@
 
 <%namespace name="nav" file="nav.html"/>
 
-<%def name="section(toc, path, description=None, paged=True)">
+<%def name="section(path, description=None)">
     # Main section formatting element.
     <%
+        toc = requestattr['toc']
         item = toc.get_by_path(path)
         subsection = item.depth > 1
     %>
@@ -23,6 +24,7 @@
     
     <div class="${subsection and 'subsection' or 'section'}">
     <%
+        caller.body()
         content = capture(caller.body)
         re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
         content = re2.sub(lambda m: m.group(1), content)
@@ -39,7 +41,7 @@
     % else:
         % if paged:
         <div class="prevnext">
-            ${nav.pagenav(item=item, paged=paged)}
+            ${nav.pagenav(item=item)}
         </div>
         % endif
         <a href="#${ item.get_page_root().path }">back to section top</a>

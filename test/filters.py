@@ -66,7 +66,43 @@ class BufferTest(unittest.TestCase):
             ${"hi->" + capture(foo) + "<-hi"}
 """)
         assert flatten_result(t.render()) == "hi-> this is foo <-hi"
-        
+
+    def test_capture_exception(self):
+        template = Template("""
+            <%def name="a()">
+                this is a
+                <% 
+                    raise TypeError("hi")
+                %>
+            </%def>
+            <%
+                c = capture(a)
+            %>
+            a->${c}<-a
+        """)
+        try:
+            template.render()
+            assert False
+        except TypeError:
+            assert True
+    
+    def test_buffered_exception(self):
+        template = Template("""
+            <%def name="a()" buffered="True">
+                <%
+                    raise TypeError("hi")
+                %>
+            </%def>
+            
+            ${a()}
+            
+""") 
+        try:
+            print template.render()
+            assert False
+        except TypeError:
+            assert True
+            
     def test_capture_ccall(self):
         t = Template("""
             <%def name="foo">

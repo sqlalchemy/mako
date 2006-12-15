@@ -13,6 +13,7 @@ files = [
     'index',
     'documentation',
     'usage',
+    'syntax',
     'defs',
     'namespaces',
     'caching',
@@ -40,7 +41,7 @@ def genfile(name, toc):
     outname = os.path.join(os.getcwd(), '../', name + ".html")
     outfile = file(outname, 'w')
     print infile, '->', outname
-    outfile.write(lookup.get_template(infile).render(toc=toc, extension='html'))
+    outfile.write(lookup.get_template(infile).render(requestattr={}, toc=toc, extension='html'))
     
 for filename in files:
     try:

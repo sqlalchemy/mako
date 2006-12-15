@@ -2,21 +2,26 @@
 # individual hyperlinks as well as navigational toolbars and table-of-content listings.
 <%namespace name="tocns" file="toc.html"/>
 
-<%def name="itemlink(item, anchor=True, extension='html', paged=True)" filter="trim">
-    <a href="${ item.get_link(extension=extension, anchor=anchor, usefilename=paged) }">${ item.description }</a>
+<%def name="itemlink(item, anchor=True)" filter="trim">
+    <a href="${ item.get_link(anchor=anchor, usefilename=requestattr['paged']) }">${ item.description }</a>
 </%def>
 
-<%def name="toclink(toc, path, description=None)" filter="trim">
+<%def name="toclink(path, description=None)" filter="trim">
     <%
+        toc = requestattr['toc']
         item = toc.get_by_path(path)
         if description is None:
             if item:
                 description = item.description
             else:
                 description = path
+        if item:
+            anchor = not requestattr['paged'] or item.depth > 1
+        else: 
+            anchor = False
     %>
     % if item:
-        <a href="${ item.get_link(extension=extension) }">${ description }</a>
+        <a href="${ item.get_link(extension=requestattr['extension'], anchor=anchor, usefilename=requestattr['paged']) }">${ description }</a>
     % else:
         <b>${ description }</b>
     % endif
@@ -27,28 +32,28 @@
     <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
 </%def>
 
-<%def name="topnav(item, extension='html', paged=True)">
+<%def name="topnav(item)">
     <div class="topnav">
 
     <div class="prevnext">
-        ${pagenav(item, paged=paged)}
+        ${pagenav(item)}
     </div>
 
-    <h3><a href="index.${ extension }">Table of Contents</a></h3>
+    <h3><a href="index.${ requestattr['extension'] }">Table of Contents</a></h3>
     <br/>
-	${itemlink(item=item, paged=paged, extension=extension, anchor=True)}
+	${itemlink(item=item, anchor=True)}
 	
-	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True, paged=paged)}
+	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
 	</div>
 </%def>
 
-<%def name="pagenav(item, paged=True)">
+<%def name="pagenav(item)">
     % if item.previous is not None:
-        Previous: ${itemlink(item=item.previous, paged=paged, anchor=not paged)}
+        Previous: ${itemlink(item=item.previous, anchor=not requestattr['paged'])}
     % endif
 
     % if item.next is not None:
         ${item.previous is not None and "|" or ""}
-        Next: ${itemlink(item=item.next, paged=paged, anchor=not paged)}
+        Next: ${itemlink(item=item.next, anchor=not requestattr['paged'])}
     % endif
 </%def>

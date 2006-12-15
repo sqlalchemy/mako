@@ -154,6 +154,9 @@ class Namespace(object):
                     yield (k, getattr(self.module, k))
                             
     def __getattr__(self, key):
+        return self._get_callable(key)
+        
+    def _get_callable(self, key):
         if self.callables is not None:
             try:
                 return self.callables[key]
@@ -184,7 +187,7 @@ def capture(context, callable_, *args, **kwargs):
         callable_(*args, **kwargs)
     finally:
         buf = context.pop_buffer()
-        return buf.getvalue()
+    return buf.getvalue()
         
 def _include_file(context, uri, calling_uri):
     """locate the template from the given uri and include it in the current output."""

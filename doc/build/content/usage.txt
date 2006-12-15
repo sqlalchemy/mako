@@ -1,6 +1,8 @@
 Basic Usage {@name=usage}
 ==========================
 
+This section describes the Python API for Mako templates.  If you are using Mako within a web framework such as Pylons, the work of integrating Mako's API is already done for you, in which case you can skip to the next section, [syntax](rel:syntax).
+
 The most basic way to create a template and render it is through the `Template` class:
 
     from mako.template import Template
@@ -8,16 +10,16 @@ The most basic way to create a template and render it is through the `Template` 
     mytemplate = Template("hello world!")
     print mytemplate.render()
     
-Above, the text argument to `Template` is **compiled** into a Python module representation internally, which contains a function called `render_body()`.  When you then call `mytemplate.render()`, Mako sets up a runtime environment for the template and calls this method, capturing the output into a buffer and returning it's string contents.
+Above, the text argument to `Template` is **compiled** into a Python module representation.  This module contains a function called `render_body()`, which when executed produces the output of the template.  When you call `mytemplate.render()`, Mako sets up a runtime environment for the template and calls the `render_body()` method, capturing the output into a buffer and returning it's string contents.
 
-When a template is rendering, the code inside the template's generated `render_body()` method has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
+The code inside the `render_body()` method has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
 
     from mako.template import Template
     
     mytemplate = Template("hello, ${name}!")
     print mytemplate.render(name="jack")
     
-Internally, the `render()` method calls upon Mako to create a `Context` object, which stores all the variable names accessible to the template and also defines a buffer used to capture output.  You can create this `Context` yourself and have the template render with it, using the `render_context` method:
+The `template.render()` method calls upon Mako to create a `Context` object, which stores all the variable names accessible to the template and also defines a buffer used to capture output.  You can create this `Context` yourself and have the template render with it, using the `render_context` method:
 
     from mako.template import Template
     from mako.runtime import Context
@@ -38,7 +40,7 @@ A `Template` can also load its template source code from a file, using the `file
     mytemplate = Template(filename='/docs/mytmpl.txt')
     print mytemplate.render()
     
-When the `Template` is created, it generates Python code which is assembled into a Python module stored in memory.  This module is accessible off the `Template` instance as `sometemplate.module`.    For improved performance, a `Template` which is loaded from a file can also cache its module on the filesystem as a regular Python module file (i.e. a .py file).  To do this, just add the `module_directory` argument to the template:
+For improved performance, a `Template` which is loaded from a file can also cache the source code to its generated module on the filesystem as a regular Python module file (i.e. a .py file).  To do this, just add the `module_directory` argument to the template:
 
     from mako.template import Template
 
@@ -70,7 +72,7 @@ Usually, an application will store most or all of its templates as text files on
         mytemplate = mylookup.get_template(templatename)
         print mytemplate.render(**kwargs)
 
-In the example above, we create a `TemplateLookup` which will look for templates in the `/docs` directory, and when it creates new `Template` objects will specify the module directory of `/tmp/mako_modules`.  The lookup locates templates by appending the given URI to each of its search directories; so if you gave it a URI of `/etc/beans/info.txt`, it would search for the file `/docs/etc/beans/info.txt`, else raise a `TopLevelNotFound` exception, which is a custom Mako exception.
+In the example above, we create a `TemplateLookup` which will look for templates in the `/docs` directory, and will store generated module files in the `/tmp/mako_modules` directory.  The lookup locates templates by appending the given URI to each of its search directories; so if you gave it a URI of `/etc/beans/info.txt`, it would search for the file `/docs/etc/beans/info.txt`, else raise a `TopLevelNotFound` exception, which is a custom Mako exception.
 
 The `TemplateLookup` also serves the important need of caching a fixed set of templates in memory at a given time, so that successive URI-lookups do not result in full filesystem lookups each time.  By default, the `TemplateLookup` size is unbounded.  You can specify a fixed size using the `collection_size` argument:
 

@@ -327,12 +327,12 @@ class _GenerateRenderMethod(object):
             s = "_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s)
+            self.printer.writeline(None)
             if buffered or cached:
                 self.printer.writeline("return %s" % s)
             else:
                 self.printer.writeline("context.write(%s)" % s)
                 self.printer.writeline("return ''")
-            self.printer.writeline(None)
 
     def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""

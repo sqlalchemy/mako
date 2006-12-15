@@ -24,10 +24,10 @@
     last_updated = toc.last_updated
 
     extension = context.get('extension', 'html')
-    if paged is UNDEFINED:
-        ispaged = True
-    else:
-        ispaged = paged
+    paged = context.get('paged', True)
+    requestattr['extension'] = extension
+    requestattr['paged'] = paged
+    requestattr['toc'] = toc
 %>
 
 <div id="topanchor"><a name="top"></a>&nbsp;</div>
@@ -38,7 +38,7 @@
 
 <div class="versionheader">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
 
-${next.body(toc=toc, paged=ispaged)}
+${next.body()}
 
 
 

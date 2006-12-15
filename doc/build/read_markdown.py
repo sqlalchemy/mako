@@ -74,7 +74,7 @@ def create_toc(filename, tree, tocroot):
 
             level[0] = taglevel
 
-            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path), toc="toc", paged="paged")
+            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path))
             tag.text = (node.tail or "") + '\n'
             tag.tail = '\n'
             tag[:] = content
@@ -114,9 +114,9 @@ def process_rel_href(tree):
             (bold, path) = m.group(1,2)
             text = a.text
             if text == path:
-                tag = et.Element("MAKO:nav.toclink", path=repr(path), toc="toc", extension="extension")
+                tag = et.Element("MAKO:nav.toclink", path=repr(path))
             else:
-                tag = et.Element("MAKO:nav.toclink", path=repr(path), description=repr(text), toc="toc", extension="extension")
+                tag = et.Element("MAKO:nav.toclink", path=repr(path), description=repr(text))
             a_parent = parent[a]
             if bold:
                 bold = et.Element('strong')
