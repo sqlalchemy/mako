@@ -1,4 +1,4 @@
-Mako Syntax {@name=syntax}
+Syntax {@name=syntax}
 ==============================
 
 A Mako template is parsed from a text stream containing any kind of content, XML, HTML, email text, etc.  The template can further contain Mako-specific directives which represent variable and/or expression substitutions, control structures (i.e. conditionals and loops), server-side comments, full blocks of Python code, as well as various tags that offer additional functionality.  Note that all of these constructs compile into real Python code.  This means that you can leverage the full power of Python in almost every aspect of a Mako template.
@@ -30,3 +30,151 @@ The above expression applies URL escaping to the expression, and produces `this+
 The above produces `&lt;tag&gt;some value&lt;/tag&gt;`.  The HTML escaping function is applied first, the "trim" function second, which trims the leading and trailing whitespace from the expression.
 
 Naturally, you can make your own expression filters - that's described in [filtering](rel:filtering).
+
+### Control Structures
+
+A control structure refers to all those things that control the flow of a program - conditionals (i.e. if/else), loops (like while and for), as well as things like `try/except`.  In Mako, control structures are written using the `%` marker followed by a regular Python control expression, and are "closed" by using another `%` marker with the tag "`end<name>`", where "`<name>`" is the keyword of the expression:
+
+    % if x==5:
+        this is some output
+    % endif
+    
+The `%` can appear anywhere on the line as long as no text precedes it; indentation is not signficant.  The full range of Python "colon" expressions are allowed here, including `if/elif/else`, `while`, `for`, and even `def`, although Mako has a built-in tag for defs which is more full-featured.
+
+    % for a in ['one', 'two', 'three', 'four', 'five']:
+        % if a[0] == 't':
+         its two or three
+        % elif a[0] == 'f':
+        four/five
+        % else:
+        one
+        %endif
+    % endfor
+    
+### Comments
+
+Of similar nature to the control structure is the comment, denoted by the `#` sign as the first non-space character on a line:
+
+    # this is a comment.
+    ...text ...
+    
+### Newline Filters
+
+The backslash ("`\`") character, placed at the end of any line, will consume the newline character before continuing to the next line:
+
+    here is a line that goes onto \
+    another line.
+    
+The above text evaluates to:
+
+    here is a line that goes onto another line.
+    
+### Python Blocks
+
+Any arbitrary block of python can be dropped in using the `<% %>` tags:
+
+    this is a template
+    <%
+        x = db.get_resource('foo')
+        y = [z.element for z in x if x.frobnizzle==5]
+    %>
+    % for elem in y:
+        element: ${y}
+    % endfor
+    
+Within `<% %>`, you're writing a regular block of Python code.  While the code can appear with an arbitrary level of preceding whitespace,  it has to be consistently formatted with itself.  Mako's compiler will adjust the block of Python to be consistent with the surrounding generated Python code.
+
+#### Module-level Blocks
+
+A variant on `<% %>` is the module-level code block, denoted by `<%! %>`.  Code within these tags is executed at the module level of the template, and not within the rendering function of the template.  Therefore, this code does not have access to the template's context and is only executed when the template is loaded into memory (which can be only once per application, or more, depending on the runtime environment).  Use the `<%! %>` tags to declare your template's imports, as well as any pure-Python functions you might want to declare:
+
+    <%!
+        import mylib
+        import re
+        
+        def filter(text):
+            return re.sub(r'^@', '', text)
+    %>
+    
+Any number of `<%! %>` blocks can be declared anywhere in a template; they will be rendered in the resulting module in the order that they appear.
+
+### Tags
+
+The rest of what Mako offers takes place in the form of tags.  All tags use the same syntax, which is similar to an XML tag except that the first character of the tag name is a `%` character.  The tag is closed either by a contained backslash character, or an explicit closing tag:
+
+    <%include file="foo.txt"/>
+    
+    <%def name="foo" buffered="True">
+        this is a def
+    </%def>
+    
+All tags have a set of attributes which are defined for each tag.  Some of these attributes are required.  Also, many attributes support **evaluation**, meaning you can embed an expression (using `${}`) inside the attribute text:
+
+    <%include file="/foo/bar/${myfile}.txt"/>
+    
+Whether or not an attribute accepts runtime evaluation depends on the type of tag and how that tag is compiled into the template.  The best way to find out if you can stick an expression in is to try it !  The lexer will tell you if its not valid.
+
+Heres a quick summary of all the tags:
+
+#### <%page>
+
+This tag defines general characteristics of the template, including caching arguments, and optional lists of arguments which the template expects when invoked.
+
+    <%page args="x, y, z='default'"/>
+    
+Or a page tag that defines caching characteristics:
+    
+    <%page cached="True" cache_type="memory"/>
+    
+#### <%include>
+
+A tag that is familiar from other template languages, %include is a regular joe that just accepts a file argument and calls in the rendered result of that file:
+
+    <%include file="header.html"/>
+    
+        hello world
+        
+    <%include file="footer.html"/>
+
+#### <%def>
+
+The `%def` tag defines a Python function which contains a set of content, that can be called at some other point in the template.  The basic idea is simple:
+
+    <%def name="myfunc(x)">
+        this is myfunc, x is ${x}
+    </%def>
+    
+    ${myfunc(7)}
+    
+The %def tag is a lot more powerful than a plain Python def, as the Mako compiler provides many extra services with %def that you wouldn't normally have, such as the ability to export defs as template "methods", automatic propigation of the current `Context`, buffering/filtering/caching flags, and def calls with content, which enable packages of defs to be sent as arguments to other def calls (not as hard as it sounds).  Get the full deal on what %def can do in [defs](rel:defs).
+
+#### <%namespace>
+
+%namespace is Mako's equivalent of Python's `import` statement.  It allows access to all the rendering functions and metadata of other template files, plain Python modules, as well as locally defined "packages" of functions.
+
+    <%namespace file="functions.html" import="*"/>
+
+The underlying object generated by %namespace, an instance of `mako.runtime.Namespace`, is a central construct used in templates to reference template-specific information such as the current URI, inheritance structures, and other things that are not as hard as they sound right here.  Namespaces are described in [namespaces](rel:namespaces).
+
+#### <%inherit>
+
+Inherit allows templates to arrange themselves in **inheritance chains**.  This is a concept familiar in many other template languages.
+
+    <%inherit file="base.html"/>
+
+When using the %inherit tag, control is passed to the topmost inherited template first, which then decides how to handle calling areas of content from its inheriting templates.  Mako offers a lot of flexbility in this area, including dynamic inheritance, content wrapping, and polymorphic method calls.  Check it out in [inheritance](rel:inheritance).
+
+#### <%call>
+
+The call tag is used to call `<%defs>` with additional embedded content.  This tag is described in [defs_defswithcontent](rel:defs_defswithcontent).
+
+#### <%text>
+
+This tag suspends the Mako lexer's normal parsing of Mako template directives, and returns its entire body contents as plain text.  It is used pretty much to write documentation about Mako:
+
+    <%text filter="h">
+        heres some fake mako ${syntax}
+        <%def name="x()">${x}</%def>
+    < /%text>
+
+(yes, this documentation system can't show you closing tag without the space in it! )
