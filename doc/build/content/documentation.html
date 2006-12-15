@@ -8,7 +8,7 @@ ${tocns.toc()}
     Mako Documentation
 </%def>
 
-% for file in toc.filenames:
+% for file in requestattr['toc'].filenames:
     <%
         item = requestattr['toc'].get_by_file(file)
     %>
