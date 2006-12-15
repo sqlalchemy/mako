@@ -135,7 +135,7 @@ A tag that is familiar from other template languages, %include is a regular joe 
         hello world
         
     <%include file="footer.html"/>
-
+    
 #### <%def>
 
 The `%def` tag defines a Python function which contains a set of content, that can be called at some other point in the template.  The basic idea is simple:
