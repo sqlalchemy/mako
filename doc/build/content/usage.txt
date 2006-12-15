@@ -1,6 +1,8 @@
 Basic Usage {@name=usage}
 ==========================
 
+### Simple Text Template
+
 The most basic way to create a template and render it is through the `Template` class:
 
     from mako.template import Template
@@ -29,7 +31,7 @@ Internally, the `render()` method calls upon Mako to create a `Context` object, 
     mytemplate.render_context(ctx)
     print buf.getvalue()
     
-#### Using File-Based Templates {@name=file}
+### Using File-Based Templates {@name=file}
 
 A `Template` can also load its template source code from a file, using the `filename` keyword argument:
 
@@ -47,7 +49,7 @@ When the `Template` is created, it generates Python code which is assembled into
 
 When the above code is rendered, a file `/tmp/mako_modules/docs/mytmpl.txt.py` is created containing the source code for the module.  The next time a `Template` with the same arguments is created, this module file will be automatically re-used.
 
-#### Using TemplateLookup {@name=lookup}
+### Using TemplateLookup {@name=lookup}
 
 All of the examples thus far have dealt with the usage of a single `Template` object.  If the code within those templates tries to locate another template resource, it will need some way to find them, using simple URI strings.  For this need, the resolution of other templates from within a template is accomplished by the `TemplateLookup` class.   This class is constructed given a list of directories in which to search for templates, as well as keyword arguments that will be passed to the `Template` objects it creates.
 
@@ -82,7 +84,7 @@ Another important flag on `TemplateLookup` is `filesystem_checks`.  This default
 
 When the lookup locates templates, it will also assign a `uri` property to the `Template` which is the uri passed to the `get_template()` call.  This argument is provided to the `Template` itself, which the template then uses to calculate the name of its module file.  So in the above example, the `templatename` argument of `/etc/beans/info.txt` will create a module file `/tmp/mako_modules/etc/beans/info.txt.py`.
 
-#### Using Unicode and Encoding
+### Using Unicode and Encoding
 
 Both `Template` and `TemplateLookup` accept an `output_encoding` parameter which can be used to encode the output in any Python supported codec:
 
