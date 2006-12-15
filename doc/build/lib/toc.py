@@ -24,7 +24,7 @@ class TOCElement(object):
         self.version = version
         self.doctitle = doctitle
         (self.path, self.depth) = self._create_path()
-        print "NEW TOC:", self.path
+        #print "NEW TOC:", self.path
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
 
