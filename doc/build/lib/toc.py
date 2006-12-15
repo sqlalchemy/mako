@@ -13,7 +13,7 @@ filenames = []
 class TOCElement(object):
     def __init__(self, filename, name, description, parent=None, version=None, last_updated=None, doctitle=None, **kwargs):
         self.filename = filename
-        self.name = re.sub(r'[<>&;]', '', name)
+        self.name = re.sub(r'[<>&;%]', '', name)
         self.description = description
         self.parent = parent
         self.content = None
