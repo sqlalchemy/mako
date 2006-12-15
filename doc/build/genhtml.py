@@ -12,6 +12,7 @@ import read_markdown, toc
 files = [
     'index',
     'documentation',
+    'usage',
     'defs',
     'namespaces',
     'caching',

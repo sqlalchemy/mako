@@ -65,7 +65,7 @@ def myghty(dirname, verbose=False):
 def mako(dirname, verbose=False):
     from mako.template import Template
     from mako.lookup import TemplateLookup
-    lookup = TemplateLookup(directories=[dirname])
+    lookup = TemplateLookup(directories=[dirname], filesystem_checks=False)
     template = lookup.get_template('template.html')
     def render():
         return template.render(title="Just a test", user="joe", list_items=[u'Number %d' % num for num in range(1,15)])

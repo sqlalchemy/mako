@@ -64,7 +64,7 @@ code {
     font-family:monospace;
 }
 p {
-    margin:5px 20px 5px 10px;
+    /*margin:5px 20px 5px 10px;*/
 }
 
 li {
@@ -81,7 +81,7 @@ pre {
     line-height:1em;
     background-color: #eee;
     border: 1px solid #ccc;
-    width:600px;
+    width:640px;
     overflow:auto;
 }
 
