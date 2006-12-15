@@ -1,8 +1,6 @@
 Basic Usage {@name=usage}
 ==========================
 
-### Simple Text Template
-
 The most basic way to create a template and render it is through the `Template` class:
 
     from mako.template import Template

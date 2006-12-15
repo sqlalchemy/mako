@@ -36,7 +36,7 @@
 
     <h3><a href="index.${ extension }">Table of Contents</a></h3>
     <br/>
-	<h3>${ item.description }</h3>
+	${itemlink(item=item, paged=paged, extension=extension, anchor=True)}
 	
 	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True, paged=paged)}
 	</div>
@@ -44,11 +44,11 @@
 
 <%def name="pagenav(item, paged=True)">
     % if item.previous is not None:
-        Previous: ${itemlink(item=item.previous, paged=paged)}
+        Previous: ${itemlink(item=item.previous, paged=paged, anchor=not paged)}
     % endif
 
     % if item.next is not None:
         ${item.previous is not None and "|" or ""}
-        Next: ${itemlink(item=item.next, paged=paged)}
+        Next: ${itemlink(item=item.next, paged=paged, anchor=not paged)}
     % endif
 </%def>

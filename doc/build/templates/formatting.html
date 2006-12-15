@@ -19,9 +19,7 @@
         item = toc.get_by_path(path)
         subsection = item.depth > 1
     %>
-    % if subsection:
     <A name="${item.path}"></a>
-    % endif
     
     <div class="${subsection and 'subsection' or 'section'}">
     <%
@@ -30,9 +28,7 @@
         content = re2.sub(lambda m: m.group(1), content)
     %>
 
-    % if subsection or not paged:
     <h3>${description or item.description}</h3>
-    % endif
     
     ${content}
 

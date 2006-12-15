@@ -6,11 +6,11 @@ Namespaces are used to organize groups of components into categories, and also t
 If the file `components.html` defines these two components:
 
     # components.html
-    <%def name="comp1">
+    <%def name="comp1()">
         this is comp1
     </%def>
     
-    <%def name="comp2">
+    <%def name="comp2()">
         this is comp2
     </%def>
     
@@ -40,7 +40,7 @@ The `comp` variable above is an instance of `mako.runtime.Namespace`, a **proxy 
 
 The names imported by the `import` attribute take precedence over any names that exist within the current context.
 
-### Namespaces from Regular Python Modules
+### Namespaces from Regular Python Modules {@name=frommodules}
 
 Namespaces can also import regular Python functions from modules.  These callables need to take at least one argument, `context`:
 
@@ -63,7 +63,7 @@ The `<%namespace>` tag supports the definition of `<%defs>` directly inside the 
     
     # define a namespace
     <%namespace name="stuff">
-        <%def name="comp1">
+        <%def name="comp1()">
             comp1
         </%def>
     </%namespace>

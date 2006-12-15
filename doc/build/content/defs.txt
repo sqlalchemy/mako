@@ -3,7 +3,7 @@ Defs
 
 The def is the single tag used to demarcate any block of text and/or code.  It exists within generated Python as a callable function. 
 
-    <%def name="hello">
+    <%def name="hello()">
         hello world
     </%def>
 
@@ -19,7 +19,7 @@ All defs, top level or not, have access to the current contextual namespace in e
     
     ${account()}
 
-    <%def name="account">
+    <%def name="account()">
         Account for ${username}:<br/>
     
         % for row in accountdata:
@@ -37,7 +37,7 @@ Since defs are just Python functions, you can define and pass arguments to them 
 
 When you declare an argument signature for your def, they are required following normal Python conventions (i.e., all arguments are required except keyword arguments with a default value).  This is in contrast to using context-level variables, which evaluate to `UNDEFINED` if you reference a name that does not exist.
 
-#### Calling defs from Other Files {@name=remotedefs}
+### Calling defs from Other Files {@name=remotedefs}
 
 Top level `<%defs>` are **exported** by your template's module, and can be called from the outside; including from other templates, as well as normal Python code.  Calling a `<%def>` from another template is something like using an `<%include>` - except you are calling a specific function within the template, not the whole template.
 
@@ -68,12 +68,12 @@ Heres an example using `*`:
     
     ${callsomething('test')}
 
-#### Defs within Defs {@name=nesteddefs}
+### Defs within Defs {@name=nesteddefs}
 
 The def model follows regular Python rules for closures.  Declaring `<%def>` inside another `<%def>` declares it within the parent's **enclosing scope**:
 
-    <%def name="mydef">
-        <%def name="subdef">
+    <%def name="mydef()">
+        <%def name="subdef()">
             a sub def
         </%def>
         
@@ -85,11 +85,11 @@ Just like Python, names that exist outside the inner `<%def>` exist inside it as
     <%
         x = 12
     %>
-    <%def name="outer">
+    <%def name="outer()">
         <%
             y = 15
         %>
-        <%def name="inner">
+        <%def name="inner()">
             inner, x is ${x}, y is ${y}
         </%def>
 
@@ -101,7 +101,7 @@ Assigning to a name inside of a def declares that name as local to the scope of 
     <%
         x = 10
     %>
-    <%def name="somedef">
+    <%def name="somedef()">
         # error !
         somedef, x is ${x}  
         <%
@@ -111,11 +111,11 @@ Assigning to a name inside of a def declares that name as local to the scope of 
 
 ...because the assignment to `x` declares x as local to the scope of `somedef`, rendering the "outer" version unreachable in the expression that tries to render it.
     
-#### Calling a def with embedded content and/or other defs {@name=defswithcontent}
+### Calling a def with embedded content and/or other defs {@name=defswithcontent}
 
 A flip-side to def within def is a def call with content.  This is where you call a def, and at the same time declare a block of content (or multiple blocks) that can be used by the def being called.  To achieve this, the target def is invoked using the `<%call>` tag instead of the normal `${}` syntax.  The target def then gets a variable `caller` placed in its context which contains references to the body of the `<%call>` tag.  The default body of the tag is available via the name `body`:
 
-    <%def name="buildtable">
+    <%def name="buildtable()">
         <table>
             <tr><td>
                 ${caller.body()}
@@ -199,7 +199,7 @@ Produces:
     
 You don't have to stick to calling just the `body()` function.  The caller can define any number of callables, allowing the `<%call>` tag to produce whole layouts:
 
-    <%def name="layout">
+    <%def name="layout()">
         # a layout def
         <div class="mainlayout">
             <div class="header">
@@ -216,10 +216,10 @@ You don't have to stick to calling just the `body()` function.  The caller can d
 
     # calls the layout def
     <%call expr="layout">
-        <%def name="header">
+        <%def name="header()">
             I am the header
         </%def>
-        <%def name="sidebar">
+        <%def name="sidebar()">
             <ul>
                 <li>sidebar 1</li>
                 <li>sidebar 2</li>
