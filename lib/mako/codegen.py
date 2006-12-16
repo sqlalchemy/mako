@@ -144,7 +144,7 @@ class _GenerateRenderMethod(object):
             self.identifier_stack[-1].argument_declared.add('pageargs')
 
         if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared)>0):
-            self.printer.writeline("__locals = dict(%s)" % ','.join("%s=%s" % (x, x) for x in self.identifiers.argument_declared))
+            self.printer.writeline("__locals = dict(%s)" % ','.join(["%s=%s" % (x, x) for x in self.identifiers.argument_declared]))
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
