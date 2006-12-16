@@ -23,11 +23,11 @@
     version = toc.version
     last_updated = toc.last_updated
 
-    extension = context.get('extension', 'html')
-    paged = context.get('paged', True)
-    requestattr['extension'] = extension
-    requestattr['paged'] = paged
-    requestattr['toc'] = toc
+    kwargs = context.kwargs
+    kwargs.setdefault('extension', 'html')
+    extension = kwargs['extension']
+    kwargs.setdefault('paged', True)
+    kwargs.setdefault('toc', toc)
 %>
 
 <div id="topanchor"><a name="top"></a>&nbsp;</div>
@@ -38,7 +38,7 @@
 
 <div class="versionheader">Version: ${version}   Last Updated: ${time.strftime('%x %X', time.localtime(last_updated))}</div>
 
-${next.body()}
+${next.body(**kwargs)}
 
 
 

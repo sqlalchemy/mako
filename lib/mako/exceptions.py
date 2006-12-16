@@ -75,7 +75,7 @@ class RichTraceback(object):
         self.reverse_records.reverse()
     def _get_reformatted_records(self, records):
         for rec in records:
-            if rec[6]:
+            if rec[6] is not None:
                 yield (rec[4], rec[5], rec[2], rec[6])
             else:
                 yield tuple(rec[0:4])
@@ -97,7 +97,7 @@ class RichTraceback(object):
         rawrecords = traceback.extract_tb(trcback)
         new_trcback = []
         for filename, lineno, function, line in rawrecords:
-            #print "TB", filename, lineno, function, line
+            print "TB", filename, lineno, function, line
             try:
                 (line_map, template_lines) = mods[filename]
             except KeyError:
@@ -129,6 +129,7 @@ class RichTraceback(object):
             else:
                 template_line = None
             new_trcback.append((filename, lineno, function, line, template_filename, template_ln, template_line, template_source))
+            print "AND THE TB IS", new_trcback[-1]
         if not self.source:
             for l in range(len(new_trcback)-1, 0, -1):
                 if new_trcback[l][5]:

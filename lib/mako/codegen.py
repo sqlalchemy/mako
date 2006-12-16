@@ -47,16 +47,20 @@ class _GenerateRenderMethod(object):
         else:
             (pagetag, defs) = self.write_toplevel()
             name = "render_body"
-            args = None
+            if pagetag is not None:
+                args = pagetag.body_decl.get_argument_expressions()
+                if not pagetag.body_decl.kwargs:
+                    args += ['**_extra_pageargs']
+                cached = eval(pagetag.attributes.get('cached', 'False'))
+            else:
+                args = ['**_extra_pageargs']
+                cached = False
             buffered = filtered = False
             self.compiler.pagetag = pagetag
-            cached = pagetag is not None and eval(pagetag.attributes.get('cached', 'False'))
         if args is None:
             args = ['context']
         else:
             args = [a for a in ['context'] + args]
-        if not self.in_def:
-            args.append('**kwargs')
             
         self.write_render_callable(pagetag or node, name, args, buffered, filtered, cached)
         
@@ -137,10 +141,8 @@ class _GenerateRenderMethod(object):
 
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
 
-        if not self.in_def:
-            self.printer.writeline("context = context.locals_(kwargs)")
-        if not self.in_def and len(self.identifiers.locally_assigned) > 0:
-            self.printer.writeline("__locals = {}")
+        if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared)>0):
+            self.printer.writeline("__locals = dict(%s)" % ','.join("%s=%s" % (x, x) for x in self.identifiers.argument_declared))
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
@@ -244,7 +246,7 @@ class _GenerateRenderMethod(object):
         # (this is used for the caching decorator)
         if limit is not None:
             to_write = to_write.intersection(limit)
-            
+        
         if toplevel and getattr(self.compiler, 'has_ns_imports', False):
             self.printer.writeline("_import_ns = {}")
             self.compiler.has_imports = True
@@ -278,7 +280,7 @@ class _GenerateRenderMethod(object):
         funcname = node.function_decl.funcname
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
-        if not self.in_def and len(self.identifiers.locally_assigned) > 0:
+        if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared) > 0):
             nameargs.insert(0, 'context.locals_(__locals)')
         else:
             nameargs.insert(0, 'context')
@@ -568,7 +570,10 @@ class _Identifiers(object):
     def visitIncludeTag(self, node):
         self.check_declared(node)
     def visitPageTag(self, node):
-        self.check_declared(node)            
+        for ident in node.declared_identifiers():
+            self.argument_declared.add(ident)
+        self.check_declared(node)
+                    
     def visitCallTag(self, node):
         if node is self.node:
             for ident in node.undeclared_identifiers():

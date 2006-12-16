@@ -326,6 +326,7 @@ class ScopeTest(unittest.TestCase):
         
         l.put_string("main", """
             <%inherit file="base"/>
+            <%page args="x"/>
             this is main.  x is ${x}
             
             ${a()}
@@ -336,7 +337,7 @@ class ScopeTest(unittest.TestCase):
         """)
         
         # test via inheritance
-        #print l.get_template("main").code
+        print l.get_template("main").code
         assert result_lines(l.get_template("main").render()) == [
             "this is main. x is 12",
             "this is a, x is 12"

@@ -3,12 +3,11 @@
 <%namespace name="tocns" file="toc.html"/>
 
 <%def name="itemlink(item, anchor=True)" filter="trim">
-    <a href="${ item.get_link(anchor=anchor, usefilename=requestattr['paged']) }">${ item.description }</a>
+    <a href="${ item.get_link(anchor=anchor, usefilename=paged) }">${ item.description }</a>
 </%def>
 
 <%def name="toclink(path, description=None)" filter="trim">
     <%
-        toc = requestattr['toc']
         item = toc.get_by_path(path)
         if description is None:
             if item:
@@ -16,12 +15,12 @@
             else:
                 description = path
         if item:
-            anchor = not requestattr['paged'] or item.depth > 1
+            anchor = not paged or item.depth > 1
         else: 
             anchor = False
     %>
     % if item:
-        <a href="${ item.get_link(extension=requestattr['extension'], anchor=anchor, usefilename=requestattr['paged']) }">${ description }</a>
+        <a href="${ item.get_link(extension=extension, anchor=anchor, usefilename=paged) }">${ description }</a>
     % else:
         <b>${ description }</b>
     % endif
@@ -39,7 +38,7 @@
         ${pagenav(item)}
     </div>
 
-    <h3><a href="index.${ requestattr['extension'] }">Table of Contents</a></h3>
+    <h3><a href="index.${ extension }">Table of Contents</a></h3>
     <br/>
 	${itemlink(item=item, anchor=True)}
 	
@@ -49,11 +48,11 @@
 
 <%def name="pagenav(item)">
     % if item.previous is not None:
-        Previous: ${itemlink(item=item.previous, anchor=not requestattr['paged'])}
+        Previous: ${itemlink(item=item.previous, anchor=not paged)}
     % endif
 
     % if item.next is not None:
         ${item.previous is not None and "|" or ""}
-        Next: ${itemlink(item=item.next, anchor=not requestattr['paged'])}
+        Next: ${itemlink(item=item.next, anchor=not paged)}
     % endif
 </%def>

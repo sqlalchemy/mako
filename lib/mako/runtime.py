@@ -14,6 +14,7 @@ class Context(object):
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
         self._data = data
+        self._kwargs = data.copy()
         self._with_template = None
         self.namespaces = {}
         
@@ -24,12 +25,11 @@ class Context(object):
         self.caller_stack = [Undefined]
         data['caller'] = _StackFacade(self.caller_stack)
     lookup = property(lambda self:self._with_template.lookup)
+    kwargs = property(lambda self:self._kwargs.copy())
     def keys(self):
         return self._data.keys()
     def __getitem__(self, key):
         return self._data[key]
-    def _put(self, key, value):
-        self._data[key] = value
     def push_buffer(self):
         """push a capturing buffer onto this Context."""
         self._buffer_stack.append(util.FastEncodingBuffer())
@@ -45,6 +45,7 @@ class Context(object):
         c = Context.__new__(Context)
         c._buffer_stack = self._buffer_stack
         c._data = self._data.copy()
+        c._kwargs = self._kwargs
         c._with_template = self._with_template
         c.namespaces = self.namespaces
         c.caller_stack = self.caller_stack
@@ -154,9 +155,6 @@ class Namespace(object):
                     yield (k, getattr(self.module, k))
                             
     def __getattr__(self, key):
-        return self._get_callable(key)
-        
-    def _get_callable(self, key):
         if self.callables is not None:
             try:
                 return self.callables[key]

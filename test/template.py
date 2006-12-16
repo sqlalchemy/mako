@@ -28,6 +28,40 @@ class EncodingTest(unittest.TestCase):
         val = "# -*- encoding: utf-8 -*-\n" + val.encode('utf-8')
         template = Template(val)
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_encoding(self):
+        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        template = Template(val, output_encoding='utf-8')
+        assert template.render() == val.encode('utf-8')
+
+class PageArgsTest(unittest.TestCase):
+    def test_basic(self):
+        template = Template("""
+            <%page args="x, y, z=7"/>
+            
+            this is page, ${x}, ${y}, ${z}
+""")
+
+        assert flatten_result(template.render(x=5, y=10)) == "this is page, 5, 10, 7"
+        assert flatten_result(template.render(x=5, y=10, z=32)) == "this is page, 5, 10, 32"
+        try:
+            template.render(y=10)
+            assert False
+        except TypeError, e:
+            assert True
+
+    def test_with_context(self):
+        template = Template("""
+            <%page args="x, y, z=7"/>
+
+            this is page, ${x}, ${y}, ${z}, ${w}
+""")
+
+        assert flatten_result(template.render(x=5, y=10, w=17)) == "this is page, 5, 10, 7, 17"
+
+
+        
+
         
 class ControlTest(unittest.TestCase):
     def test_control(self):

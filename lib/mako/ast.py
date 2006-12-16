@@ -145,7 +145,7 @@ class walker(visitor.ASTVisitor):
         
 class FunctionDecl(object):
     """function declaration"""
-    def __init__(self, code, lineno, pos, filename):
+    def __init__(self, code, lineno, pos, filename, allow_kwargs=True):
         self.code = code
         expr = parse(code, "exec", lineno, pos, filename)
         class ParseFunc(object):
@@ -160,6 +160,9 @@ class FunctionDecl(object):
         visitor.walk(expr, f)
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos, filename)
+        if not allow_kwargs and self.kwargs:
+            raise exceptions.CompileException("'**%s' keyword argument not allowed here" % self.argnames[-1], lineno, pos, filename)
+            
     def get_argument_expressions(self, include_defaults=True):
         """return the argument declarations of this FunctionDecl as a printable list."""
         namedecls = []
@@ -186,8 +189,8 @@ class FunctionDecl(object):
 
 class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
-    def __init__(self, code, lineno, pos, filename):
-        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, lineno, pos, filename)
+    def __init__(self, code, lineno, pos, filename, **kwargs):
+        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, lineno, pos, filename, **kwargs)
         
             
 class ExpressionGenerator(object):

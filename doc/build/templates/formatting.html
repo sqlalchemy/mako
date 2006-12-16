@@ -16,7 +16,6 @@
 <%def name="section(path, description=None)">
     # Main section formatting element.
     <%
-        toc = requestattr['toc']
         item = toc.get_by_path(path)
         subsection = item.depth > 1
     %>

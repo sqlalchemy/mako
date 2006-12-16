@@ -132,6 +132,14 @@ class LexerTest(unittest.TestCase):
         #print nodes
         assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), CallTag('call', {'expr': "foo>bar and 'lala' or 'hoho'"}, (2, 13), []), Text('\n            ', (2, 57)), CallTag('call', {'expr': 'foo<bar and hoho>lala and "x" + "y"'}, (3, 13), []), Text('\n        ', (3, 64))])"""
         
+    def test_pagetag(self):
+        template = """
+            <%page cached="True", args="a, b"/>
+            
+            some template
+        """    
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), PageTag('page', {'cached': 'True', 'args': 'a, b'}, (2, 13), []), Text('\n            \n            some template\n        ', (2, 48))])"""
         
     def test_nesting(self):
         template = """

@@ -181,6 +181,73 @@ ${next.body()}
          'c is: secondary_c. a is layout_a b is base_b d is secondary_d.'
          ]
 
+    def test_pageargs(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base", """
+            this is the base.
+            
+            <%def name="foo()">
+                ${next.body(**context.kwargs)}
+            </%def>
+            
+            ${foo()}
+        """)
+        collection.put_string("index", """
+            <%inherit file="base"/>
+            <%page args="x, y, z=7"/>
+            print ${x}, ${y}, ${z}
+        """)
+        assert result_lines(collection.get_template('index').render(x=5,y=10)) == [
+            "this is the base.",
+            "print 5, 10, 7"
+        ]
+    def test_pageargs_2(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base", """
+            this is the base.
+            
+            ${next.body(**context.kwargs)}
+            
+            <%def name="foo(**kwargs)">
+                ${next.body(**kwargs)}
+            </%def>
+
+            <%def name="bar(**otherargs)">
+                ${next.body(z=16, **context.kwargs)}
+            </%def>
+
+            ${foo(x=12, y=15, z=8)}
+            ${bar(x=19, y=17)}
+        """)
+        collection.put_string("index", """
+            <%inherit file="base"/>
+            <%page args="x, y, z=7"/>
+            pageargs: ${x}, ${y}, ${z}
+        """)
+        assert result_lines(collection.get_template('index').render(x=5,y=10)) == [
+            "this is the base.",
+            "pageargs: 5, 10, 7",
+            "pageargs: 12, 15, 8",
+            "pageargs: 5, 10, 16"
+        ]
+    
+    def test_pageargs_err(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base", """
+            this is the base.
+            ${next.body()}
+        """)
+        collection.put_string("index", """
+            <%inherit file="base"/>
+            <%page args="x, y, z=7"/>
+            print ${x}, ${y}, ${z}
+        """)
+        try:
+            print collection.get_template('index').render(x=5,y=10)
+            assert False
+        except TypeError:
+            assert True
+            
     def test_dynamic(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """
