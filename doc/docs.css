@@ -47,6 +47,10 @@ h2 {
     margin:0px 0px 0px 0px;
 }
 
+.topnav .toolbar{
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+}
 .topnav {
     background-color: #eee;
     border: 1px solid #ccc;
@@ -58,7 +62,7 @@ h2 {
     font-size:.80em;
 }
 code {
-    font-size:1.2em;
+    font-size:1.1em;
 }
 .code {
     font-family:monospace;
@@ -77,7 +81,7 @@ td {
 pre { 
     margin: 1.5em; 
     padding: .5em; 
-    font-size: 1em; 
+    font-size: .95em; 
     line-height:1em;
     background-color: #eee;
     border: 1px solid #ccc;
