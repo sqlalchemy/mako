@@ -94,7 +94,7 @@ class LexerTest(unittest.TestCase):
         % endif
         """
         node = Lexer(template).parse()
-        assert repr(node) == r"""TemplateNode({}, [Comment('comment', (1, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), ['Text(\'\\n            # more code\\n            \\n            % more code\\n            <%illegal compionent>/></>\\n            <%def name="laal()">def</%def>\\n            \\n            \\n        \', (6, 16))']), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo()'}, (16, 9), ["Text('this is foo', (16, 28))"]), Text('\n', (16, 46)), ControlLine('if', 'if bar:', False, (17, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
+        assert repr(node) == r"""TemplateNode({}, [Text('\n', (1, 1)), Comment('comment', (2, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), ['Text(\'\\n            # more code\\n            \\n            % more code\\n            <%illegal compionent>/></>\\n            <%def name="laal()">def</%def>\\n            \\n            \\n        \', (6, 16))']), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo()'}, (16, 9), ["Text('this is foo', (16, 28))"]), Text('\n        \n', (16, 46)), ControlLine('if', 'if bar:', False, (18, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
         
     def test_def_syntax(self):
         template = """
@@ -252,7 +252,19 @@ text text la la
         nodes = Lexer(template).parse()
         #print nodes
         assert repr(nodes) == r"""TemplateNode({}, [Text('\ntext text la la\n', (1, 1)), ControlLine('if', 'if foo():', False, (3, 1)), Text(' mroe text la la blah blah\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('\n        and osme more stuff\n', (6, 1)), ControlLine('for', 'for l in range(1,5):', False, (8, 1)), Text('    tex tesl asdl l is ', (9, 1)), Expression('l', [], (9, 24)), Text(' kfmas d\n', (9, 28)), ControlLine('for', 'endfor', True, (10, 1)), Text('    tetx text\n    \n', (11, 1))])"""
-        
+
+    def test_control_lines_2(self):
+        template = \
+"""
+
+
+% for file in requestattr['toc'].filenames:
+    x
+% endfor
+"""
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n\n\n', (1, 1)), ControlLine('for', "for file in requestattr['toc'].filenames:", False, (4, 1)), Text('    x\n', (5, 1)), ControlLine('for', 'endfor', True, (6, 1))])"""
+
     def test_unmatched_control(self):
         template = """
 
@@ -293,8 +305,7 @@ text text la la
         % endif
 """    
         nodes = Lexer(template).parse()
-        #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [ControlLine('if', 'if x:', False, (1, 1)), Text('            hi\n', (3, 1)), ControlLine('elif', 'elif y+7==10:', False, (4, 1)), Text('            there\n', (5, 1)), ControlLine('elif', 'elif lala:', False, (6, 1)), Text('            lala\n', (7, 1)), ControlLine('else', 'else:', False, (8, 1)), Text('            hi\n', (9, 1)), ControlLine('if', 'endif', True, (10, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text('\n', (1, 1)), ControlLine('if', 'if x:', False, (2, 1)), Text('            hi\n', (3, 1)), ControlLine('elif', 'elif y+7==10:', False, (4, 1)), Text('            there\n', (5, 1)), ControlLine('elif', 'elif lala:', False, (6, 1)), Text('            lala\n', (7, 1)), ControlLine('else', 'else:', False, (8, 1)), Text('            hi\n', (9, 1)), ControlLine('if', 'endif', True, (10, 1))])"""
         
     def test_integration(self):
         template = """<%namespace name="foo" file="somefile.html"/>

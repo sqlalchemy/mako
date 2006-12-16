@@ -16,10 +16,8 @@
     import cPickle as pickle
     import os, time
     print "%s generating from table of contents for file %s" % (local.filename, self.filename)
-    toc = context.get('toc')
-    if toc is None:
-        filename = os.path.join(os.path.dirname(self.filename), 'table_of_contents.pickle')
-        toc = pickle.load(file(filename))
+    filename = os.path.join(os.path.dirname(self.filename), 'table_of_contents.pickle')
+    toc = pickle.load(file(filename))
     version = toc.version
     last_updated = toc.last_updated
 
@@ -30,7 +28,7 @@
     kwargs.setdefault('toc', toc)
 %>
 
-<div id="topanchor"><a name="top"></a>&nbsp;</div>
+<div id="topanchor"><a name="top">&nbsp;</a></div>
 
 <div id="pagecontrol"><a href="index.${extension}">Multiple Pages</a> | <a href="documentation.${extension}">One Page</a></div>
 

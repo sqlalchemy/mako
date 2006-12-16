@@ -13,7 +13,7 @@
 
 <%namespace name="nav" file="nav.html"/>
 
-<%def name="section(path, description=None)">
+<%def name="section(toc, path, paged, extension, description=None)">
     # Main section formatting element.
     <%
         item = toc.get_by_path(path)
@@ -32,17 +32,12 @@
     
     ${content}
 
-    % if subsection:
-        %   if (item.next and item.next.depth >= item.depth):
-            <a href="#${ item.get_page_root().path }">back to section top</a>
-        %   endif
-    % else:
+    % if (subsection and item.next and item.next.depth >= item.depth) or not subsection:
         % if paged:
-        <div class="prevnext">
-            ${nav.pagenav(item=item)}
-        </div>
+            <a href="#top">back to section top</a>
+        % else:
+            <a href="#${item.get_page_root().path}">back to section top</a>
         % endif
-        <a href="#${ item.get_page_root().path }">back to section top</a>
     % endif
     </div>
 

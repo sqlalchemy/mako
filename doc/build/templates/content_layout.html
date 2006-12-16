@@ -1,7 +1,7 @@
 # defines the default layout for normal documentation pages (not including the index)
 <%inherit file="base.html"/>
-
-<%namespace file="nav.html" import="topnav"/>
+<%page args="toc, extension, paged"/>
+<%namespace file="nav.html" import="topnav, pagenav"/>
 
 <%
     current = toc.get_by_file(self.template.module.filename)
@@ -9,6 +9,8 @@
 
 <A name="<% current.path %>"></a>
 
-${topnav(item=current)}
+${topnav(item=current, toc=toc, extension=extension, paged=paged)}
 
-${next.body(**context.kwargs)}
+${next.body(toc=toc, extension=extension, paged=paged)}
+
+${pagenav(item=current, extension=extension, paged=paged)}

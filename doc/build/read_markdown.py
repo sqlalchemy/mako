@@ -74,7 +74,7 @@ def create_toc(filename, tree, tocroot):
 
             level[0] = taglevel
 
-            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path))
+            tag = et.Element("MAKO:formatting.section", path=repr(current[0].path), paged='paged', extension='extension', toc='toc')
             tag.text = (node.tail or "") + '\n'
             tag.tail = '\n'
             tag[:] = content
@@ -114,9 +114,9 @@ def process_rel_href(tree):
             (bold, path) = m.group(1,2)
             text = a.text
             if text == path:
-                tag = et.Element("MAKO:nav.toclink", path=repr(path))
+                tag = et.Element("MAKO:nav.toclink", path=repr(path), extension='extension', paged='paged', toc='toc')
             else:
-                tag = et.Element("MAKO:nav.toclink", path=repr(path), description=repr(text))
+                tag = et.Element("MAKO:nav.toclink", path=repr(path), description=repr(text), extension='extension', paged='paged', toc='toc')
             a_parent = parent[a]
             if bold:
                 bold = et.Element('strong')
@@ -160,6 +160,7 @@ def get_parent_map(tree):
 def header(toc, title, filename):
     return """
 <%%inherit file="content_layout.html"/>
+<%%page args="toc, extension, paged"/>
 <%%namespace  name="formatting" file="formatting.html"/>
 <%%namespace  name="nav" file="nav.html"/>
 <%%def name="title()">%s - %s</%%def>

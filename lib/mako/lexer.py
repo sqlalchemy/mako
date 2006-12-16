@@ -122,7 +122,7 @@ class Lexer(object):
         return self.template
 
     def match_encoding(self):
-        match = self.match(r'#\s*-\*- encoding: (.+?) -\*-\n')
+        match = self.match(r'#[\t ]*-\*- encoding: (.+?) -\*-\n')
         if match:
             return match.group(1)
         else:
@@ -167,7 +167,7 @@ class Lexer(object):
             return False
         
     def match_tag_end(self):
-        match = self.match(r'\</%\s*(.+?)\s*>')
+        match = self.match(r'\</%[\t ]*(.+?)[\t ]*>')
         if match:
             if not len(self.tag):
                 raise exceptions.SyntaxException("Closing tag without opening tag: </%%%s>" % match.group(1), self.matched_lineno, self.matched_charpos, self.filename)
@@ -193,7 +193,7 @@ class Lexer(object):
         match = self.match(r"""
                 (.*?)         # anything, followed by:
                 (
-                 (?<=\n)(?=\s*[%#]) # an eval or comment line, preceded by a consumed \n and whitespace
+                 (?<=\n)(?=[ \t]*[%#]) # an eval or comment line, preceded by a consumed \n and whitespace
                  |
                  (?=\${)   # an expression
                  |
@@ -238,7 +238,7 @@ class Lexer(object):
             return False
 
     def match_control_line(self):
-        match = self.match(r"(?<=^)\s*([%#])\s*([^\n]*)(?:\n|\Z)", re.M)
+        match = self.match(r"(?<=^)[\t ]*([%#])[\t ]*([^\n]*)(?:\n|\Z)", re.M)
         if match:
             operator = match.group(1)
             text = match.group(2)

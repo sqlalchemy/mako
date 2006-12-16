@@ -2,11 +2,11 @@
 # individual hyperlinks as well as navigational toolbars and table-of-content listings.
 <%namespace name="tocns" file="toc.html"/>
 
-<%def name="itemlink(item, anchor=True)" filter="trim">
-    <a href="${ item.get_link(anchor=anchor, usefilename=paged) }">${ item.description }</a>
+<%def name="itemlink(item, paged, extension, anchor=True)" filter="trim">
+    <a href="${ item.get_link(anchor=anchor, usefilename=paged, extension=extension) }">${ item.description }</a>
 </%def>
 
-<%def name="toclink(path, description=None)" filter="trim">
+<%def name="toclink(toc, path, extension, paged, description=None)" filter="trim">
     <%
         item = toc.get_by_path(path)
         if description is None:
@@ -31,28 +31,30 @@
     <a href="${ href }" ${ class_ and (('class=\"%s\"' % class_) or '')}>${ text }</a>
 </%def>
 
-<%def name="topnav(item)">
+<%def name="topnav(item, toc, extension, paged)">
     <div class="topnav">
 
-    <div class="prevnext">
-        ${pagenav(item)}
-    </div>
+    ${pagenav(item, extension=extension, paged=paged)}
 
-    <h3><a href="index.${ extension }">Table of Contents</a></h3>
     <br/>
-	${itemlink(item=item, anchor=True)}
+	${itemlink(item=item, anchor=True, paged=pagd, extension=extension)}
 	
-	${tocns.printtoc(root=item, current=None, full=True, anchor_toplevel=True)}
+	${tocns.printtoc(root=item, current=None, anchor_toplevel=True, paged=paged, extension=extension)}
 	</div>
 </%def>
 
-<%def name="pagenav(item)">
-    % if item.previous is not None:
-        Previous: ${itemlink(item=item.previous, anchor=not paged)}
-    % endif
+<%def name="pagenav(item, paged, extension)">
+    <div class="toolbar">
+        <div class="prevnext">
+        % if item.previous is not None:
+            Previous: ${itemlink(item=item.previous, paged=paged, anchor=not paged, extension=extension)}
+        % endif
 
-    % if item.next is not None:
-        ${item.previous is not None and "|" or ""}
-        Next: ${itemlink(item=item.next, anchor=not paged)}
-    % endif
+        % if item.next is not None:
+            ${item.previous is not None and "|" or ""}
+            Next: ${itemlink(item=item.next, paged=paged, anchor=not paged, extension=extension)}
+        % endif
+        </div>
+        <h3><a href="${paged and 'index' or 'documentation'}.${ extension }">Table of Contents</a></h3>
+    </div>
 </%def>
