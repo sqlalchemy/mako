@@ -50,10 +50,10 @@ class _GenerateRenderMethod(object):
             if pagetag is not None:
                 args = pagetag.body_decl.get_argument_expressions()
                 if not pagetag.body_decl.kwargs:
-                    args += ['**_extra_pageargs']
+                    args += ['**pageargs']
                 cached = eval(pagetag.attributes.get('cached', 'False'))
             else:
-                args = ['**_extra_pageargs']
+                args = ['**pageargs']
                 cached = False
             buffered = filtered = False
             self.compiler.pagetag = pagetag
@@ -140,6 +140,8 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("try:")
 
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
+        if not self.in_def and '**pageargs' in args:
+            self.identifier_stack[-1].argument_declared.add('pageargs')
 
         if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared)>0):
             self.printer.writeline("__locals = dict(%s)" % ','.join("%s=%s" % (x, x) for x in self.identifiers.argument_declared))

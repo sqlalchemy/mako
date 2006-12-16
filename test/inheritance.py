@@ -185,7 +185,8 @@ ${next.body()}
         collection = lookup.TemplateLookup()
         collection.put_string("base", """
             this is the base.
-            
+
+            pageargs: ${pageargs}
             <%def name="foo()">
                 ${next.body(**context.kwargs)}
             </%def>
@@ -199,6 +200,7 @@ ${next.body()}
         """)
         assert result_lines(collection.get_template('index').render(x=5,y=10)) == [
             "this is the base.",
+            "pageargs: {'y': 10, 'x': 5}",
             "print 5, 10, 7"
         ]
     def test_pageargs_2(self):
