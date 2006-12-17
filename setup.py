@@ -39,6 +39,6 @@ The latest version is available in a `Subversion repository
       ],
       entry_points="""
       [python.templating.engines]
-      mako-tg = mako.ext.turbogears:TGPlugin
+      mako = mako.ext.turbogears:TGPlugin
       """,
 )
