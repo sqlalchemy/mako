@@ -16,6 +16,7 @@ files = [
     'syntax',
     'defs',
     'namespaces',
+    'filtering',
     'caching',
     ]
 

@@ -38,13 +38,6 @@ def url_unescape(string):
 def trim(string):
     return string.strip()
     
-# TODO: options to make this dynamic per-compilation will be added in a later release
-DEFAULT_ESCAPES = {
-    'x':xml_escape,
-    'h':html_escape,
-    'u':url_escape,
-    'trim':trim,
-}
 
 _ASCII_re = re.compile(r'\A[\x00-\x7f]*\Z')
 
@@ -148,5 +141,13 @@ def htmlentityreplace_errors(ex):
 codecs.register_error('htmlentityreplace', htmlentityreplace_errors)
 
 
+# TODO: options to make this dynamic per-compilation will be added in a later release
+DEFAULT_ESCAPES = {
+    'x':xml_escape,
+    'h':html_escape,
+    'u':url_escape,
+    'trim':trim,
+    'entity':html_entities_escape,
+}
     
 

@@ -10,9 +10,9 @@ The most basic way to create a template and render it is through the `Template` 
     mytemplate = Template("hello world!")
     print mytemplate.render()
     
-Above, the text argument to `Template` is **compiled** into a Python module representation.  This module contains a function called `render_body()`, which when executed produces the output of the template.  When you call `mytemplate.render()`, Mako sets up a runtime environment for the template and calls the `render_body()` method, capturing the output into a buffer and returning it's string contents.
+Above, the text argument to `Template` is **compiled** into a Python module representation.  This module contains a function called `render_body()`, which produces the output of the template.  When `mytemplate.render()` is called, Mako sets up a runtime environment for the template and calls the `render_body()` function, capturing the output into a buffer and returning it's string contents.
 
-The code inside the `render_body()` method has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
+The code inside the `render_body()` function has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
 
     from mako.template import Template
     
@@ -74,15 +74,20 @@ Usually, an application will store most or all of its templates as text files on
 
 In the example above, we create a `TemplateLookup` which will look for templates in the `/docs` directory, and will store generated module files in the `/tmp/mako_modules` directory.  The lookup locates templates by appending the given URI to each of its search directories; so if you gave it a URI of `/etc/beans/info.txt`, it would search for the file `/docs/etc/beans/info.txt`, else raise a `TopLevelNotFound` exception, which is a custom Mako exception.
 
-The `TemplateLookup` also serves the important need of caching a fixed set of templates in memory at a given time, so that successive URI-lookups do not result in full filesystem lookups each time.  By default, the `TemplateLookup` size is unbounded.  You can specify a fixed size using the `collection_size` argument:
+When the lookup locates templates, it will also assign a `uri` property to the `Template` which is the uri passed to the `get_template()` call.  `Template` uses this uri to calculate the name of its module file.  So in the above example, a `templatename` argument of `/etc/beans/info.txt` will create a module file `/tmp/mako_modules/etc/beans/info.txt.py`.
 
-    mylookup = TemplateLookup(directories=['/docs'], module_directory='/tmp/mako_modules', collection_size=500)
+#### Setting the Collection Size {@name=size}
+
+The `TemplateLookup` also serves the important need of caching a fixed set of templates in memory at a given time, so that successive uri lookups do not result in full template compilations and/or module reloads on each request.  By default, the `TemplateLookup` size is unbounded.  You can specify a fixed size using the `collection_size` argument:
+
+    mylookup = TemplateLookup(directories=['/docs'], 
+                    module_directory='/tmp/mako_modules', collection_size=500)
     
 The above lookup will continue to load templates into memory until it reaches a count of around 500.  At that point, it will clean out a certain percentage of templates using a **least recently used** scheme.
 
-Another important flag on `TemplateLookup` is `filesystem_checks`.  This defaults to `True`, and says that each time a template is returned by the `get_template()` method, the revision time of the original template file is checked against the last time the template was loaded, and if the file is newer will reload its contents and recompile the template.  On a production system, seting `filesystem_checks` to `False` can afford a small to moderate performance increase (depending on the type of filesystem used).
+#### Setting Filesystem Checks {@name=checks}
 
-When the lookup locates templates, it will also assign a `uri` property to the `Template` which is the uri passed to the `get_template()` call.  This argument is provided to the `Template` itself, which the template then uses to calculate the name of its module file.  So in the above example, the `templatename` argument of `/etc/beans/info.txt` will create a module file `/tmp/mako_modules/etc/beans/info.txt.py`.
+Another important flag on `TemplateLookup` is `filesystem_checks`.  This defaults to `True`, and says that each time a template is returned by the `get_template()` method, the revision time of the original template file is checked against the last time the template was loaded, and if the file is newer will reload its contents and recompile the template.  On a production system, seting `filesystem_checks` to `False` can afford a small to moderate performance increase (depending on the type of filesystem used).
 
 ### Using Unicode and Encoding
 
@@ -106,9 +111,13 @@ The above method disgards the output encoding keyword argument; you can encode y
     
 The above methods deal only with the encoding of the template output.  To indicate an encoding for the template's source file, place a Python-style "magic encoding comment" as the very first line in the template file:
 
-    # -*- encoding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 
     <template text>
 
 Mako's `Lexer` module will detect the above marker and decode the template text internally into a `unicode` object using the given encoding.
+
+For the picky, the regular expression used is derived from that of [pep-0263](http://www.python.org/dev/peps/pep-0263/):
+    
+    #.*coding[:=]\s*([-\w.]+).*\n
 

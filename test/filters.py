@@ -21,13 +21,30 @@ class FilterTest(unittest.TestCase):
 
     def test_def(self):
         t = Template("""
-            <%def name="foo" filter="myfilter">
+            <%def name="foo()" filter="myfilter">
                 this is foo
             </%def>
             ${foo()}
 """)
         assert flatten_result(t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)) == "MYFILTER-> this is foo <-MYFILTER"
 
+    def test_import(self):
+        t = Template("""
+        <%!
+            from mako import filters
+        %>\
+        trim this string: ${"  some string to trim   " | filters.trim} continue\
+        """)
+
+        assert t.render().strip()=="trim this string: some string to trim continue"
+    
+    def test_global(self):
+        t = Template("""
+            <%page expression_filter="h"/>
+            ${"<tag>this is html</tag>"}
+        """)
+        assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
+        
     def test_builtins(self):
         t = Template("""
             ${"this is <text>" | h}
@@ -42,7 +59,7 @@ class FilterTest(unittest.TestCase):
 class BufferTest(unittest.TestCase):        
     def test_buffered_def(self):
         t = Template("""
-            <%def name="foo" buffered="True">
+            <%def name="foo()" buffered="True">
                 this is foo
             </%def>
             ${"hi->" + foo() + "<-hi"}
@@ -51,7 +68,7 @@ class BufferTest(unittest.TestCase):
 
     def test_unbuffered_def(self):
         t = Template("""
-            <%def name="foo" buffered="False">
+            <%def name="foo()" buffered="False">
                 this is foo
             </%def>
             ${"hi->" + foo() + "<-hi"}
@@ -60,7 +77,7 @@ class BufferTest(unittest.TestCase):
 
     def test_capture(self):
         t = Template("""
-            <%def name="foo" buffered="False">
+            <%def name="foo()" buffered="False">
                 this is foo
             </%def>
             ${"hi->" + capture(foo) + "<-hi"}
@@ -105,7 +122,7 @@ class BufferTest(unittest.TestCase):
             
     def test_capture_ccall(self):
         t = Template("""
-            <%def name="foo">
+            <%def name="foo()">
                 <%
                     x = capture(caller.body)
                 %>

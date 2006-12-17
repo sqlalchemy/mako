@@ -10,6 +10,7 @@ def suite():
         'lookup',
         'def',
         'namespace',
+        'filters',
         'inheritance',
         'call',
 	'cache'

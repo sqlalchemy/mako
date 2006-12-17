@@ -372,6 +372,9 @@ class _GenerateRenderMethod(object):
         """write a filter-applying expression based on the filters present in the given 
         filter names, adjusting for the global 'default' filter aliases as needed."""
         d = dict([(k, "filters." + v.func_name) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
+        
+        if self.compiler.pagetag:
+            args += self.compiler.pagetag.filter_args.args
         for e in args:
             e = d.get(e, e)
             target = "%s(%s)" % (e, target)
@@ -379,7 +382,7 @@ class _GenerateRenderMethod(object):
         
     def visitExpression(self, node):
         self.write_source_comment(node)
-        if len(node.escapes):
+        if len(node.escapes) or (self.compiler.pagetag is not None and len(self.compiler.pagetag.filter_args.args)):
             s = self.create_filter_callable(node.escapes_code.args, node.text)
             self.printer.writeline("context.write(unicode(%s))" % s)
         else:

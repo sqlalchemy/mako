@@ -122,7 +122,7 @@ class Lexer(object):
         return self.template
 
     def match_encoding(self):
-        match = self.match(r'#[\t ]*-\*- encoding: (.+?) -\*-\n')
+        match = self.match(r'#.*coding[:=]\s*([-\w.]+).*\n')
         if match:
             return match.group(1)
         else:

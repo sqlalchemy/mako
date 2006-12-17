@@ -5,17 +5,17 @@ A Mako template is parsed from a text stream containing any kind of content, XML
 
 ### Expression Substiution
 
-The simplest expression is just a variable substitution.  The syntax for this is the `${}` construct, which is inspired by Perl, Genshi, JSP EL, and many others:
+The simplest expression is just a variable substitution.  The syntax for this is the `${}` construct, which is inspired by Perl, Genshi, JSP EL, and others:
 
     this is x: ${x}
 
-Above, the string representation of `x` is applied to the template's output stream.  If you're wondering where `x` comes from, it usually would have been supplied to the template's context when the template is rendered.  If `x` was not supplied to the template and was not otherwise assigned locally, it evaluates to a special value `UNDEFINED`.  More on that later.
+Above, the string representation of `x` is applied to the template's output stream.  If you're wondering where `x` comes from, its usually from the `Context` supplied to the template's rendering function.  If `x` was not supplied to the template and was not otherwise assigned locally, it evaluates to a special value `UNDEFINED`.  More on that later.
     
 The contents within the `${}` tag are evaluated by Python directly, so full expressions are OK:
 
     pythagorean theorem:  ${pow(x,2) + pow(y,2)}
     
-The results of the expression are evaluated into a string result in all cases before being rendered to the output stream, so our above example which produces a numeric result is OK.
+The results of the expression are evaluated into a string result in all cases before being rendered to the output stream, such as the above example where the expression produces a numeric result.
 
 #### Expression Escaping
 
@@ -23,13 +23,9 @@ Mako includes a number of built-in escaping mechanisms, including HTML, URI and 
 
     ${"this is some text" | u}
 
-The above expression applies URL escaping to the expression, and produces `this+is+some+text`.  the `u` name indicates URL escaping, whereas `h` represents HTML escaping, `x` represents XML escaping, and `trim` applies a trim function:
+The above expression applies URL escaping to the expression, and produces `this+is+some+text`.  The `u` name indicates URL escaping, whereas `h` represents HTML escaping, `x` represents XML escaping, and `trim` applies a trim function.
 
-    ${"  <tag>some value</tag> " | h,trim}
-
-The above produces `&lt;tag&gt;some value&lt;/tag&gt;`.  The HTML escaping function is applied first, the "trim" function second, which trims the leading and trailing whitespace from the expression.
-
-Naturally, you can make your own expression filters - that's described in [filtering](rel:filtering).
+Read more about built in filtering functions, including how to make your own filter functions, in [filtering](rel:filtering).
 
 ### Control Structures
 
