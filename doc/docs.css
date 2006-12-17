@@ -62,7 +62,7 @@ h2 {
     font-size:.80em;
 }
 code {
-    font-size:1.1em;
+    font-size:1.2em;
 }
 .code {
     font-family:monospace;
@@ -81,7 +81,7 @@ td {
 pre { 
     margin: 1.5em; 
     padding: .5em; 
-    font-size: .95em; 
+    font-size: 1em; 
     line-height:1em;
     background-color: #eee;
     border: 1px solid #ccc;
