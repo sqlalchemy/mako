@@ -126,7 +126,7 @@
 						<dict>
 							<key>begin</key>
 							<string>(name)\s*(=)\s*(")(?=[A-Za-z_][A-Za-z0-9_]*)</string>
-							<key>captures</key>
+							<key>beginCaptures</key>
 							<dict>
 								<key>1</key>
 								<dict>
@@ -148,6 +148,14 @@
 							<string>entity.name.function.python</string>
 							<key>end</key>
 							<string>(")</string>
+							<key>endCaptures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.section.function.begin.python</string>
+								</dict>
+							</dict>
 							<key>patterns</key>
 							<array>
 								<dict>
