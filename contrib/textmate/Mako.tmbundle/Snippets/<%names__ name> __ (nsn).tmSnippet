@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;%namespace name="${1:localname}" file="${2:filename.html}"/&gt;</string>
+	<key>name</key>
+	<string>&lt;%names.. name&gt; .. (nsn)</string>
+	<key>scope</key>
+	<string>text.html.mako</string>
+	<key>tabTrigger</key>
+	<string>nsn</string>
+	<key>uuid</key>
+	<string>3922CE83-ED6D-4706-AD2E-C25EC7960294</string>
+</dict>
+</plist>
