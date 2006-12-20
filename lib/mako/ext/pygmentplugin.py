@@ -22,11 +22,12 @@ class MakoLexer(RegexLexer):
         'root': [
             (r'\s+', Text),
             (r'<%(?=def)', Name.Tag, 'makodef'), 
+            (r'<%(?=call)', Name.Tag, 'makocall'), 
             (r'<%(?=(include|inherit|namespace|page))', Name.Tag, 'makonondeftags'),
-            (r'(\$\{)(.*?)(\})',
-             bygroups(Name.Tag, using(PythonLexer), Name.Tag)),
-            (r'(?<=^)\s*?(\%)([^\n]*)(\n|\Z)',
+            (r'^\s*?(%)([^\n]*)(\n|\Z)',
              bygroups(Name.Tag, using(PythonLexer), Other)),
+            (r'(.*?)(\$\{)(\s*)(.*?)(\s*?)(\})',
+             bygroups(using(this), Name.Tag, Text, using(PythonLexer), Text, Name.Tag)),
             (r'''(?sx)
                 (.+?)               # anything, followed by:
                 (?:
@@ -42,11 +43,22 @@ class MakoLexer(RegexLexer):
         'makodef': [
             (r'(?<=<%)def\s+', Name.Function),
             (r'(?=name=)', Name.Attribute, 'nametag'),
-            (r'(\</)(%def)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
-            (r'.*?(?=</%def>)', using(this)),
+            (r'(</)(%def)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
+            (r'.*?(?=</%def>)(?s)', using(this)),
+        ],
+        'makocall': [
+            (r'(?<=<%)call\s+', Name.Function),
+            (r'(?=expr=)', Name.Attribute, 'exprtag'),
+            (r'(</)(%call)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
+            (r'.*?(?=</%call>)(?s)', using(this)),
         ],
         'nametag': [
             (r'(name\s*=)\s*(")(.*?)(")',
+             bygroups(Name.Attribute, String, using(PythonLexer), String)),
+            include('tag'),
+        ],
+        'exprtag': [
+            (r'(expr\s*=)\s*(")(.*?)(")',
              bygroups(Name.Attribute, String, using(PythonLexer), String)),
             include('tag'),
         ],
@@ -59,7 +71,7 @@ class MakoLexer(RegexLexer):
             (r'\s+', Text),
             (r'[a-zA-Z0-9_:-]+\s*=', Name.Attribute, 'attr'),
             (r'/?\s*>', Name.Tag, '#pop'),
-        ],        
+        ],
         'attr': [
             ('".*?"', String, '#pop'),
             ("'.*?'", String, '#pop'),
