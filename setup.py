@@ -40,5 +40,12 @@ The latest version is available in a `Subversion repository
       entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin
+      
+      [pygments.lexers]
+      mako = mako.ext.pygmentplugin:MakoLexer
+      html+mako = mako.ext.pygmentplugin:MakoHtmlLexer
+      xml+mako = mako.ext.pygmentplugin:MakoXmlLexer
+      js+mako = mako.ext.pygmentplugin:MakoJavascriptLexer
+      css+mako = mako.ext.pygmentplugin:MakoCssLexer
       """,
 )
