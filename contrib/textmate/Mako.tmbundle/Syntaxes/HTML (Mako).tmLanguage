@@ -283,7 +283,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(&lt;%(inherit|namespace)) </string>
+			<string>(&lt;%(inherit|namespace|include)) </string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
