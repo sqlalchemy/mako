@@ -27,15 +27,16 @@ class MakoLexer(RegexLexer):
             (r'(<%)(def|call)', bygroups(Comment.Preproc, Name.Builtin), 'tag'),
             (r'(</%)(def|call)(>)', bygroups(Comment.Preproc, Name.Builtin, Comment.Preproc)),
             (r'<%(?=(include|inherit|namespace|page))', Comment.Preproc, 'ondeftags'),
+            (r'(<%(?:!?))(.*?)(%>)(?s)', bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'(\$\{)(.*?)(\})',
              bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'''(?sx)
                 (.+?)               # anything, followed by:
                 (?:
                  (?<=\n)(?=[%#]) |  # an eval or comment line
-                 (?=</?%) |      # a substitution or block or
+                 (?=</?%) |         # a python block
                                     # call start or end
-                 (?=\$\{) |
+                 (?=\$\{) |         # a substitution
                  (?<=\n)(?=\s*%) |
                                     # - don't consume
                  (\\\n) |           # an escaped newline
