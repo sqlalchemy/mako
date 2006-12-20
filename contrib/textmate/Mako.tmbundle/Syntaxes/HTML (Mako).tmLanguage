@@ -68,6 +68,64 @@
 		</dict>
 		<dict>
 			<key>begin</key>
+			<string>(&lt;%(text))</string>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type.function.python</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(&lt;/%(\2)&gt;)</string>
+			<key>name</key>
+			<string>source.python.mako.doc</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>(?&lt;=&lt;%text)</string>
+					<key>end</key>
+					<string>(?=&gt;)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#tag-stuff</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>(&gt;)</string>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>keyword.control</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>(?=&lt;/%text&gt;)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>name</key>
+							<string>comment.block</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
 			<string>^\s*(%)(\s*((endfor)|(endif)|(endwhile)))?</string>
 			<key>beginCaptures</key>
 			<dict>
@@ -91,6 +149,29 @@
 				<dict>
 					<key>include</key>
 					<string>source.python</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>^(#)</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>$</string>
+			<key>name</key>
+			<string>source.python.mako.line</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>comment.block</string>
 				</dict>
 			</array>
 		</dict>
