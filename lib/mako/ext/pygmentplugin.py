@@ -20,57 +20,41 @@ class MakoLexer(RegexLexer):
 
     tokens = {
         'root': [
-            (r'\s+', Text),
-            (r'<%(?=def)', Name.Tag, 'makodef'), 
-            (r'<%(?=call)', Name.Tag, 'makocall'), 
-            (r'<%(?=(include|inherit|namespace|page))', Name.Tag, 'makonondeftags'),
-            (r'^\s*?(%)([^\n]*)(\n|\Z)',
-             bygroups(Name.Tag, using(PythonLexer), Other)),
-            (r'(.*?)(\$\{)(\s*)(.*?)(\s*?)(\})',
-             bygroups(using(this), Name.Tag, Text, using(PythonLexer), Text, Name.Tag)),
+            (r'(\s*)(\%)(\s*endfor|endwhile|endif)(\n|\Z)',
+             bygroups(Text, Comment.Preproc, Name.Tag, Other)),
+            (r'(\s*)(\%)([^\n]*)(\n|\Z)',
+             bygroups(Text, Comment.Preproc, using(PythonLexer), Other)),
+            (r'(<%)(def|call)', bygroups(Comment.Preproc, Name.Builtin), 'tag'),
+            (r'(</%)(def|call)(>)', bygroups(Comment.Preproc, Name.Builtin, Comment.Preproc)),
+            (r'<%(?=(include|inherit|namespace|page))', Comment.Preproc, 'ondeftags'),
+            (r'(\$\{)(.*?)(\})',
+             bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'''(?sx)
                 (.+?)               # anything, followed by:
                 (?:
                  (?<=\n)(?=[%#]) |  # an eval or comment line
-                 (?=</?[%&]) |      # a substitution or block or
+                 (?=</?%) |      # a substitution or block or
                                     # call start or end
+                 (?=\$\{) |
+                 (?<=\n)(?=\s*%) |
                                     # - don't consume
                  (\\\n) |           # an escaped newline
                  \Z                 # end of string
                 )
             ''', bygroups(Other, Operator)),
+            (r'\s+', Text),
         ],
-        'makodef': [
-            (r'(?<=<%)def\s+', Name.Function),
-            (r'(?=name=)', Name.Attribute, 'nametag'),
-            (r'(</)(%def)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
-            (r'.*?(?=</%def>)(?s)', using(this)),
-        ],
-        'makocall': [
-            (r'(?<=<%)call\s+', Name.Function),
-            (r'(?=expr=)', Name.Attribute, 'exprtag'),
-            (r'(</)(%call)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
-            (r'.*?(?=</%call>)(?s)', using(this)),
-        ],
-        'nametag': [
-            (r'(name\s*=)\s*(")(.*?)(")',
-             bygroups(Name.Attribute, String, using(PythonLexer), String)),
-            include('tag'),
-        ],
-        'exprtag': [
-            (r'(expr\s*=)\s*(")(.*?)(")',
-             bygroups(Name.Attribute, String, using(PythonLexer), String)),
-            include('tag'),
-        ],
-        'makonondeftags': [
-            (r'<%', Name.Tag),
-            (r'(?<=<%)(include|inherit|namespace|page)', Name.Function),
+        'ondeftags': [
+            (r'<%', Comment.Preproc),
+            (r'(?<=<%)(include|inherit|namespace|page)', Name.Builtin),
             include('tag'),
         ],
         'tag': [
-            (r'\s+', Text),
+            (r'((?:name|expr)\s*=)\s*(")(.*?)(")',
+             bygroups(Name.Attribute, String, using(PythonLexer), String)),
             (r'[a-zA-Z0-9_:-]+\s*=', Name.Attribute, 'attr'),
-            (r'/?\s*>', Name.Tag, '#pop'),
+            (r'/?\s*>', Comment.Preproc, '#pop'),
+            (r'\s+', Text),
         ],
         'attr': [
             ('".*?"', String, '#pop'),
