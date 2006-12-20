@@ -21,11 +21,8 @@ class MakoLexer(RegexLexer):
     tokens = {
         'root': [
             (r'\s+', Text),
-            (r'(<%(def))(\s*)(.*?)(>)(.*?)(</%\2\s*>)(?s)',
-             bygroups(Name.Tag, None, Text, Name.Function, Name.Tag,
-                      using(this), Name.Tag)),
-            (r'(<\%(include|inherit|namespace))(\s*)(.*?)(/>)',
-             bygroups(Name.Tag, None, Text, Name.Function, Name.Tag)),
+            (r'<%(?=def)', Name.Tag, 'makodef'), 
+            (r'<%(?=(include|inherit|namespace|page))', Name.Tag, 'makonondeftags'),
             (r'(\$\{)(.*?)(\})',
              bygroups(Name.Tag, using(PythonLexer), Name.Tag)),
             (r'(?<=^)\s*?(\%)([^\n]*)(\n|\Z)',
@@ -41,7 +38,33 @@ class MakoLexer(RegexLexer):
                  \Z                 # end of string
                 )
             ''', bygroups(Other, Operator)),
-        ]
+        ],
+        'makodef': [
+            (r'(?<=<%)def\s+', Name.Function),
+            (r'(?=name=)', Name.Attribute, 'nametag'),
+            (r'(\</)(%def)(>)', bygroups(Name.Tag, Name.Function, Name.Tag), '#pop'),
+            (r'.*?(?=</%def>)', using(this)),
+        ],
+        'nametag': [
+            (r'(name\s*=)\s*(")(.*?)(")',
+             bygroups(Name.Attribute, String, using(PythonLexer), String)),
+            include('tag'),
+        ],
+        'makonondeftags': [
+            (r'<%', Name.Tag),
+            (r'(?<=<%)(include|inherit|namespace|page)', Name.Function),
+            include('tag'),
+        ],
+        'tag': [
+            (r'\s+', Text),
+            (r'[a-zA-Z0-9_:-]+\s*=', Name.Attribute, 'attr'),
+            (r'/?\s*>', Name.Tag, '#pop'),
+        ],        
+        'attr': [
+            ('".*?"', String, '#pop'),
+            ("'.*?'", String, '#pop'),
+            (r'[^\s>]+', String, '#pop'),
+        ],
     }
 
 
