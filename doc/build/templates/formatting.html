@@ -1,7 +1,6 @@
 # formatting.myt - Provides section formatting elements, syntax-highlighted code blocks, and other special filters.
 <%!
     import string, re
-    #import highlight
     from mako import filters
     
     def plainfilter(f):
@@ -53,9 +52,20 @@
     <span class="codeline">${ caller.body() }</span>
 </%def>
 
-<%def name="code(title=None, syntaxtype='python', html_escape=False, use_sliders=False)">
+<%def name="code(title=None, syntaxtype='mako', html_escape=False, use_sliders=False)">
+    <%!
+        import pygments
+        from pygments.formatters import HtmlFormatter
+        from pygments.lexers import PythonLexer, HtmlLexer
+        from mako.ext.pygmentplugin import MakoLexer
+        lexers = {'mako':MakoLexer(), 'python':PythonLexer(), 'html':HtmlLexer()}
+    %>
     <%
-        content = "<pre>" + capture(caller.body) + "</pre>"
+        lexer = lexers.get(syntaxtype, None)
+        if lexer is not None:
+            content = pygments.highlight(capture(caller.body) , lexer, HtmlFormatter())
+        else:
+            content = "<pre>" + capture(caller.body) + "</pre>"
     %>
 
     <div class="${ use_sliders and "sliding_code" or "code" }">

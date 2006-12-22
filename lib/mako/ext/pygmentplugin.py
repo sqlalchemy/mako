@@ -10,7 +10,7 @@ from pygments.lexers.agile import PythonLexer
 from pygments.lexer import Lexer, DelegatingLexer, RegexLexer, bygroups, \
      include, using, this
 from pygments.token import Error, Punctuation, \
-     Text, Comment, Operator, Keyword, Name, String, Number, Other
+     Text, Comment, Operator, Keyword, Name, String, Number, Other, Literal
 from pygments.util import html_doctype_matches, looks_like_xml
 
 class MakoLexer(RegexLexer):
@@ -20,8 +20,8 @@ class MakoLexer(RegexLexer):
 
     tokens = {
         'root': [
-            (r'(\s*)(\%)(\s*endfor|endwhile|endif)(\n|\Z)',
-             bygroups(Text, Comment.Preproc, Name.Tag, Other)),
+            (r'(\s*)(\%)(\s*end(?:\w+))(\n|\Z)',
+             bygroups(Text, Comment.Preproc, Keyword, Other)),
             (r'(\s*)(\%)([^\n]*)(\n|\Z)',
              bygroups(Text, Comment.Preproc, using(PythonLexer), Other)),
             (r'(<%)(def|call)', bygroups(Comment.Preproc, Name.Builtin), 'tag'),
@@ -51,9 +51,9 @@ class MakoLexer(RegexLexer):
             include('tag'),
         ],
         'tag': [
-            (r'((?:name|expr)\s*=)\s*(")(.*?)(")',
-             bygroups(Name.Attribute, String, using(PythonLexer), String)),
-            (r'[a-zA-Z0-9_:-]+\s*=', Name.Attribute, 'attr'),
+            (r'((?:\w+)\s*=)\s*(".*?")',
+             bygroups(Name.Attribute, String)),
+            #(r'[a-zA-Z0-9_:-]+\s*=', Name.Attribute, 'attr'),
             (r'/?\s*>', Comment.Preproc, '#pop'),
             (r'\s+', Text),
         ],

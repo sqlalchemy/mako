@@ -131,7 +131,20 @@ def replace_pre_with_mako(tree):
     parents = get_parent_map(tree)
 
     for precode in tree.findall('.//pre/code'):
+        reg = re.compile(r'\{(python|mako|html)(?: title="(.*?)"){0,1}\}(.*)', re.S)
+        m = reg.match(precode[0].text.lstrip())
+        if m:
+            code = m.group(1)
+            title = m.group(2)
+            precode[0].text = m.group(3)
+        else:
+            code = title = None
+            
         tag = et.Element("MAKO:formatting.code")
+        if code:
+            tag.attrib["syntaxtype"] = repr(code)
+        if title:
+            tag.attrib["title"] = repr(title)
         tag.text = precode.text
         [tag.append(x) for x in precode]
         pre = parents[precode]
@@ -144,7 +157,7 @@ def safety_code(tree):
     parents = get_parent_map(tree)
     for code in tree.findall('.//code'):
         tag = et.Element('%text')
-        tag.attrib["filter"] = "h"
+        #tag.attrib["filter"] = "h"
         tag.text = code.text
         code.append(tag)
         code.text = ""

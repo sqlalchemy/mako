@@ -5,6 +5,7 @@ This section describes the Python API for Mako templates.  If you are using Mako
 
 The most basic way to create a template and render it is through the `Template` class:
 
+    {python}
     from mako.template import Template
     
     mytemplate = Template("hello world!")
@@ -14,6 +15,7 @@ Above, the text argument to `Template` is **compiled** into a Python module repr
 
 The code inside the `render_body()` function has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
 
+    {python}
     from mako.template import Template
     
     mytemplate = Template("hello, ${name}!")
@@ -21,6 +23,7 @@ The code inside the `render_body()` function has access to a namespace of variab
     
 The `template.render()` method calls upon Mako to create a `Context` object, which stores all the variable names accessible to the template and also defines a buffer used to capture output.  You can create this `Context` yourself and have the template render with it, using the `render_context` method:
 
+    {python}
     from mako.template import Template
     from mako.runtime import Context
     from StringIO import StringIO
@@ -35,6 +38,7 @@ The `template.render()` method calls upon Mako to create a `Context` object, whi
 
 A `Template` can also load its template source code from a file, using the `filename` keyword argument:
 
+    {python}
     from mako.template import Template
     
     mytemplate = Template(filename='/docs/mytmpl.txt')
@@ -42,6 +46,7 @@ A `Template` can also load its template source code from a file, using the `file
     
 For improved performance, a `Template` which is loaded from a file can also cache the source code to its generated module on the filesystem as a regular Python module file (i.e. a .py file).  To do this, just add the `module_directory` argument to the template:
 
+    {python}
     from mako.template import Template
 
     mytemplate = Template(filename='/docs/mytmpl.txt', module_directory='/tmp/mako_modules')
@@ -53,6 +58,7 @@ When the above code is rendered, a file `/tmp/mako_modules/docs/mytmpl.txt.py` i
 
 All of the examples thus far have dealt with the usage of a single `Template` object.  If the code within those templates tries to locate another template resource, it will need some way to find them, using simple URI strings.  For this need, the resolution of other templates from within a template is accomplished by the `TemplateLookup` class.   This class is constructed given a list of directories in which to search for templates, as well as keyword arguments that will be passed to the `Template` objects it creates.
 
+    {python}
     from mako.template import Template
     from mako.lookup import TemplateLookup
     
@@ -63,6 +69,7 @@ Above, we created a textual template which includes the file `header.txt`.  In o
 
 Usually, an application will store most or all of its templates as text files on the filesystem.  So far, all of our examples have been a little bit contrived in order to illustrate the basic concepts.  But a real application would get most or all of its templates directly from the `TemplateLookup`, using the aptly named `get_template` method, which accepts the URI of the desired template:
 
+    {python}
     from mako.template import Template
     from mako.lookup import TemplateLookup
     
@@ -80,6 +87,7 @@ When the lookup locates templates, it will also assign a `uri` property to the `
 
 The `TemplateLookup` also serves the important need of caching a fixed set of templates in memory at a given time, so that successive uri lookups do not result in full template compilations and/or module reloads on each request.  By default, the `TemplateLookup` size is unbounded.  You can specify a fixed size using the `collection_size` argument:
 
+    {python}
     mylookup = TemplateLookup(directories=['/docs'], 
                     module_directory='/tmp/mako_modules', collection_size=500)
     
@@ -93,6 +101,7 @@ Another important flag on `TemplateLookup` is `filesystem_checks`.  This default
 
 Both `Template` and `TemplateLookup` accept an `output_encoding` parameter which can be used to encode the output in any Python supported codec:
 
+    {python}
     from mako.template import Template
     from mako.lookup import TemplateLookup
     
@@ -103,14 +112,17 @@ Both `Template` and `TemplateLookup` accept an `output_encoding` parameter which
     
 Additionally, the `render_unicode()` method exists which will return the template output as a Python `unicode` object:
 
+    {python}
     print mytemplate.render_unicode()
     
 The above method disgards the output encoding keyword argument; you can encode yourself by saying:
 
+    {python}
     print mytemplate.render_unicode().encode('utf-8')
     
 The above methods deal only with the encoding of the template output.  To indicate an encoding for the template's source file, place a Python-style "magic encoding comment" as the very first line in the template file:
 
+    {python}
     # -*- coding: utf-8 -*-
 
     <template text>
@@ -119,5 +131,6 @@ Mako's `Lexer` module will detect the above marker and decode the template text 
 
 For the picky, the regular expression used is derived from that of [pep-0263](http://www.python.org/dev/peps/pep-0263/):
     
+    {python}
     #.*coding[:=]\s*([-\w.]+).*\n
 
