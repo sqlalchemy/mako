@@ -1,6 +1,6 @@
 # formatting.myt - Provides section formatting elements, syntax-highlighted code blocks, and other special filters.
 <%!
-    import string, re
+    import string, re, cgi
     from mako import filters
     
     def plainfilter(f):
@@ -23,8 +23,6 @@
     <div class="${subsection and 'subsection' or 'section'}">
     <%
         content = capture(caller.body)
-        re2 = re.compile(r"'''PYESC(.+?)PYESC'''", re.S)
-        content = re2.sub(lambda m: m.group(1), content)
     %>
 
     <h3>${description or item.description}</h3>
@@ -57,15 +55,18 @@
         import pygments
         from pygments.formatters import HtmlFormatter
         from pygments.lexers import PythonLexer, HtmlLexer
-        from mako.ext.pygmentplugin import MakoLexer
-        lexers = {'mako':MakoLexer(), 'python':PythonLexer(), 'html':HtmlLexer()}
+        from mako.ext.pygmentplugin import MakoHtmlLexer
+        lexers = {'mako':MakoHtmlLexer(), 'python':PythonLexer(), 'html':HtmlLexer()}
     %>
     <%
         lexer = lexers.get(syntaxtype, None)
+        # dumb hack to print a </%text> tag inside of a <%text> section
+        content = re.sub(r'%CLOSETEXT', '</%text>', capture(caller.body))
+        
         if lexer is not None:
-            content = pygments.highlight(capture(caller.body) , lexer, HtmlFormatter())
+            content = pygments.highlight(content, lexer, HtmlFormatter())
         else:
-            content = "<pre>" + capture(caller.body) + "</pre>"
+            content = "<pre>" + content + "</pre>"
     %>
 
     <div class="${ use_sliders and "sliding_code" or "code" }">

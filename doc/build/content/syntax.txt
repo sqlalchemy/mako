@@ -171,6 +171,4 @@ This tag suspends the Mako lexer's normal parsing of Mako template directives, a
     <%text filter="h">
         heres some fake mako ${syntax}
         <%def name="x()">${x}</%def>
-    < /%text>
-
-(yes, this documentation system can't show you closing tag without the space in it! )
+    %CLOSETEXT
