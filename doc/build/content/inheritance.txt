@@ -136,7 +136,7 @@ The output we get would be:
         </body>
     </html>
 
-So above, we have the `<html>`, `<body>` and `header`/`footer` layout of `base.html`, we have the `<ul>` and `mainlayout` section of `layout.html`, and the main body of `index.html` as well as its overridden `header` def.  The `layout.html` template is inserted into the middle of the chain without `base.html` having to change anything.  Without the `next` namespace, only the main body of `index.html` could be used; there would be no way to call `layout.html`'s body content.
+So above, we have the `<html>`, `<body>` and `header`/`footer` layout of `base.html`, we have the `&lt;ul&gt;` and `mainlayout` section of `layout.html`, and the main body of `index.html` as well as its overridden `header` def.  The `layout.html` template is inserted into the middle of the chain without `base.html` having to change anything.  Without the `next` namespace, only the main body of `index.html` could be used; there would be no way to call `layout.html`'s body content.
 
 ### Using the "parent" namespace to augment defs {@name=parent}
 
