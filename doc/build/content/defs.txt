@@ -11,9 +11,9 @@ They are normally called as expressions.
 
     the def:  ${hello()}
 
-If the `<%def>` is not nested inside of another `<%def>`, its known as a top level def and can be accessed anywhere in the template, including above where it was defined.  
+If the `<%def>` is not nested inside of another `<%def>`, its known as a **top level def** and can be accessed anywhere in the template, including above where it was defined.
 
-All defs, top level or not, have access to the current contextual namespace in exactly the same way their parent template does.  Suppose the template below is executed with the variables `username` and `accountdata` inside the context:
+All defs, top level or not, have access to the current contextual namespace in exactly the same way their containing template does.  Suppose the template below is executed with the variables `username` and `accountdata` inside the context:
 
     Hello there ${username}, how are ya.  Lets see what your account says:
     
@@ -27,9 +27,11 @@ All defs, top level or not, have access to the current contextual namespace in e
         % endfor
     </%def>
 
+The `username` and `accountdata` variables are present within the main template body as well as the body of the `account()` def.
+
 Since defs are just Python functions, you can define and pass arguments to them as well:
 
-    ${account(name='john')}
+    ${account(accountname='john')}
     
     <%def name="account(accountname, type='regular')">
         account name: ${accountname}, type ${type}
@@ -41,32 +43,23 @@ When you declare an argument signature for your def, they are required following
 
 Top level `<%defs>` are **exported** by your template's module, and can be called from the outside; including from other templates, as well as normal Python code.  Calling a `<%def>` from another template is something like using an `<%include>` - except you are calling a specific function within the template, not the whole template.
 
-Calling a remote def is a little like calling other modules in Python.  There is an "import" step to pull the names from another template into your own template; then the function or functions are available.
+The remote `<%def>` call is also a little bit like calling functions from other modules in Python.  There is an "import" step to pull the names from another template into your own template; then the function or functions are available.
 
 To import another template, use the `<%namespace>` tag:
 
     <%namespace name="mystuff" file="mystuff.html"/>
 
-The namespace tag is declared once per template, and adds a local variable "mystuff" to the current scope.
+The above tag adds a local variable "mystuff" to the current scope.
 
 Then, just call the defs off of `mystuff`:
 
     ${mystuff.somedef(x=5,y=7)}
 
-The `<%namespace>` tag also supports some of the other semantics of Python's `import` statement, including pulling names into the local variable space, or using `*` to represent all names:
+The `<%namespace>` tag also supports some of the other semantics of Python's `import` statement, including pulling names into the local variable space, or using `*` to represent all names, using the `import` attribute:
 
-    <%namespace file="mystuff.html" import="account, printtotal"/>
-    
-    your account is: ${account()}
-    your total is ${printtotal()}
+  <%namespace file="mystuff.html" import="foo, bar"/>
 
-As you might guess from the above code, the callables that you import also get access to the current context (the callables imported from the namespace are generated in the scope of the current context).
-
-Heres an example using `*`:
-    
-    <%namespace file="otherstuff.html" import="*"/>
-    
-    ${callsomething('test')}
+This is just a quick intro to the concept of a **namespace**, which is a central Mako concept that has its own chapter in these docs.  For more detail and examples, see [namespaces](rel:namespaces).
 
 ### Defs within Defs {@name=nesteddefs}
 
