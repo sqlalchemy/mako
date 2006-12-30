@@ -110,7 +110,7 @@ class Namespace(object):
         if a relative uri, it is adjusted to that of the template of this namespace"""
         key = (self, uri)
         if self.context.namespaces.has_key(key):
-            return context.namespaces[key]
+            return self.context.namespaces[key]
         else:
             ns = Namespace(uri, self.context, templateuri=uri, calling_uri=self._templateuri) 
             self.context.namespaces[key] = ns
@@ -191,7 +191,7 @@ def _include_file(context, uri, calling_uri):
     """locate the template from the given uri and include it in the current output."""
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
-    callable_(ctx)
+    callable_(ctx, **_kwargs_for_callable(callable_, context._data))
         
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
@@ -245,15 +245,18 @@ def _render(template, callable_, args, data, as_unicode=False):
         buf = util.StringIO()
     context = Context(buf, **data)
     context._with_template = template
+    _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
+    return context.pop_buffer().getvalue()
+
+def _kwargs_for_callable(callable_, data):
     kwargs = {}
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
         if arg != 'context' and arg in data:
             kwargs[arg] = data[arg]
-    _render_context(template, callable_, context, *args, **kwargs)
-    return context.pop_buffer().getvalue()
-
+    return kwargs
+    
 def _render_context(tmpl, callable_, context, *args, **kwargs):
     import mako.template as template
     # create polymorphic 'self' namespace for this template with possibly updated context

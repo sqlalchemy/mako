@@ -157,7 +157,8 @@ def safety_code(tree):
     parents = get_parent_map(tree)
     for code in tree.findall('.//code'):
         tag = et.Element('%text')
-        #tag.attrib["filter"] = "h"
+#        if parents[code].tag != 'pre':
+#            tag.attrib["filter"] = "h"
         tag.text = code.text
         code.append(tag)
         code.text = ""

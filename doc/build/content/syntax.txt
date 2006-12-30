@@ -1,7 +1,7 @@
 Syntax {@name=syntax}
 ==============================
 
-A Mako template is parsed from a text stream containing any kind of content, XML, HTML, email text, etc.  The template can further contain Mako-specific directives which represent variable and/or expression substitutions, control structures (i.e. conditionals and loops), server-side comments, full blocks of Python code, as well as various tags that offer additional functionality.  Note that all of these constructs compile into real Python code.  This means that you can leverage the full power of Python in almost every aspect of a Mako template.
+A Mako template is parsed from a text stream containing any kind of content, XML, HTML, email text, etc.  The template can further contain Mako-specific directives which represent variable and/or expression substitutions, control structures (i.e. conditionals and loops), server-side comments, full blocks of Python code, as well as various tags that offer additional functionality.  All of these constructs compile into real Python code.  This means that you can leverage the full power of Python in almost every aspect of a Mako template.
 
 ### Expression Substiution
 
@@ -121,6 +121,8 @@ This tag defines general characteristics of the template, including caching argu
 Or a page tag that defines caching characteristics:
     
     <%page cached="True" cache_type="memory"/>
+
+Currently, only one `<%page>` tag gets used per template, the rest get ignored.  While this will be improved in a future release, for now make sure you have only one `<%page>` tag defined in your template, else you may not get the results you want.  The details of what `<%page>` is used for are described further in [namespaces_body](rel:namespaces_body) as well as [caching](rel:caching).
     
 #### <%include>
 

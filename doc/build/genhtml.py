@@ -15,7 +15,9 @@ files = [
     'usage',
     'syntax',
     'defs',
+    'runtime',
     'namespaces',
+    'inheritance',
     'filtering',
     'caching',
     ]

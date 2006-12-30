@@ -21,7 +21,7 @@ The code inside the `render_body()` function has access to a namespace of variab
     mytemplate = Template("hello, ${name}!")
     print mytemplate.render(name="jack")
     
-The `template.render()` method calls upon Mako to create a `Context` object, which stores all the variable names accessible to the template and also defines a buffer used to capture output.  You can create this `Context` yourself and have the template render with it, using the `render_context` method:
+The `template.render()` method calls upon Mako to create a `Context` object, which stores all the variable names accessible to the template and also stores a buffer used to capture output.  You can create this `Context` yourself and have the template render with it, using the `render_context` method:
 
     {python}
     from mako.template import Template

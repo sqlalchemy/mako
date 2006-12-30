@@ -45,7 +45,8 @@ class _GenerateRenderMethod(object):
             defs = None
             pagetag = None
         else:
-            (pagetag, defs) = self.write_toplevel()
+            defs = self.write_toplevel()
+            pagetag = self.compiler.pagetag
             name = "render_body"
             if pagetag is not None:
                 args = pagetag.body_decl.get_argument_expressions()
@@ -56,7 +57,6 @@ class _GenerateRenderMethod(object):
                 args = ['**pageargs']
                 cached = False
             buffered = filtered = False
-            self.compiler.pagetag = pagetag
         if args is None:
             args = ['context']
         else:
@@ -76,17 +76,18 @@ class _GenerateRenderMethod(object):
         inherit = []
         namespaces = {}
         module_code = []
-        pagetag = [None]
         encoding =[None]
 
+        self.compiler.pagetag = None
+        
         class FindTopLevel(object):
             def visitInheritTag(s, node):
                 inherit.append(node)
-            def visitNamespaceTag(self, node):
+            def visitNamespaceTag(s, node):
                 namespaces[node.name] = node
-            def visitPageTag(self, node):
-                pagetag[0] = node
-            def visitCode(self, node):
+            def visitPageTag(s, node):
+                self.compiler.pagetag = node
+            def visitCode(s, node):
                 if node.ismodule:
                     module_code.append(node)
             
@@ -128,7 +129,7 @@ class _GenerateRenderMethod(object):
         elif len(namespaces):
             self.write_namespaces(namespaces)
 
-        return (pagetag[0], main_identifiers.topleveldefs)
+        return main_identifiers.topleveldefs
 
     def write_render_callable(self, node, name, args, buffered, filtered, cached):
         """write a top-level render callable.

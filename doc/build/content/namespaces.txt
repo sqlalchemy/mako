@@ -71,3 +71,46 @@ The `<%namespace>` tag supports the definition of `<%defs>` directly inside the 
     # then call it
     ${stuff:comp1()}
 
+### The "body()" method {@name=body}
+
+Every namespace that is generated from a template contains a method called `body()`.  This method corresponds to the main body of the template, and plays its most important roles when using inheritance relationships as well as def-calls-with-content.
+
+Since the `body()` method is available from a namespace just like all the other defs defined in a template, what happens if you send arguments to it ?  By default, the `body()` method accepts no positional arguments, and for usefulness in inheritance scenarios will by default dump all keyword arguments into a dictionary called `pageargs`.  But if you actually want to get at the keyword arguments, Mako recommends you define your own argument signature explicitly.  You do this via using the `<%page>` tag:
+
+    <%page args="x, y, someval=8, scope='foo', **kwargs"/>
+    
+A template which defines the above signature requires that the variables `x` and `y` are defined, defines default values for `someval` and `scope`, and sets up `**kwargs` to receive all other keyword arguments.  If `**kwargs` or similar is not present, the argument `**pageargs` gets tacked on by Mako.  When the template is called as a top-level template (i.e. via `template.render()`) or via the `<%include>` tag, the values for these arguments will be pulled from the `Context`.  In all other cases, i.e. via calling the `body()` method, the arguments are taken as ordinary arguments from the method call.  So above, the body might be called as:
+
+    ${self.body(5, y=10, someval=15, delta=7)}
+    
+The `Context` object also supplies a `kwargs` accessor, for cases when youd like to pass along whatever is in the context to a `body()` callable:
+
+    ${next.body(**context.kwargs)}
+
+The usefulness of calls like the above become more apparent when one works with inheriting templates.  For more information on this, as well as the meanings of the names `self` and `next`, see [inheritance](rel:inheritance).
+
+### Namespace methods and properties {@name=properties}
+
+The `Namespace` class includes helpful accessors and methods:
+
+* `module` - the Python module referenced by this Namespace.  If the namespace references a `Template`, then this module is the equivalent of `template.module`, i.e. the generated module for the template.
+* `filename` - the path of the filesystem file used for this Namespace's module or template.  If this is a pure module-based Namespace, this evaluates to `module.__file__`.  If a template-based namespace, it evaluates to the original template file location.
+* `template` - the `Template` object referenced by this Namespace, if any.
+* `uri` - the uri for this Namespace's template (i.e. whatever was sent to `lookup.get_template()`).  This is the equivalent of `template.uri`.
+* `context` - the `Context` object for this namespace.  Namespaces are often created with copies of contexts that contain slightly different data, particularly in inheritance scenarios.  Using the `Context` off of a `Namespace` one can traverse an entire chain of templates that inherit from one-another.
+* `get_namespace(uri)` - this method returns a `Namespace` at the given `uri`.  If the given uri is a relative uri (i.e. it does not contain ia leading slash `/`), the uri is adjusted to be relative to the uri **of the namespace itself**.  This method is therefore mostly useful off of the built-in `local` namespace, described in the next section.  In most cases, a template wouldn't need this function, and should instead use the `<%namespace>` tag to load namespaces.  However, since all `<%namespace>` tags are evaulated before the body of the template ever runs, this method can be used to locate namespaces using expressions that were generated within the body code of the template, or to conditionally use a particular namespace.
+
+### Built-in Namespaces {@name=builtin}
+
+The namespace is so great that Mako gives your template one (or two) for free.  The names of these namespaces are `local` and `self`.  Other built-in namespaces include `parent` and `next`, which are optional and are described in [inheritance](rel:inheritance).
+
+#### local
+
+The `local` namespace is basically the namespace for the currently executing template.  This means that all of the top level defs defined in your template, as well as your template's `body()` function, are also available off of the `local` namespace.
+
+The `local` namespace is also where properties like `uri`, `filename`, and `module` and the `get_namespace` method can be particularly useful.
+
+#### self
+
+The `self` namespace, in the case of a template that does not use inheritance, is synonomous with `local`.  If inheritance is used, then `self` references the topmost template in the inheritance chain, where it is most useful for providing the ultimate form of various "method" calls which may have been overridden at various points in an inheritance chain.  See [inheritance](rel:inheritance).
+
