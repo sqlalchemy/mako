@@ -1,4 +1,5 @@
-### Caching
+Caching
+==============
 
 Any template or component can be cached using the `cache` argument to the `<%page>` or `<%def>` directives:
 
@@ -17,7 +18,7 @@ The caching flag and all its options can be used with the `<%def>` tag.
     </%def>
 
 
-### Cache arguments
+### Cache arguments {@name=arguments}
 
 The various cache arguments are cascaded from their default values, to the arguments specified programmatically to the `Template` or its originating `TemplateLookup`, then to those defined in the `<%page>` tag of an individual template, and finally to an individual `<%def>` tag within the template.  This means you can define, for example, a cache type of `dbm` on your `TemplateLookup`, a cache timeout of 60 seconds in a particular template's `<%page>` tag, and within one of that template's `<%def>` tags `cache=True`, and that one particular def will then cache its data using a `dbm` cache and a data timeout of 60 seconds.
 
