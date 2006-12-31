@@ -78,7 +78,7 @@ td {
     font-size:small;
 }
 
-pre { 
+.section pre { 
     margin: 1.5em; 
     padding: .7em; 
     font-size: 1em; 
