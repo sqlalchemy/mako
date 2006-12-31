@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from mako.template import Template
+from mako.lookup import TemplateLookup
 import unittest, re, os
 from util import flatten_result, result_lines
 
@@ -33,6 +34,12 @@ class EncodingTest(unittest.TestCase):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         template = Template(val, output_encoding='utf-8')
         assert template.render() == val.encode('utf-8')
+    
+    def test_read_unicode(self):
+        lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True)
+        template = lookup.get_template('/read_unicode.html')
+        data = template.render(path=os.path.join('./test_htdocs', 'internationalization.html'))
+        
 
 class PageArgsTest(unittest.TestCase):
     def test_basic(self):
