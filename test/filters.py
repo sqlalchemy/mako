@@ -7,8 +7,7 @@ class FilterTest(unittest.TestCase):
         t = Template("""
         ${x | myfilter}
 """)
-        print t.code
-        print t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)
+        assert flatten_result(t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)) == "MYFILTER->this is x<-MYFILTER"
 
     def test_expr(self):
         """test filters that are themselves expressions"""
@@ -134,7 +133,8 @@ class BufferTest(unittest.TestCase):
             </%call>
 """)
         
-        print t.render()
+        #print t.render()
+        assert flatten_result(t.render()) == "this is foo. body: ccall body"
         
 if __name__ == '__main__':
     unittest.main()

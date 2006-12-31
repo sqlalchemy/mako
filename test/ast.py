@@ -96,9 +96,9 @@ import x as bar
         
         parsed = ast.PythonFragment("try:", 0, 0, None)
 
-        parsed = ast.PythonFragment("except (MyException, e):", 0, 0, None)
+        parsed = ast.PythonFragment("except MyException, e:", 0, 0, None)
         assert parsed.declared_identifiers == util.Set(['e'])
-        assert parsed.undeclared_identifiers == util.Set()
+        assert parsed.undeclared_identifiers == util.Set(['MyException'])
     
     def test_argument_list(self):
         parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", 0, 0, None)
