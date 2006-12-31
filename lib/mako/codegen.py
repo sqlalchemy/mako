@@ -377,7 +377,14 @@ class _GenerateRenderMethod(object):
         if self.compiler.pagetag:
             args += self.compiler.pagetag.filter_args.args
         for e in args:
-            e = d.get(e, e)
+            # if filter given as a function, get just the identifier portion
+            m = re.match(r'(.+?)(\(.*\))', e)
+            if m:
+                (ident, fargs) = m.group(1,2)
+                f = d.get(ident, ident)
+                e = f + fargs
+            else:
+                e = d.get(e, e)
             target = "%s(%s)" % (e, target)
         return target
         

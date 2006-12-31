@@ -1,5 +1,8 @@
 0.1.1
 - AST parsing fixes: fixed TryExcept identifier parsing
+- added "encoding()" filter; this allows a filter expression to specify the encoding and error
+handling for the given expression.
+usage is like:  ${data | encoding('utf-8', errors='strict')}
 
 0.1.0
 

@@ -38,7 +38,9 @@ def url_unescape(string):
 def trim(string):
     return string.strip()
     
-
+def encoding(encoding, errors='strict'):
+    return lambda x:unicode(x, encoding=encoding, errors=errors)
+    
 _ASCII_re = re.compile(r'\A[\x00-\x7f]*\Z')
 
 def is_ascii_str(text):
@@ -148,6 +150,7 @@ DEFAULT_ESCAPES = {
     'u':url_escape,
     'trim':trim,
     'entity':html_entities_escape,
+    'encoding':encoding
 }
     
 
