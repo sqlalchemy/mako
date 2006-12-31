@@ -1,3 +1,6 @@
+0.1.1
+- AST parsing fixes: fixed TryExcept identifier parsing
+
 0.1.0
 
 Initial release.

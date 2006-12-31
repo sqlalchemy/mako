@@ -67,6 +67,16 @@ def mydef(mydefarg):
         parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['y'])
         assert parsed.declared_identifiers == util.Set(['mydef', 'x'])
+    
+    def test_locate_identifiers_5(self):
+        code = """
+try:
+    print x
+except:
+    print y
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.undeclared_identifiers == util.Set(['x', 'y'])
         
     def test_no_global_imports(self):
         code = """

@@ -64,6 +64,8 @@ class PythonCode(object):
                     if decl is not None:
                         (exception, ident) = [n.name for n in decl.nodes]
                         self.declared_identifiers.add(ident)
+                for n in node.getChildNodes():
+                    s.visit(n, *args)
             def visitName(s, node, *args):
                 if node.name not in __builtins__ and node.name not in self.declared_identifiers:
                     self.undeclared_identifiers.add(node.name)
