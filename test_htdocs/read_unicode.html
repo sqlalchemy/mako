@@ -3,7 +3,7 @@ try:
     file_content = open(path)
 except:
     raise "Should never execute here"
-doc_content = ''.join(file_content.readlines())
+doc_content = ''.join(file_content.readlines()).decode('utf-8')
 file_content.close()
 %>
 

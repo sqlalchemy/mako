@@ -36,7 +36,7 @@ class EncodingTest(unittest.TestCase):
         assert template.render() == val.encode('utf-8')
     
     def test_read_unicode(self):
-        lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True)
+        lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True, output_encoding='utf-8')
         template = lookup.get_template('/read_unicode.html')
         data = template.render(path=os.path.join('./test_htdocs', 'internationalization.html'))
         
