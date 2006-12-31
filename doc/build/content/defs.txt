@@ -179,7 +179,7 @@ But that's not all.  The `body()` function also can handle arguments, which will
         </table>
     </%def>
     
-    <%call expr="layoutdata([[1,2,3],[4,5,6],[7,8,9]])">
+    <%call expr="layoutdata([[1,2,3],[4,5,6],[7,8,9]])" args="col">
         Body data: ${col}
     </%call>
     
