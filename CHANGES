@@ -3,6 +3,8 @@
 - added "encoding()" filter; this allows a filter expression to specify the encoding and error
 handling for the given expression.
 usage is like:  ${data | encoding('utf-8', errors='strict')}
+- removed textmate tmbundle from contrib and into separate SVN location; windows users
+cant handle those files, setuptools not very good at "pruning" certain directories
 
 0.1.0
 
