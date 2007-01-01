@@ -1,2 +1,2 @@
 include doc/*.html
-prune contrib/
+prune contrib
