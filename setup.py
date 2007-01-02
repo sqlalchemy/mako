@@ -16,6 +16,9 @@ of componentized layout and inheritance to produce one of the most
 straightforward and flexible models available, while also maintaining close 
 ties to Python calling and scoping semantics.
 
+SVN version:
+<http://svn.makotemplates.org/mako/trunk#egg=Mako-dev>
+
 """,
       classifiers=[
       'Development Status :: 4 - Beta',

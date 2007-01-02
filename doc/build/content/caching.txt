@@ -3,7 +3,7 @@ Caching
 
 Any template or component can be cached using the `cache` argument to the `<%page>` or `<%def>` directives:
 
-    <%page cache="true"/>
+    <%page cached="True"/>
     
     template text
     
@@ -13,7 +13,7 @@ Caching requires that the `myghtyutils` package be installed on the system.
 
 The caching flag and all its options can be used with the `<%def>` tag.  
 
-    <%def name="mycomp" cache="true" cache_timeout="30" cache_type="memory">
+    <%def name="mycomp" cached="True" cache_timeout="30" cache_type="memory">
         other text
     </%def>
 
@@ -24,13 +24,13 @@ The various cache arguments are cascaded from their default values, to the argum
 
 The options available are:
 
-* cache="False|True" - turn caching on
+* cached="False|True" - turn caching on
 * cache_timeout - number of seconds in which to invalidate the cached data.  after this timeout, the content is re-generated on the next call.
 * cache_type - type of caching.  `memory`, `file`, `dbm`, or `memcached`.  (TODO: describe extra arguments for memcached)
 * cache_dir  - In the case of the `file` and `dbm` cache types, this is the filesystem directory with which to store data files.  If this option is not present, the value of `module_directory` is used (i.e. the directory where compiled template modules are stored).  If neither option is available an exception is thrown.
 * cache_key - the "key" used to uniquely identify this content in the cache.  the total namespace of keys within the cache is local to the current template, and the default value of "key" is the name of the def which is storing its data.  It is an evaluable tag, so you can put a Python expression to calculate the value of the key on the fly.  For example, heres a page that caches any page which inherits from it, based on the filename of the calling template:
     
-        <%page cache="true" cache_key="${self.filename}"/>
+        <%page cached="True" cache_key="${self.filename}"/>
     
         ${next.body()}
         
