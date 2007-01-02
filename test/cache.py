@@ -154,8 +154,7 @@ class CacheTest(unittest.TestCase):
 """)
         m = self._install_mock_cache(t)
         t.render()
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'timeout':30}
-        
+        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'expiretime':30}
         
         t2 = Template("""
         <%page cached="True" cache_timeout="30" cache_dir="./test_htdocs" cache_type="file" cache_key='somekey'/>
@@ -163,7 +162,7 @@ class CacheTest(unittest.TestCase):
         """)
         m = self._install_mock_cache(t2)
         t2.render()
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'timeout':30}
+        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'expiretime':30}
 
     def test_fileargs_lookup(self):
         l = lookup.TemplateLookup(cache_dir='./test_htdocs', cache_type='file')
