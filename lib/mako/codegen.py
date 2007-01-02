@@ -344,15 +344,22 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("__%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
         cacheargs = {}
-        for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir')):
+        print node_or_pagetag
+        for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir'), ('cache_timeout', 'timeout')):
             val = node_or_pagetag.parsed_attributes.get(arg[0], None)
             if val is not None:
-                cacheargs[arg[1]] = val
+                if arg[1] == 'timeout':
+                    cacheargs[arg[1]] = int(eval(val))
+                else:
+                    cacheargs[arg[1]] = val
             else:
                 if self.compiler.pagetag is not None:
                     val = self.compiler.pagetag.parsed_attributes.get(arg[0], None)
                     if val is not None:
-                        cacheargs[arg[1]] = val
+                        if arg[1] == 'timeout':
+                            cacheargs[arg[1]] == int(eval(val))
+                        else:
+                            cacheargs[arg[1]] = val
             
         self.printer.writeline("def %s(context, *args, **kwargs):" % name)
 

@@ -5,6 +5,7 @@ handling for the given expression.
 usage is like:  ${data | encoding('utf-8', errors='strict')}
 - removed textmate tmbundle from contrib and into separate SVN location; windows users
 cant handle those files, setuptools not very good at "pruning" certain directories
+- fix so that "cache_timeout" parameter is propigated
 
 0.1.0
 
