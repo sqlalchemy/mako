@@ -1,5 +1,5 @@
 from mako.template import Template
-from mako import lookup
+from mako import lookup, exceptions
 from util import flatten_result, result_lines
 import unittest
 
@@ -35,7 +35,15 @@ class LookupTest(unittest.TestCase):
         ]
 
         assert tl.get_template('/subdir/index.html').module_id == '_subdir_index_html'
-        
+    
+    def test_no_lookup(self):
+        t = Template("hi <%include file='foo.html'/>")
+        try:
+            t.render()
+            assert False
+        except exceptions.TemplateLookupException, e:
+            assert str(e) == "Template 'memory:%s' has no TemplateLookup associated" % hex(id(t))
+            
     def test_uri_adjust(self):
         tl = lookup.TemplateLookup(directories=['/foo/bar'])
         assert tl.filename_to_uri('/foo/bar/etc/lala/index.html') == '/etc/lala/index.html'
