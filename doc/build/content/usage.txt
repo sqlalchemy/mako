@@ -134,3 +134,19 @@ For the picky, the regular expression used is derived from that of [pep-0263](ht
     {python}
     #.*coding[:=]\s*([-\w.]+).*\n
 
+### Common Framework Integrations
+
+The Mako distribution includes a little bit of helper code for the purpose of using Mako in some popular web framework scenarios.  This is a brief description of whats included.
+
+#### Turbogears/Pylons Plugin
+
+The standard plugin methodology used by [Turbogears](http://www.turbogears.org) as well as [Pylons](http://www.pylonshq.com) is included in the module `mako.ext.turbogears`, using the `TGPlugin` class.  This is also a setuptools entrypoint under the heading `python.templating.engines` with the name `mako`.
+
+#### WSGI
+
+A sample WSGI application is included in the distrubution in the file `examples/wsgi/run_wsgi.py`.  This runner is set up to pull files from a `templates` as well as an `htdocs` directory and includes a rudimental two-file layout.  The WSGI runner acts as a fully functional standalone web server, using `wsgiutils` to run itself, and propigates GET and POST arguments from the request into the `Context`, can serve images, css files and other kinds of files, and also displays errors using Mako's included exception-handling utilities.
+
+#### Pygments
+
+A [Pygments](http://pygments.pocoo.org)-compatible syntax highlighting module is included under `mako.ext.pygmentplugin`.  This module is used in the generation of Mako documentation and also contains various setuptools entry points under the heading `pygments.lexers`, including `mako`, `html+mako`, `xml+mako` (see the `setup.py` file for all the entry points).
+
