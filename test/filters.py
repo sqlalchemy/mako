@@ -20,14 +20,13 @@ class FilterTest(unittest.TestCase):
             return lambda x: "MYFILTER->%s<-%s" % (x, y)
         assert flatten_result(t.render(x="this is x", myfilter=myfilter, y="this is y")) == "MYFILTER->this is x<-this is y"
 
-    def test_builtin_func(self):
+    def test_convert_str(self):
+        """test that string conversion happens in expressions before sending to filters"""
         t = Template("""
-            ${x | encoding('utf-8')}
+            ${x | trim}
         """)
-        udata = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        utf8data = udata.encode('utf-8')
-        assert flatten_result(t.render_unicode(x=utf8data)) == udata
-        
+        assert flatten_result(t.render(x=5)) == "5"
+
     def test_def(self):
         t = Template("""
             <%def name="foo()" filter="myfilter">

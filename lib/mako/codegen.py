@@ -398,8 +398,8 @@ class _GenerateRenderMethod(object):
     def visitExpression(self, node):
         self.write_source_comment(node)
         if len(node.escapes) or (self.compiler.pagetag is not None and len(self.compiler.pagetag.filter_args.args)):
-            s = self.create_filter_callable(node.escapes_code.args, node.text)
-            self.printer.writeline("context.write(unicode(%s))" % s)
+            s = self.create_filter_callable(node.escapes_code.args, "unicode(%s)" % node.text)
+            self.printer.writeline("context.write(%s)" % s)
         else:
             self.printer.writeline("context.write(unicode(%s))" % node.text)
             
