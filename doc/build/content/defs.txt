@@ -189,8 +189,8 @@ Produces:
     <table>
         <tr>
             <td>Body data: 1</td><td>Body data: 2</td><td>Body data: 3</td>
-            <td>Body data: 2</td><td>Body data: 5</td><td>Body data: 6</td>
-            <td>Body data: 3</td><td>Body data: 8</td><td>Body data: 9</td>
+            <td>Body data: 4</td><td>Body data: 5</td><td>Body data: 6</td>
+            <td>Body data: 7</td><td>Body data: 8</td><td>Body data: 9</td>
         </tr>
     </table>
     
