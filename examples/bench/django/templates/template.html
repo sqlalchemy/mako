@@ -14,7 +14,7 @@
   {% if items %}
     <ul>
       {% for item in items %}
-        <li{% if forloop.islast %} class="last"{% endif %}>{{ item|escape }}</li>
+        <li>{{ item }}</li>
       {% endfor %}
     </ul>
   {% endif %}
