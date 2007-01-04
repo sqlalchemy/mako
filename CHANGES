@@ -6,6 +6,7 @@ cant handle those files, setuptools not very good at "pruning" certain directori
 - fix to expression filters so that string conversion (actually unicode) properly 
 occurs before filtering
 - better error message when a lookup is attempted with a template that has no lookup
+- implemented "module" attribute for namespace
 
 0.1.0
 

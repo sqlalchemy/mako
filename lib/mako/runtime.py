@@ -83,7 +83,13 @@ class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
     def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_uri=None):
         self.name = name
-        self._module = module
+        if module is not None:
+            mod = __import__(module)
+            for token in module.split('.')[1:]:
+                mod = getattr(mod, token)
+            self._module = mod
+        else:
+            self._module = None
         if templateuri is not None:
             self.template = _lookup_template(context, templateuri, calling_uri)
             self._templateuri = self.template.module._template_uri
@@ -149,10 +155,13 @@ class Namespace(object):
                 return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
             for k in self.template.module._exports:
                 yield (k, get(k))
-        if self.module is not None:
-            for k in dir(self.module):
+        if self._module is not None:
+            def get(key):
+                callable_ = getattr(self._module, key)
+                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
+            for k in dir(self._module):
                 if k[0] != '_':
-                    yield (k, getattr(self.module, k))
+                    yield (k, get(k))
                             
     def __getattr__(self, key):
         if self.callables is not None:

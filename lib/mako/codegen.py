@@ -204,7 +204,7 @@ class _GenerateRenderMethod(object):
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
-            self.printer.writeline("ns = runtime.Namespace(%s, context._clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name))
+            self.printer.writeline("ns = runtime.Namespace(%s, context._clean_inheritance_tokens(), templateuri=%s, callables=%s, calling_uri=_template_uri, module=%s)" % (repr(node.name), node.parsed_attributes.get('file', 'None'), callable_name, node.parsed_attributes.get('module', 'None')))
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
             self.printer.writeline("context.namespaces[(__name__, %s)] = ns" % repr(node.name))

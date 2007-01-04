@@ -43,6 +43,54 @@ class NamespaceTest(unittest.TestCase):
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. def1: hi def2: there"
     
+    def test_module(self):
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('main.html', """
+        <%namespace name="comp" module="test_namespace"/>
+
+        this is main.  ${comp.foo1()}
+        ${comp.foo2("hi")}
+""")
+
+        assert flatten_result(collection.get_template('main.html').render()) == "this is main. this is foo1. this is foo2, x is hi"
+
+    def test_module_2(self):
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('main.html', """
+        <%namespace name="comp" module="foo.test_ns"/>
+
+        this is main.  ${comp.foo1()}
+        ${comp.foo2("hi")}
+""")
+
+        assert flatten_result(collection.get_template('main.html').render()) == "this is main. this is foo1. this is foo2, x is hi"
+
+    def test_module_imports(self):
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('main.html', """
+        <%namespace import="*" module="foo.test_ns"/>
+
+        this is main.  ${foo1()}
+        ${foo2("hi")}
+""")
+
+        assert flatten_result(collection.get_template('main.html').render()) == "this is main. this is foo1. this is foo2, x is hi"
+
+    def test_module_imports_2(self):
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('main.html', """
+        <%namespace import="foo1, foo2" module="foo.test_ns"/>
+
+        this is main.  ${foo1()}
+        ${foo2("hi")}
+""")
+
+        assert flatten_result(collection.get_template('main.html').render()) == "this is main. this is foo1. this is foo2, x is hi"
+        
     def test_context(self):
         """test that namespace callables get access to the current context"""
         collection = lookup.TemplateLookup()
