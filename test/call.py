@@ -1,4 +1,5 @@
 from mako.template import Template
+from mako import util
 import unittest
 from util import result_lines
 
@@ -41,9 +42,23 @@ class CallTest(unittest.TestCase):
         ${bar()}
 
 """)
-
         assert result_lines(t.render()) == ['foo calling comp1:', 'this is comp1, 5', 'foo calling body:', 'this is the body,', 'this is comp1, 6', 'this is bar']
 
+    def test_compound_call_revset(self):
+        # monkeypatch Set to return items in reverse
+        oldset = util.Set
+        class goofyset(oldset):
+            def __iter__(self):
+                x = list(oldset.__iter__(self))
+                x.reverse()
+                return iter(x)
+        util.Set = goofyset
+        
+        try:
+            self.test_compound_call()
+        finally:
+            util.Set = oldset
+            
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
         t = Template("""

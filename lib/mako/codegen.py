@@ -13,6 +13,7 @@ from mako import util, ast, parsetree, filters
 
 MAGIC_NUMBER = 1
 
+
 def compile(node, uri, filename=None):
     """generate module source code given a parsetree node, uri, and optional source filename"""
     buf = util.FastEncodingBuffer()
@@ -117,7 +118,7 @@ class _GenerateRenderMethod(object):
         module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
         [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
         self.compiler.identifiers = module_identifiers
-        self.printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs]))
+        self.printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs.values()]))
         self.printer.write("\n\n")
 
         if len(module_code):
@@ -129,7 +130,7 @@ class _GenerateRenderMethod(object):
         elif len(namespaces):
             self.write_namespaces(namespaces)
 
-        return main_identifiers.topleveldefs
+        return main_identifiers.topleveldefs.values()
 
     def write_render_callable(self, node, name, args, buffered, filtered, cached):
         """write a top-level render callable.
@@ -228,14 +229,13 @@ class _GenerateRenderMethod(object):
         
         # collection of all defs available to us in this scope
         comp_idents = dict([(c.name, c) for c in identifiers.defs])
-
         to_write = util.Set()
         
         # write "context.get()" for all variables we are going to need that arent in the namespace yet
         to_write = to_write.union(identifiers.undeclared)
         
         # write closure functions for closures that we define right here
-        to_write = to_write.union(util.Set([c.name for c in identifiers.closuredefs]))
+        to_write = to_write.union(util.Set([c.name for c in identifiers.closuredefs.values()]))
 
         # remove identifiers that are declared in the argument signature of the callable
         to_write = to_write.difference(identifiers.argument_declared)
@@ -462,6 +462,9 @@ class _GenerateRenderMethod(object):
             def visitDefTag(s, node):
                 self.write_inline_def(node, callable_identifiers, nested=False)
                 export.append(node.name)
+                # remove defs that are within the <%call> from the "closuredefs" defined
+                # in the body, so they dont render twice
+                del body_identifiers.closuredefs[node.name]
         vis = DefVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
@@ -507,7 +510,7 @@ class _Identifiers(object):
     def __init__(self, node=None, parent=None, nested=False):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
-            self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs]).union(parent.locally_declared).union(parent.argument_declared)
+            self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs.values()]).union(parent.locally_declared).union(parent.argument_declared)
             
             # if these identifiers correspond to a "nested" scope, it means whatever the 
             # parent identifiers had as undeclared will have been declared by that parent, 
@@ -516,10 +519,10 @@ class _Identifiers(object):
                 self.declared = self.declared.union(parent.undeclared)
             
             # top level defs that are available
-            self.topleveldefs = util.Set(parent.topleveldefs)
+            self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
         else:
             self.declared = util.Set()
-            self.topleveldefs = util.Set()
+            self.topleveldefs = util.SetLikeDict()
         
         # things within this level that are referenced before they are declared (e.g. assigned to)
         self.undeclared = util.Set()
@@ -536,7 +539,7 @@ class _Identifiers(object):
         self.argument_declared = util.Set()
         
         # closure defs that are defined in this level
-        self.closuredefs = util.Set()
+        self.closuredefs = util.SetLikeDict()
         
         self.node = node
         
@@ -546,11 +549,11 @@ class _Identifiers(object):
     def branch(self, node, **kwargs):
         """create a new Identifiers for a new Node, with this Identifiers as the parent."""
         return _Identifiers(node, self, **kwargs)
-        
-    defs = property(lambda s:s.topleveldefs.union(s.closuredefs))
+    
+    defs = property(lambda self:util.Set(self.topleveldefs.union(self.closuredefs).values()))
     
     def __repr__(self):
-        return "Identifiers(declared=%s, locally_declared=%s, undeclared=%s, topleveldefs=%s, closuredefs=%s, argumenetdeclared=%s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.topleveldefs]), repr([c.name for c in self.closuredefs]), repr(self.argument_declared))
+        return "Identifiers(declared=%s, locally_declared=%s, undeclared=%s, topleveldefs=%s, closuredefs=%s, argumenetdeclared=%s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.topleveldefs.values()]), repr([c.name for c in self.closuredefs.values()]), repr(self.argument_declared))
         
     def check_declared(self, node):
         """update the state of this Identifiers with the undeclared and declared identifiers of the given node."""
@@ -575,9 +578,9 @@ class _Identifiers(object):
             self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
     def visitDefTag(self, node):
         if node.is_root():
-            self.topleveldefs.add(node)
+            self.topleveldefs[node.name] = node
         elif node is not self.node:
-            self.closuredefs.add(node)
+            self.closuredefs[node.name] = node
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)

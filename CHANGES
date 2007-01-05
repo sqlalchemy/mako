@@ -7,6 +7,7 @@ cant handle those files, setuptools not very good at "pruning" certain directori
 occurs before filtering
 - better error message when a lookup is attempted with a template that has no lookup
 - implemented "module" attribute for namespace
+- fix to code generation to correctly track multiple defs with the same name
 
 0.1.0
 

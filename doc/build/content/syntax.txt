@@ -96,7 +96,7 @@ Any number of `<%! %>` blocks can be declared anywhere in a template; they will 
 
 ### Tags
 
-The rest of what Mako offers takes place in the form of tags.  All tags use the same syntax, which is similar to an XML tag except that the first character of the tag name is a `%` character.  The tag is closed either by a contained backslash character, or an explicit closing tag:
+The rest of what Mako offers takes place in the form of tags.  All tags use the same syntax, which is similar to an XML tag except that the first character of the tag name is a `%` character.  The tag is closed either by a contained slash character, or an explicit closing tag:
 
     <%include file="foo.txt"/>
     

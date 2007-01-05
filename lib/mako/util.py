@@ -34,7 +34,17 @@ def verify_directory(dir):
        except:
            if tries > 5:
                raise
-   
+  
+class SetLikeDict(dict):
+    """a dictionary that has some setlike methods on it"""
+    def union(self, other):
+        """produce a 'union' of this dict and another (at the key level).
+        
+        values in the second dict take precedence over that of the first"""
+        x = SetLikeDict(**self)
+        x.update(other)
+        return x
+         
 class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, but doesnt crash on unicode data like cStringIO."""
     def __init__(self, encoding=None):
