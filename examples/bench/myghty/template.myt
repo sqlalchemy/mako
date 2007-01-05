@@ -21,8 +21,8 @@
   <h2>Loop</h2>
 %if items:
       <ul>
-%	for item in items:
-  <li><% item %></li>
+%	for i, item in enumerate(items):
+  <li <% i+1==len(items) and "class='last'" or ""%>><% item %></li>
 %
       </ul>
 %

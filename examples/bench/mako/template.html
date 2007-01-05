@@ -20,8 +20,8 @@
     <h2>Loop</h2>
     % if list_items:
       <ul>
-        % for list_item in list_items:
-          <li>${list_item}</li>
+        % for i, list_item in enumerate(list_items):
+	<li ${i+1==len(list_items) and "class='last'" or ""}>${list_item}</li>
         % endfor
       </ul>
     % endif

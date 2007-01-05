@@ -21,7 +21,7 @@
     #if $list_items
       <ul>
         #for $list_item in $list_items
-          <li>$list_item</li>
+          <li #if $list_item is $list_items[-1] then "class='last'" else ""#>$list_item</li>
         #end for
       </ul>
     #end if
