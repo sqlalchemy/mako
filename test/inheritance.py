@@ -274,5 +274,48 @@ ${next.body()}
             'this is the base.',
             'this is index.'
         ]
+        
+    def test_in_call(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("/layout.html","""
+        Super layout!
+        <%call expr="self.grid()">
+            ${next.body()}
+        </%call>
+        Oh yea!
+
+        <%def name="grid()">
+            Parent grid
+                ${caller.body()}
+            End Parent
+        </%def>
+        """)
+
+
+        collection.put_string("/subdir/layout.html", """
+        ${next.body()}
+        <%def name="grid()">
+           Subdir grid
+               ${caller.body()}
+           End subdir
+        </%def>
+        <%inherit file="/layout.html"/>
+        """)
+        
+        collection.put_string("/subdir/renderedtemplate.html","""
+        Holy smokes!
+        <%inherit file="/subdir/layout.html"/>
+        """)
+
+        #print collection.get_template("/layout.html").code
+        #print collection.get_template("/subdir/renderedtemplate.html").render()
+        assert result_lines(collection.get_template("/subdir/renderedtemplate.html").render()) == [
+            "Super layout!",
+            "Subdir grid",
+            "Holy smokes!",
+            "End subdir",
+            "Oh yea!"
+        ]
+
 if __name__ == '__main__':
     unittest.main()
