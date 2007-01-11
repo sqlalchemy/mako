@@ -8,6 +8,8 @@ occurs before filtering
 - better error message when a lookup is attempted with a template that has no lookup
 - implemented "module" attribute for namespace
 - fix to code generation to correctly track multiple defs with the same name
+- "directories" can be passed to TemplateLookup as a scalar in which case it gets
+converted to a list [ticket:9]
 
 0.1.0
 
