@@ -66,7 +66,14 @@ class PageArgsTest(unittest.TestCase):
 
         assert flatten_result(template.render(x=5, y=10, w=17)) == "this is page, 5, 10, 7, 17"
 
-
+    def test_overrides_builtins(self):
+        template = Template("""
+            <%page args="id"/>
+            
+            this is page, id is ${id}
+        """)
+        
+        assert flatten_result(template.render(id="im the id")) == "this is page, id is im the id"
         
 
         
