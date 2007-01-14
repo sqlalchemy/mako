@@ -1,5 +1,6 @@
 import re
 from mako.lookup import TemplateLookup
+from mako.template import Template
 
 class TGPlugin(object):
     """TurboGears compatible Template Plugin."""
@@ -19,20 +20,24 @@ class TGPlugin(object):
                 tmpl_options[k] = v
         self.lookup = TemplateLookup(**tmpl_options)
 
-    def load_template(self, templatename):
-        """Unused method for TG plug-in API compat"""
-        pass
+    def load_template(self, templatename, template_string=None):
+        """Loads a template from a file or a string"""
+        if template_string is not None:
+            return Template(template_string)
+        # Translate TG dot notation to normal / template path
+        if '/' and '.' not in templatename:
+            templatename = '/' + templatename.replace('.', '/') + '.' + self.extension
+
+        # Lookup template
+        return self.lookup.get_template(templatename)
 
     def render(self, info, format="html", fragment=False, template=None):
-        # Translate TG dot notation to normal / template path
-        if '/' and '.' not in template:
-            template = '/' + template.replace('.', '/') + '.' + self.extension
+        if isinstance(template, basestring):
+            template = self.load_template(template)
 
         # Load extra vars func if provided
         if self.extra_vars_func:
             info.update(self.extra_vars_func())
 
-        # Lookup template
-        template = self.lookup.get_template(template)
         return template.render(**info)
 

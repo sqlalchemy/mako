@@ -1,4 +1,5 @@
 0.1.1
+- buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]
 - AST parsing fixes: fixed TryExcept identifier parsing
 - removed textmate tmbundle from contrib and into separate SVN location; windows users
 cant handle those files, setuptools not very good at "pruning" certain directories
