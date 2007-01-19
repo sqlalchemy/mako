@@ -30,6 +30,31 @@ class EncodingTest(unittest.TestCase):
         template = Template(val)
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
+    def test_unicode_literal_in_expr(self):
+        template = Template(u"""# -*- coding: utf-8 -*-
+        ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
+        """.encode('utf-8'))
+        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_literal_in_code(self):
+        template = Template(u"""# -*- coding: utf-8 -*-
+        <%
+            context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
+        %>
+        """.encode('utf-8'))
+        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_literal_in_controlline(self):
+        template = Template(u"""# -*- coding: utf-8 -*-
+        <%
+            x = u"drôle de petit voix m’a réveillé."
+        %>
+        % if x==u"drôle de petit voix m’a réveillé.":
+            hi, ${x}
+        % endif
+        """.encode('utf-8'))
+        assert template.render_unicode().strip() == u"""hi, drôle de petit voix m’a réveillé."""
+        
     def test_encoding(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         template = Template(val, output_encoding='utf-8')

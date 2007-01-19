@@ -1,3 +1,8 @@
+0.1.2
+- fix to parsing of code/expression blocks to insure that non-ascii characters, combined
+with a template that indicates a non-standard encoding, are expanded into backslash-escaped 
+glyphs before being AST parsed [ticket:11]
+
 0.1.1
 - buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]
 - AST parsing fixes: fixed TryExcept identifier parsing

@@ -87,10 +87,16 @@ class Lexer(object):
             elif len(self.control_line) and not self.control_line[-1].is_ternary(node.keyword):
                 raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
 
+    def escape_code(self, text):
+        if self.encoding:
+            return text.encode('ascii', 'backslashreplace')
+        else:
+            return text
+            
     def parse(self):
-        encoding = self.match_encoding()
-        if encoding:
-            self.text = self.text.decode(encoding)
+        self.encoding = self.match_encoding()
+        if self.encoding:
+            self.text = self.text.decode(self.encoding)
 
         length = len(self.text)
             
@@ -218,7 +224,7 @@ class Lexer(object):
             (line, pos) = (self.matched_lineno, self.matched_charpos)
             (text, end) = self.parse_until_text(r'%>')
             text = adjust_whitespace(text)
-            self.append_node(parsetree.Code, text, match.group(1)=='!', lineno=line, pos=pos)
+            self.append_node(parsetree.Code, self.escape_code(text), match.group(1)=='!', lineno=line, pos=pos)
             return True
         else:
             return False
@@ -232,7 +238,7 @@ class Lexer(object):
                 (escapes, end) = self.parse_until_text(r'}')
             else:
                 escapes = ""
-            self.append_node(parsetree.Expression, text, escapes.strip(), lineno=line, pos=pos)
+            self.append_node(parsetree.Expression, self.escape_code(text), escapes.strip(), lineno=line, pos=pos)
             return True
         else:
             return False
@@ -254,7 +260,7 @@ class Lexer(object):
                         raise exceptions.SyntaxException("No starting keyword '%s' for '%s'" % (keyword, text), self.matched_lineno, self.matched_charpos, self.filename)
                     elif self.control_line[-1].keyword != keyword:
                         raise exceptions.SyntaxException("Keyword '%s' doesn't match keyword '%s'" % (text, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
-                self.append_node(parsetree.ControlLine, keyword, isend, text)
+                self.append_node(parsetree.ControlLine, keyword, isend, self.escape_code(text))
             else:
                 self.append_node(parsetree.Comment, text)
             return True
