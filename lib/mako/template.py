@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, module_filename=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, module_filename=None, input_encoding=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -40,7 +40,7 @@ class Template(object):
         
         # if plain text, compile code in memory only
         if text is not None:
-            (code, module) = _compile_text(text, self.module_id, filename, self.uri)
+            (code, module) = _compile_text(text, self.module_id, filename, self.uri, input_encoding)
             self._code = code
             self._source = text
             ModuleInfo(module, None, self, filename, code, text)
@@ -60,18 +60,18 @@ class Template(object):
                 util.verify_directory(os.path.dirname(path))
                 filemtime = os.stat(filename)[stat.ST_MTIME]
                 if not os.access(path, os.F_OK) or os.stat(path)[stat.ST_MTIME] < filemtime:
-                    _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
+                    _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri, input_encoding)
                 module = imp.load_source(self.module_id, path, file(path))
                 del sys.modules[self.module_id]
                 if module._magic_number != codegen.MAGIC_NUMBER:
-                    _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
+                    _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri, input_encoding)
                     module = imp.load_source(self.module_id, path, file(path))
                     del sys.modules[self.module_id]
                 ModuleInfo(module, path, self, filename, None, None)
             else:
                 # template filename and no module directory, compile code
                 # in memory
-                (code, module) = _compile_text(file(filename).read(), self.module_id, filename, self.uri)
+                (code, module) = _compile_text(file(filename).read(), self.module_id, filename, self.uri, input_encoding)
                 self._source = None
                 self._code = code
                 ModuleInfo(module, None, self, filename, code, None)
@@ -153,8 +153,8 @@ class ModuleInfo(object):
             return file(self.template_filename).read()
     source = property(_get_source)
         
-def _compile_text(text, identifier, filename, uri):
-    node = Lexer(text, filename).parse()
+def _compile_text(text, identifier, filename, uri, input_encoding):
+    node = Lexer(text, filename, input_encoding=input_encoding).parse()
     source = codegen.compile(node, uri, filename)
     cid = identifier
     module = imp.new_module(cid)
@@ -162,9 +162,9 @@ def _compile_text(text, identifier, filename, uri):
     exec code in module.__dict__, module.__dict__
     return (source, module)
 
-def _compile_module_file(text, identifier, filename, outputpath, uri):
+def _compile_module_file(text, identifier, filename, outputpath, uri, input_encoding):
     (dest, name) = tempfile.mkstemp()
-    node = Lexer(text, filename).parse()
+    node = Lexer(text, filename, input_encoding=input_encoding).parse()
     source = codegen.compile(node, uri, filename)
     os.write(dest, source)
     os.close(dest)

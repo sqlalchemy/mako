@@ -6,6 +6,8 @@ glyphs before being AST parsed [ticket:11]
 file
 - added modulename_callable to TemplateLookup to allow a function to determine module filenames
 (takes filename, uri arguments).  used for [ticket:14]
+- added optional input_encoding flag to Template, to allow sending a unicode() object with no
+magic encoding comment
 
 0.1.1
 - buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]

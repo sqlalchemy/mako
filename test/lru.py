@@ -17,7 +17,6 @@ class LRUTest(unittest.TestCase):
         l = LRUCache(10, threshold=.2)
         
         for id in range(1,20):
-            time.sleep(.001)
             l[id] = item(id)
         
         # first couple of items should be gone
@@ -33,6 +32,8 @@ class LRUTest(unittest.TestCase):
         l[23] = item(23)
         l[24] = item(24)
         l[25] = item(25)
+        l[26] = item(26)
+        l[27] = item(27)
 
         self.assert_(not l.has_key(11))
         self.assert_(not l.has_key(13))
