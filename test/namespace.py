@@ -140,6 +140,22 @@ class NamespaceTest(unittest.TestCase):
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. overridden def1 hi, there def2: there"
 
+    def test_getattr(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("main.html", """
+            <%namespace name="foo" file="ns.html"/>
+            <%
+                 if hasattr(foo, 'lala'):
+                     foo.lala()
+                 if not hasattr(foo, 'hoho'):
+                     context.write('foo has no hoho.')
+            %>
+         """)
+        collection.put_string("ns.html", """
+          <%def name="lala()">this is lala.</%def>
+        """)
+        assert flatten_result(collection.get_template("main.html").render()) == "this is lala.foo has no hoho."
+
     def test_in_def(self):
         collection = lookup.TemplateLookup()
         collection.put_string("main.html", """
