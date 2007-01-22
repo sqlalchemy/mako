@@ -10,7 +10,7 @@ as well as template runtime operations."""
 from mako.lexer import Lexer
 from mako import codegen
 from mako import runtime, util, exceptions
-import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys, re
+import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
 
 
     
@@ -57,7 +57,7 @@ class Template(object):
             else:
                 path = None    
             if path is not None:
-                util.verify_directory(posixpath.dirname(path))
+                util.verify_directory(os.path.dirname(path))
                 filemtime = os.stat(filename)[stat.ST_MTIME]
                 if not os.access(path, os.F_OK) or os.stat(path)[stat.ST_MTIME] < filemtime:
                     _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
