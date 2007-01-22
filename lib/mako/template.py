@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, posixpath, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, module_filename=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -47,15 +47,19 @@ class Template(object):
         elif filename is not None:
             # if template filename and a module directory, load
             # a filesystem-based module file, generating if needed
-            if module_directory is not None:
+            if module_filename is not None:
+                path = module_filename
+            elif module_directory is not None:
                 u = self.uri
                 if u[0] == '/':
                     u = u[1:]
-                path = posixpath.join(module_directory, u + ".py")
+                path = os.path.normpath(os.path.join(module_directory.replace('/', os.path.sep), u + ".py"))
+            else:
+                path = None    
+            if path is not None:
                 util.verify_directory(posixpath.dirname(path))
                 filemtime = os.stat(filename)[stat.ST_MTIME]
                 if not os.access(path, os.F_OK) or os.stat(path)[stat.ST_MTIME] < filemtime:
-                    util.verify_directory(module_directory)
                     _compile_module_file(file(filename).read(), self.module_id, filename, path, self.uri)
                 module = imp.load_source(self.module_id, path, file(path))
                 del sys.modules[self.module_id]

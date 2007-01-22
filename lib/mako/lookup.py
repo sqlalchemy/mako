@@ -37,11 +37,12 @@ class TemplateCollection(object):
         return uri
         
 class TemplateLookup(TemplateCollection):
-    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, cache_type=None, cache_dir=None):
+    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, cache_type=None, cache_dir=None, modulename_callable=None):
         if isinstance(directories, basestring):
             directories = [directories]        
         self.directories = [posixpath.normpath(d) for d in directories or []]
         self.module_directory = module_directory
+        self.modulename_callable = modulename_callable
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
         self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'module_directory':module_directory, 'cache_type':cache_type, 'cache_dir':cache_dir or module_directory}
@@ -106,7 +107,7 @@ class TemplateLookup(TemplateCollection):
             except KeyError:
                 pass
             try:
-                self.__collection[uri] = Template(uri=uri, filename=posixpath.normpath(filename), lookup=self, **self.template_args)
+                self.__collection[uri] = Template(uri=uri, filename=posixpath.normpath(filename), lookup=self, module_filename=(self.modulename_callable is not None and self.modulename_callable(filename, uri) or None), **self.template_args)
                 return self.__collection[uri]
             except:
                 self.__collection.pop(uri, None)

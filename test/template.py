@@ -7,9 +7,11 @@ from util import flatten_result, result_lines
 
 if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
+if not os.access('./test_htdocs/subdir', os.F_OK):
+    os.mkdir('./test_htdocs/subdir')
 file('./test_htdocs/unicode.html', 'w').write("""# -*- coding: utf-8 -*-
 Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-
+    
 class EncodingTest(unittest.TestCase):
     def test_unicode(self):
         template = Template(u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
@@ -130,7 +132,26 @@ class GlobalsTest(unittest.TestCase):
 """)
         assert t.render().strip() == "y is hi"
 
-    
+
+class ModuleDirTest(unittest.TestCase):
+    def test_basic(self):
+        file('./test_htdocs/modtest.html', 'w').write("""this is a test""")
+        file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
+        t = Template(filename='./test_htdocs/modtest.html', module_directory='./test_htdocs/modules')
+        t2 = Template(filename='./test_htdocs/subdir/modtest.html', module_directory='./test_htdocs/modules')
+        assert t.module.__file__ == os.path.normpath('./test_htdocs/modules/test_htdocs/modtest.html.py')
+        assert t2.module.__file__ == os.path.normpath('./test_htdocs/modules/test_htdocs/subdir/modtest.html.py')
+    def test_callable(self):
+        file('./test_htdocs/modtest.html', 'w').write("""this is a test""")
+        file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
+        def get_modname(filename, uri):
+            return os.path.dirname(filename) + "/foo/" + os.path.basename(filename) + ".py"
+        lookup = TemplateLookup('./test_htdocs', modulename_callable=get_modname)
+        t = lookup.get_template('/modtest.html')
+        t2 = lookup.get_template('/subdir/modtest.html')
+        assert t.module.__file__ == 'test_htdocs/foo/modtest.html.py'
+        assert t2.module.__file__ == 'test_htdocs/subdir/foo/modtest.html.py'
+        
             
 if __name__ == '__main__':
     unittest.main()
