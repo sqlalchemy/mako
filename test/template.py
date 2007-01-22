@@ -56,7 +56,18 @@ class EncodingTest(unittest.TestCase):
         % endif
         """.encode('utf-8'))
         assert template.render_unicode().strip() == u"""hi, drôle de petit voix m’a réveillé."""
-        
+    
+    def test_input_encoding(self):
+        """test the 'input_encoding' flag on Template, and that unicode objects arent double-decoded"""
+        s2 = u"hello ${f(u'śląsk')}"
+        res = Template(s2, input_encoding='utf-8').render_unicode(f=lambda x:x)
+        assert res == u"hello śląsk"
+
+        s2 = u"# -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}"
+        res = Template(s2).render_unicode(f=lambda x:x)
+        assert res == u"hello śląsk"
+
+            
     def test_encoding(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         template = Template(val, output_encoding='utf-8')
