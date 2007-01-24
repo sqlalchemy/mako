@@ -230,13 +230,32 @@ class ExpressionGenerator(object):
         if node.upper is not None:
             self.visit(node.upper)
         self.buf.write("]")
+    def visitDict(self, node):
+        self.buf.write("{")
+        c = node.getChildren()
+        for i in range(0, len(c), 2):
+            self.visit(c[i])
+            self.buf.write(": ")
+            self.visit(c[i+1])
+            if i<len(c) -2:
+                self.buf.write(", ")
+        self.buf.write("}")
+    def visitList(self, node):
+        self.buf.write("[")
+        c = node.getChildren()
+        for i in range(0, len(c)):
+            self.visit(c[i])
+            if i<len(c) - 1:
+                self.buf.write(", ")
+        self.buf.write("]")
     def visitCallFunc(self, node, *args):
         self.visit(node.node)
         self.buf.write("(")
-        self.visit(node.args[0])
-        for a in node.args[1:]:
-            self.buf.write(", ")
-            self.visit(a)
+        if len(node.args):
+            self.visit(node.args[0])
+            for a in node.args[1:]:
+                self.buf.write(", ")
+                self.visit(a)
         self.buf.write(")")
         
         

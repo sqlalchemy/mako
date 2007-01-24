@@ -151,6 +151,18 @@ import x as bar
         #print "result:", eval(code, local_dict)
         assert(eval(code, local_dict) == eval(newcode, local_dict))
         
+        local_dict={'f':lambda :9, 'x':7}
+        code = "x+f()"
+        astnode = parse(code)
+        newcode = ast.ExpressionGenerator(astnode).value()
+        assert(eval(code, local_dict)) == eval(newcode, local_dict)
+
+        for code in ["repr({'x':7,'y':18})", "repr([])", "repr({})", "repr([{3:[]}])", "repr({'x':37*2 + len([6,7,8])})", "repr([1, 2, {}, {'x':'7'}])"]:
+            local_dict={}
+            astnode = parse(code)
+            newcode = ast.ExpressionGenerator(astnode).value()
+            assert(eval(code, local_dict)) == eval(newcode, local_dict)
+
 if __name__ == '__main__':
     unittest.main()
     
