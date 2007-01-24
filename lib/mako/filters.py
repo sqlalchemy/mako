@@ -147,6 +147,7 @@ DEFAULT_ESCAPES = {
     'u':url_escape,
     'trim':trim,
     'entity':html_entities_escape,
+    'unicode':unicode
 }
     
 

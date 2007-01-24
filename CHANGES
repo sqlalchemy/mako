@@ -8,6 +8,14 @@ file
 (takes filename, uri arguments).  used for [ticket:14]
 - added optional input_encoding flag to Template, to allow sending a unicode() object with no
 magic encoding comment
+- "expression_filter" argument in <%page> applies only to expressions
+- added "default_filters" argument to Template, TemplateLookup.  applies only to expressions,
+gets prepended to "expression_filter" arg from <%page>.  defaults to ["unicode"], so that 
+all expressions get stringified into u'' by default (this is what Mako already does).
+By setting to [], expressions are passed through raw.
+- added "imports" argument to Template, TemplateLookup.  so you can predefine a list of
+import statements at the top of the template.  can be used in conjunction with 
+default_filters.
 
 0.1.1
 - buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]

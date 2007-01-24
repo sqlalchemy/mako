@@ -46,6 +46,24 @@ class FilterTest(unittest.TestCase):
 
         assert t.render().strip()=="trim this string: some string to trim continue"
     
+    def test_import_2(self):
+        t = Template("""
+        trim this string: ${"  some string to trim   " | filters.trim} continue\
+        """, imports=["from mako import filters"])
+        print t.code
+        assert t.render().strip()=="trim this string: some string to trim continue"
+
+    def test_custom_default(self):
+        t = Template("""
+        <%!
+            def myfilter(x):
+                return "->" + x + "<-"
+        %>
+        
+            hi ${'there'}
+        """, default_filters=['myfilter'])
+        assert t.render().strip()=="hi ->there<-"
+        
     def test_global(self):
         t = Template("""
             <%page expression_filter="h"/>

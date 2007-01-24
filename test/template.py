@@ -67,7 +67,15 @@ class EncodingTest(unittest.TestCase):
         res = Template(s2).render_unicode(f=lambda x:x)
         assert res == u"hello śląsk"
 
-            
+    def test_raw_strings(self):
+        """test that raw strings go straight thru with default_filters turned off"""
+        g = 'śląsk'
+        s = u"# -*- coding: utf-8 -*-\nhello ${x}"
+        t = Template(s, default_filters=[])
+        y = t.render(x=g)
+        print t.code
+        assert y == "hello śląsk"
+        
     def test_encoding(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         template = Template(val, output_encoding='utf-8')
@@ -101,7 +109,7 @@ class PageArgsTest(unittest.TestCase):
 
             this is page, ${x}, ${y}, ${z}, ${w}
 """)
-
+        print template.code
         assert flatten_result(template.render(x=5, y=10, w=17)) == "this is page, 5, 10, 7, 17"
 
     def test_overrides_builtins(self):
