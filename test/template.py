@@ -73,8 +73,12 @@ class EncodingTest(unittest.TestCase):
         s = u"# -*- coding: utf-8 -*-\nhello ${x}"
         t = Template(s, default_filters=[])
         y = t.render(x=g)
-        print t.code
         assert y == "hello śląsk"
+
+        # now, the way you *should* be doing it....
+        q = g.decode('utf-8')
+        y = t.render_unicode(x=q)
+        assert y == u"hello śląsk"
         
     def test_encoding(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
