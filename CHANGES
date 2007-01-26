@@ -16,6 +16,7 @@ By setting to [], expressions are passed through raw.
 - added "imports" argument to Template, TemplateLookup.  so you can predefine a list of
 import statements at the top of the template.  can be used in conjunction with 
 default_filters.
+- small fix to local variable propigation for locals that are conditionally declared
 
 0.1.1
 - buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]
