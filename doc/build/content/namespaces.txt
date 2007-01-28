@@ -69,7 +69,7 @@ The `<%namespace>` tag supports the definition of `<%defs>` directly inside the 
     </%namespace>
     
     # then call it
-    ${stuff:comp1()}
+    ${stuff.comp1()}
 
 ### The "body()" method {@name=body}
 
