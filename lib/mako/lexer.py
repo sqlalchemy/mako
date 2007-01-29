@@ -98,8 +98,17 @@ class Lexer(object):
         parsed_encoding = self.match_encoding()
         if parsed_encoding:
             self.encoding = parsed_encoding
-        if self.encoding and not isinstance(self.text, unicode):
-            self.text = self.text.decode(self.encoding)
+        if not isinstance(self.text, unicode):
+            if self.encoding:
+                try:
+                    self.text = self.text.decode(self.encoding)
+                except UnicodeDecodeError, e:
+                    raise exceptions.CompileException("Unicode decode operation of encoding '%s' failed" % self.encoding, 0, 0, self.filename)
+            else:
+                try:
+                    self.text = self.text.decode()
+                except UnicodeDecodeError, e:
+                    raise exceptions.CompileException("Could not read template using encoding of 'ascii'.  Did you forget a magic encoding comment?", 0, 0, self.filename)
 
         length = len(self.text)
             

@@ -16,7 +16,7 @@ class LexerTest(unittest.TestCase):
         and some more text.
 """
         node = Lexer(template).parse()
-        assert repr(node) == r"""TemplateNode({}, [Text('\n<b>Hello world</b>\n        ', (1, 1)), DefTag('def', {'name': 'foo()'}, (3, 9), ["Text('\\n                this is a def.\\n        ', (3, 28))"]), Text('\n        \n        and some more text.\n', (5, 16))])"""
+        assert repr(node) == r"""TemplateNode({}, [Text(u'\n<b>Hello world</b>\n        ', (1, 1)), DefTag(u'def', {u'name': u'foo()'}, (3, 9), ["Text(u'\\n                this is a def.\\n        ', (3, 28))"]), Text(u'\n        \n        and some more text.\n', (5, 16))])"""
 
     def test_unclosed_tag(self):
         template = """
@@ -96,7 +96,7 @@ class LexerTest(unittest.TestCase):
         % endif
         """
         node = Lexer(template).parse()
-        assert repr(node) == r"""TemplateNode({}, [Text('\n', (1, 1)), Comment('comment', (2, 1)), ControlLine('if', 'if foo:', False, (3, 1)), Text('            hi\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('        ', (6, 1)), TextTag('text', {}, (6, 9), ['Text(\'\\n            # more code\\n            \\n            % more code\\n            <%illegal compionent>/></>\\n            <%def name="laal()">def</%def>\\n            \\n            \\n        \', (6, 16))']), Text('\n\n        ', (14, 17)), DefTag('def', {'name': 'foo()'}, (16, 9), ["Text('this is foo', (16, 28))"]), Text('\n        \n', (16, 46)), ControlLine('if', 'if bar:', False, (18, 1)), Text('            code\n', (19, 1)), ControlLine('if', 'endif', True, (20, 1)), Text('        ', (21, 1))])"""
+        assert repr(node) == r"""TemplateNode({}, [Text(u'\n', (1, 1)), Comment(u'comment', (2, 1)), ControlLine(u'if', u'if foo:', False, (3, 1)), Text(u'            hi\n', (4, 1)), ControlLine(u'if', u'endif', True, (5, 1)), Text(u'        ', (6, 1)), TextTag(u'text', {}, (6, 9), ['Text(u\'\\n            # more code\\n            \\n            % more code\\n            <%illegal compionent>/></>\\n            <%def name="laal()">def</%def>\\n            \\n            \\n        \', (6, 16))']), Text(u'\n\n        ', (14, 17)), DefTag(u'def', {u'name': u'foo()'}, (16, 9), ["Text(u'this is foo', (16, 28))"]), Text(u'\n        \n', (16, 46)), ControlLine(u'if', u'if bar:', False, (18, 1)), Text(u'            code\n', (19, 1)), ControlLine(u'if', u'endif', True, (20, 1)), Text(u'        ', (21, 1))])"""
         
     def test_def_syntax(self):
         template = """
@@ -132,7 +132,7 @@ class LexerTest(unittest.TestCase):
         """
         nodes = Lexer(template).parse()
         #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), CallTag('call', {'expr': "foo>bar and 'lala' or 'hoho'"}, (2, 13), []), Text('\n            ', (2, 57)), CallTag('call', {'expr': 'foo<bar and hoho>lala and "x" + "y"'}, (3, 13), []), Text('\n        ', (3, 64))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), CallTag(u'call', {u'expr': u"foo>bar and 'lala' or 'hoho'"}, (2, 13), []), Text(u'\n            ', (2, 57)), CallTag(u'call', {u'expr': u'foo<bar and hoho>lala and "x" + "y"'}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
         
     def test_pagetag(self):
         template = """
@@ -141,7 +141,7 @@ class LexerTest(unittest.TestCase):
             some template
         """    
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n            ', (1, 1)), PageTag('page', {'cached': 'True', 'args': 'a, b'}, (2, 13), []), Text('\n            \n            some template\n        ', (2, 48))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), PageTag(u'page', {u'cached': u'True', u'args': u'a, b'}, (2, 13), []), Text(u'\n            \n            some template\n        ', (2, 48))])"""
         
     def test_nesting(self):
         template = """
@@ -154,7 +154,7 @@ class LexerTest(unittest.TestCase):
         
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n        ', (1, 1)), NamespaceTag('namespace', {'name': 'ns'}, (3, 9), ["Text('\\n            ', (3, 31))", 'DefTag(\'def\', {\'name\': \'lala(hi, there)\'}, (4, 13), ["Text(\'\\\\n                \', (4, 42))", "CallTag(\'call\', {\'expr\': \'something()\'}, (5, 17), [])", "Text(\'\\\\n            \', (5, 44))"])', "Text('\\n        ', (6, 20))"]), Text('\n        \n        ', (7, 22))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n        ', (1, 1)), NamespaceTag(u'namespace', {u'name': u'ns'}, (3, 9), ["Text(u'\\n            ', (3, 31))", 'DefTag(u\'def\', {u\'name\': u\'lala(hi, there)\'}, (4, 13), ["Text(u\'\\\\n                \', (4, 42))", "CallTag(u\'call\', {u\'expr\': u\'something()\'}, (5, 17), [])", "Text(u\'\\\\n            \', (5, 44))"])', "Text(u'\\n        ', (6, 20))"]), Text(u'\n        \n        ', (7, 22))])"""
     
     def test_code(self):
         template = """
@@ -174,7 +174,7 @@ class LexerTest(unittest.TestCase):
         """
         nodes = Lexer(template).parse()
         #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        some text\n        \n        ', (1, 1)), Code('\nprint "hi"\nfor x in range(1,5):\n    print x\n        \n', False, (4, 9)), Text('\n        \n        more text\n        \n        ', (8, 11)), Code('\nimport foo\n        \n', True, (12, 9)), Text('\n        ', (14, 11))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        some text\n        \n        ', (1, 1)), Code(u'\nprint "hi"\nfor x in range(1,5):\n    print x\n        \n', False, (4, 9)), Text(u'\n        \n        more text\n        \n        ', (8, 11)), Code(u'\nimport foo\n        \n', True, (12, 9)), Text(u'\n        ', (14, 11))])"""
     
     def test_code_and_tags(self):
         template = """
@@ -197,7 +197,7 @@ class LexerTest(unittest.TestCase):
     result: <%call expr="foo.x(result)"/>
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n', (1, 1)), NamespaceTag('namespace', {'name': 'foo'}, (2, 1), ["Text('\\n    ', (2, 24))", 'DefTag(\'def\', {\'name\': \'x()\'}, (3, 5), ["Text(\'\\\\n        this is x\\\\n    \', (3, 22))"])', "Text('\\n    ', (5, 12))", 'DefTag(\'def\', {\'name\': \'y()\'}, (6, 5), ["Text(\'\\\\n        this is y\\\\n    \', (6, 22))"])', "Text('\\n', (8, 12))"]), Text('\n\n', (9, 14)), Code('\nresult = []\ndata = get_data()\nfor x in data:\n    result.append(x+7)\n\n', False, (11, 1)), Text('\n\n    result: ', (16, 3)), CallTag('call', {'expr': 'foo.x(result)'}, (18, 13), []), Text('\n', (18, 42))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n', (1, 1)), NamespaceTag(u'namespace', {u'name': u'foo'}, (2, 1), ["Text(u'\\n    ', (2, 24))", 'DefTag(u\'def\', {u\'name\': u\'x()\'}, (3, 5), ["Text(u\'\\\\n        this is x\\\\n    \', (3, 22))"])', "Text(u'\\n    ', (5, 12))", 'DefTag(u\'def\', {u\'name\': u\'y()\'}, (6, 5), ["Text(u\'\\\\n        this is y\\\\n    \', (6, 22))"])', "Text(u'\\n', (8, 12))"]), Text(u'\n\n', (9, 14)), Code(u'\nresult = []\ndata = get_data()\nfor x in data:\n    result.append(x+7)\n\n', False, (11, 1)), Text(u'\n\n    result: ', (16, 3)), CallTag(u'call', {u'expr': u'foo.x(result)'}, (18, 13), []), Text(u'\n', (18, 42))])"""
 
     def test_expression(self):
         template = """
@@ -208,7 +208,8 @@ class LexerTest(unittest.TestCase):
         ${hi()}
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        this is some ', (1, 1)), Expression('text', [], (2, 22)), Text(' and this is ', (2, 29)), Expression('textwith ', ['escapes', 'moreescapes'], (2, 42)), Text('\n        ', (2, 76)), DefTag('def', {'name': 'hi()'}, (3, 9), ["Text('\\n            give me ', (3, 27))", "Expression('foo()', [], (4, 21))", "Text(' and ', (4, 29))", "Expression('bar()', [], (4, 34))", "Text('\\n        ', (4, 42))"]), Text('\n        ', (5, 16)), Expression('hi()', [], (6, 9)), Text('\n', (6, 16))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        this is some ', (1, 1)), Expression(u'text', [], (2, 22)), Text(u' and this is ', (2, 29)), Expression(u'textwith ', ['escapes', 'moreescapes'], (2, 42)), Text(u'\n        ', (2, 76)), DefTag(u'def', {u'name': u'hi()'}, (3, 9), ["Text(u'\\n            give me ', (3, 27))", "Expression(u'foo()', [], (4, 21))", "Text(u' and ', (4, 29))", "Expression(u'bar()', [], (4, 34))", "Text(u'\\n        ', (4, 42))"]), Text(u'\n        ', (5, 16)), Expression(u'hi()', [], (6, 9)), Text(u'\n', (6, 16))])"""
+        
 
     def test_tricky_expression(self):
         template = """
@@ -216,19 +217,19 @@ class LexerTest(unittest.TestCase):
             ${x and "|" or "hi"}
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n            ', (1, 1)), Expression('x and "|" or "hi"', [], (3, 13)), Text('\n        ', (3, 33))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), Expression(u'x and "|" or "hi"', [], (3, 13)), Text(u'\n        ', (3, 33))])"""
 
         template = """
         
             ${hello + '''heres '{|}' text | | }''' | escape1}
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n        \n            ', (1, 1)), Expression("hello + '''heres '{|}' text | | }''' ", ['escape1'], (3, 13)), Text('\n        ', (3, 62))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), Expression(u"hello + '''heres '{|}' text | | }''' ", ['escape1'], (3, 13)), Text(u'\n        ', (3, 62))])"""
 
     def test_tricky_code(self):
         template = """<% print 'hi %>' %>"""
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Code("print 'hi %>' \n", False, (1, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Code(u"print 'hi %>' \n", False, (1, 1))])"""
         
         template = r"""
         <%
@@ -253,7 +254,7 @@ text text la la
 """
         nodes = Lexer(template).parse()
         #print nodes
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\ntext text la la\n', (1, 1)), ControlLine('if', 'if foo():', False, (3, 1)), Text(' mroe text la la blah blah\n', (4, 1)), ControlLine('if', 'endif', True, (5, 1)), Text('\n        and osme more stuff\n', (6, 1)), ControlLine('for', 'for l in range(1,5):', False, (8, 1)), Text('    tex tesl asdl l is ', (9, 1)), Expression('l', [], (9, 24)), Text(' kfmas d\n', (9, 28)), ControlLine('for', 'endfor', True, (10, 1)), Text('    tetx text\n    \n', (11, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\ntext text la la\n', (1, 1)), ControlLine(u'if', u'if foo():', False, (3, 1)), Text(u' mroe text la la blah blah\n', (4, 1)), ControlLine(u'if', u'endif', True, (5, 1)), Text(u'\n        and osme more stuff\n', (6, 1)), ControlLine(u'for', u'for l in range(1,5):', False, (8, 1)), Text(u'    tex tesl asdl l is ', (9, 1)), Expression(u'l', [], (9, 24)), Text(u' kfmas d\n', (9, 28)), ControlLine(u'for', u'endfor', True, (10, 1)), Text(u'    tetx text\n    \n', (11, 1))])"""
 
     def test_control_lines_2(self):
         template = \
@@ -265,7 +266,7 @@ text text la la
 % endfor
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n\n\n', (1, 1)), ControlLine('for', "for file in requestattr['toc'].filenames:", False, (4, 1)), Text('    x\n', (5, 1)), ControlLine('for', 'endfor', True, (6, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n\n\n', (1, 1)), ControlLine(u'for', u"for file in requestattr['toc'].filenames:", False, (4, 1)), Text(u'    x\n', (5, 1)), ControlLine(u'for', u'endfor', True, (6, 1))])"""
 
     def test_unmatched_control(self):
         template = """
@@ -307,7 +308,7 @@ text text la la
         % endif
 """    
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('\n', (1, 1)), ControlLine('if', 'if x:', False, (2, 1)), Text('            hi\n', (3, 1)), ControlLine('elif', 'elif y+7==10:', False, (4, 1)), Text('            there\n', (5, 1)), ControlLine('elif', 'elif lala:', False, (6, 1)), Text('            lala\n', (7, 1)), ControlLine('else', 'else:', False, (8, 1)), Text('            hi\n', (9, 1)), ControlLine('if', 'endif', True, (10, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n', (1, 1)), ControlLine(u'if', u'if x:', False, (2, 1)), Text(u'            hi\n', (3, 1)), ControlLine(u'elif', u'elif y+7==10:', False, (4, 1)), Text(u'            there\n', (5, 1)), ControlLine(u'elif', u'elif lala:', False, (6, 1)), Text(u'            lala\n', (7, 1)), ControlLine(u'else', u'else:', False, (8, 1)), Text(u'            hi\n', (9, 1)), ControlLine(u'if', u'endif', True, (10, 1))])"""
         
     def test_integration(self):
         template = """<%namespace name="foo" file="somefile.html"/>
@@ -332,12 +333,12 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag('namespace', {'name': 'foo', 'file': 'somefile.html'}, (1, 1), []), Text('\n', (1, 46)), Comment('inherit from foobar.html', (2, 1)), InheritTag('inherit', {'file': 'foobar.html'}, (3, 1), []), Text('\n\n', (3, 31)), DefTag('def', {'name': 'header()'}, (5, 1), ["Text('\\n     <div>header</div>\\n', (5, 23))"]), Text('\n', (7, 8)), DefTag('def', {'name': 'footer()'}, (8, 1), ["Text('\\n    <div> footer</div>\\n', (8, 23))"]), Text('\n\n<table>\n', (10, 8)), ControlLine('for', 'for j in data():', False, (13, 1)), Text('    <tr>\n', (14, 1)), ControlLine('for', 'for x in j:', False, (15, 1)), Text('            <td>Hello ', (16, 1)), Expression('x', ['h'], (16, 23)), Text('</td>\n', (16, 30)), ControlLine('for', 'endfor', True, (17, 1)), Text('    </tr>\n', (18, 1)), ControlLine('for', 'endfor', True, (19, 1)), Text('</table>\n', (20, 1))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag(u'namespace', {u'name': u'foo', u'file': u'somefile.html'}, (1, 1), []), Text(u'\n', (1, 46)), Comment(u'inherit from foobar.html', (2, 1)), InheritTag(u'inherit', {u'file': u'foobar.html'}, (3, 1), []), Text(u'\n\n', (3, 31)), DefTag(u'def', {u'name': u'header()'}, (5, 1), ["Text(u'\\n     <div>header</div>\\n', (5, 23))"]), Text(u'\n', (7, 8)), DefTag(u'def', {u'name': u'footer()'}, (8, 1), ["Text(u'\\n    <div> footer</div>\\n', (8, 23))"]), Text(u'\n\n<table>\n', (10, 8)), ControlLine(u'for', u'for j in data():', False, (13, 1)), Text(u'    <tr>\n', (14, 1)), ControlLine(u'for', u'for x in j:', False, (15, 1)), Text(u'            <td>Hello ', (16, 1)), Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n', (16, 30)), ControlLine(u'for', u'endfor', True, (17, 1)), Text(u'    </tr>\n', (18, 1)), ControlLine(u'for', u'endfor', True, (19, 1)), Text(u'</table>\n', (20, 1))])"""
 
     def test_crlf(self):
         template = file("./test_htdocs/crlf.html").read()
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text('<html>\r\n\r\n', (1, 1)), PageTag('page', {}, (3, 1), []), Text('\r\n\r\nlike the name says.\r\n\r\n', (3, 9)), ControlLine('for', 'for x in [1,2,3]:', False, (7, 1)), Text('        ', (8, 1)), Expression('x', [], (8, 9)), Text('', (8, 13)), ControlLine('for', 'endfor', True, (9, 1)), Text('\r\n', (10, 1)), DefTag('def', {'name': 'hi()'}, (11, 1), ["Text('\\r\\n    hi!\\r\\n', (11, 19))"]), Text('\r\n\r\n</html>', (13, 8))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (3, 9)), ControlLine(u'for', u'for x in [1,2,3]:', False, (7, 1)), Text(u'        ', (8, 1)), Expression(u'x', [], (8, 9)), Text(u'', (8, 13)), ControlLine(u'for', u'endfor', True, (9, 1)), Text(u'\r\n', (10, 1)), DefTag(u'def', {u'name': u'hi()'}, (11, 1), ["Text(u'\\r\\n    hi!\\r\\n', (11, 19))"]), Text(u'\r\n\r\n</html>', (13, 8))])"""
         assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 </html>"""
         
 if __name__ == '__main__':

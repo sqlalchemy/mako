@@ -30,8 +30,29 @@ class EncodingTest(unittest.TestCase):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
         template = Template(val)
+        #print template.code
+        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+    
+    def test_unicode_text(self):
+        val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
+        val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
+        template = Template(val)
+        print template.code
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
+    def test_unicode_text_ccall(self):
+        val = u"""
+        <%def name="foo()">
+            ${capture(caller.body)}
+        </%def>
+        <%call expr="foo()">
+        <%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>
+        </%call>"""
+        val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
+        template = Template(val)
+        #print template.code
+        assert flatten_result(template.render_unicode()) == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        
     def test_unicode_literal_in_expr(self):
         template = Template(u"""# -*- coding: utf-8 -*-
         ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
@@ -57,6 +78,7 @@ class EncodingTest(unittest.TestCase):
         """.encode('utf-8'))
         assert template.render_unicode().strip() == u"""hi, drôle de petit voix m’a réveillé."""
     
+        
     def test_input_encoding(self):
         """test the 'input_encoding' flag on Template, and that unicode objects arent double-decoded"""
         s2 = u"hello ${f(u'śląsk')}"
