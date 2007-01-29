@@ -53,6 +53,13 @@ class FilterTest(unittest.TestCase):
         #print t.code
         assert t.render().strip()=="trim this string: some string to trim continue"
 
+    def test_encode_filter(self):
+        t = Template("""# coding: utf-8
+            some stuff.... ${x}
+        """, default_filters=['decode.utf8'])
+        #print t.code
+        assert t.render_unicode(x="voix m’a réveillé").strip() == u"some stuff.... voix m’a réveillé"
+        
     def test_custom_default(self):
         t = Template("""
         <%!

@@ -17,6 +17,7 @@ The built-in escape flags are:
 * `trim` : whitespace trimming, provided by `string.strip()`
 * `entity` : produces HTML entity references for applicable strings, derived from `htmlentitydefs`
 * `unicode` : produces a Python unicode string (this function is applied by default).
+* `decode.<some encoding>` : decode input into a Python unicode with the specified encoding
 
 To apply more than one filter, separate them by a comma:
 
@@ -58,7 +59,10 @@ In addition to the `expression_filter` argument, the `default_filters` argument 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
 
-Further information about the default usage of `unicode` can be found in [unicode](rel:unicode).
+To replace the usual `unicode` function with a specific encoding, the `decode` filter can be substituted:
+
+    {python}
+    t = TemplateLookup(directories=['/tmp'], default_filters=['decode.utf8'])
     
 Any string name can be added to `default_filters` where it will be added to all expressions as a filter.  The filters are applied from left to right, meaning the leftmost filter is applied first.
 
@@ -81,12 +85,6 @@ The above will generate templates something like this:
     def render_body(context):
         context.write(myfilter(unicode("some text")))
 
-The `unicode` function can be removed or replaced with another function, such as this example which assumes all expressions are utf-8 encoded strings:
-
-    {python}
-    t = Template(text, 
-        default_filters=['encodeutf8'], 
-        imports=["encodeutf8 = lambda x:unicode(x, 'utf-8')"])
 
 ### Filtering Defs
 

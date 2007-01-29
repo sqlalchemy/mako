@@ -37,7 +37,20 @@ def url_unescape(string):
 
 def trim(string):
     return string.strip()
-    
+
+
+class Decode(object):
+    def __getattr__(self, key):
+        def decode(x):
+            if isinstance(x, unicode):
+                return x
+            if not isinstance(x, str):
+                return str(x)
+            return unicode(x, encoding=key)
+        return decode
+decode = Decode()
+        
+            
 _ASCII_re = re.compile(r'\A[\x00-\x7f]*\Z')
 
 def is_ascii_str(text):
@@ -142,12 +155,13 @@ codecs.register_error('htmlentityreplace', htmlentityreplace_errors)
 
 # TODO: options to make this dynamic per-compilation will be added in a later release
 DEFAULT_ESCAPES = {
-    'x':xml_escape,
-    'h':html_escape,
-    'u':url_escape,
-    'trim':trim,
-    'entity':html_entities_escape,
-    'unicode':unicode
+    'x':'filters.xml_escape',
+    'h':'filters.html_escape',
+    'u':'filters.url_escape',
+    'trim':'filters.trim',
+    'entity':'filters.html_entities_escape',
+    'unicode':'unicode',
+    'decode':'decode'
 }
     
 

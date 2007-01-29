@@ -391,8 +391,20 @@ class _GenerateRenderMethod(object):
     def create_filter_callable(self, args, target, is_expression):
         """write a filter-applying expression based on the filters present in the given 
         filter names, adjusting for the global 'default' filter aliases as needed."""
-        d = dict([(k, (v is unicode and 'unicode' or "filters." + v.func_name)) for k, v in filters.DEFAULT_ESCAPES.iteritems()])
-        
+        def locate_encode(name):
+            if re.match(r'decode\..+', name):
+                return "filters." + name
+            elif name == 'unicode':
+                return 'unicode'
+            else:
+                return \
+                {'x':'filters.xml_escape',
+                'h':'filters.html_escape',
+                'u':'filters.url_escape',
+                'trim':'filters.trim',
+                'entity':'filters.html_entities_escape',
+                }.get(name, name)
+                
         if is_expression and self.compiler.pagetag:
             args = self.compiler.pagetag.filter_args.args + args
         if is_expression and self.compiler.default_filters:
@@ -402,10 +414,13 @@ class _GenerateRenderMethod(object):
             m = re.match(r'(.+?)(\(.*\))', e)
             if m:
                 (ident, fargs) = m.group(1,2)
-                f = d.get(ident, ident)
+                f = locate_encode(ident)
                 e = f + fargs
             else:
-                e = d.get(e, e)
+                x = e
+                e = locate_encode(e)
+                if e is None:
+                    raise "der its none " + x
             target = "%s(%s)" % (e, target)
         return target
         

@@ -47,7 +47,7 @@ looks something like this:
     {python}
     context.write(unicode("hello world"))
     
-That is, **the output of all expressions is run through the `unicode` builtin**.  As of 0.1.2 this behavior can be modified, but its recommended that its left in place, or substituted with another unicode-producing function.  This is mainly so that any expression, such as an expression that results in an integer result or an object instance which contains a `__str__()` method, can be properly converted to a string before rendering without requiring any explicit step, but it also serves to ensure that the entire output stream of the template is available as a unicode object, which can then be rendered to any desired encoding.  So the main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this:
+That is, **the output of all expressions is run through the `unicode` builtin**.  This is the default setting, and can be modified to expect various encodings.  The `unicode` step serves both the purpose of rendering non-string expressions into strings (such as integers or objects which contain `__str()__` methods), and to ensure that the final output stream is constructed as a unicode object.  The main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this:
 
     ${"voix m’a réveillé."}  # error !
 
@@ -58,20 +58,16 @@ You must instead say this:
 Similarly, if you are reading data from a file, or returning data from some object that is returning a Python bytestring containing a non-ascii encoding, you have to explcitly decode to unicode first, such as:
 
     ${call_my_object().decode('utf-8')}
+    
+If you want a certain encoding applied to *all* expressions, override the `unicode` builtin with the `decode` builtin at the `Template` or `TemplateLookup` level:
 
- * **why convert all objects to a unicode first?  What if I dont want that conversion to occur ?** - While there is an option to turn this behavior off, Mako is a textual template language, and its job is to produce textual output.  It makes no sense to output data that is not in a string format.  If you want to output raw bytes or something, such as for an image file, typically this should not be occuring from within a textual template.  Besides, if you really want to, you can always write whatever data you want to the `context` directly:
+    {python}
+    t = Template(templatetext, default_filters=['decode.utf8'])
 
-        {python}
-        context.write(get_some_whatever_data())
+Note that the built-in `decode` object is slower than the `unicode` function, since unlike `unicode` its not a Python builtin, and it also checks the type of the incoming data to determine if string conversion is needed first.
 
- * **why use the unicode() function?  Why not call str()?** - The output stream of a Mako template is a Python unicode object, which is then encoded when `render()` is called.  Calling `str()` would produce a plain bytestring, not a unicode string.  Plus it cant handle any non-`ascii` encoded values.
+The `default_filters` argument can be used to entirely customize the filtering process of expressions.  This argument is described in [filtering_expression_defaultfilters](rel:filtering_expression_defaultfilters).
  
- * **why not send the input/output encoding of the template as the "encoding" argument to the "unicode" function? ** - This would be good.  But unfortunately, when presented with the `encoding` argument, the `unicode` function suddenly gives up its role as the converter-of-non-string objects, and expressions that produce numerics and other non-string types (which are perfectly stringifiable otherwise via their `__str__()` function) will produce errors.  
-
- * **ok, why not use a more intelligent function than unicode(), which looks at the input and figures out what kind of encoding/string conversion is needed ?** - the `unicode` function, being a Python builtin, is much faster than any custom function written in Python; using a slower function by default would introduce a usually unnecessary latency to Mako's performance.  Additionally, Mako would rather have a very simple behavior rather than something more magical/implicit going on.  Since if you want some other behavior, you can change it!
-
-If you want all expressions passed through a function other than `unicode()`, or even if you would like to try your hand at sending raw bytestrings straight through, work with the `default_filters` argument to `Template` or `TemplateLookup`, described in [filtering_expression_defaultfilters](rel:filtering_expression_defaultfilters).
-
 ### Defining Output Encoding
 
 Now that we have a template which produces a pure unicode output stream, all the hard work is done.  We can take the output and do anything with it.
