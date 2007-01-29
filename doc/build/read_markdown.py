@@ -172,7 +172,7 @@ def get_parent_map(tree):
     return dict([(c, p) for p in tree.getiterator() for c in p])
 
 def header(toc, title, filename):
-    return """
+    return """# -*- coding: utf-8 -*-
 <%%inherit file="content_layout.html"/>
 <%%page args="toc, extension, paged"/>
 <%%namespace  name="formatting" file="formatting.html"/>

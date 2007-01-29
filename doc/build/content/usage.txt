@@ -120,19 +120,7 @@ The above method disgards the output encoding keyword argument; you can encode y
     {python}
     print mytemplate.render_unicode().encode('utf-8')
     
-The above methods deal only with the encoding of the template output.  To indicate an encoding for the template's source file, place a Python-style "magic encoding comment" as the very first line in the template file:
-
-    {python}
-    # -*- coding: utf-8 -*-
-
-    <template text>
-
-Mako's `Lexer` module will detect the above marker and decode the template text internally into a `unicode` object using the given encoding.
-
-For the picky, the regular expression used is derived from that of [pep-0263](http://www.python.org/dev/peps/pep-0263/):
-    
-    {python}
-    #.*coding[:=]\s*([-\w.]+).*\n
+Note that Mako's ability to return data in any encoding and/or `unicode` implies that the underlying output stream of the template is a Python unicode object.  This behavior is described fully in [unicode](rel:unicode).
 
 ### Common Framework Integrations
 

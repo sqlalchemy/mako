@@ -1,0 +1,105 @@
+The Unicode Chapter   {@name=unicode}
+======================
+
+The Python language in the 2.x series supports two ways of representing string objects.  One is the `string` type and the other is the `unicode` type, both of which extend a type called `basestring`.  A key issue in Python, which is hopefully to be resolved in Python 3000, is that objects of type `string` (i.e. created from an expression such as `"hello world"`) have no information associated with it as to what **encoding** the data is stored in.   For this reason they are often referred to as **byte strings**.  The origins of this come from Python's background of being developed before the Unicode standard was even available, back when strings were C-style strings and were just that, a series of bytes.  Strings that had only values below 128 just happened to be **ascii** strings and were printable on the console, whereas strings with values above 128 would produce all kinds of graphical characters and bells.
+
+Contrast the Python `string` type with the Python `unicode` type.  Objects of this type are created whenever you say something like `u"hello world"`.  In this case, Python represents each character in the string internally using multiple bytes per character (something similar to UTF-16).  Whats important is that when using the `unicode` type to store strings, Python knows the data's encoding; its in its own internal format.  Whereas when using the `string` type, it does not.
+
+When Python attempts to treat a byte-string as a string, which means its attempting to compare/parse its characters, to coerce it into another encoding, or to decode it to a unicode object, it has to guess what the encoding is.  In this case, it will pretty much always guess the encoding as `ascii`...and if the bytestring contains bytes above value 128, you'll get an error.
+
+There is one operation that Python *can* do with a non-ascii bytestring, and its a great source of confusion:  it can dump the bytestring straight out to a stream or a file, with nary a care what the encoding is.  To Python, this is pretty much like dumping any other kind of binary data (like an image) to a stream somewhere.  So in a lot of cases, programs that embed all kinds of international characters and encodings into plain byte-strings (i.e. using `"hello world"` style literals) can fly right through their run, sending reams of strings out to whereever they are going, and the programmer, seeing the same output as was expressed in the input, is now under the illusion that his or her program is Unicode-compliant.  In fact, their program has no unicode awareness whatsoever, and similarly has no ability to interact with libraries that *are* unicode aware.
+
+Particularly, some template languages like Cheetah, as well as earlier versions of Myghty, will treat expressions in this manner..they just go right through.  Theres nothing "incorrect" about this, but Mako, since it deals with unicode internally, usually requires explicitness when dealing with non-ascii encodings.  Additionally, if you ever need to handle unicode strings and other kinds of encoding conversions more intelligently, the usage of raw bytestrings quickly becomes a nightmare, since you are sending the Python interpreter collections of bytes for which it can make no intelligent decisions with regards to encoding.
+
+In Mako, all parsed template constructs and output streams are handled internally as Python `unicode` objects.  Its only at the point of `render()` that this unicode stream is rendered into whatever the desired output encoding is.  The implication here is that the template developer must ensure that the encoding of all non-ascii templates is explicit, that all non-ascii-encoded expressions are in one way or another converted to unicode, and that the output stream of the template is handled as a unicode stream being encoded to some encoding.
+
+### Specifying the Encoding of a Template File
+
+This is the most basic encoding-related setting, and it is equivalent to Python's "magic encoding comment", as described in [pep-0263](http://www.python.org/dev/peps/pep-0263/).  Any template that contains non-ascii characters  requires that this comment be present so that Mako can decode to unicode (and also make usage of Python's AST parsing services).  Mako's lexer will use this encoding in order to convert the template source into a `unicode` object before continuing its parsing:
+
+    {python}
+    # -*- coding: utf-8 -*-
+
+    Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »
+
+For the picky, the regular expression used is derived from that of the abovementioned pep:
+    
+    {python}
+    #.*coding[:=]\s*([-\w.]+).*\n
+
+The lexer will convert to unicode in all cases, so that if any characters exist in the template that are outside of the specified encoding (or the default of `ascii`), the error will be immediate.
+
+As an alternative, the template encoding can be specified programmatically to either `Template` or `TemplateLookup` via the `input_encoding` parameter:
+
+    {python}
+    t = TemplateLookup(directories=['./'], input_encoding='utf-8')
+    
+The above will assume all located templates specify `utf-8` encoding, unless the template itself contains its own magic encoding comment, which takes precedence.
+
+### Handling Expressions
+
+The next area that encoding comes into play is in expression objects.  By default, Mako's treatment of an expression like this:
+
+    ${"hello world"}
+    
+looks something like this:
+
+    {python}
+    context.write(unicode("hello world"))
+    
+That is, **the output of all expressions is run through the `unicode` builtin**.  As of 0.1.2 this behavior can be modified, but its recommended that its left in place, or substituted with another unicode-producing function.  This is mainly so that any expression, such as an expression that results in an integer result or an object instance which contains a `__str__()` method, can be properly converted to a string before rendering without requiring any explicit step, but it also serves to ensure that the entire output stream of the template is available as a unicode object, which can then be rendered to any desired encoding.  So the main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this:
+
+    ${"voix m’a réveillé."}  # error !
+
+You must instead say this:
+
+    ${u"voix m’a réveillé."}  # OK !
+
+Similarly, if you are reading data from a file, or returning data from some object that is returning a Python bytestring containing a non-ascii encoding, you have to explcitly decode to unicode first, such as:
+
+    ${call_my_object().decode('utf-8')}
+
+ * **why convert all objects to a unicode first?  What if I dont want that conversion to occur ?** - While there is an option to turn this behavior off, Mako is a textual template language, and its job is to produce textual output.  It makes no sense to output data that is not in a string format.  If you want to output raw bytes or something, such as for an image file, typically this should not be occuring from within a textual template.  Besides, if you really want to, you can always write whatever data you want to the `context` directly:
+
+        {python}
+        context.write(get_some_whatever_data())
+
+ * **why use the unicode() function?  Why not call str()?** - The output stream of a Mako template is a Python unicode object, which is then encoded when `render()` is called.  Calling `str()` would produce a plain bytestring, not a unicode string.  Plus it cant handle any non-`ascii` encoded values.
+ 
+ * **why not send the input/output encoding of the template as the "encoding" argument to the "unicode" function? ** - This would be good.  But unfortunately, when presented with the `encoding` argument, the `unicode` function suddenly gives up its role as the converter-of-non-string objects, and expressions that produce numerics and other non-string types (which are perfectly stringifiable otherwise via their `__str__()` function) will produce errors.  
+
+ * **ok, why not use a more intelligent function than unicode(), which looks at the input and figures out what kind of encoding/string conversion is needed ?** - the `unicode` function, being a Python builtin, is much faster than any custom function written in Python; using a slower function by default would introduce a usually unnecessary latency to Mako's performance.  Additionally, Mako would rather have a very simple behavior rather than something more magical/implicit going on.  Since if you want some other behavior, you can change it!
+
+If you want all expressions passed through a function other than `unicode()`, or even if you would like to try your hand at sending raw bytestrings straight through, work with the `default_filters` argument to `Template` or `TemplateLookup`, described in [filtering_expression_defaultfilters](rel:filtering_expression_defaultfilters).
+
+### Defining Output Encoding
+
+Now that we have a template which produces a pure unicode output stream, all the hard work is done.  We can take the output and do anything with it.
+
+As stated in the "Usage" chapter, both `Template` and `TemplateLookup` accept an `output_encoding` parameter which can be used to encode the output in any Python supported codec:
+
+    {python}
+    from mako.template import Template
+    from mako.lookup import TemplateLookup
+    
+    mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8')
+    
+    mytemplate = mylookup.get_template("foo.txt")
+    print mytemplate.render()
+    
+And `render_unicode()` will return the template output as a Python `unicode` object:
+
+    {python}
+    print mytemplate.render_unicode()
+    
+The above method disgards the output encoding keyword argument; you can encode yourself by saying:
+
+    {python}
+    print mytemplate.render_unicode().encode('utf-8')
+    
+#### Buffer Selection
+
+Mako does play some games with the style of buffering used internally, to maximize performance.  Since the buffer is by far the most heavily used object in a render operation, its important !  
+
+When calling `render()` on a template that does not specify any output encoding (i.e. its `ascii`), Python's `cStringIO` module, which cannot handle encoding of non-ascii `unicode` objects (even though it can send raw bytestrings through), is used for buffering.  Otherwise, a custom Mako class called `FastEncodingBuffer` is used, which essentially is a super dumbed-down version of `StringIO` that gathers all strings into a list and uses `u''.join(elements)` to produce the final output - its markedly faster than `StringIO`.
+

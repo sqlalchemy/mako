@@ -3,6 +3,9 @@
   characters, combined with a template that indicates a non-standard
   encoding, are expanded into backslash-escaped glyphs before being AST
   parsed [ticket:11]
+- all template lexing converts the template to unicode first, to
+  immediately catch any encoding issues and ensure internal unicode
+  representation.
 - added module_filename argument to Template to allow specification of a
   specific module file
 - added modulename_callable to TemplateLookup to allow a function to

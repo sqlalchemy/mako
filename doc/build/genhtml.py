@@ -19,6 +19,7 @@ files = [
     'namespaces',
     'inheritance',
     'filtering',
+    'unicode',
     'caching',
     ]
 
@@ -37,7 +38,7 @@ pickle.dump(root, file('./output/table_of_contents.pickle', 'w'))
 template_dirs = ['./templates', './output']
 output = os.path.dirname(os.getcwd())
 
-lookup = TemplateLookup(template_dirs, module_directory='./modules')
+lookup = TemplateLookup(template_dirs, module_directory='./modules', output_encoding='utf-8')
 
 def genfile(name, toc):
     infile = name + ".html"
