@@ -50,7 +50,7 @@ class FilterTest(unittest.TestCase):
         t = Template("""
         trim this string: ${"  some string to trim   " | filters.trim} continue\
         """, imports=["from mako import filters"])
-        print t.code
+        #print t.code
         assert t.render().strip()=="trim this string: some string to trim continue"
 
     def test_custom_default(self):

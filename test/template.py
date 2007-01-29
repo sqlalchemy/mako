@@ -113,7 +113,7 @@ class PageArgsTest(unittest.TestCase):
 
             this is page, ${x}, ${y}, ${z}, ${w}
 """)
-        print template.code
+        #print template.code
         assert flatten_result(template.render(x=5, y=10, w=17)) == "this is page, 5, 10, 7, 17"
 
     def test_overrides_builtins(self):

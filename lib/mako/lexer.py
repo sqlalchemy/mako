@@ -131,7 +131,7 @@ class Lexer(object):
         return self.template
 
     def match_encoding(self):
-        match = self.match(r'#.*coding[:=]\s*([-\w.]+).*\n')
+        match = self.match(r'#.*coding[:=]\s*([-\w.]+).*\r?\n')
         if match:
             return match.group(1)
         else:
@@ -209,7 +209,7 @@ class Lexer(object):
                  (?=</?[%&])  # a substitution or block or call start or end
                                               # - don't consume
                  |
-                 (\\\n)         # an escaped newline  - throw away
+                 (\\\r?\n)         # an escaped newline  - throw away
                  |
                  \Z           # end of string
                 )""", re.X | re.S)
@@ -247,7 +247,7 @@ class Lexer(object):
             return False
 
     def match_control_line(self):
-        match = self.match(r"(?<=^)[\t ]*([%#])[\t ]*([^\n]*)(?:\n|\Z)", re.M)
+        match = self.match(r"(?<=^)[\t ]*([%#])[\t ]*([^\r\n]*)(?:\r?\n|\Z)", re.M)
         if match:
             operator = match.group(1)
             text = match.group(2)

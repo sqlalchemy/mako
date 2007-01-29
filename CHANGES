@@ -1,36 +1,45 @@
 0.1.2
-- fix to parsing of code/expression blocks to insure that non-ascii characters, combined
-with a template that indicates a non-standard encoding, are expanded into backslash-escaped 
-glyphs before being AST parsed [ticket:11]
-- added module_filename argument to Template to allow specification of a specific module
-file
-- added modulename_callable to TemplateLookup to allow a function to determine module filenames
-(takes filename, uri arguments).  used for [ticket:14]
-- added optional input_encoding flag to Template, to allow sending a unicode() object with no
-magic encoding comment
+- fix to parsing of code/expression blocks to insure that non-ascii
+  characters, combined with a template that indicates a non-standard
+  encoding, are expanded into backslash-escaped glyphs before being AST
+  parsed [ticket:11]
+- added module_filename argument to Template to allow specification of a
+  specific module file
+- added modulename_callable to TemplateLookup to allow a function to
+  determine module filenames (takes filename, uri arguments). used for
+  [ticket:14]
+- added optional input_encoding flag to Template, to allow sending a
+  unicode() object with no magic encoding comment
 - "expression_filter" argument in <%page> applies only to expressions
-- added "default_filters" argument to Template, TemplateLookup.  applies only to expressions,
-gets prepended to "expression_filter" arg from <%page>.  defaults to ["unicode"], so that 
-all expressions get stringified into u'' by default (this is what Mako already does).
-By setting to [], expressions are passed through raw.
-- added "imports" argument to Template, TemplateLookup.  so you can predefine a list of
-import statements at the top of the template.  can be used in conjunction with 
-default_filters.
-- small fix to local variable propigation for locals that are conditionally declared
+- added "default_filters" argument to Template, TemplateLookup. applies only
+  to expressions, gets prepended to "expression_filter" arg from <%page>.
+  defaults to ["unicode"], so that all expressions get stringified into u''
+  by default (this is what Mako already does). By setting to [], expressions
+  are passed through raw.
+- added "imports" argument to Template, TemplateLookup. so you can predefine
+  a list of import statements at the top of the template. can be used in
+  conjunction with default_filters.
+- support for CRLF templates...whoops ! welcome to all the windows users.
+  [ticket:16]
+- small fix to local variable propigation for locals that are conditionally
+  declared
 
 0.1.1
-- buffet plugin supports string-based templates, allows ToscaWidgets to work [ticket:8]
+- buffet plugin supports string-based templates, allows ToscaWidgets to work
+  [ticket:8]
 - AST parsing fixes: fixed TryExcept identifier parsing
-- removed textmate tmbundle from contrib and into separate SVN location; windows users
-cant handle those files, setuptools not very good at "pruning" certain directories
+- removed textmate tmbundle from contrib and into separate SVN location;
+  windows users cant handle those files, setuptools not very good at
+  "pruning" certain directories
 - fix so that "cache_timeout" parameter is propigated
-- fix to expression filters so that string conversion (actually unicode) properly 
-occurs before filtering
-- better error message when a lookup is attempted with a template that has no lookup
+- fix to expression filters so that string conversion (actually unicode)
+  properly occurs before filtering
+- better error message when a lookup is attempted with a template that has no
+  lookup
 - implemented "module" attribute for namespace
 - fix to code generation to correctly track multiple defs with the same name
-- "directories" can be passed to TemplateLookup as a scalar in which case it gets
-converted to a list [ticket:9]
+- "directories" can be passed to TemplateLookup as a scalar in which case it
+  gets converted to a list [ticket:9]
 
 0.1.0
 

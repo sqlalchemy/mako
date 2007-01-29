@@ -2,6 +2,8 @@ import unittest
 
 from mako.lexer import Lexer
 from mako import exceptions
+from util import flatten_result, result_lines
+from mako.template import Template
 
 class LexerTest(unittest.TestCase):
     def test_text_and_tag(self):
@@ -332,6 +334,11 @@ text text la la
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag('namespace', {'name': 'foo', 'file': 'somefile.html'}, (1, 1), []), Text('\n', (1, 46)), Comment('inherit from foobar.html', (2, 1)), InheritTag('inherit', {'file': 'foobar.html'}, (3, 1), []), Text('\n\n', (3, 31)), DefTag('def', {'name': 'header()'}, (5, 1), ["Text('\\n     <div>header</div>\\n', (5, 23))"]), Text('\n', (7, 8)), DefTag('def', {'name': 'footer()'}, (8, 1), ["Text('\\n    <div> footer</div>\\n', (8, 23))"]), Text('\n\n<table>\n', (10, 8)), ControlLine('for', 'for j in data():', False, (13, 1)), Text('    <tr>\n', (14, 1)), ControlLine('for', 'for x in j:', False, (15, 1)), Text('            <td>Hello ', (16, 1)), Expression('x', ['h'], (16, 23)), Text('</td>\n', (16, 30)), ControlLine('for', 'endfor', True, (17, 1)), Text('    </tr>\n', (18, 1)), ControlLine('for', 'endfor', True, (19, 1)), Text('</table>\n', (20, 1))])"""
 
-
+    def test_crlf(self):
+        template = file("./test_htdocs/crlf.html").read()
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text('<html>\r\n\r\n', (1, 1)), PageTag('page', {}, (3, 1), []), Text('\r\n\r\nlike the name says.\r\n\r\n', (3, 9)), ControlLine('for', 'for x in [1,2,3]:', False, (7, 1)), Text('        ', (8, 1)), Expression('x', [], (8, 9)), Text('', (8, 13)), ControlLine('for', 'endfor', True, (9, 1)), Text('\r\n', (10, 1)), DefTag('def', {'name': 'hi()'}, (11, 1), ["Text('\\r\\n    hi!\\r\\n', (11, 19))"]), Text('\r\n\r\n</html>', (13, 8))])"""
+        assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 </html>"""
+        
 if __name__ == '__main__':
     unittest.main()
