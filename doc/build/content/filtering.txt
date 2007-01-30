@@ -54,6 +54,8 @@ Result:
 
 #### The default_filters Argument {@name=defaultfilters}
 
+**New in version 0.1.2**
+
 In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering at the programmatic level.  This array-based argument defaults to `["unicode"]`:
 
     {python}

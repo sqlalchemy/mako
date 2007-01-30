@@ -1,7 +1,7 @@
 The Unicode Chapter   {@name=unicode}
 ======================
 
-The Python language in the 2.x series supports two ways of representing string objects.  One is the `string` type and the other is the `unicode` type, both of which extend a type called `basestring`.  A key issue in Python, which is hopefully to be resolved in Python 3000, is that objects of type `string` (i.e. created from an expression such as `"hello world"`) have no information associated with it as to what **encoding** the data is stored in.   For this reason they are often referred to as **byte strings**.  The origins of this come from Python's background of being developed before the Unicode standard was even available, back when strings were C-style strings and were just that, a series of bytes.  Strings that had only values below 128 just happened to be **ascii** strings and were printable on the console, whereas strings with values above 128 would produce all kinds of graphical characters and bells.
+The Python language in the 2.x series supports two ways of representing string objects.  One is the `string` type and the other is the `unicode` type, both of which extend a type called `basestring`.  A key issue in Python, which is hopefully to be resolved in Python 3000, is that objects of type `string` (i.e. created from an expression such as `"hello world"`) contain no information regarding what **encoding** the data is stored in.   For this reason they are often referred to as **byte strings**.  The origins of this come from Python's background of being developed before the Unicode standard was even available, back when strings were C-style strings and were just that, a series of bytes.  Strings that had only values below 128 just happened to be **ascii** strings and were printable on the console, whereas strings with values above 128 would produce all kinds of graphical characters and bells.
 
 Contrast the Python `string` type with the Python `unicode` type.  Objects of this type are created whenever you say something like `u"hello world"`.  In this case, Python represents each character in the string internally using multiple bytes per character (something similar to UTF-16).  Whats important is that when using the `unicode` type to store strings, Python knows the data's encoding; its in its own internal format.  Whereas when using the `string` type, it does not.
 
@@ -17,7 +17,6 @@ In Mako, all parsed template constructs and output streams are handled internall
 
 This is the most basic encoding-related setting, and it is equivalent to Python's "magic encoding comment", as described in [pep-0263](http://www.python.org/dev/peps/pep-0263/).  Any template that contains non-ascii characters  requires that this comment be present so that Mako can decode to unicode (and also make usage of Python's AST parsing services).  Mako's lexer will use this encoding in order to convert the template source into a `unicode` object before continuing its parsing:
 
-    {python}
     # -*- coding: utf-8 -*-
 
     Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »
@@ -38,7 +37,7 @@ The above will assume all located templates specify `utf-8` encoding, unless the
 
 ### Handling Expressions
 
-The next area that encoding comes into play is in expression objects.  By default, Mako's treatment of an expression like this:
+The next area that encoding comes into play is in expression constructs.  By default, Mako's treatment of an expression like this:
 
     ${"hello world"}
     
@@ -95,7 +94,7 @@ The above method disgards the output encoding keyword argument; you can encode y
     
 #### Buffer Selection
 
-Mako does play some games with the style of buffering used internally, to maximize performance.  Since the buffer is by far the most heavily used object in a render operation, its important !  
+Mako does play some games with the style of buffering used internally, to maximize performance.  Since the buffer is by far the most heavily used object in a render operation, its important!
 
 When calling `render()` on a template that does not specify any output encoding (i.e. its `ascii`), Python's `cStringIO` module, which cannot handle encoding of non-ascii `unicode` objects (even though it can send raw bytestrings through), is used for buffering.  Otherwise, a custom Mako class called `FastEncodingBuffer` is used, which essentially is a super dumbed-down version of `StringIO` that gathers all strings into a list and uses `u''.join(elements)` to produce the final output - its markedly faster than `StringIO`.
 
