@@ -26,6 +26,7 @@
   [ticket:16]
 - small fix to local variable propigation for locals that are conditionally
   declared
+- got "top level" def calls to work, i.e. template.get_def("somedef").render()
 
 0.1.1
 - buffet plugin supports string-based templates, allows ToscaWidgets to work

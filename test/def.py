@@ -60,6 +60,25 @@ class DefTest(unittest.TestCase):
         # then test output
         assert flatten_result(template.render()) == "im b and heres a: im a"
 
+    def test_toplevel(self):
+        """test calling a def from the top level"""
+        template = Template("""
+        
+            this is the body
+        
+            <%def name="a()">
+                this is a
+            </%def>
+
+            <%def name="b(x, y)">
+                this is b, ${x} ${y}
+            </%def>
+                
+        """)
+        assert flatten_result(template.get_def("a").render()) == "this is a"
+        assert flatten_result(template.get_def("b").render(x=10, y=15)) == "this is b, 10 15"
+        assert flatten_result(template.get_def("body").render()) == "this is the body"
+        
 class ScopeTest(unittest.TestCase):
     """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
     def test_scope_one(self):

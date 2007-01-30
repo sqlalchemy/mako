@@ -249,7 +249,25 @@ ${next.body()}
             assert False
         except TypeError:
             assert True
-            
+    
+    def test_toplevel(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base", """
+            this is the base.
+            ${next.body()}
+        """)
+        collection.put_string("index", """
+            <%inherit file="base"/>
+            this is the body
+        """)
+        assert result_lines(collection.get_template('index').render()) == [
+            "this is the base.",
+            "this is the body"
+        ]
+        assert result_lines(collection.get_template('index').get_def("body").render()) == [
+            "this is the body"
+        ]
+
     def test_dynamic(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """

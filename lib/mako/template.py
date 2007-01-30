@@ -126,6 +126,18 @@ class DefTemplate(Template):
     def __init__(self, parent, callable_):
         self.parent = parent
         self.callable_ = callable_
+        self.default_filters = parent.default_filters
+        self.input_encoding = parent.input_encoding
+        self.imports = parent.imports
+        self.output_encoding = parent.output_encoding
+        self.format_exceptions = parent.format_exceptions
+        self.error_handler = parent.error_handler
+        self.lookup = parent.lookup
+        self.module = parent.module
+        self.filename = parent.filename
+        self.cache_type = parent.cache_type
+        self.cache_dir = parent.cache_dir
+
     def get_def(self, name):
         return self.parent.get_def(name)
 
