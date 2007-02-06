@@ -25,7 +25,7 @@ class TGPlugin(object):
         if template_string is not None:
             return Template(template_string)
         # Translate TG dot notation to normal / template path
-        if '/' and '.' not in templatename:
+        if '/' not in templatename and '.' not in templatename:
             templatename = '/' + templatename.replace('.', '/') + '.' + self.extension
 
         # Lookup template
