@@ -1,3 +1,6 @@
+0.1.3
+- UNDEFINED evaluates to False
+
 0.1.2
 - fix to parsing of code/expression blocks to insure that non-ascii
   characters, combined with a template that indicates a non-standard

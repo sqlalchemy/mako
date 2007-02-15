@@ -76,6 +76,9 @@ class Undefined(object):
     """represents an undefined value in a template."""
     def __str__(self):
         raise NameError("Undefined")
+    def __nonzero__(self):
+        return False
+
 UNDEFINED = Undefined()
 
     
