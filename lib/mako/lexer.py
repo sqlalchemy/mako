@@ -213,7 +213,7 @@ class Lexer(object):
         match = self.match(r"""
                 (.*?)         # anything, followed by:
                 (
-                 (?<=\n)(?=[ \t]*[%(?=##)]) # an eval or line-based comment preceded by a consumed \n and whitespace
+                 (?<=\n)(?=[ \t]*(?=%|\#\#)) # an eval or line-based comment preceded by a consumed \n and whitespace
                  |
                  (?=\${)   # an expression
                  |
@@ -284,7 +284,7 @@ class Lexer(object):
             return False
 
     def match_comment(self):
-        match = self.match(r"#\*(.*?)\*#", re.S)
+        match = self.match(r"#\*(.*)\*#", re.S)
         if match:
             self.append_node(parsetree.Comment, match.group(1))
             return True

@@ -344,22 +344,26 @@ text text la la
     
     def test_comments(self):
         template = """
-        <style>
-         #someselector
-         # other non comment stuff
-        </style>
-        ## a comment
-        
-        this is ## not a comment
-        
-        #* multiline
-        comment
-        *#
-        
-        hi
-        """
-        nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        <style>\n', (1, 1)), Text(u'', (3, 1)), Text(u'        #someselector\n', (3, 2)), Text(u'', (4, 1)), Text(u'        # other non comment stuff\n        </style>\n', (4, 2)), Comment(u'a comment', (6, 1)), Text(u'        \n        this is ## not a comment\n        \n', (7, 1)), Text(u'', (10, 1)), Text(u'       ', (10, 2)), Comment(u' multiline\n        comment\n        ', (10, 9)), Text(u'\n        \n        hi\n        ', (12, 11))])"""
+<style>
+ #someselector
+ # other non comment stuff
+</style>
+## a comment
 
+# also not a comment
+
+   ## this is a comment
+   
+this is ## not a comment
+
+#* multiline
+comment
+*#
+
+hi
+"""
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n<style>\n #someselector\n # other non comment stuff\n</style>\n', (1, 1)), Comment(u'a comment', (6, 1)), Text(u'\n# also not a comment\n\n', (7, 1)), Comment(u'this is a comment', (10, 1)), Text(u'   \nthis is ## not a comment\n\n', (11, 1)), Comment(u' multiline\ncomment\n', (14, 1)), Text(u'\n\nhi\n', (16, 3))])"""
+        
 if __name__ == '__main__':
     unittest.main()

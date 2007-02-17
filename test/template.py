@@ -9,7 +9,7 @@ if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
 if not os.access('./test_htdocs/subdir', os.F_OK):
     os.mkdir('./test_htdocs/subdir')
-file('./test_htdocs/unicode.html', 'w').write("""# -*- coding: utf-8 -*-
+file('./test_htdocs/unicode.html', 'w').write("""## -*- coding: utf-8 -*-
 Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
     
 class EncodingTest(unittest.TestCase):
@@ -28,14 +28,14 @@ class EncodingTest(unittest.TestCase):
 
     def test_unicode_memory(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
+        val = "## coding: utf-8\n" + val.encode('utf-8')
         template = Template(val)
         #print template.code
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
     
     def test_unicode_text(self):
         val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
-        val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
+        val = "## -*- coding: utf-8 -*-\n" + val.encode('utf-8')
         template = Template(val)
         print template.code
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
@@ -48,19 +48,19 @@ class EncodingTest(unittest.TestCase):
         <%call expr="foo()">
         <%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>
         </%call>"""
-        val = "# -*- coding: utf-8 -*-\n" + val.encode('utf-8')
+        val = "## -*- coding: utf-8 -*-\n" + val.encode('utf-8')
         template = Template(val)
         #print template.code
         assert flatten_result(template.render_unicode()) == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         
     def test_unicode_literal_in_expr(self):
-        template = Template(u"""# -*- coding: utf-8 -*-
+        template = Template(u"""## -*- coding: utf-8 -*-
         ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
         """.encode('utf-8'))
         assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
     def test_unicode_literal_in_code(self):
-        template = Template(u"""# -*- coding: utf-8 -*-
+        template = Template(u"""## -*- coding: utf-8 -*-
         <%
             context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
         %>
@@ -68,7 +68,7 @@ class EncodingTest(unittest.TestCase):
         assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
     def test_unicode_literal_in_controlline(self):
-        template = Template(u"""# -*- coding: utf-8 -*-
+        template = Template(u"""## -*- coding: utf-8 -*-
         <%
             x = u"drôle de petit voix m’a réveillé."
         %>
@@ -85,14 +85,14 @@ class EncodingTest(unittest.TestCase):
         res = Template(s2, input_encoding='utf-8').render_unicode(f=lambda x:x)
         assert res == u"hello śląsk"
 
-        s2 = u"# -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}"
+        s2 = u"## -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}"
         res = Template(s2).render_unicode(f=lambda x:x)
         assert res == u"hello śląsk"
 
     def test_raw_strings(self):
         """test that raw strings go straight thru with default_filters turned off"""
         g = 'śląsk'
-        s = u"# -*- coding: utf-8 -*-\nhello ${x}"
+        s = u"## -*- coding: utf-8 -*-\nhello ${x}"
         t = Template(s, default_filters=[])
         y = t.render(x=g)
         assert y == "hello śląsk"

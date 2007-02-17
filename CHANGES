@@ -1,4 +1,11 @@
 0.1.3
+- ***Small Syntax Change*** - the single line comment character is now
+*two* hash signs, i.e. "## this is a comment".  This avoids a common
+collection with CSS selectors. 
+- the magic "coding" comment (i.e. # coding:utf-8) will still work with
+either one "#" sign or two for now; two is preferred going forward, i.e.
+## coding:<someencoding>. 
+- a new multiline comment form of [PICK ONE:]"#* a comment *#"/"<%doc> a comment </%doc>"
 - UNDEFINED evaluates to False
 
 0.1.2

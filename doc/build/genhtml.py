@@ -24,7 +24,7 @@ files = [
     ]
 
 title='Mako Documentation'
-version = '0.1.2'
+version = '0.1.3'
 
 root = toc.TOCElement('', 'root', '', version=version, doctitle=title)
 

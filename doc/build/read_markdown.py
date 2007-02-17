@@ -181,7 +181,7 @@ def header(toc, title, filename):
 <%%!
     filename = '%s'
 %%>
-# This file is generated.  Edit the .txt files instead of this one.
+## This file is generated.  Edit the .txt files instead of this one.
 """ % (toc.root.doctitle, title, filename)
   
 class utf8stream(object):
