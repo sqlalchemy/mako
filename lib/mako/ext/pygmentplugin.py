@@ -32,10 +32,12 @@ class MakoLexer(RegexLexer):
             (r'(<%(?:!?))(.*?)(%>)(?s)', bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'(\$\{)(.*?)(\})',
              bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
+             (r'''\#\*.*?\*\#''', Comment.Preproc),
             (r'''(?sx)
                 (.+?)               # anything, followed by:
                 (?:
-                 (?<=\n)(?=[%#]) |  # an eval or comment line
+                 (?<=\n)(?=%|\#\#) |  # an eval or comment line
+                 (?=\#\*) |          # multiline comment
                  (?=</?%) |         # a python block
                                     # call start or end
                  (?=\$\{) |         # a substitution

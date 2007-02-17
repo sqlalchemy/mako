@@ -75,7 +75,7 @@ class LexerTest(unittest.TestCase):
     
     def test_text_tag(self):
         template = """
-        # comment
+        ## comment
         % if foo:
             hi
         % endif
@@ -312,7 +312,7 @@ text text la la
         
     def test_integration(self):
         template = """<%namespace name="foo" file="somefile.html"/>
- # inherit from foobar.html
+ ## inherit from foobar.html
 <%inherit file="foobar.html"/>
 
 <%def name="header()">
@@ -333,6 +333,7 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
+        print repr(nodes)
         assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag(u'namespace', {u'name': u'foo', u'file': u'somefile.html'}, (1, 1), []), Text(u'\n', (1, 46)), Comment(u'inherit from foobar.html', (2, 1)), InheritTag(u'inherit', {u'file': u'foobar.html'}, (3, 1), []), Text(u'\n\n', (3, 31)), DefTag(u'def', {u'name': u'header()'}, (5, 1), ["Text(u'\\n     <div>header</div>\\n', (5, 23))"]), Text(u'\n', (7, 8)), DefTag(u'def', {u'name': u'footer()'}, (8, 1), ["Text(u'\\n    <div> footer</div>\\n', (8, 23))"]), Text(u'\n\n<table>\n', (10, 8)), ControlLine(u'for', u'for j in data():', False, (13, 1)), Text(u'    <tr>\n', (14, 1)), ControlLine(u'for', u'for x in j:', False, (15, 1)), Text(u'            <td>Hello ', (16, 1)), Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n', (16, 30)), ControlLine(u'for', u'endfor', True, (17, 1)), Text(u'    </tr>\n', (18, 1)), ControlLine(u'for', u'endfor', True, (19, 1)), Text(u'</table>\n', (20, 1))])"""
 
     def test_crlf(self):
@@ -340,6 +341,25 @@ text text la la
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (3, 9)), ControlLine(u'for', u'for x in [1,2,3]:', False, (7, 1)), Text(u'        ', (8, 1)), Expression(u'x', [], (8, 9)), Text(u'', (8, 13)), ControlLine(u'for', u'endfor', True, (9, 1)), Text(u'\r\n', (10, 1)), DefTag(u'def', {u'name': u'hi()'}, (11, 1), ["Text(u'\\r\\n    hi!\\r\\n', (11, 19))"]), Text(u'\r\n\r\n</html>', (13, 8))])"""
         assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 </html>"""
+    
+    def test_comments(self):
+        template = """
+        <style>
+         #someselector
+         # other non comment stuff
+        </style>
+        ## a comment
         
+        this is ## not a comment
+        
+        #* multiline
+        comment
+        *#
+        
+        hi
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        <style>\n', (1, 1)), Text(u'', (3, 1)), Text(u'        #someselector\n', (3, 2)), Text(u'', (4, 1)), Text(u'        # other non comment stuff\n        </style>\n', (4, 2)), Comment(u'a comment', (6, 1)), Text(u'        \n        this is ## not a comment\n        \n', (7, 1)), Text(u'', (10, 1)), Text(u'       ', (10, 2)), Comment(u' multiline\n        comment\n        ', (10, 9)), Text(u'\n        \n        hi\n        ', (12, 11))])"""
+
 if __name__ == '__main__':
     unittest.main()

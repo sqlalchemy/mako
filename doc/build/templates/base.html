@@ -10,8 +10,11 @@
     ${parent.style()}
 </%def>
 
-# base.html - common to all documentation pages. intentionally separate 
-# from autohandler, which can be swapped out for a different one
+#* 
+ base.html - common to all documentation pages. intentionally separate 
+ from autohandler, which can be swapped out for a different one
+*#
+
 <%
     # bootstrap TOC structure from request args, or pickled file if not present.
     import cPickle as pickle

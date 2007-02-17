@@ -1,4 +1,4 @@
-# formatting.myt - Provides section formatting elements, syntax-highlighted code blocks, and other special filters.
+## formatting.myt - Provides section formatting elements, syntax-highlighted code blocks, and other special filters.
 <%!
     import string, re, cgi
     from mako import filters
@@ -13,7 +13,7 @@
 <%namespace name="nav" file="nav.html"/>
 
 <%def name="section(toc, path, paged, extension, description=None)">
-    # Main section formatting element.
+    ## Main section formatting element.
     <%
         item = toc.get_by_path(path)
         subsection = item.depth > 1

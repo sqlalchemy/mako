@@ -152,7 +152,7 @@ class PageArgsTest(unittest.TestCase):
 class ControlTest(unittest.TestCase):
     def test_control(self):
         t = Template("""
-    # this is a template.
+    ## this is a template.
     % for x in y:
     %   if x.has_key('test'):
         yes x has test

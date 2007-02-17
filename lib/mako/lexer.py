@@ -122,6 +122,8 @@ class Lexer(object):
                 continue
             if self.match_control_line():
                 continue
+            if self.match_comment():
+                continue
             if self.match_tag_start(): 
                 continue
             if self.match_tag_end():
@@ -211,9 +213,11 @@ class Lexer(object):
         match = self.match(r"""
                 (.*?)         # anything, followed by:
                 (
-                 (?<=\n)(?=[ \t]*[%#]) # an eval or comment line, preceded by a consumed \n and whitespace
+                 (?<=\n)(?=[ \t]*[%(?=##)]) # an eval or line-based comment preceded by a consumed \n and whitespace
                  |
                  (?=\${)   # an expression
+                 |
+                 (?=\#\*) # multiline comment
                  |
                  (?=</?[%&])  # a substitution or block or call start or end
                                               # - don't consume
@@ -256,7 +260,7 @@ class Lexer(object):
             return False
 
     def match_control_line(self):
-        match = self.match(r"(?<=^)[\t ]*([%#])[\t ]*([^\r\n]*)(?:\r?\n|\Z)", re.M)
+        match = self.match(r"(?<=^)[\t ]*(%|##)[\t ]*([^\r\n]*)(?:\r?\n|\Z)", re.M)
         if match:
             operator = match.group(1)
             text = match.group(2)
@@ -278,6 +282,14 @@ class Lexer(object):
             return True
         else:
             return False
-            
+
+    def match_comment(self):
+        match = self.match(r"#\*(.*?)\*#", re.S)
+        if match:
+            self.append_node(parsetree.Comment, match.group(1))
+            return True
+        else:
+            return False
+             
     def _count_lines(self, text):
         return len(re.findall(r"\n", text)) 
