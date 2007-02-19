@@ -23,9 +23,13 @@ class Context(object):
         
         # "caller" stack used by def calls with content
         self.caller_stack = [Undefined]
-        data['caller'] = _StackFacade(self.caller_stack)
+        data['caller'] = _StackFacade(self, None)
     lookup = property(lambda self:self._with_template.lookup)
     kwargs = property(lambda self:self._kwargs.copy())
+    def push_caller(self, caller):
+        self.caller_stack.append(caller)
+    def pop_caller(self):
+        del self.caller_stack[-1]
     def keys(self):
         return self._data.keys()
     def __getitem__(self, key):
@@ -67,10 +71,26 @@ class Context(object):
         return c
 
 class _StackFacade(object):
-    def __init__(self, stack):
-        self.target = stack
+    def __init__(self, context, local):
+        self.__stack = context.caller_stack
+        self.__local = local
+    def _get_actual_caller(self):
+        caller = self.__stack[-1]
+        if caller is None:
+            return self.__local
+        else:
+            return caller
     def __getattr__(self, key):
-        return getattr(self.target[-1], key)
+        caller = self._get_actual_caller()
+        callable_ = getattr(caller, key)
+        def call_wno_caller(*args, **kwargs):
+            try:
+                self.__stack.append(None)
+                return callable_(*args, **kwargs)
+            finally:
+                self.__stack.pop()
+        return call_wno_caller
+        
         
 class Undefined(object):
     """represents an undefined value in a template."""

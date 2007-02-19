@@ -58,7 +58,33 @@ class CallTest(unittest.TestCase):
             self.test_compound_call()
         finally:
             util.Set = oldset
-            
+   
+    def test_ccall_caller(self):
+        t = Template("""
+        <%def name="outer_func()">
+        OUTER BEGIN
+            <%call expr="caller.inner_func()">
+                INNER CALL
+            </%call>
+        OUTER END
+        </%def>
+
+        <%call expr="outer_func()">
+            <%def name="inner_func()">
+                INNER BEGIN
+                ${caller.body()}
+                INNER END
+            </%def>
+        </%call>
+
+        """)
+        assert result_lines(t.render()) == [
+            "OUTER BEGIN",
+            "INNER BEGIN",
+            "INNER CALL",
+            "INNER END",
+            "OUTER END",
+        ]
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
         t = Template("""
@@ -167,6 +193,8 @@ class CallTest(unittest.TestCase):
             </%def>
             ${embedded()}
 """)
+        #print t.code
+        #print result_lines(t.render())
         assert result_lines(t.render()) == [
             'this is a.',
             'this is b. heres my body:',

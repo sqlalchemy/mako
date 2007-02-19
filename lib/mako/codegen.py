@@ -523,14 +523,15 @@ class _GenerateRenderMethod(object):
 
         self.printer.writelines(
             # push on global "caller" to be picked up by the next ccall
-            "context.caller_stack.append(runtime.Namespace('caller', context, callables=ccall(context.caller_stack[-1])))",
+            "caller = context['caller']._get_actual_caller()",
+            "context.push_caller(runtime.Namespace('caller', context, callables=ccall(runtime._StackFacade(context, caller))))",
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
                 "context.write(unicode(%s))" % node.attributes['expr'],
             "finally:",
                 # pop it off
-                "context.caller_stack.pop()",
+                "context.pop_caller()",
             None
         )
 
