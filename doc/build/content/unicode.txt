@@ -17,7 +17,7 @@ In Mako, all parsed template constructs and output streams are handled internall
 
 This is the most basic encoding-related setting, and it is equivalent to Python's "magic encoding comment", as described in [pep-0263](http://www.python.org/dev/peps/pep-0263/).  Any template that contains non-ascii characters  requires that this comment be present so that Mako can decode to unicode (and also make usage of Python's AST parsing services).  Mako's lexer will use this encoding in order to convert the template source into a `unicode` object before continuing its parsing:
 
-    # -*- coding: utf-8 -*-
+    ## -*- coding: utf-8 -*-
 
     Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »
 

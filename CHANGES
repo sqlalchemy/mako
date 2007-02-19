@@ -5,7 +5,7 @@ collection with CSS selectors.
 - the magic "coding" comment (i.e. # coding:utf-8) will still work with
 either one "#" sign or two for now; two is preferred going forward, i.e.
 ## coding:<someencoding>. 
-- a new multiline comment form of [PICK ONE:]"#* a comment *#"/"<%doc> a comment </%doc>"
+- new multiline comment form: "<%doc> a comment </%doc>"
 - UNDEFINED evaluates to False
 - improvement to scoping of "caller" variable when using <%call> tag
 

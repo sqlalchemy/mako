@@ -356,14 +356,14 @@ text text la la
    
 this is ## not a comment
 
-#* multiline
+<%doc> multiline
 comment
-*#
+</%doc>
 
 hi
 """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n<style>\n #someselector\n # other non comment stuff\n</style>\n', (1, 1)), Comment(u'a comment', (6, 1)), Text(u'\n# also not a comment\n\n', (7, 1)), Comment(u'this is a comment', (10, 1)), Text(u'   \nthis is ## not a comment\n\n', (11, 1)), Comment(u' multiline\ncomment\n', (14, 1)), Text(u'\n\nhi\n', (16, 3))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n<style>\n #someselector\n # other non comment stuff\n</style>\n', (1, 1)), Comment(u'a comment', (6, 1)), Text(u'\n# also not a comment\n\n', (7, 1)), Comment(u'this is a comment', (10, 1)), Text(u'   \nthis is ## not a comment\n\n', (11, 1)), Comment(u' multiline\ncomment\n', (14, 1)), Text(u'\n\nhi\n', (16, 8))])"""
         
 if __name__ == '__main__':
     unittest.main()
