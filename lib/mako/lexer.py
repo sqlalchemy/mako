@@ -139,6 +139,8 @@ class Lexer(object):
             
         if len(self.tag):
             raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos, self.filename)
+        if len(self.control_line):
+            raise exceptions.SyntaxException("Unterminated control keyword: '%s'" % self.control_line[-1].keyword, self.control_line[-1].lineno, self.control_line[-1].pos, self.filename)
         return self.template
 
     def match_encoding(self):

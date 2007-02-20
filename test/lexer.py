@@ -286,6 +286,19 @@ text text la la
 
         % if foo:
             % for x in range(1,5):
+            % endfor
+"""
+        try:
+            nodes = Lexer(template).parse()
+            assert False
+        except exceptions.SyntaxException, e:
+            assert str(e) == "Unterminated control keyword: 'if' at line: 3 char: 1"
+
+    def test_unmatched_control_3(self):
+        template = """
+
+        % if foo:
+            % for x in range(1,5):
             % endlala
         % endif
 """
@@ -333,7 +346,6 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        print repr(nodes)
         assert repr(nodes) == r"""TemplateNode({}, [NamespaceTag(u'namespace', {u'name': u'foo', u'file': u'somefile.html'}, (1, 1), []), Text(u'\n', (1, 46)), Comment(u'inherit from foobar.html', (2, 1)), InheritTag(u'inherit', {u'file': u'foobar.html'}, (3, 1), []), Text(u'\n\n', (3, 31)), DefTag(u'def', {u'name': u'header()'}, (5, 1), ["Text(u'\\n     <div>header</div>\\n', (5, 23))"]), Text(u'\n', (7, 8)), DefTag(u'def', {u'name': u'footer()'}, (8, 1), ["Text(u'\\n    <div> footer</div>\\n', (8, 23))"]), Text(u'\n\n<table>\n', (10, 8)), ControlLine(u'for', u'for j in data():', False, (13, 1)), Text(u'    <tr>\n', (14, 1)), ControlLine(u'for', u'for x in j:', False, (15, 1)), Text(u'            <td>Hello ', (16, 1)), Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n', (16, 30)), ControlLine(u'for', u'endfor', True, (17, 1)), Text(u'    </tr>\n', (18, 1)), ControlLine(u'for', u'endfor', True, (19, 1)), Text(u'</table>\n', (20, 1))])"""
 
     def test_crlf(self):
