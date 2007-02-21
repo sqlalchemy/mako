@@ -9,7 +9,13 @@ either one "#" sign or two for now; two is preferred going forward, i.e.
 - UNDEFINED evaluates to False
 - improvement to scoping of "caller" variable when using <%call> tag
 - added lexer error for unclosed control-line (%) line
-
+- added "preprocessor" argument to Template, TemplateLookup - is a single
+  callable or list of callables which will be applied to the template text
+  before lexing.  given the text as an argument, returns the new text.
+- added mako.ext.preprocessors package, contains one preprocessor so far:
+  'convert_comments', which will convert single # comments to the new ##
+  format
+  
 0.1.2
 - fix to parsing of code/expression blocks to insure that non-ascii
   characters, combined with a template that indicates a non-standard

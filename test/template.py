@@ -2,6 +2,7 @@
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
+from mako.ext.preprocessors import convert_comments
 import unittest, re, os
 from util import flatten_result, result_lines
 
@@ -196,7 +197,20 @@ class ModuleDirTest(unittest.TestCase):
         t2 = lookup.get_template('/subdir/modtest.html')
         assert t.module.__file__ == 'test_htdocs/foo/modtest.html.py'
         assert t2.module.__file__ == 'test_htdocs/subdir/foo/modtest.html.py'
-        
+
+class PreprocessTest(unittest.TestCase):
+    def test_old_comments(self):
+        t = Template("""
+        im a template
+# old style comment
+    # more old style comment
+    
+    ## new style comment
+    - # not a comment
+    - ## not a comment
+""", preprocessor=convert_comments)
+
+        assert flatten_result(t.render()) == "im a template - # not a comment - ## not a comment"
             
 if __name__ == '__main__':
     unittest.main()

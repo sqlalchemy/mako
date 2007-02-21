@@ -4,6 +4,7 @@ from mako.lexer import Lexer
 from mako import exceptions
 from util import flatten_result, result_lines
 from mako.template import Template
+import re
 
 class LexerTest(unittest.TestCase):
     def test_text_and_tag(self):
@@ -376,6 +377,17 @@ hi
 """
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n<style>\n #someselector\n # other non comment stuff\n</style>\n', (1, 1)), Comment(u'a comment', (6, 1)), Text(u'\n# also not a comment\n\n', (7, 1)), Comment(u'this is a comment', (10, 1)), Text(u'   \nthis is ## not a comment\n\n', (11, 1)), Comment(u' multiline\ncomment\n', (14, 1)), Text(u'\n\nhi\n', (16, 8))])"""
+
+    def test_preprocess(self):
+        def preproc(text):
+            return re.sub(r'(?<=\n)\s*#[^#]', "##", text)
+        template = """
+    hi
+    # old style comment
+# another comment
+"""
+        nodes = Lexer(template, preprocessor=preproc).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n    hi\n', (1, 1)), Comment(u'old style comment', (3, 1)), Comment(u'another comment', (4, 1))])"""
         
 if __name__ == '__main__':
     unittest.main()

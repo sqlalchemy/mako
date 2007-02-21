@@ -11,7 +11,7 @@ from mako import parsetree, exceptions
 from mako.pygen import adjust_whitespace
 
 class Lexer(object):
-    def __init__(self, text, filename=None, input_encoding=None):
+    def __init__(self, text, filename=None, input_encoding=None, preprocessor=None):
         self.text = text
         self.filename = filename
         self.template = parsetree.TemplateNode(self.filename)
@@ -22,6 +22,12 @@ class Lexer(object):
         self.tag = []
         self.control_line = []
         self.encoding = input_encoding
+        if preprocessor is None:
+            self.preprocessor = []
+        elif not hasattr(preprocessor, '__iter__'):
+            self.preprocessor = [preprocessor]
+        else:
+            self.preprocessor = preprocessor
         
     def match(self, regexp, flags=None):
         """match the given regular expression string and flags to the current text position.
@@ -95,6 +101,8 @@ class Lexer(object):
             return text
             
     def parse(self):
+        for preproc in self.preprocessor:
+            self.text = preproc(self.text)
         parsed_encoding = self.match_encoding()
         if parsed_encoding:
             self.encoding = parsed_encoding
