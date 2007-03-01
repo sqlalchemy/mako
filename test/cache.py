@@ -16,7 +16,7 @@ class MockCache(object):
         return self.realcache.get(key, **kwargs)
     
 class CacheTest(unittest.TestCase):
-    def test_component(self):
+    def test_def(self):
         t = Template("""
         <%!
             callcount = [0]
@@ -42,6 +42,36 @@ class CacheTest(unittest.TestCase):
         ]
         assert m.kwargs == {}
 
+    def test_nested_def(self):
+        t = Template("""
+        <%!
+            callcount = [0]
+        %>
+        <%def name="foo()">
+            <%def name="bar()" cached="True">
+                this is foo
+                <%
+                callcount[0] += 1
+                %>
+            </%def>
+            ${bar()}
+        </%def>
+
+        ${foo()}
+        ${foo()}
+        ${foo()}
+        callcount: ${callcount}
+""")
+        m = self._install_mock_cache(t)
+        print t.code
+        assert result_lines(t.render()) == [
+            'this is foo',
+            'this is foo',
+            'this is foo',
+            'callcount: [1]',
+        ]
+        assert m.kwargs == {}
+        
     def test_page(self):
         t = Template("""
         <%!

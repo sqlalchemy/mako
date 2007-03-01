@@ -312,7 +312,7 @@ class _GenerateRenderMethod(object):
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
         if buffered or filtered or cached:
-            printer.writelines(
+            self.printer.writelines(
                 "context.push_buffer()",
                 "try:"
                 )
@@ -329,7 +329,7 @@ class _GenerateRenderMethod(object):
         self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
         if cached:
-            self.write_cache_decorator(node, node.name, False, identifiers)
+            self.write_cache_decorator(node, node.name, False, identifiers, inline=True)
         
     def write_def_finish(self, node, buffered, filtered, cached):
         """write the end section of a rendering function, either outermost or inline.
@@ -352,7 +352,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("context.write(%s)" % s)
                 self.printer.writeline("return ''")
 
-    def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers):
+    def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers, inline=False):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
         self.printer.writeline("__%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
@@ -372,18 +372,23 @@ class _GenerateRenderMethod(object):
                             cacheargs[arg[1]] == int(eval(val))
                         else:
                             cacheargs[arg[1]] = val
+        
+        if inline:
+            ctx_arg = ""
+        else:
+            ctx_arg = "context, "
             
-        self.printer.writeline("def %s(context, *args, **kwargs):" % name)
+        self.printer.writeline("def %s(%s*args, **kwargs):" % (name, ctx_arg))
 
         self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
             self.printer.writelines(
-                    "return context.get('local').get_cached(%s, %screatefunc=lambda:__%s(context, *args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name),
+                    "return context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
                 None
             )
         else:
             self.printer.writelines(
-                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__%s(context, *args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name),
+                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
                     "return ''",
                 None
             )
