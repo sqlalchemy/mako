@@ -1,4 +1,6 @@
 - got defs-within-defs to be cacheable
+- fixes to code parsing/whitespace adjusting where plain python 
+comments may contain quote characters [ticket:23]
 
 0.1.3
 - ***Small Syntax Change*** - the single line comment character is now

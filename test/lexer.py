@@ -238,6 +238,27 @@ class LexerTest(unittest.TestCase):
         %>
 """
         nodes = Lexer(template).parse()
+    
+    def test_tricky_code_2(self):
+        template = """<% 
+        # someone's comment
+        %>
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Code(u" \n        # someone's comment\n        \n", False, (1, 1)), Text(u'\n        ', (3, 11))])"""
+        
+        template= """<%
+            print 'hi'
+            # this is a comment
+            # another comment
+            x = 7 # someone's '''comment
+            print '''
+        there
+        '''
+            # someone else's comment
+        %> '''and now some text '''"""
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Code(u"\nprint 'hi'\n# this is a comment\n# another comment\nx = 7 # someone's '''comment\nprint '''\n        there\n        '''\n# someone else's comment\n        \n", False, (1, 1)), Text(u" '''and now some text '''", (10, 11))])"""
         
     def test_control_lines(self):
         template = """

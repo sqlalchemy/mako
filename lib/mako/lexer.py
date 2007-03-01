@@ -59,6 +59,9 @@ class Lexer(object):
     def parse_until_text(self, *text):
         startpos = self.match_position
         while True:
+            match = self.match(r'#.*\n')
+            if match:
+                continue
             match = self.match(r'(\"\"\"|\'\'\'|\"|\')')
             if match:
                 m = self.match(r'.*?%s' % match.group(1), re.S)
@@ -69,7 +72,7 @@ class Lexer(object):
                 if match:
                     return (self.text[startpos:self.match_position-len(match.group(1))], match.group(1))
                 else:
-                    match = self.match(r".*?(?=\"|\'|%s)" % r'|'.join(text), re.S)
+                    match = self.match(r".*?(?=\"|\'|#|%s)" % r'|'.join(text), re.S)
                     if not match:
                         raise exceptions.SyntaxException("Expected: %s" % ','.join(text), self.matched_lineno, self.matched_charpos, self.filename)
                 

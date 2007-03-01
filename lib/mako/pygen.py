@@ -219,6 +219,7 @@ def adjust_whitespace(text):
             state[backslashed] = True
         else:
             state[backslashed] = False
+        line = re.split(r'#', line)[0]
         triples = len(re.findall(r"\"\"\"|\'\'\'", line))
         if triples == 1 or triples % 2 != 0:
             state[triplequoted] = not state[triplequoted]
