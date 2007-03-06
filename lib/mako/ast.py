@@ -40,54 +40,63 @@ class PythonCode(object):
         else:
             expr = code
         
-        local_ident_stack = {}
         class FindIdentifiers(object):
-            def visitAssName(s, node, *args):
-#                if node.name not in self.undeclared_identifiers:
-                self.declared_identifiers.add(node.name)
-            def visitAssign(s, node, *args):
+            def __init__(self):
+                self.in_function = False
+                self.local_ident_stack = {}
+            def _add_declared(s, name):
+                if not s.in_function:
+                    self.declared_identifiers.add(name)
+            def visitAssName(self, node, *args):
+                self._add_declared(node.name)
+            def visitAssign(self, node, *args):
                 # flip around the visiting of Assign so the expression gets evaluated first, 
                 # in the case of a clause like "x=x+5" (x is undeclared)
-                s.visit(node.expr, *args)
+                self.visit(node.expr, *args)
                 for n in node.nodes:
-                    s.visit(n, *args)
-            def visitFunction(s,node, *args):
-                # just need the function name.  the contents of it are local to the function, dont parse those.
-                # TODO: parse the default values in the functions keyword arguments.
-                self.declared_identifiers.add(node.name)
+                    self.visit(n, *args)
+            def visitFunction(self,node, *args):
+                self._add_declared(node.name)
+                # push function state onto stack.  dont log any
+                # more identifiers as "declared" until outside of the function,
+                # but keep logging identifiers as "undeclared".
+                # track argument names in each function header so they arent counted as "undeclared"
                 saved = {}
+                inf = self.in_function
+                self.in_function = True
                 for arg in node.argnames:
-                    if arg in local_ident_stack:
+                    if arg in self.local_ident_stack:
                         saved[arg] = True
                     else:
-                        local_ident_stack[arg] = True
+                        self.local_ident_stack[arg] = True
                 for n in node.getChildNodes():
-                    s.visit(n, *args)
+                    self.visit(n, *args)
+                self.in_function = inf
                 for arg in node.argnames:
                     if arg not in saved:
-                        del local_ident_stack[arg]
-            def visitFor(s, node, *args):
+                        del self.local_ident_stack[arg]
+            def visitFor(self, node, *args):
                 # flip around visit
-                s.visit(node.list, *args)
-                s.visit(node.assign, *args)
-                s.visit(node.body, *args)
+                self.visit(node.list, *args)
+                self.visit(node.assign, *args)
+                self.visit(node.body, *args)
             def visitName(s, node, *args):
-                if node.name not in __builtins__ and node.name not in self.declared_identifiers and node.name not in local_ident_stack:
+                if node.name not in __builtins__ and node.name not in self.declared_identifiers and node.name not in s.local_ident_stack:
                     self.undeclared_identifiers.add(node.name)
-            def visitImport(s, node, *args):
+            def visitImport(self, node, *args):
                 for (mod, alias) in node.names:
                     if alias is not None:
-                        self.declared_identifiers.add(alias)
+                        self._add_declared(alias)
                     else:
-                        self.declared_identifiers.add(mod)
-            def visitFrom(s, node, *args):
+                        self._add_declared(mod)
+            def visitFrom(self, node, *args):
                 for (mod, alias) in node.names:
                     if alias is not None:
-                        self.declared_identifiers.add(alias)
+                        self._add_declared(alias)
                     else:
                         if mod == '*':
                             raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", lineno, pos, filename)
-                        self.declared_identifiers.add(mod)
+                        self._add_declared(mod)
         f = FindIdentifiers()
         visitor.walk(expr, f) #, walker=walker())
 

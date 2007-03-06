@@ -94,7 +94,18 @@ print x
         parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['z', 'x'])
         assert parsed.declared_identifiers == util.Set(['lala'])
-        
+    
+        code = """
+def lala(x, y):
+    def hoho():
+        def bar():
+            z = 7
+print z
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.undeclared_identifiers == util.Set(['z'])
+        assert parsed.declared_identifiers == util.Set(['lala'])
+
     def test_no_global_imports(self):
         code = """
 from foo import *
