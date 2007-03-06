@@ -36,6 +36,14 @@ class LookupTest(unittest.TestCase):
 
         assert tl.get_template('/subdir/index.html').module_id == '_subdir_index_html'
     
+    def test_updir(self):
+        t = tl.get_template('/subdir/foo/../bar/../index.html')
+        assert result_lines(t.render()) == [
+            "this is sub index",
+            "this is include 2"
+
+        ]
+        
     def test_no_lookup(self):
         t = Template("hi <%include file='foo.html'/>")
         try:

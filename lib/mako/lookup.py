@@ -63,7 +63,7 @@ class TemplateLookup(TemplateCollection):
         except KeyError:
             u = re.sub(r'^\/+', '', uri)
             for dir in self.directories:
-                srcfile = posixpath.join(dir, u)
+                srcfile = posixpath.normpath(posixpath.join(dir, u))
                 if os.access(srcfile, os.F_OK):
                     return self.__load(srcfile, uri)
             else:

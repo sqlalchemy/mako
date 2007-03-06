@@ -2,6 +2,8 @@
 - fixes to code parsing/whitespace adjusting where plain python 
 comments may contain quote characters [ticket:23]
 - fix to variable scoping for identifiers only referenced within functions
+- added a path normalization step to lookup so URIs like "/foo/bar/../etc/../foo"
+pre-process the ".." tokens before checking the filesystem
 
 0.1.3
 - ***Small Syntax Change*** - the single line comment character is now
