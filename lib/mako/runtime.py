@@ -22,7 +22,7 @@ class Context(object):
         data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
         
         # "caller" stack used by def calls with content
-        self.caller_stack = [Undefined]
+        self.caller_stack = [UNDEFINED]
         data['caller'] = _StackFacade(self, None)
     lookup = property(lambda self:self._with_template.lookup)
     kwargs = property(lambda self:self._kwargs.copy())
@@ -74,6 +74,8 @@ class _StackFacade(object):
     def __init__(self, context, local):
         self.__stack = context.caller_stack
         self.__local = local
+    def __nonzero__(self):
+        return self._get_actual_caller() and True or False
     def _get_actual_caller(self):
         caller = self.__stack[-1]
         if caller is None:
