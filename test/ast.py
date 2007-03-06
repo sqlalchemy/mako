@@ -77,6 +77,23 @@ except:
 """
         parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y'])
+    
+    def test_locate_identifiers_6(self):
+        code = """
+def foo():
+    return bar()
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.undeclared_identifiers == util.Set(['bar'])
+    
+        code = """
+def lala(x, y):
+    return x, y, z
+print x
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.undeclared_identifiers == util.Set(['z', 'x'])
+        assert parsed.declared_identifiers == util.Set(['lala'])
         
     def test_no_global_imports(self):
         code = """

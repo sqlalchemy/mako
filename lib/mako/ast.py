@@ -39,7 +39,8 @@ class PythonCode(object):
             expr = parse(code.lstrip(), "exec", lineno, pos, filename)
         else:
             expr = code
-            
+        
+        local_ident_stack = {}
         class FindIdentifiers(object):
             def visitAssName(s, node, *args):
 #                if node.name not in self.undeclared_identifiers:
@@ -54,13 +55,24 @@ class PythonCode(object):
                 # just need the function name.  the contents of it are local to the function, dont parse those.
                 # TODO: parse the default values in the functions keyword arguments.
                 self.declared_identifiers.add(node.name)
+                saved = {}
+                for arg in node.argnames:
+                    if arg in local_ident_stack:
+                        saved[arg] = True
+                    else:
+                        local_ident_stack[arg] = True
+                for n in node.getChildNodes():
+                    s.visit(n, *args)
+                for arg in node.argnames:
+                    if arg not in saved:
+                        del local_ident_stack[arg]
             def visitFor(s, node, *args):
                 # flip around visit
                 s.visit(node.list, *args)
                 s.visit(node.assign, *args)
                 s.visit(node.body, *args)
             def visitName(s, node, *args):
-                if node.name not in __builtins__ and node.name not in self.declared_identifiers:
+                if node.name not in __builtins__ and node.name not in self.declared_identifiers and node.name not in local_ident_stack:
                     self.undeclared_identifiers.add(node.name)
             def visitImport(s, node, *args):
                 for (mod, alias) in node.names:

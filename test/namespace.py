@@ -351,7 +351,30 @@ class NamespaceTest(unittest.TestCase):
             "this is b",
             "this is x"
         ]
-        
+    
+    def test_import_calledfromdef(self):
+        l = lookup.TemplateLookup()
+        l.put_string("a", """
+        <%def name="table()">
+            im table
+        </%def>
+        """)
+
+        l.put_string("b","""
+        <%namespace file="a" import="table"/>
+
+        <%
+            def table2():
+                table()
+                return ""
+        %>
+
+        ${table2()}
+        """)
+
+        t = l.get_template("b")
+        assert flatten_result(t.render()) == "im table"
+            
     def test_closure_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
