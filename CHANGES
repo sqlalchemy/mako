@@ -7,6 +7,8 @@ pre-process the ".." tokens before checking the filesystem
 - fixed/improved "caller" semantics so that undefined caller is "UNDEFINED",
 propigates __nonzero__ method so it evaulates to False if not present, 
 True otherwise.  this way you can say % if caller:\n ${caller.body()}\n% endif
+- <%include> has an "args" attribute that can pass arguments to the called
+template (keyword arguments only, must be declared in that page's <%page> tag.)
 
 0.1.3
 - ***Small Syntax Change*** - the single line comment character is now

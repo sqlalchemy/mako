@@ -221,11 +221,11 @@ def capture(context, callable_, *args, **kwargs):
         buf = context.pop_buffer()
     return buf.getvalue()
         
-def _include_file(context, uri, calling_uri):
+def _include_file(context, uri, calling_uri, **kwargs):
     """locate the template from the given uri and include it in the current output."""
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
-    callable_(ctx, **_kwargs_for_callable(callable_, context._data))
+    callable_(ctx, **_kwargs_for_callable(callable_, context._data, **kwargs))
         
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
@@ -284,12 +284,11 @@ def _render(template, callable_, args, data, as_unicode=False):
     _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
     return context.pop_buffer().getvalue()
 
-def _kwargs_for_callable(callable_, data):
-    kwargs = {}
+def _kwargs_for_callable(callable_, data, **kwargs):
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
-        if arg != 'context' and arg in data:
+        if arg != 'context' and arg in data and arg not in kwargs:
             kwargs[arg] = data[arg]
     return kwargs
     

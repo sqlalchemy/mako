@@ -148,8 +148,44 @@ class PageArgsTest(unittest.TestCase):
         
         assert flatten_result(template.render(id="im the id")) == "this is page, id is im the id"
         
+class IncludeTest(unittest.TestCase):
+    def test_basic(self):
+        lookup = TemplateLookup()
+        lookup.put_string("a", """
+            this is a
+            <%include file="b" args="a=3,b=4,c=5"/>
+        """)
+        lookup.put_string("b", """
+            <%page args="a,b,c"/>
+            this is b.  ${a}, ${b}, ${c}
+        """)
+        assert flatten_result(lookup.get_template("a").render()) == "this is a this is b. 3, 4, 5"
 
-        
+    def test_localargs(self):
+        lookup = TemplateLookup()
+        lookup.put_string("a", """
+            this is a
+            <%include file="b" args="a=a,b=b,c=5"/>
+        """)
+        lookup.put_string("b", """
+            <%page args="a,b,c"/>
+            this is b.  ${a}, ${b}, ${c}
+        """)
+        assert flatten_result(lookup.get_template("a").render(a=7,b=8)) == "this is a this is b. 7, 8, 5"
+    
+    def test_viakwargs(self):    
+        lookup = TemplateLookup()
+        lookup.put_string("a", """
+            this is a
+            <%include file="b" args="c=5, **context.kwargs"/>
+        """)
+        lookup.put_string("b", """
+            <%page args="a,b,c"/>
+            this is b.  ${a}, ${b}, ${c}
+        """)
+        assert flatten_result(lookup.get_template("a").render(a=7,b=8)) == "this is a this is b. 7, 8, 5"
+
+
 class ControlTest(unittest.TestCase):
     def test_control(self):
         t = Template("""

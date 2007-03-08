@@ -219,7 +219,12 @@ class Tag(Node):
 class IncludeTag(Tag):
     __keyword__ = 'include'
     def __init__(self, keyword, attributes, **kwargs):
-        super(IncludeTag, self).__init__(keyword, attributes, ('file', 'import'), (), ('file',), **kwargs)
+        super(IncludeTag, self).__init__(keyword, attributes, ('file', 'import', 'args'), (), ('file',), **kwargs)
+        self.page_args = ast.PythonCode("foo(%s)" % attributes.get('args', ''), self.lineno, self.pos, self.filename)
+    def declared_identifiers(self):
+        return []
+    def undeclared_identifiers(self):
+        return self.page_args.undeclared_identifiers
     
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'

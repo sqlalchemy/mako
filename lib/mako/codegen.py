@@ -475,8 +475,12 @@ class _GenerateRenderMethod(object):
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("runtime._include_file(context, %s, _template_uri)" % (node.parsed_attributes['file']))
-
+        args = node.attributes.get('args')
+        if args:
+            self.printer.writeline("runtime._include_file(context, %s, _template_uri, %s)" % (node.parsed_attributes['file'], args))
+        else:
+            self.printer.writeline("runtime._include_file(context, %s, _template_uri)" % (node.parsed_attributes['file']))
+            
     def visitNamespaceTag(self, node):
         pass
             
