@@ -122,6 +122,58 @@ The above method disgards the output encoding keyword argument; you can encode y
     
 Note that Mako's ability to return data in any encoding and/or `unicode` implies that the underlying output stream of the template is a Python unicode object.  This behavior is described fully in [unicode](rel:unicode).
 
+### Handling Exceptions
+
+Template exceptions can occur in two distinct places.  One is when you **lookup, parse and compile** the template, the other is when you **run** the template.  Within the running of a template, exceptions are thrown normally from whatever Python code originated the issue.  Mako has its own set of exception classes which mostly apply to the lookup and lexer/compiler stages of template construction.  Mako provides some library routines that can be used to help provide Mako-specific information about any exception's stack trace, as well as formatting the exception within textual or HTML format.  In all cases, the main value of these handlers is that of converting Python filenames, line numbers, and code samples into Mako template filenames, line numbers, and code samples.  All lines within a stack trace which correspond to a Mako template module will be converted to be against the originating template file.
+
+To format exception traces, the `text_error_template` and `html_error_template` functions are provided.  They make usage of `sys.exc_info()` to get at the most recently thrown exception.  Usage of these handlers usually looks like:
+
+    {python}
+    from mako import exceptions
+    
+    try:
+        template = lookup.get_template(uri)
+        print template.render()
+    except:
+        print exceptions.text_error_template().render()
+    
+Or for the HTML render function:
+
+    {python}
+    from mako import exceptions
+
+    try:
+        template = lookup.get_template(uri)
+        print template.render()
+    except:
+        print exceptions.html_error_template().render()
+
+The HTML render function is also available built-in to `Template` using the `format_exceptions` flag.  In this case, any exceptions raised within the **render** stage of the template will result in the output being substituted with the output of `html_error_template`.
+
+    {python}
+    template = Template(filename="/foo/bar", format_exceptions=True)
+    print template.render()
+    
+Note that the compile stage of the above template occurs when you construct the `Template` itself, and no output stream is defined.  Therefore exceptions which occur within the lookup/parse/compile stage will not be handled and will propigate normally.   While the pre-render traceback usually will not include any Mako-specific lines anyway, it will mean that exceptions which occur previous to rendering and those which occur within rendering will be handled differently...so the `try/except` patterns described previously are probably of more general use.
+
+The underlying object used by the error template functions is the `RichTraceback` object.  This object can also be used directly to provide custom error views.  Here's an example usage which describes its general API:
+
+    {python}
+    from mako.exceptions import RichTraceback
+    
+    try:
+        template = lookup.get_template(uri)
+        print template.render()
+    except:
+        traceback = RichTraceback()
+        for (filename, lineno, function, line) in traceback.traceback:
+            print "File %s, line %s, in %s" % (filename, lineno, function)
+            print line, "\n"
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+        
+Further information about `RichTraceback` is available within the module-level documentation for `mako.exceptions`.
+
+
 ### Common Framework Integrations
 
 The Mako distribution includes a little bit of helper code for the purpose of using Mako in some popular web framework scenarios.  This is a brief description of whats included.
