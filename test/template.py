@@ -79,6 +79,23 @@ class EncodingTest(unittest.TestCase):
         """.encode('utf-8'))
         assert template.render_unicode().strip() == u"""hi, drôle de petit voix m’a réveillé."""
     
+    def test_unicode_literal_in_def(self):
+        template = Template(u"""## -*- coding: utf-8 -*-
+        <%def name="bello(foo, bar)">
+        Foo: ${ foo }
+        Bar: ${ bar }
+        </%def>
+        <%call expr="bello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
+        </%call>""".encode('utf-8'))
+        assert flatten_result(template.render_unicode()) == u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP"""
+        
+        template = Template(u"""## -*- coding: utf-8 -*-
+        <%def name="hello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
+        Foo: ${ foo }
+        Bar: ${ bar }
+        </%def>
+        ${ hello() }""".encode('utf-8'))
+        assert flatten_result(template.render_unicode()) == u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP"""
         
     def test_input_encoding(self):
         """test the 'input_encoding' flag on Template, and that unicode objects arent double-decoded"""

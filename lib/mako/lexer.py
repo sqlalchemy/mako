@@ -191,7 +191,7 @@ class Lexer(object):
             if attr:
                 for att in re.findall(r"\s*(\w+)\s*=\s*(?:'([^']*)'|\"([^\"]*)\")", attr):
                     (key, val1, val2) = att
-                    attributes[key] = val1 or val2
+                    attributes[key] = self.escape_code(val1 or val2)
             self.append_node(parsetree.Tag, keyword, attributes)
             if isend:
                 self.tag.pop()
