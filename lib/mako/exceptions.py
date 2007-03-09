@@ -155,7 +155,7 @@ def text_error_template(lookup=None):
 Traceback (most recent call last):
 % for (filename, lineno, function, line) in tback.traceback:
   File "${filename}", line ${lineno}, in ${function or '?'}
-    ${line.strip()}
+    ${line | unicode.strip}
 % endfor
 ${str(tback.error.__class__.__name__)}: ${str(tback.error)}
 """)
