@@ -9,8 +9,11 @@ propigates __nonzero__ method so it evaulates to False if not present,
 True otherwise.  this way you can say % if caller:\n ${caller.body()}\n% endif
 - <%include> has an "args" attribute that can pass arguments to the called
 template (keyword arguments only, must be declared in that page's <%page> tag.)
+- <%include> plus arguments is also programmatically available via
+self.include_file(<filename>, **kwargs)
 - further escaping added for multibyte expressions in %def, %call attributes
 [ticket:24]
+
 
 0.1.3
 - ***Small Syntax Change*** - the single line comment character is now

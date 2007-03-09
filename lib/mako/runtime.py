@@ -158,9 +158,9 @@ class Namespace(object):
                 kwargs.setdefault('type', self.template.cache_type)
         return self.template.module._template_cache.get(key, **kwargs)
         
-    def include_file(self, uri):
+    def include_file(self, uri, **kwargs):
         """include a file at the given uri"""
-        _include_file(self.context, uri, self._templateuri)
+        _include_file(self.context, uri, self._templateuri, **kwargs)
         
     def _populate(self, d, l):
         for ident in l:
