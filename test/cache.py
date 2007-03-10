@@ -63,7 +63,6 @@ class CacheTest(unittest.TestCase):
         callcount: ${callcount}
 """)
         m = self._install_mock_cache(t)
-        print t.code
         assert result_lines(t.render()) == [
             'this is foo',
             'this is foo',

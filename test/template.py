@@ -38,7 +38,7 @@ class EncodingTest(unittest.TestCase):
         val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
         val = "## -*- coding: utf-8 -*-\n" + val.encode('utf-8')
         template = Template(val)
-        print template.code
+        #print template.code
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
     def test_unicode_text_ccall(self):

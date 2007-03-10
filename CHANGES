@@ -1,18 +1,23 @@
+0.1.4
 - got defs-within-defs to be cacheable
-- fixes to code parsing/whitespace adjusting where plain python 
-comments may contain quote characters [ticket:23]
-- fix to variable scoping for identifiers only referenced within functions
-- added a path normalization step to lookup so URIs like "/foo/bar/../etc/../foo"
-pre-process the ".." tokens before checking the filesystem
-- fixed/improved "caller" semantics so that undefined caller is "UNDEFINED",
-propigates __nonzero__ method so it evaulates to False if not present, 
-True otherwise.  this way you can say % if caller:\n ${caller.body()}\n% endif
-- <%include> has an "args" attribute that can pass arguments to the called
-template (keyword arguments only, must be declared in that page's <%page> tag.)
+- fixes to code parsing/whitespace adjusting where plain python comments
+  may contain quote characters [ticket:23]
+- fix to variable scoping for identifiers only referenced within
+  functions
+- added a path normalization step to lookup so URIs like
+  "/foo/bar/../etc/../foo" pre-process the ".." tokens before checking
+  the filesystem
+- fixed/improved "caller" semantics so that undefined caller is
+  "UNDEFINED", propigates __nonzero__ method so it evaulates to False if
+  not present, True otherwise. this way you can say % if caller:\n
+  ${caller.body()}\n% endif
+- <%include> has an "args" attribute that can pass arguments to the
+  called template (keyword arguments only, must be declared in that
+  page's <%page> tag.)
 - <%include> plus arguments is also programmatically available via
-self.include_file(<filename>, **kwargs)
-- further escaping added for multibyte expressions in %def, %call attributes
-[ticket:24]
+  self.include_file(<filename>, **kwargs)
+- further escaping added for multibyte expressions in %def, %call
+  attributes [ticket:24]
 
 
 0.1.3
