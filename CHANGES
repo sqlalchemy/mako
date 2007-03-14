@@ -1,3 +1,7 @@
+0.1.5
+- AST expression generation - added in just about everything 
+  expression-wise from the AST module  [ticket:26]
+  
 0.1.4
 - got defs-within-defs to be cacheable
 - fixes to code parsing/whitespace adjusting where plain python comments

@@ -222,12 +222,30 @@ class ExpressionGenerator(object):
         self.buf.write(" %s " % op)
         self.visit(node.right, *args)
         self.buf.write(")")
+    def booleanop(self, op, node, *args):
+        self.visit(node.nodes[0])
+        for n in node.nodes[1:]:
+            self.buf.write(" " + op + " ")
+            self.visit(n, *args)
     def visitConst(self, node, *args):
         self.buf.write(repr(node.value))
+    def visitAssName(self, node, *args):
+        # TODO: figure out OP_ASSIGN, other OP_s
+        self.buf.write(node.name)
     def visitName(self, node, *args):
         self.buf.write(node.name)
     def visitMul(self, node, *args):
         self.operator("*", node, *args)
+    def visitAnd(self, node, *args):
+        self.booleanop("and", node, *args)
+    def visitOr(self, node, *args):
+        self.booleanop("or", node, *args)
+    def visitBitand(self, node, *args):
+        self.booleanop("&", node, *args)
+    def visitBitor(self, node, *args):
+        self.booleanop("|", node, *args)
+    def visitBitxor(self, node, *args):
+        self.booleanop("^", node, *args)
     def visitAdd(self, node, *args):
         self.operator("+", node, *args)
     def visitGetattr(self, node, *args):
@@ -235,13 +253,24 @@ class ExpressionGenerator(object):
         self.buf.write(".%s" % node.attrname)
     def visitSub(self, node, *args):
         self.operator("-", node, *args)
+    def visitNot(self, node, *args):
+        self.buf.write("not ")
+        self.visit(node.expr)
     def visitDiv(self, node, *args):
         self.operator("/", node, *args)
+    def visitFloorDiv(self, node, *args):
+        self.operator("//", node, *args)
     def visitSubscript(self, node, *args):
         self.visit(node.expr)
         self.buf.write("[")
         [self.visit(x) for x in node.subs]
         self.buf.write("]")
+    def visitUnarySub(self, node, *args):
+        self.buf.write("-")
+        self.visit(node.expr)
+    def visitUnaryAdd(self, node, *args):
+        self.buf.write("-")
+        self.visit(node.expr)
     def visitSlice(self, node, *args):
         self.visit(node.expr)
         self.buf.write("[")
@@ -261,6 +290,14 @@ class ExpressionGenerator(object):
             if i<len(c) -2:
                 self.buf.write(", ")
         self.buf.write("}")
+    def visitTuple(self, node):
+        self.buf.write("(")
+        c = node.getChildren()
+        for i in range(0, len(c)):
+            self.visit(c[i])
+            if i<len(c) - 1:
+                self.buf.write(", ")
+        self.buf.write(")")
     def visitList(self, node):
         self.buf.write("[")
         c = node.getChildren()
@@ -269,6 +306,28 @@ class ExpressionGenerator(object):
             if i<len(c) - 1:
                 self.buf.write(", ")
         self.buf.write("]")
+    def visitListComp(self, node):
+        self.buf.write("[")
+        self.visit(node.expr)
+        self.buf.write(" ")
+        for n in node.quals:
+            self.visit(n)
+        self.buf.write("]")
+    def visitListCompFor(self, node):
+        self.buf.write(" for ")
+        self.visit(node.assign)
+        self.buf.write(" in ")
+        self.visit(node.list)
+        for n in node.ifs:
+            self.visit(n)
+    def visitListCompIf(self, node):
+        self.buf.write(" if ")
+        self.visit(node.test)
+    def visitCompare(self, node):
+        self.visit(node.expr)
+        for tup in node.ops:
+            self.buf.write(tup[0])
+            self.visit(tup[1])
     def visitCallFunc(self, node, *args):
         self.visit(node.node)
         self.buf.write("(")
