@@ -88,7 +88,7 @@ class PythonCode(object):
                     if alias is not None:
                         self._add_declared(alias)
                     else:
-                        self._add_declared(mod)
+                        self._add_declared(mod.split('.')[0])
             def visitFrom(self, node, *args):
                 for (mod, alias) in node.names:
                     if alias is not None:

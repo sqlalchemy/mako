@@ -1,6 +1,8 @@
 0.1.5
 - AST expression generation - added in just about everything 
   expression-wise from the AST module  [ticket:26]
+- AST parsing, properly detects imports of the form "import foo.bar"
+  [ticket:27]
   
 0.1.4
 - got defs-within-defs to be cacheable

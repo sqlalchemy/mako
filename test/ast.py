@@ -105,7 +105,15 @@ print z
         parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.undeclared_identifiers == util.Set(['z'])
         assert parsed.declared_identifiers == util.Set(['lala'])
-
+    
+    def test_locate_identifiers_7(self):
+        code = """
+import foo.bar
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.declared_identifiers == util.Set(['foo'])
+        assert parsed.undeclared_identifiers == util.Set()
+        
     def test_no_global_imports(self):
         code = """
 from foo import *
@@ -189,7 +197,7 @@ import x as bar
             local_dict={}
             astnode = parse(code)
             newcode = ast.ExpressionGenerator(astnode).value()
-            print code, newcode
+            #print code, newcode
             assert(eval(code, local_dict)) == eval(newcode, local_dict), "%s != %s" % (code, newcode)
 
 if __name__ == '__main__':
