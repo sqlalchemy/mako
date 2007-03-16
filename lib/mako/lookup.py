@@ -37,7 +37,7 @@ class TemplateCollection(object):
         return uri
         
 class TemplateLookup(TemplateCollection):
-    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, cache_type=None, cache_dir=None, modulename_callable=None, default_filters=['unicode'], imports=None, input_encoding=None, preprocessor=None):
+    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, cache_type=None, cache_dir=None, cache_url=None, modulename_callable=None, default_filters=['unicode'], imports=None, input_encoding=None, preprocessor=None):
         if isinstance(directories, basestring):
             directories = [directories]        
         self.directories = [posixpath.normpath(d) for d in directories or []]
@@ -45,7 +45,7 @@ class TemplateLookup(TemplateCollection):
         self.modulename_callable = modulename_callable
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
-        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'input_encoding':input_encoding, 'module_directory':module_directory, 'cache_type':cache_type, 'cache_dir':cache_dir or module_directory, 'default_filters':default_filters, 'imports':imports, 'preprocessor':preprocessor}
+        self.template_args = {'format_exceptions':format_exceptions, 'error_handler':error_handler, 'output_encoding':output_encoding, 'input_encoding':input_encoding, 'module_directory':module_directory, 'cache_type':cache_type, 'cache_dir':cache_dir or module_directory, 'cache_url':cache_url, 'default_filters':default_filters, 'imports':imports, 'preprocessor':preprocessor}
         if collection_size == -1:
             self.__collection = {}
             self._uri_cache = {}

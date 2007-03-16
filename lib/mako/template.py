@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, module_filename=None, input_encoding=None, default_filters=['unicode'], imports=None, preprocessor=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], imports=None, preprocessor=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -92,6 +92,7 @@ class Template(object):
         self.output_encoding = output_encoding
         self.cache_type = cache_type
         self.cache_dir = cache_dir
+        self.cache_url = cache_url
 
     source = property(lambda self:_get_module_info_from_callable(self.callable_).source, doc="""return the template source code for this Template.""")
     code = property(lambda self:_get_module_info_from_callable(self.callable_).code, doc="""return the module source code for this Template""")
@@ -138,6 +139,7 @@ class DefTemplate(Template):
         self.filename = parent.filename
         self.cache_type = parent.cache_type
         self.cache_dir = parent.cache_dir
+        self.cache_url = parent.cache_url
 
     def get_def(self, name):
         return self.parent.get_def(name)

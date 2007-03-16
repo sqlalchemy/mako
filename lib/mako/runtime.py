@@ -156,6 +156,8 @@ class Namespace(object):
                 kwargs.setdefault('data_dir', self.template.cache_dir)
             if self.template.cache_type:
                 kwargs.setdefault('type', self.template.cache_type)
+            if self.template.cache_url:
+                kwargs.setdefault('url', self.template.cache_url)
         return self.template.module._template_cache.get(key, **kwargs)
         
     def include_file(self, uri, **kwargs):
