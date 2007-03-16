@@ -245,7 +245,7 @@ class TextTag(Tag):
 class DefTag(Tag):
     __keyword__ = 'def'
     def __init__(self, keyword, attributes, **kwargs):
-        super(DefTag, self).__init__(keyword, attributes, ('buffered', 'cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir'), ('name','filter'), ('name',), **kwargs)
+        super(DefTag, self).__init__(keyword, attributes, ('buffered', 'cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir', 'cache_url'), ('name','filter'), ('name',), **kwargs)
         name = attributes['name']
         if re.match(r'^[\w_]+$',name):
             raise exceptions.CompileException("Missing parenthesis in %def", self.lineno, self.pos, self.filename)

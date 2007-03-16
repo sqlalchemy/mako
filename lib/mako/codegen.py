@@ -357,7 +357,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("__%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
         cacheargs = {}
-        for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir'), ('cache_timeout', 'expiretime')):
+        for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir'), ('cache_timeout', 'expiretime'), ('cache_url', 'url')):
             val = node_or_pagetag.parsed_attributes.get(arg[0], None)
             if val is not None:
                 if arg[1] == 'expiretime':
