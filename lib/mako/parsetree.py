@@ -279,7 +279,7 @@ class InheritTag(Tag):
 class PageTag(Tag):
     __keyword__ = 'page'
     def __init__(self, keyword, attributes, **kwargs):
-        super(PageTag, self).__init__(keyword, attributes, ('cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir', 'args', 'expression_filter'), (), (), **kwargs)
+        super(PageTag, self).__init__(keyword, attributes, ('cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir', 'cache_url', 'args', 'expression_filter'), (), (), **kwargs)
         self.body_decl = ast.FunctionArgs(attributes.get('args', ''), self.lineno, self.pos, self.filename)
         self.filter_args = ast.ArgumentList(attributes.get('expression_filter', ''), self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
