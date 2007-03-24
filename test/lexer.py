@@ -398,6 +398,20 @@ hi
 """
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n<style>\n #someselector\n # other non comment stuff\n</style>\n', (1, 1)), Comment(u'a comment', (6, 1)), Text(u'\n# also not a comment\n\n', (7, 1)), Comment(u'this is a comment', (10, 1)), Text(u'   \nthis is ## not a comment\n\n', (11, 1)), Comment(u' multiline\ncomment\n', (14, 1)), Text(u'\n\nhi\n', (16, 8))])"""
+    
+    def test_docs(self):
+        template = """
+        <%doc>
+            this is a comment
+        </%doc>
+        <%def name="foo()">
+            <%doc>
+                this is the foo func
+            </%doc>
+        </%def>
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        ', (1, 1)), Comment(u'\n            this is a comment\n        ', (2, 9)), Text(u'\n        ', (4, 16)), DefTag(u'def', {u'name': u'foo()'}, (5, 9), ["Text(u'\\n            ', (5, 28))", "Comment(u'\\n                this is the foo func\\n            ', (6, 13))", "Text(u'\\n        ', (8, 20))"]), Text(u'\n        ', (9, 16))])"""
 
     def test_preprocess(self):
         def preproc(text):

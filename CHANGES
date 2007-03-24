@@ -3,6 +3,7 @@
   expression-wise from the AST module  [ticket:26]
 - AST parsing, properly detects imports of the form "import foo.bar"
   [ticket:27]
+- fix to lexing of <%docs> tag nested in other tags
   
 0.1.4
 - got defs-within-defs to be cacheable
