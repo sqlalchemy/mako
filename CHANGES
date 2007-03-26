@@ -4,6 +4,8 @@
 - AST parsing, properly detects imports of the form "import foo.bar"
   [ticket:27]
 - fix to lexing of <%docs> tag nested in other tags
+- fix to context-arguments inside of <%include> tag which broke 
+during 0.1.4 [ticket:29]
   
 0.1.4
 - got defs-within-defs to be cacheable

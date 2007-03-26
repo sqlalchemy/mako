@@ -224,7 +224,8 @@ class IncludeTag(Tag):
     def declared_identifiers(self):
         return []
     def undeclared_identifiers(self):
-        return self.page_args.undeclared_identifiers
+        identifiers = self.page_args.undeclared_identifiers
+        return identifiers.union(super(IncludeTag, self).undeclared_identifiers())
     
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
