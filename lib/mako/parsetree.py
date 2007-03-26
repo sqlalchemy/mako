@@ -220,11 +220,11 @@ class IncludeTag(Tag):
     __keyword__ = 'include'
     def __init__(self, keyword, attributes, **kwargs):
         super(IncludeTag, self).__init__(keyword, attributes, ('file', 'import', 'args'), (), ('file',), **kwargs)
-        self.page_args = ast.PythonCode("foo(%s)" % attributes.get('args', ''), self.lineno, self.pos, self.filename)
+        self.page_args = ast.PythonCode("__DUMMY(%s)" % attributes.get('args', ''), self.lineno, self.pos, self.filename)
     def declared_identifiers(self):
         return []
     def undeclared_identifiers(self):
-        identifiers = self.page_args.undeclared_identifiers
+        identifiers = self.page_args.undeclared_identifiers.difference(util.Set(["__DUMMY"]))
         return identifiers.union(super(IncludeTag, self).undeclared_identifiers())
     
 class NamespaceTag(Tag):
