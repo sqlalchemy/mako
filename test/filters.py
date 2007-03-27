@@ -160,11 +160,15 @@ class FilterTest(unittest.TestCase):
         %>
         
         ${foo()}
+        ${bar()}
         <%def name="foo()" filter="b">
             this is text
         </%def>
+        <%def name="bar()" filter="b" buffered="True">
+            this is text
+        </%def>
         """, buffer_filters=['a'])
-        assert flatten_result(t.render()) == "this is a"
+        assert flatten_result(t.render()) == "this is b this is a"
 
         
     def test_builtins(self):

@@ -222,6 +222,20 @@ class CacheTest(unittest.TestCase):
         ]
         assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file'}
     
+    def test_buffered(self):
+        t = Template("""
+        <%!
+            def a(text):
+                return "this is a " + text.strip()
+        %>
+        ${foo()}
+        ${foo()}
+        <%def name="foo()" cached="True" buffered="True">
+            this is a test
+        </%def>
+        """, buffer_filters=["a"])
+        assert result_lines(t.render()) == ["this is a this is a test", "this is a this is a test"]
+        
     def _install_mock_cache(self, template):
         m = MockCache(template.module._template_cache)
         template.module._template_cache = m

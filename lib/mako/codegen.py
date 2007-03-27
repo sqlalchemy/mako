@@ -346,8 +346,9 @@ class _GenerateRenderMethod(object):
             s = "_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)
-            s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             self.printer.writeline(None)
+            if buffered and not cached:
+                s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             if buffered or cached:
                 self.printer.writeline("return %s" % s)
             else:
@@ -384,10 +385,10 @@ class _GenerateRenderMethod(object):
 
         self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
-            self.printer.writelines(
-                    "return context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
-                None
-            )
+            s = "context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg)
+            # apply buffer_filters
+            s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
+            self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
                     "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
