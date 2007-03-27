@@ -113,6 +113,17 @@ import foo.bar
         parsed = ast.PythonCode(code, 0, 0, None)
         assert parsed.declared_identifiers == util.Set(['foo'])
         assert parsed.undeclared_identifiers == util.Set()
+
+    def test_locate_identifiers_8(self):
+        code = """
+class Hi(object):
+    foo = 7
+    def hoho(self):
+        x = 5
+"""
+        parsed = ast.PythonCode(code, 0, 0, None)
+        assert parsed.declared_identifiers == util.Set(['Hi'])
+        assert parsed.undeclared_identifiers == util.Set()
         
     def test_no_global_imports(self):
         code = """

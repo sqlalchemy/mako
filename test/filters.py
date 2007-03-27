@@ -77,6 +77,95 @@ class FilterTest(unittest.TestCase):
             ${"<tag>this is html</tag>"}
         """)
         assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
+
+    def test_nflag(self):
+        t = Template("""
+            ${"<tag>this is html</tag>" | n}
+        """, default_filters=['h', 'unicode'])
+        assert t.render().strip()  == "<tag>this is html</tag>"
+
+        t = Template("""
+            <%page expression_filter="h"/>
+            ${"<tag>this is html</tag>" | n}
+        """)
+        assert t.render().strip()  == "<tag>this is html</tag>"
+
+        t = Template("""
+            <%page expression_filter="h"/>
+            ${"<tag>this is html</tag>" | n, h}
+        """)
+        assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
+    
+    def testnonexpression(self):
+        t = Template("""
+        <%!
+            def a(text):
+                return "this is a"
+            def b(text):
+                return "this is b"
+        %>
+        
+        ${foo()}
+        <%def name="foo()" buffered="True">
+            this is text
+        </%def>
+        """, buffer_filters=['a'])
+        assert t.render().strip() == "this is a"
+
+        t = Template("""
+        <%!
+            def a(text):
+                return "this is a"
+            def b(text):
+                return "this is b"
+        %>
+        
+        ${'hi'}
+        ${foo()}
+        <%def name="foo()" buffered="True">
+            this is text
+        </%def>
+        """, buffer_filters=['a'], default_filters=['b'])
+        assert flatten_result(t.render()) == "this is b this is b"
+
+        t = Template("""
+        <%!
+            class Foo(object):
+                foo = True
+                def __str__(self):
+                    return "this is a"
+            def a(text):
+                return Foo()
+            def b(text):
+                if hasattr(text, 'foo'):
+                    return str(text)
+                else:
+                    return "this is b"
+        %>
+        
+        ${'hi'}
+        ${foo()}
+        <%def name="foo()" buffered="True">
+            this is text
+        </%def>
+        """, buffer_filters=['a'], default_filters=['b'])
+        assert flatten_result(t.render()) == "this is b this is a"
+
+        t = Template("""
+        <%!
+            def a(text):
+                return "this is a"
+            def b(text):
+                return "this is b"
+        %>
+        
+        ${foo()}
+        <%def name="foo()" filter="b">
+            this is text
+        </%def>
+        """, buffer_filters=['a'])
+        assert flatten_result(t.render()) == "this is a"
+
         
     def test_builtins(self):
         t = Template("""

@@ -161,7 +161,8 @@ DEFAULT_ESCAPES = {
     'trim':'filters.trim',
     'entity':'filters.html_entities_escape',
     'unicode':'unicode',
-    'decode':'decode'
+    'decode':'decode',
+    'n':'n'
 }
     
 

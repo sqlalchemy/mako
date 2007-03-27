@@ -47,6 +47,8 @@ class PythonCode(object):
             def _add_declared(s, name):
                 if not s.in_function:
                     self.declared_identifiers.add(name)
+            def visitClass(self, node, *args):
+                self._add_declared(node.name)
             def visitAssName(self, node, *args):
                 self._add_declared(node.name)
             def visitAssign(self, node, *args):

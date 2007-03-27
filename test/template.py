@@ -200,7 +200,7 @@ class IncludeTest(unittest.TestCase):
             <%page args="a,b,c"/>
             this is b.  ${a}, ${b}, ${c}
         """)
-        print lookup.get_template("a").code
+        #print lookup.get_template("a").code
         assert flatten_result(lookup.get_template("a").render(a=7,b=8)) == "this is a this is b. 7, 8, 5"
 
     def test_include_withargs(self):

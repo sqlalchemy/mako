@@ -14,18 +14,19 @@ from mako import util, ast, parsetree, filters
 MAGIC_NUMBER = 1
 
 
-def compile(node, uri, filename=None, default_filters=None, imports=None):
+def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None):
     """generate module source code given a parsetree node, uri, and optional source filename"""
     buf = util.FastEncodingBuffer()
     printer = PythonPrinter(buf)
-    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, imports), node)
+    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports), node)
     return buf.getvalue()
 
 class _CompileContext(object):
-    def __init__(self, uri, filename, default_filters, imports):
+    def __init__(self, uri, filename, default_filters, buffer_filters, imports):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
+        self.buffer_filters = buffer_filters
         self.imports = imports
         
 class _GenerateRenderMethod(object):
@@ -345,6 +346,7 @@ class _GenerateRenderMethod(object):
             s = "_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)
+            s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             self.printer.writeline(None)
             if buffered or cached:
                 self.printer.writeline("return %s" % s)
@@ -402,20 +404,18 @@ class _GenerateRenderMethod(object):
             elif name == 'unicode':
                 return 'unicode'
             else:
-                return \
-                {'x':'filters.xml_escape',
-                'h':'filters.html_escape',
-                'u':'filters.url_escape',
-                'trim':'filters.trim',
-                'entity':'filters.html_entities_escape',
-                }.get(name, name)
-                
-        if is_expression and self.compiler.pagetag:
-            args = self.compiler.pagetag.filter_args.args + args
-        if is_expression and self.compiler.default_filters:
-            args = self.compiler.default_filters + args
+                return filters.DEFAULT_ESCAPES.get(name, name)
+        
+        if 'n' not in args:
+            if is_expression:
+                if self.compiler.pagetag:
+                    args = self.compiler.pagetag.filter_args.args + args
+                if self.compiler.default_filters:
+                    args = self.compiler.default_filters + args
         for e in args:
             # if filter given as a function, get just the identifier portion
+            if e == 'n':
+                continue
             m = re.match(r'(.+?)(\(.*\))', e)
             if m:
                 (ident, fargs) = m.group(1,2)
