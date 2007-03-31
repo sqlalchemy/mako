@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.1.4'
+version = '0.1.5'
 
 setup(name='Mako',
       version=version,
