@@ -59,7 +59,7 @@ class Template(object):
                 u = self.uri
                 if u[0] == '/':
                     u = u[1:]
-                path = os.path.normpath(os.path.join(module_directory.replace('/', os.path.sep), u + ".py"))
+                path = os.path.abspath(os.path.join(module_directory.replace('/', os.path.sep), u + ".py"))
             else:
                 path = None    
             if path is not None:

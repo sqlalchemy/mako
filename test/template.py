@@ -250,8 +250,8 @@ class ModuleDirTest(unittest.TestCase):
         file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
         t = Template(filename='./test_htdocs/modtest.html', module_directory='./test_htdocs/modules')
         t2 = Template(filename='./test_htdocs/subdir/modtest.html', module_directory='./test_htdocs/modules')
-        assert t.module.__file__ == os.path.normpath('./test_htdocs/modules/test_htdocs/modtest.html.py')
-        assert t2.module.__file__ == os.path.normpath('./test_htdocs/modules/test_htdocs/subdir/modtest.html.py')
+        assert t.module.__file__ == os.path.abspath('./test_htdocs/modules/test_htdocs/modtest.html.py')
+        assert t2.module.__file__ == os.path.abspath('./test_htdocs/modules/test_htdocs/subdir/modtest.html.py')
     def test_callable(self):
         file('./test_htdocs/modtest.html', 'w').write("""this is a test""")
         file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
