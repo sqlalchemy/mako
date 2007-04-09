@@ -18,12 +18,13 @@ class TGPlugin(object):
                 tmpl_options[k[5:]] = v
             elif k in ['directories', 'filesystem_checks', 'module_directory']:
                 tmpl_options[k] = v
+        self.tmpl_options = tmpl_options
         self.lookup = TemplateLookup(**tmpl_options)
 
     def load_template(self, templatename, template_string=None):
         """Loads a template from a file or a string"""
         if template_string is not None:
-            return Template(template_string)
+            return Template(template_string, **self.tmpl_options)
         # Translate TG dot notation to normal / template path
         if '/' not in templatename and '.' not in templatename:
             templatename = '/' + templatename.replace('.', '/') + '.' + self.extension

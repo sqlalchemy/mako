@@ -1,6 +1,7 @@
 0.1.6
 - fix to module_directory path generation when the path is "./"
   [ticket:34]
+- TGPlugin passes options to string-based templates [ticket:35]
   
 0.1.5
 - AST expression generation - added in just about everything 
