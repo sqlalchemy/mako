@@ -120,7 +120,7 @@ A flip-side to def within def is a def call with content.  This is where you cal
         I am the table body.
     </%call>
     
-This produces the output:
+This produces the output (whitespace formatted):
 
     {html}
     <table>
@@ -226,7 +226,7 @@ You don't have to stick to calling just the `body()` function.  The caller can d
             this is the body
     </%call>
     
-The above layout would produce:
+The above layout would produce (whitespace formatted):
 
     <div class="mainlayout">
         <div class="header">
