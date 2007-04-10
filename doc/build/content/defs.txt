@@ -152,7 +152,7 @@ A custom "conditional" tag:
     
     <%def name="conditional(expr)">
         % if expr:
-            ${body()}
+            ${caller.body()}
         % endif
     </%def>
 
@@ -172,7 +172,7 @@ But that's not all.  The `body()` function also can handle arguments, which will
         % for item in somedata:
             <tr>
             % for col in item:
-                <td>${body(col=col)}</td>\
+                <td>${caller.body(col=col)}</td>\
             % endfor
             </tr>
         % endfor
@@ -183,7 +183,7 @@ But that's not all.  The `body()` function also can handle arguments, which will
         Body data: ${col}
     </%call>
     
-Produces:
+Produces (whitespace formatted):
 
     {html}
     <table>
