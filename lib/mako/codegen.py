@@ -150,10 +150,13 @@ class _GenerateRenderMethod(object):
         """write a top-level render callable.
         
         this could be the main render() method or that of a top-level def."""
-        self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
+        self.printer.writelines(
+            "def %s(%s):" % (name, ','.join(args)),
+                "context.caller_stack.push_frame()",
+                "try:"
+        )
         if buffered or filtered or cached:
             self.printer.writeline("context.push_buffer()")
-            self.printer.writeline("try:")
 
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
         if not self.in_def and '**pageargs' in args:
@@ -182,20 +185,22 @@ class _GenerateRenderMethod(object):
 
     def write_inherit(self, node):
         """write the module-level inheritance-determination callable."""
-        self.printer.writeline("def _mako_inherit(template, context):")
-        self.printer.writeline("_mako_generate_namespaces(context)")
-        self.printer.writeline("return runtime._inherit_from(context, %s, _template_uri)" % (node.parsed_attributes['file']))
-        self.printer.writeline(None)
+        self.printer.writelines(
+            "def _mako_inherit(template, context):",
+                "_mako_generate_namespaces(context)",
+                "return runtime._inherit_from(context, %s, _template_uri)" % (node.parsed_attributes['file']),
+                None
+            )
 
     def write_namespaces(self, namespaces):
         """write the module-level namespace-generating callable."""
         self.printer.writelines(
             "def _mako_get_namespace(context, name):",
-            "try:",
-            "return context.namespaces[(__name__, name)]",
-            "except KeyError:",
-            "_mako_generate_namespaces(context)",
-            "return context.namespaces[(__name__, name)]",
+                "try:",
+                    "return context.namespaces[(__name__, name)]",
+                "except KeyError:",
+                    "_mako_generate_namespaces(context)",
+                "return context.namespaces[(__name__, name)]",
             None,None
             )
         self.printer.writeline("def _mako_generate_namespaces(context):")
@@ -312,10 +317,13 @@ class _GenerateRenderMethod(object):
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
+        self.printer.writelines(
+            "context.caller_stack.push_frame()",
+            "try:"
+            )
         if buffered or filtered or cached:
             self.printer.writelines(
                 "context.push_buffer()",
-                "try:"
                 )
 
         identifiers = identifiers.branch(node, nested=nested)
@@ -332,7 +340,7 @@ class _GenerateRenderMethod(object):
         if cached:
             self.write_cache_decorator(node, node.name, False, identifiers, inline=True)
         
-    def write_def_finish(self, node, buffered, filtered, cached):
+    def write_def_finish(self, node, buffered, filtered, cached, callstack=True):
         """write the end section of a rendering function, either outermost or inline.
         
         this takes into account if the rendering function was filtered, buffered, etc.
@@ -340,9 +348,19 @@ class _GenerateRenderMethod(object):
         apply filters, send proper return value."""
         if not buffered and not cached and not filtered:
             self.printer.writeline("return ''")
+            if callstack:
+                self.printer.writelines(
+                    "finally:",
+                        "context.caller_stack.pop_frame()",
+                    None
+                )
         if buffered or filtered or cached:
-            self.printer.writeline("finally:")
-            self.printer.writeline("_buf = context.pop_buffer()")
+            self.printer.writelines(
+                "finally:",
+                    "_buf = context.pop_buffer()"
+            )
+            if callstack:
+                self.printer.writeline("context.caller_stack.pop_frame()")
             s = "_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)
@@ -352,8 +370,10 @@ class _GenerateRenderMethod(object):
             if buffered or cached:
                 self.printer.writeline("return %s" % s)
             else:
-                self.printer.writeline("context.write(%s)" % s)
-                self.printer.writeline("return ''")
+                self.printer.writelines(
+                    "context.write(%s)" % s,
+                    "return ''"
+                )
 
     def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers, inline=False):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
@@ -493,8 +513,9 @@ class _GenerateRenderMethod(object):
         export = ['body']
         callable_identifiers = self.identifiers.branch(node, nested=True)
         body_identifiers = callable_identifiers.branch(node, nested=False)
+        # we want the 'caller' passed to ccall to be used for the body() function,
+        # but for other non-body() <%def>s within <%call> we want the current caller off the call stack (if any)
         body_identifiers.add_declared('caller')
-        callable_identifiers.add_declared('caller')
         
         self.identifier_stack.append(body_identifiers)
         class DefVisitor(object):
@@ -504,6 +525,7 @@ class _GenerateRenderMethod(object):
                 # remove defs that are within the <%call> from the "closuredefs" defined
                 # in the body, so they dont render twice
                 del body_identifiers.closuredefs[node.name]
+
         vis = DefVisitor()
         for n in node.nodes:
             n.accept_visitor(vis)
@@ -524,7 +546,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
         self.identifier_stack.pop()
         
-        self.write_def_finish(node, buffered, False, False)
+        self.write_def_finish(node, buffered, False, False, callstack=False)
         self.printer.writelines(
             None,
             "return [%s]" % (','.join(export)),
@@ -532,16 +554,16 @@ class _GenerateRenderMethod(object):
         )
 
         self.printer.writelines(
-            # push on global "caller" to be picked up by the next ccall
-            "caller = context['caller']._get_actual_caller()",
-            "context.push_caller(runtime.Namespace('caller', context, callables=ccall(runtime._StackFacade(context, caller))))",
+            # get local reference to current caller, if any
+            "caller = context.caller_stack._get_caller()",
+            # push on caller for nested call
+            "context.caller_stack.nextcaller = runtime.Namespace('caller', context, callables=ccall(caller))",
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
                 "context.write(unicode(%s))" % node.attributes['expr'],
             "finally:",
-                # pop it off
-                "context.pop_caller()",
+                "context.caller_stack.nextcaller = None",
             None
         )
 

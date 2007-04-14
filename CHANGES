@@ -2,7 +2,13 @@
 - fix to module_directory path generation when the path is "./"
   [ticket:34]
 - TGPlugin passes options to string-based templates [ticket:35]
-  
+- added an explicit stack frame step to template runtime, which
+  allows much simpler and hopefully bug-free tracking of 'caller',
+  fixes #28
+- if plain Python defs are used with <%call>, a decorator
+  @runtime.supports_callable exists to ensure that the "caller"
+  stack is properly handled for the def.
+    
 0.1.5
 - AST expression generation - added in just about everything 
   expression-wise from the AST module  [ticket:26]

@@ -22,8 +22,7 @@ class Context(object):
         data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
         
         # "caller" stack used by def calls with content
-        self.caller_stack = [UNDEFINED]
-        data['caller'] = _StackFacade(self, None)
+        self.caller_stack = data['caller'] = CallerStack()
     lookup = property(lambda self:self._with_template.lookup)
     kwargs = property(lambda self:self._kwargs.copy())
     def push_caller(self, caller):
@@ -70,28 +69,20 @@ class Context(object):
         x.pop('next', None)
         return c
 
-class _StackFacade(object):
-    def __init__(self, context, local):
-        self.__stack = context.caller_stack
-        self.__local = local
+class CallerStack(list):
+    def __init__(self):
+        self.nextcaller = None
     def __nonzero__(self):
-        return self._get_actual_caller() and True or False
-    def _get_actual_caller(self):
-        caller = self.__stack[-1]
-        if caller is None:
-            return self.__local
-        else:
-            return caller
+          return self._get_caller() and True or False
+    def _get_caller(self):
+        return self.nextcaller or self[-1]
     def __getattr__(self, key):
-        caller = self._get_actual_caller()
-        callable_ = getattr(caller, key)
-        def call_wno_caller(*args, **kwargs):
-            try:
-                self.__stack.append(None)
-                return callable_(*args, **kwargs)
-            finally:
-                self.__stack.pop()
-        return call_wno_caller
+        return getattr(self._get_caller(), key)
+    def push_frame(self):
+        self.append(self.nextcaller or None)
+        self.nextcaller = None
+    def pop_frame(self):
+        self.pop()
         
         
 class Undefined(object):
@@ -212,6 +203,16 @@ class Namespace(object):
             return getattr(self.inherits, key)
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
 
+def supports_caller(func):
+    """apply a caller_stack compatibility decorator to a plain Python function."""
+    def wrap_stackframe(context,  *args, **kwargs):
+        context.caller_stack.push_frame()
+        try:
+            return func(context, *args, **kwargs)
+        finally:
+            context.caller_stack.pop_frame()
+    return wrap_stackframe
+        
 def capture(context, callable_, *args, **kwargs):
     """execute the given template def, capturing the output into a buffer."""
     if not callable(callable_):

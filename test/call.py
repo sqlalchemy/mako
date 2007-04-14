@@ -78,6 +78,7 @@ class CallTest(unittest.TestCase):
         </%call>
 
         """)
+        #print t.code
         assert result_lines(t.render()) == [
             "OUTER BEGIN",
             "INNER BEGIN",
@@ -85,6 +86,46 @@ class CallTest(unittest.TestCase):
             "INNER END",
             "OUTER END",
         ]
+    
+    def test_conditional_call(self):
+        """test that 'caller' is non-None only if the immediate <%def> was called via <%call>"""
+
+        t = Template("""
+        <%def name="a()">
+        % if caller:
+        ${ caller.body() } \\
+        % endif
+        AAA
+        ${ b() }
+        </%def>
+
+        <%def name="b()">
+        % if caller:
+        ${ caller.body() } \\
+        % endif
+        BBB
+        ${ c() }
+        </%def>
+
+        <%def name="c()">
+        % if caller:
+        ${ caller.body() } \\
+        % endif
+        CCC
+        </%def>
+
+        <%call expr="a()">
+        CALL
+        </%call>
+
+        """)
+        assert result_lines(t.render()) == [
+            "CALL",
+            "AAA",
+            "BBB",
+            "CCC"
+        ]
+        
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
         t = Template("""
@@ -222,6 +263,62 @@ class CallTest(unittest.TestCase):
 """)
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call"]
 
+    def test_regular_defs(self):
+        t = Template("""
+        <%!
+            @runtime.supports_caller
+            def a(context):
+                context.write("this is a")
+                if context['caller']:
+                    context['caller'].body()
+                context.write("a is done")
+                return ''
+        %>
+        
+        <%def name="b()">
+            this is b
+            our body: ${caller.body()}
+            ${a(context)}
+        </%def>
+        test 1
+        <%call expr="a(context)">
+            this is the body
+        </%call>
+        test 2
+        <%call expr="b()">
+            this is the body
+        </%call>
+        test 3
+        <%call expr="b()">
+            this is the body
+            <%call expr="b()">
+                this is the nested body
+            </%call>
+        </%call>
+
+
+        """)    
+        #print t.code
+        assert result_lines(t.render()) == [
+            "test 1",
+            "this is a",
+            "this is the body",
+            "a is done",
+            "test 2",
+            "this is b",
+            "our body:",
+            "this is the body",
+            "this is aa is done",
+            "test 3",
+            "this is b",
+            "our body:",
+            "this is the body",
+            "this is b",
+            "our body:",
+            "this is the nested body",
+            "this is aa is done",
+            "this is aa is done"
+        ]
         
     def test_call_in_nested_2(self):
         t = Template("""

@@ -178,6 +178,7 @@ def _compile_text(template, text, filename):
     identifier = template.module_id
     node = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor).parse()
     source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports)
+    #print source
     cid = identifier
     module = imp.new_module(cid)
     code = compile(source, cid, 'exec')
