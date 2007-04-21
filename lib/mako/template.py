@@ -169,15 +169,22 @@ class ModuleInfo(object):
     code = property(_get_code)
     def _get_source(self):
         if self.template_source is not None:
-            return self.template_source
+            if self.module._source_encoding and not isinstance(self.template_source, unicode):
+                return self.template_source.decode(self.module._source_encoding)
+            else:
+                return self.template_source
         else:
-            return file(self.template_filename).read()
+            if self.module._source_encoding:
+                return file(self.template_filename).read().decode(self.module._source_encoding)
+            else:
+                return file(self.template_filename).read()
     source = property(_get_source)
         
 def _compile_text(template, text, filename):
     identifier = template.module_id
-    node = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor).parse()
-    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports)
+    lexer = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
+    node = lexer.parse()
+    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding)
     #print source
     cid = identifier
     module = imp.new_module(cid)
@@ -188,8 +195,9 @@ def _compile_text(template, text, filename):
 def _compile_module_file(template, text, filename, outputpath):
     identifier = template.module_id
     (dest, name) = tempfile.mkstemp()
-    node = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor).parse()
-    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports)
+    lexer = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
+    node = lexer.parse()
+    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding)
     os.write(dest, source)
     os.close(dest)
     shutil.move(name, outputpath)

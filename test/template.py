@@ -3,6 +3,7 @@
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
+from mako import exceptions
 import unittest, re, os
 from util import flatten_result, result_lines
 
@@ -12,6 +13,10 @@ if not os.access('./test_htdocs/subdir', os.F_OK):
     os.mkdir('./test_htdocs/subdir')
 file('./test_htdocs/unicode.html', 'w').write("""## -*- coding: utf-8 -*-
 Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
+file('./test_htdocs/unicode_syntax_error.html', 'w').write("""## -*- coding: utf-8 -*-
+<% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>""")
+file('./test_htdocs/unicode_runtime_error.html', 'w').write("""## -*- coding: utf-8 -*-
+<% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »' + int(5/0) %>""")
     
 class EncodingTest(unittest.TestCase):
     def test_unicode(self):
@@ -243,7 +248,49 @@ class GlobalsTest(unittest.TestCase):
 """)
         assert t.render().strip() == "y is hi"
 
+class RichTracebackTest(unittest.TestCase):
+    def do_test_traceback(self, utf8, memory, syntax):
+        if memory:
+            if syntax:
+                source = u'## coding: utf-8\n<% print "m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>'
+            else:
+                source = u'## coding: utf-8\n<% print u"m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »" + str(5/0) %>'
+            if utf8:
+                source = source.encode('utf-8')
+            else:
+                source = source
+            templateargs = {'text':source}
+        else:
+            if syntax:
+                filename = './test_htdocs/unicode_syntax_error.html'
+            else:
+                filename = './test_htdocs/unicode_runtime_error.html'
+            source = file(filename).read()
+            if not utf8:
+                source = source.decode('utf-8')
+            templateargs = {'filename':filename}
+        try:
+            template = Template(**templateargs)
+            if not syntax:
+                template.render_unicode()
+            assert False
+        except Exception, e:
+            tback = exceptions.RichTraceback()
+            if utf8:
+                assert tback.source == source.decode('utf-8')
+            else:
+                assert tback.source == source
 
+for utf8 in (True, False):
+    for memory in (True, False):
+        for syntax in (True, False):
+            def do_test(self):
+                self.do_test_traceback(utf8, memory, syntax)
+            name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', memory and 'memory' or 'file', syntax and 'syntax' or 'runtime')
+            do_test.__name__ = name
+            setattr(RichTracebackTest, name, do_test)
+
+        
 class ModuleDirTest(unittest.TestCase):
     def test_basic(self):
         file('./test_htdocs/modtest.html', 'w').write("""this is a test""")

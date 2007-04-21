@@ -3,6 +3,8 @@ import unittest
 from mako import ast, util, exceptions
 from compiler import parse
 
+exception_kwargs = {'source':'', 'lineno':0, 'pos':0, 'filename':''}
+
 class AstParseTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -23,11 +25,11 @@ for lar in (1,2,3):
 print "hello world, ", a, b
 print "Another expr", c
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == util.Set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
         assert parsed.undeclared_identifiers == util.Set(['x', 'q', 'foo', 'gah', 'blah'])
     
-        parsed = ast.PythonCode("x + 5 * (y-z)", 0, 0, None)
+        parsed = ast.PythonCode("x + 5 * (y-z)", **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z'])
         assert parsed.declared_identifiers == util.Set()
 
@@ -41,7 +43,7 @@ data = get_data()
 for x in data:
     result.append(x+7)
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['get_data'])
         assert parsed.declared_identifiers == util.Set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
 
@@ -54,7 +56,7 @@ for y in range(1, y):
 [z for z in range(1, z)]
 (q for q in range (1, q))
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
     
     def test_locate_identifiers_4(self):
@@ -64,7 +66,7 @@ print y
 def mydef(mydefarg):
     print "mda is", mydefarg
 """    
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['y'])
         assert parsed.declared_identifiers == util.Set(['mydef', 'x'])
     
@@ -75,7 +77,7 @@ try:
 except:
     print y
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['x', 'y'])
     
     def test_locate_identifiers_6(self):
@@ -83,7 +85,7 @@ except:
 def foo():
     return bar()
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['bar'])
     
         code = """
@@ -91,7 +93,7 @@ def lala(x, y):
     return x, y, z
 print x
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['z', 'x'])
         assert parsed.declared_identifiers == util.Set(['lala'])
     
@@ -102,7 +104,7 @@ def lala(x, y):
             z = 7
 print z
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['z'])
         assert parsed.declared_identifiers == util.Set(['lala'])
     
@@ -110,7 +112,7 @@ print z
         code = """
 import foo.bar
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == util.Set(['foo'])
         assert parsed.undeclared_identifiers == util.Set()
 
@@ -121,7 +123,7 @@ class Hi(object):
     def hoho(self):
         x = 5
 """
-        parsed = ast.PythonCode(code, 0, 0, None)
+        parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == util.Set(['Hi'])
         assert parsed.undeclared_identifiers == util.Set()
         
@@ -131,41 +133,41 @@ from foo import *
 import x as bar
 """
         try:
-            parsed = ast.PythonCode(code, 0, 0, None)
+            parsed = ast.PythonCode(code, **exception_kwargs)
             assert False
         except exceptions.CompileException, e:
             assert str(e).startswith("'import *' is not supported")
             
     def test_python_fragment(self):
-        parsed = ast.PythonFragment("for x in foo:", 0, 0, None)
+        parsed = ast.PythonFragment("for x in foo:", **exception_kwargs)
         assert parsed.declared_identifiers == util.Set(['x'])
         assert parsed.undeclared_identifiers == util.Set(['foo'])
         
-        parsed = ast.PythonFragment("try:", 0, 0, None)
+        parsed = ast.PythonFragment("try:", **exception_kwargs)
 
-        parsed = ast.PythonFragment("except MyException, e:", 0, 0, None)
+        parsed = ast.PythonFragment("except MyException, e:", **exception_kwargs)
         assert parsed.declared_identifiers == util.Set(['e'])
         assert parsed.undeclared_identifiers == util.Set(['MyException'])
     
     def test_argument_list(self):
-        parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", 0, 0, None)
+        parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", **exception_kwargs)
         assert parsed.undeclared_identifiers == util.Set(['x', 'context'])
         assert [x for x in parsed.args] == ["3", "5", "'hi'", "(x + 5)", "context.get('lala')"]
 
-        parsed = ast.ArgumentList("h", 0, 0, None)
+        parsed = ast.ArgumentList("h", **exception_kwargs)
         assert parsed.args == ["h"]
 
     def test_function_decl(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, d='hi', e=x, f=y+7):pass"
-        parsed = ast.FunctionDecl(code, 0, 0, None)
+        parsed = ast.FunctionDecl(code, **exception_kwargs)
         assert parsed.funcname=='foo'
         assert parsed.argnames==['a', 'b', 'c', 'd', 'e', 'f']
 
     def test_function_decl_2(self):
         """test getting the arguments from a function"""
         code = "def foo(a, b, c=None, *args, **kwargs):pass"
-        parsed = ast.FunctionDecl(code, 0, 0, None)
+        parsed = ast.FunctionDecl(code, **exception_kwargs)
         assert parsed.funcname=='foo'
         assert parsed.argnames==['a', 'b', 'c', 'args', 'kwargs']
     

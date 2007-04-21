@@ -12,15 +12,15 @@ from mako import util, exceptions
 from StringIO import StringIO
 import re
 
-def parse(code, mode, lineno, pos, filename):
+def parse(code, mode, **exception_kwargs):
     try:
         return compiler_parse(code, mode)
     except SyntaxError, e:
-        raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), lineno, pos, filename)
+        raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), **exception_kwargs)
     
 class PythonCode(object):
     """represents information about a string containing Python code"""
-    def __init__(self, code, lineno, pos, filename):
+    def __init__(self, code, **exception_kwargs):
         self.code = code
         
         # represents all identifiers which are assigned to at some point in the code
@@ -36,7 +36,7 @@ class PythonCode(object):
         # - AST is less likely to break with version changes (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
         if isinstance(code, basestring):
-            expr = parse(code.lstrip(), "exec", lineno, pos, filename)
+            expr = parse(code.lstrip(), "exec", **exception_kwargs)
         else:
             expr = code
         
@@ -97,14 +97,14 @@ class PythonCode(object):
                         self._add_declared(alias)
                     else:
                         if mod == '*':
-                            raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", lineno, pos, filename)
+                            raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", **exception_kwargs)
                         self._add_declared(mod)
         f = FindIdentifiers()
         visitor.walk(expr, f) #, walker=walker())
 
 class ArgumentList(object):
     """parses a fragment of code as a comma-separated list of expressions"""
-    def __init__(self, code, lineno, pos, filename):
+    def __init__(self, code, **exception_kwargs):
         self.codeargs = []
         self.args = []
         self.declared_identifiers = util.Set()
@@ -112,7 +112,7 @@ class ArgumentList(object):
         class FindTuple(object):
             def visitTuple(s, node, *args):
                 for n in node.nodes:
-                    p = PythonCode(n, lineno, pos, filename)
+                    p = PythonCode(n, **exception_kwargs)
                     self.codeargs.append(p)
                     self.args.append(ExpressionGenerator(n).value())
                     self.declared_identifiers = self.declared_identifiers.union(p.declared_identifiers)
@@ -122,7 +122,7 @@ class ArgumentList(object):
                 # if theres text and no trailing comma, insure its parsed
                 # as a tuple by adding a trailing comma
                 code  += ","
-            expr = parse(code, "exec", lineno, pos, filename)
+            expr = parse(code, "exec", **exception_kwargs)
         else:
             expr = code
 
@@ -138,10 +138,10 @@ class PythonFragment(PythonCode):
         except (MyException, e):
     etc.
     """
-    def __init__(self, code, lineno, pos, filename):
+    def __init__(self, code, **exception_kwargs):
         m = re.match(r'^(\w+)(?:\s+(.*?))?:$', code.strip())
         if not m:
-            raise exceptions.CompileException("Fragment '%s' is not a partial control statement" % code, lineno, pos, filename)
+            raise exceptions.CompileException("Fragment '%s' is not a partial control statement" % code, **exception_kwargs)
         (keyword, expr) = m.group(1,2)
         if keyword in ['for','if', 'while']:
             code = code + "pass"
@@ -152,8 +152,8 @@ class PythonFragment(PythonCode):
         elif keyword == 'except':
             code = "try:pass\n" + code + "pass"
         else:
-            raise exceptions.CompileException("Unsupported control keyword: '%s'" % keyword, lineno, pos, filename)
-        super(PythonFragment, self).__init__(code, lineno, pos, filename)
+            raise exceptions.CompileException("Unsupported control keyword: '%s'" % keyword, **exception_kwargs)
+        super(PythonFragment, self).__init__(code, **exception_kwargs)
         
 class walker(visitor.ASTVisitor):
     def dispatch(self, node, *args):
@@ -163,9 +163,9 @@ class walker(visitor.ASTVisitor):
         
 class FunctionDecl(object):
     """function declaration"""
-    def __init__(self, code, lineno, pos, filename, allow_kwargs=True):
+    def __init__(self, code, allow_kwargs=True, **exception_kwargs):
         self.code = code
-        expr = parse(code, "exec", lineno, pos, filename)
+        expr = parse(code, "exec", **exception_kwargs)
         class ParseFunc(object):
             def visitFunction(s, node, *args):
                 self.funcname = node.name
@@ -177,9 +177,9 @@ class FunctionDecl(object):
         f = ParseFunc()
         visitor.walk(expr, f)
         if not hasattr(self, 'funcname'):
-            raise exceptions.CompileException("Code '%s' is not a function declaration" % code, lineno, pos, filename)
+            raise exceptions.CompileException("Code '%s' is not a function declaration" % code, **exception_kwargs)
         if not allow_kwargs and self.kwargs:
-            raise exceptions.CompileException("'**%s' keyword argument not allowed here" % self.argnames[-1], lineno, pos, filename)
+            raise exceptions.CompileException("'**%s' keyword argument not allowed here" % self.argnames[-1], **exception_kwargs)
             
     def get_argument_expressions(self, include_defaults=True):
         """return the argument declarations of this FunctionDecl as a printable list."""
@@ -207,8 +207,8 @@ class FunctionDecl(object):
 
 class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
-    def __init__(self, code, lineno, pos, filename, **kwargs):
-        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, lineno, pos, filename, **kwargs)
+    def __init__(self, code, **kwargs):
+        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, **kwargs)
         
             
 class ExpressionGenerator(object):

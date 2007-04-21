@@ -8,6 +8,8 @@
 - if plain Python defs are used with <%call>, a decorator
   @runtime.supports_callable exists to ensure that the "caller"
   stack is properly handled for the def.
+- fix to RichTraceback and exception reporting to get template
+  source code as a unicode object #37
     
 0.1.5
 - AST expression generation - added in just about everything 

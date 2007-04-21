@@ -14,20 +14,21 @@ from mako import util, ast, parsetree, filters
 MAGIC_NUMBER = 2
 
 
-def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None):
+def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None):
     """generate module source code given a parsetree node, uri, and optional source filename"""
     buf = util.FastEncodingBuffer()
     printer = PythonPrinter(buf)
-    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports), node)
+    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports, source_encoding), node)
     return buf.getvalue()
 
 class _CompileContext(object):
-    def __init__(self, uri, filename, default_filters, buffer_filters, imports):
+    def __init__(self, uri, filename, default_filters, buffer_filters, imports, source_encoding):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
         self.buffer_filters = buffer_filters
         self.imports = imports
+        self.source_encoding = source_encoding
         
 class _GenerateRenderMethod(object):
     """a template visitor object which generates the full module source for a template."""
@@ -116,12 +117,13 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
         self.printer.writeline("_template_uri=%s" % repr(self.compiler.uri))
         self.printer.writeline("_template_cache=cache.Cache(__name__, _modified_time)")
+        self.printer.writeline("_source_encoding=%s" % repr(self.compiler.source_encoding))
         if self.compiler.imports:
             buf = ''
             for imp in self.compiler.imports:
                 buf += imp + "\n"
                 self.printer.writeline(imp)
-            impcode = ast.PythonCode(buf, 0, 0, 'template defined imports')
+            impcode = ast.PythonCode(buf, source='', lineno=0, pos=0, filename='template defined imports')
         else:
             impcode = None
         
@@ -445,8 +447,7 @@ class _GenerateRenderMethod(object):
             else:
                 x = e
                 e = locate_encode(e)
-                if e is None:
-                    raise "der its none " + x
+                assert e is not None
             target = "%s(%s)" % (e, target)
         return target
         

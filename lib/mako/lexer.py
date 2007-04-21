@@ -30,7 +30,9 @@ class Lexer(object):
             self.preprocessor = [preprocessor]
         else:
             self.preprocessor = preprocessor
-        
+            
+    exception_kwargs = property(lambda self:{'source':self.text, 'lineno':self.matched_lineno, 'pos':self.matched_charpos, 'filename':self.filename})
+    
     def match(self, regexp, flags=None):
         """match the given regular expression string and flags to the current text position.
         
@@ -73,7 +75,7 @@ class Lexer(object):
             if match:
                 m = self.match(r'.*?%s' % match.group(1), re.S)
                 if not m:
-                    raise exceptions.SyntaxException("Unmatched '%s'" % match.group(1), self.matched_lineno, self.matched_charpos, self.filename)
+                    raise exceptions.SyntaxException("Unmatched '%s'" % match.group(1), **self.exception_kwargs)
             else:
                 match = self.match(r'(%s)' % r'|'.join(text))
                 if match:
@@ -81,9 +83,10 @@ class Lexer(object):
                 else:
                     match = self.match(r".*?(?=\"|\'|#|%s)" % r'|'.join(text), re.S)
                     if not match:
-                        raise exceptions.SyntaxException("Expected: %s" % ','.join(text), self.matched_lineno, self.matched_charpos, self.filename)
+                        raise exceptions.SyntaxException("Expected: %s" % ','.join(text), **self.exception_kwargs)
                 
     def append_node(self, nodecls, *args, **kwargs):
+        kwargs.setdefault('source', self.text)
         kwargs.setdefault('lineno', self.matched_lineno)
         kwargs.setdefault('pos', self.matched_charpos)
         kwargs['filename'] = self.filename
@@ -102,7 +105,7 @@ class Lexer(object):
             elif node.is_primary:
                 self.control_line.append(node)
             elif len(self.control_line) and not self.control_line[-1].is_ternary(node.keyword):
-                raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
+                raise exceptions.SyntaxException("Keyword '%s' not a legal ternary for keyword '%s'" % (node.keyword, self.control_line[-1].keyword), **self.exception_kwargs)
 
     def escape_code(self, text):
         if self.encoding:
@@ -121,12 +124,12 @@ class Lexer(object):
                 try:
                     self.text = self.text.decode(self.encoding)
                 except UnicodeDecodeError, e:
-                    raise exceptions.CompileException("Unicode decode operation of encoding '%s' failed" % self.encoding, 0, 0, self.filename)
+                    raise exceptions.CompileException("Unicode decode operation of encoding '%s' failed" % self.encoding, self.text.decode('utf-8', 'ignore'), 0, 0, self.filename)
             else:
                 try:
                     self.text = self.text.decode()
                 except UnicodeDecodeError, e:
-                    raise exceptions.CompileException("Could not read template using encoding of 'ascii'.  Did you forget a magic encoding comment?", 0, 0, self.filename)
+                    raise exceptions.CompileException("Could not read template using encoding of 'ascii'.  Did you forget a magic encoding comment?", self.text.decode('utf-8', 'ignore'), 0, 0, self.filename)
 
         self.textlength = len(self.text)
             
@@ -156,9 +159,9 @@ class Lexer(object):
             raise exceptions.CompileException("assertion failed")
             
         if len(self.tag):
-            raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos, self.filename)
+            raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, **self.exception_kwargs)
         if len(self.control_line):
-            raise exceptions.SyntaxException("Unterminated control keyword: '%s'" % self.control_line[-1].keyword, self.control_line[-1].lineno, self.control_line[-1].pos, self.filename)
+            raise exceptions.SyntaxException("Unterminated control keyword: '%s'" % self.control_line[-1].keyword, self.text, self.control_line[-1].lineno, self.control_line[-1].pos, self.filename)
         return self.template
 
     def match_encoding(self):
@@ -199,7 +202,7 @@ class Lexer(object):
                 if keyword == 'text':
                     match = self.match(r'(.*?)(?=\</%text>)',  re.S)
                     if not match:
-                        raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, self.matched_lineno, self.matched_charpos, self.filename)
+                        raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % self.tag[-1].keyword, **self.exception_kwargs)
                     self.append_node(parsetree.Text, match.group(1))
                     return self.match_tag_end()
             return True
@@ -210,9 +213,9 @@ class Lexer(object):
         match = self.match(r'\</%[\t ]*(.+?)[\t ]*>')
         if match:
             if not len(self.tag):
-                raise exceptions.SyntaxException("Closing tag without opening tag: </%%%s>" % match.group(1), self.matched_lineno, self.matched_charpos, self.filename)
+                raise exceptions.SyntaxException("Closing tag without opening tag: </%%%s>" % match.group(1), **self.exception_kwargs)
             elif self.tag[-1].keyword != match.group(1):
-                raise exceptions.SyntaxException("Closing tag </%%%s> does not match tag: <%%%s>" % (match.group(1), self.tag[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
+                raise exceptions.SyntaxException("Closing tag </%%%s> does not match tag: <%%%s>" % (match.group(1), self.tag[-1].keyword), **self.exception_kwargs)
             self.tag.pop()
             return True
         else:
@@ -287,15 +290,15 @@ class Lexer(object):
             if operator == '%':
                 m2 = re.match(r'(end)?(\w+)\s*(.*)', text)
                 if not m2:
-                    raise exceptions.SyntaxException("Invalid control line: '%s'" % text, self.matched_lineno, self.matched_charpos, self.filename)
+                    raise exceptions.SyntaxException("Invalid control line: '%s'" % text, **self.exception_kwargs)
                 (isend, keyword) = m2.group(1, 2)
                 isend = (isend is not None)
                 
                 if isend:
                     if not len(self.control_line):
-                        raise exceptions.SyntaxException("No starting keyword '%s' for '%s'" % (keyword, text), self.matched_lineno, self.matched_charpos, self.filename)
+                        raise exceptions.SyntaxException("No starting keyword '%s' for '%s'" % (keyword, text), **self.exception_kwargs)
                     elif self.control_line[-1].keyword != keyword:
-                        raise exceptions.SyntaxException("Keyword '%s' doesn't match keyword '%s'" % (text, self.control_line[-1].keyword), self.matched_lineno, self.matched_charpos, self.filename)
+                        raise exceptions.SyntaxException("Keyword '%s' doesn't match keyword '%s'" % (text, self.control_line[-1].keyword), **self.exception_kwargs)
                 self.append_node(parsetree.ControlLine, keyword, isend, self.escape_code(text))
             else:
                 self.append_node(parsetree.Comment, text)

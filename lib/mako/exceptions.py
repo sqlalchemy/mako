@@ -20,18 +20,20 @@ def _format_filepos(lineno, pos, filename):
     else:
         return " in file '%s' at line: %d char: %d" % (filename, lineno, pos)     
 class CompileException(MakoException):
-    def __init__(self, message, lineno, pos, filename):
+    def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
         self.filename = filename
+        self.source = source
                     
 class SyntaxException(MakoException):
-    def __init__(self, message, lineno, pos, filename):
+    def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
         self.filename = filename
+        self.source = source
         
 class TemplateLookupException(MakoException):
     pass
@@ -68,7 +70,8 @@ class RichTraceback(object):
         if self.error is None:
             self.error = t
         if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
-            self.source = file(self.error.filename).read()
+            import mako.template
+            self.source = self.error.source
             self.lineno = self.error.lineno
             self._has_source = True
         self.reverse_records = [r for r in self.records]
