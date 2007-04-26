@@ -114,3 +114,18 @@ The `local` namespace is also where properties like `uri`, `filename`, and `modu
 
 The `self` namespace, in the case of a template that does not use inheritance, is synonomous with `local`.  If inheritance is used, then `self` references the topmost template in the inheritance chain, where it is most useful for providing the ultimate form of various "method" calls which may have been overridden at various points in an inheritance chain.  See [inheritance](rel:inheritance).
 
+### Inheritable Namespaces
+
+The `<%namespace>` tag includes an optional attribute `inheritable="True"`, which will cause the namespace to be attached to the `self` namespace.  Since `self` is globally available throughout an inheritance chain (described in the next section), all the templates in an inheritance chain can get at the namespace via self.
+
+    ## base.html
+    <%namespace name="foo" file="foo.html" inheritable="True"/>
+    
+    ${next.body()}
+
+    ## somefile.html
+    <%import file="base.html"/>
+    
+    ${self.foo.bar()}
+    
+The `import="*"` part of the `<%namespace>` tag doesn't yet interact with the `inheritable` flag, more on that in a future release.
