@@ -5,7 +5,7 @@ Using template inheritance, two or more templates can organize themselves into a
 
 In practice, it looks like this.  Heres a hypothetical inheriting template, `index.html`:
 
-    # index.html
+    ## index.html
     <%inherit file="base.html"/>
     
     <%def name="header()">
@@ -16,7 +16,7 @@ In practice, it looks like this.  Heres a hypothetical inheriting template, `ind
     
 And `base.html`, the inherited template:
 
-    # base.html
+    ## base.html
     <html>
         <body>
             <div class="header">
@@ -67,7 +67,7 @@ Sometimes you have an inheritance chain that spans more than two templates.  Or 
 
 Lets change the line in `base.html` which calls upon `self.body()` to instead call upon `next.body()`:
 
-    # base.html
+    ## base.html
     <html>
         <body>
             <div class="header">
@@ -88,7 +88,7 @@ Lets change the line in `base.html` which calls upon `self.body()` to instead ca
 
 Lets also add an intermediate template called `layout.html`, which inherits from `base.html`:
 
-    # layout.html
+    ## layout.html
     <%inherit file="base.html"/>
     <ul>
         ${self.toolbar()}
@@ -105,10 +105,10 @@ Lets also add an intermediate template called `layout.html`, which inherits from
 
 And finally change `index.html` to inherit from `layout.html` instead:
 
-    # index.html
+    ## index.html
     <%inherit file="layout.html"/>
     
-    # .. rest of template
+    ## .. rest of template
     
 In this setup, each call to `next.body()` will render the body of the next template in the inheritance chain (which can be written as `base.html -> layout.html -> index.html`).  Control is still first passed to the bottommost template `base.html`, and `self` still references the topmost definition of any particular def.
 
@@ -142,7 +142,7 @@ So above, we have the `<html>`, `<body>` and `header`/`footer` layout of `base.h
 
 Lets now look at the other inheritance-specific namespace, the opposite of `next` called `parent`.  `parent` is the namespace of the template **immediately preceding** the current template.  What is most useful about this namespace is the methods within it which can be accessed within overridden versions of those methods.  This is not as hard as it sounds and is very much like using the `super` keyword in Python.  Lets modify `index.html` to augment the list of selections provided by the `toolbar` function in `layout.html`:
 
-    # index.html
+    ## index.html
     <%inherit file="layout.html"/>
 
     <%def name="header()">
@@ -150,7 +150,7 @@ Lets now look at the other inheritance-specific namespace, the opposite of `next
     </%def>
 
     <%def name="toolbar()">
-        # call the parent's toolbar first
+        ## call the parent's toolbar first
         ${parent.toolbar()}
         <li>selection 4</li>
         <li>selection 5</li>
