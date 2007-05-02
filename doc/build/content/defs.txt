@@ -95,7 +95,7 @@ Assigning to a name inside of a def declares that name as local to the scope of 
         x = 10
     %>
     <%def name="somedef()">
-        # error !
+        ## error !
         somedef, x is ${x}  
         <%
             x = 27  
@@ -199,7 +199,7 @@ Produces (whitespace formatted):
 You don't have to stick to calling just the `body()` function.  The caller can define any number of callables, allowing the `<%call>` tag to produce whole layouts:
 
     <%def name="layout()">
-        # a layout def
+        ## a layout def
         <div class="mainlayout">
             <div class="header">
                 ${caller.header()}
@@ -213,7 +213,7 @@ You don't have to stick to calling just the `body()` function.  The caller can d
         </div>
     </%def>
 
-    # calls the layout def
+    ## calls the layout def
     <%call expr="layout">
         <%def name="header()">
             I am the header

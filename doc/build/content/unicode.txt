@@ -48,11 +48,11 @@ looks something like this:
     
 That is, **the output of all expressions is run through the `unicode` builtin**.  This is the default setting, and can be modified to expect various encodings.  The `unicode` step serves both the purpose of rendering non-string expressions into strings (such as integers or objects which contain `__str()__` methods), and to ensure that the final output stream is constructed as a unicode object.  The main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this:
 
-    ${"voix m’a réveillé."}  # error !
+    ${"voix m’a réveillé."}  ## error !
 
 You must instead say this:
 
-    ${u"voix m’a réveillé."}  # OK !
+    ${u"voix m’a réveillé."}  ## OK !
 
 Similarly, if you are reading data from a file, or returning data from some object that is returning a Python bytestring containing a non-ascii encoding, you have to explcitly decode to unicode first, such as:
 

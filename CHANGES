@@ -16,7 +16,9 @@
 - the Template returned by html_error_template now defaults to
   output_encoding=sys.getdefaultencoding(),
   encoding_errors='htmlentityreplace' [ticket:37]
-    
+- control lines, i.e. % lines, support backslashes to continue long
+  lines (#32)
+  
 0.1.5
 - AST expression generation - added in just about everything 
   expression-wise from the AST module  [ticket:26]

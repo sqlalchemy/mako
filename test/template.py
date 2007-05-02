@@ -243,6 +243,16 @@ class ControlTest(unittest.TestCase):
             "yes x has test"
         ]
 
+    def test_multiline_control(self):
+        t = Template("""
+    % for x in \\
+        [y for y in [1,2,3]]:
+        ${x}
+    % endfor
+""")
+        #print t.code
+        assert flatten_result(t.render()) == "1 2 3"
+        
 class GlobalsTest(unittest.TestCase):
     def test_globals(self):
         t= Template("""

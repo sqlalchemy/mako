@@ -283,7 +283,7 @@ class Lexer(object):
             return False
 
     def match_control_line(self):
-        match = self.match(r"(?<=^)[\t ]*(%|##)[\t ]*([^\r\n]*)(?:\r?\n|\Z)", re.M)
+        match = self.match(r"(?<=^)[\t ]*(%|##)[\t ]*((?:(?:\\r?\n)|[^\r\n])*)(?:\r?\n|\Z)", re.M)
         if match:
             operator = match.group(1)
             text = match.group(2)

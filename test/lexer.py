@@ -290,6 +290,17 @@ text text la la
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n\n\n', (1, 1)), ControlLine(u'for', u"for file in requestattr['toc'].filenames:", False, (4, 1)), Text(u'    x\n', (5, 1)), ControlLine(u'for', u'endfor', True, (6, 1))])"""
 
+    def test_long_control_lines(self):
+        template = \
+        """
+    % for file in \\
+        requestattr['toc'].filenames:
+        x
+    % endfor
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n', (1, 1)), ControlLine(u'for', u"for file in \\\n        requestattr['toc'].filenames:", False, (2, 1)), Text(u'        x\n', (4, 1)), ControlLine(u'for', u'endfor', True, (5, 1)), Text(u'        ', (6, 1))])"""
+
     def test_unmatched_control(self):
         template = """
 
