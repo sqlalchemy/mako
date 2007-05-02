@@ -525,7 +525,8 @@ class _GenerateRenderMethod(object):
                 export.append(node.name)
                 # remove defs that are within the <%call> from the "closuredefs" defined
                 # in the body, so they dont render twice
-                del body_identifiers.closuredefs[node.name]
+                if node.name in body_identifiers.closuredefs:
+                    del body_identifiers.closuredefs[node.name]
 
         vis = DefVisitor()
         for n in node.nodes:

@@ -18,6 +18,7 @@
   encoding_errors='htmlentityreplace' [ticket:37]
 - control lines, i.e. % lines, support backslashes to continue long
   lines (#32)
+- fixed codegen bug when defining <%def> within <%call> within <%call>
   
 0.1.5
 - AST expression generation - added in just about everything 

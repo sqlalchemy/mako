@@ -1,7 +1,7 @@
 from mako.template import Template
 from mako import util
 import unittest
-from util import result_lines
+from util import result_lines, flatten_result
 
 class CallTest(unittest.TestCase):
     def test_call(self):
@@ -213,6 +213,27 @@ class CallTest(unittest.TestCase):
             "bar:",
             "this is bar body: 10"
         ]
+
+    def test_nested_call_3(self):
+        template = Template('''\
+        <%def name="A()">
+          ${caller.body()}
+        </%def>
+
+        <%def name="B()">
+          ${caller.foo()}
+        </%def>
+
+        <%call expr="A()">
+          <%call expr="B()">
+            <%def name="foo()">
+              foo
+            </%def>
+          </%call>
+        </%call>
+
+        ''')
+        assert flatten_result(template.render()) == "foo"
         
     def test_chained_call_in_nested(self):
         t = Template("""
