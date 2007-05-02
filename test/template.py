@@ -129,6 +129,11 @@ class EncodingTest(unittest.TestCase):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         template = Template(val, output_encoding='utf-8')
         assert template.render() == val.encode('utf-8')
+
+    def test_encoding_errors(self):
+        val = u"""KGB (transliteration of "КГБ") is the Russian-language abbreviation for Committee for State Security, (Russian: Комит́ет Госуд́арственной Безоп́асности (help·info); Komitet Gosudarstvennoy Bezopasnosti)"""
+        template = Template(val, output_encoding='iso-8859-1', encoding_errors='replace')
+        assert template.render() == val.encode('iso-8859-1', 'replace')
     
     def test_read_unicode(self):
         lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True, output_encoding='utf-8')

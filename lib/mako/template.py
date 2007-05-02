@@ -16,7 +16,7 @@ import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, module_directory=None, cache_type=None, cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], buffer_filters=[], imports=None, preprocessor=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, encoding_errors='strict', module_directory=None, cache_type=None, cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], buffer_filters=[], imports=None, preprocessor=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -91,6 +91,7 @@ class Template(object):
         self.error_handler = error_handler
         self.lookup = lookup
         self.output_encoding = output_encoding
+        self.encoding_errors = encoding_errors
         self.cache_type = cache_type
         self.cache_dir = cache_dir
         self.cache_url = cache_url
@@ -134,6 +135,7 @@ class DefTemplate(Template):
         self.input_encoding = parent.input_encoding
         self.imports = parent.imports
         self.output_encoding = parent.output_encoding
+        self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
         self.lookup = parent.lookup

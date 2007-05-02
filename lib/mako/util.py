@@ -47,14 +47,15 @@ class SetLikeDict(dict):
          
 class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, but doesnt crash on unicode data like cStringIO."""
-    def __init__(self, encoding=None):
+    def __init__(self, encoding=None, errors='strict'):
         self.data = []
         self.encoding = encoding
+        self.errors = errors
     def write(self, text):
         self.data.append(text)
     def getvalue(self):
         if self.encoding:
-            return u''.join(self.data).encode(self.encoding)
+            return u''.join(self.data).encode(self.encoding, self.errors)
         else:
             return u''.join(self.data)
 

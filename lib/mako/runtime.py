@@ -279,7 +279,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     if as_unicode:
         buf = util.FastEncodingBuffer()
     elif template.output_encoding:
-        buf = util.FastEncodingBuffer(template.output_encoding)
+        buf = util.FastEncodingBuffer(template.output_encoding, template.encoding_errors)
     else:
         buf = util.StringIO()
     context = Context(buf, **data)

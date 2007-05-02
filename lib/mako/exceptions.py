@@ -223,4 +223,4 @@ def html_error_template():
 
 </body>
 </html>
-""")
+""", output_encoding=sys.getdefaultencoding(), encoding_errors='htmlentityreplace')

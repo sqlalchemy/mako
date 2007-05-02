@@ -1,4 +1,4 @@
-0.1.6
+0.1.6 
 - fix to module_directory path generation when the path is "./"
   [ticket:34]
 - TGPlugin passes options to string-based templates [ticket:35]
@@ -10,6 +10,12 @@
   stack is properly handled for the def.
 - fix to RichTraceback and exception reporting to get template
   source code as a unicode object #37
+- added the 'encoding_errors' parameter to Template/TemplateLookup
+  for specifying the error handler associated with encoding to
+  'output_encoding' [ticket:40]
+- the Template returned by html_error_template now defaults to
+  output_encoding=sys.getdefaultencoding(),
+  encoding_errors='htmlentityreplace' [ticket:37]
     
 0.1.5
 - AST expression generation - added in just about everything 

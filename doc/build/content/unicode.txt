@@ -71,13 +71,13 @@ The `default_filters` argument can be used to entirely customize the filtering p
 
 Now that we have a template which produces a pure unicode output stream, all the hard work is done.  We can take the output and do anything with it.
 
-As stated in the "Usage" chapter, both `Template` and `TemplateLookup` accept an `output_encoding` parameter which can be used to encode the output in any Python supported codec:
+As stated in the "Usage" chapter, both `Template` and `TemplateLookup` accept `output_encoding` and `encoding_errors` parameters which can be used to encode the output in any Python supported codec:
 
     {python}
     from mako.template import Template
     from mako.lookup import TemplateLookup
     
-    mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8')
+    mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8', encoding_errors='replace')
     
     mytemplate = mylookup.get_template("foo.txt")
     print mytemplate.render()
@@ -90,7 +90,7 @@ And `render_unicode()` will return the template output as a Python `unicode` obj
 The above method disgards the output encoding keyword argument; you can encode yourself by saying:
 
     {python}
-    print mytemplate.render_unicode().encode('utf-8')
+    print mytemplate.render_unicode().encode('utf-8', 'replace')
     
 #### Buffer Selection
 

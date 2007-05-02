@@ -99,13 +99,13 @@ Another important flag on `TemplateLookup` is `filesystem_checks`.  This default
 
 ### Using Unicode and Encoding
 
-Both `Template` and `TemplateLookup` accept an `output_encoding` parameter which can be used to encode the output in any Python supported codec:
+Both `Template` and `TemplateLookup` accept `output_encoding` and `encoding_errors` parameters which can be used to encode the output in any Python supported codec:
 
     {python}
     from mako.template import Template
     from mako.lookup import TemplateLookup
     
-    mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8')
+    mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8', encoding_errors='replace')
     
     mytemplate = mylookup.get_template("foo.txt")
     print mytemplate.render()
@@ -118,7 +118,7 @@ Additionally, the `render_unicode()` method exists which will return the templat
 The above method disgards the output encoding keyword argument; you can encode yourself by saying:
 
     {python}
-    print mytemplate.render_unicode().encode('utf-8')
+    print mytemplate.render_unicode().encode('utf-8', 'replace')
     
 Note that Mako's ability to return data in any encoding and/or `unicode` implies that the underlying output stream of the template is a Python unicode object.  This behavior is described fully in [unicode](rel:unicode).
 
