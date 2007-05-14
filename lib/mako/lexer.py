@@ -6,7 +6,7 @@
 
 """provides the Lexer class for parsing template strings into parse trees."""
 
-import re
+import re, codecs
 from mako import parsetree, exceptions
 from mako.pygen import adjust_whitespace
 
@@ -116,10 +116,18 @@ class Lexer(object):
     def parse(self):
         for preproc in self.preprocessor:
             self.text = preproc(self.text)
-        parsed_encoding = self.match_encoding()
+        if not isinstance(self.text, unicode) and self.text.startswith(codecs.BOM_UTF8):
+            self.text = self.text[len(codecs.BOM_UTF8):]
+            parsed_encoding = 'utf-8'
+            me = self.match_encoding()
+            if me is not None and me != 'utf-8':
+                raise exceptions.CompileException("Found utf-8 BOM in file, with conflicting magic encoding comment of '%s'" % me, self.text.decode('utf-8', 'ignore'), 0, 0, self.filename)
+        else:
+            parsed_encoding = self.match_encoding()
         if parsed_encoding:
             self.encoding = parsed_encoding
         if not isinstance(self.text, unicode):
+
             if self.encoding:
                 try:
                     self.text = self.text.decode(self.encoding)

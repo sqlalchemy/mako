@@ -6,6 +6,7 @@ from mako.ext.preprocessors import convert_comments
 from mako import exceptions
 import unittest, re, os
 from util import flatten_result, result_lines
+import codecs
 
 if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
@@ -17,6 +18,12 @@ file('./test_htdocs/unicode_syntax_error.html', 'w').write("""## -*- coding: utf
 <% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>""")
 file('./test_htdocs/unicode_runtime_error.html', 'w').write("""## -*- coding: utf-8 -*-
 <% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »' + int(5/0) %>""")
+
+file('./test_htdocs/bommagic.html', 'w').write(codecs.BOM_UTF8 + """## -*- coding: utf-8 -*-
+Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
+file('./test_htdocs/badbom.html', 'w').write(codecs.BOM_UTF8 + """## -*- coding: ascii -*-
+Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
+file('./test_htdocs/bom.html', 'w').write(codecs.BOM_UTF8 + """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
     
 class EncodingTest(unittest.TestCase):
     def test_unicode(self):
@@ -31,6 +38,19 @@ class EncodingTest(unittest.TestCase):
     def test_unicode_file(self):
         template = Template(filename='./test_htdocs/unicode.html', module_directory='./test_htdocs')
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_bom(self):
+        template = Template(filename='./test_htdocs/bom.html', module_directory='./test_htdocs')
+        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+        template = Template(filename='./test_htdocs/bommagic.html', module_directory='./test_htdocs')
+        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+        try:
+            template = Template(filename='./test_htdocs/badbom.html', module_directory='./test_htdocs')
+            assert False
+        except exceptions.CompileException:
+            assert True
 
     def test_unicode_memory(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""

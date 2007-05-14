@@ -19,6 +19,7 @@
 - control lines, i.e. % lines, support backslashes to continue long
   lines (#32)
 - fixed codegen bug when defining <%def> within <%call> within <%call>
+- leading utf-8 BOM in template files is honored according to pep-0263
   
 0.1.5
 - AST expression generation - added in just about everything 
