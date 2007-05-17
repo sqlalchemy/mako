@@ -36,7 +36,7 @@ SVN version:
       packages=find_packages('lib', exclude=['ez_setup', 'examples', 'tests']),
       zip_safe=False,
       install_requires=[
-          'MyghtyUtils',
+          'Beaker',
       ],
       entry_points="""
       [python.templating.engines]

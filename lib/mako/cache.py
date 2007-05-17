@@ -1,16 +1,17 @@
 from mako import exceptions
 
 try:
-    import myghtyutils.container as container
+    import beaker.container as container
+    import beaker.exceptions
     try:
-        import myghtyutils.ext.memcached as memcached
+        import beaker.ext.memcached as memcached
         clsmap = {
             'memory':container.MemoryContainer,
             'dbm':container.DBMContainer,
             'file':container.FileContainer,
             'memcached':memcached.MemcachedContainer
         }
-    except ImportError:
+    except beaker.exceptions.BeakerException:
         clsmap = {
             'memory':container.MemoryContainer,
             'dbm':container.DBMContainer,
@@ -37,7 +38,7 @@ class Cache(object):
             return self._containers[key]
         except KeyError:
             if container is None:
-                raise exceptions.RuntimeException("myghtyutils package is required to use cache functionality.")
+                raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
             kw = self.kwargs.copy()
             kw.update(kwargs)
             return self._containers.setdefault(key, clsmap[type](key, self.context, self.id, starttime=self.starttime, **kw))

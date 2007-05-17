@@ -1,4 +1,6 @@
 0.1.6 
+- caching is now supplied directly by Beaker, which has 
+  all of MyghtyUtils merged into it now
 - fix to module_directory path generation when the path is "./"
   [ticket:34]
 - TGPlugin passes options to string-based templates [ticket:35]
