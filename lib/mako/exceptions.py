@@ -166,15 +166,25 @@ ${str(tback.error.__class__.__name__)}: ${str(tback.error)}
 def html_error_template():
     """provides a template that renders a stack trace in an HTML format, providing an excerpt of 
     code as well as substituting source template filenames, line numbers and code 
-    for that of the originating source template, as applicable."""
+    for that of the originating source template, as applicable.
+
+    the template's default encoding_errors value is 'htmlentityreplace'. the template has
+    two options:
+
+    with the full option disabled, only a section of an HTML document is returned.
+    with the css option disabled, the default stylesheet won't be included."""
     import mako.template
     return mako.template.Template(r"""
 <%!
     from mako.exceptions import RichTraceback
 %>
+<%page args="full=True, css=True"/>
+% if full:
 <html>
 <head>
     <title>Mako Runtime Error</title>
+% endif
+% if css:
     <style>
         body { font-family:verdana; margin:10px 30px 10px 30px;}
         .stacktrace { margin:5px 5px 5px 5px; }
@@ -185,8 +195,11 @@ def html_error_template():
         .sourceline { margin:5px 5px 10px 5px; font-family:monospace;}
         .location { font-size:80%; }
     </style>
+% endif
+% if full:
 </head>
 <body>
+% endif
 
 <h2>Error !</h2>
 <%
@@ -221,6 +234,8 @@ def html_error_template():
 % endfor
 </div>
 
+% if full:
 </body>
 </html>
+% endif
 """, output_encoding=sys.getdefaultencoding(), encoding_errors='htmlentityreplace')

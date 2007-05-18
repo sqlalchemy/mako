@@ -13,7 +13,8 @@ def suite():
         'filters',
         'inheritance',
         'call',
-	'cache'
+	'cache',
+	'exceptions_'
         )
     alltests = unittest.TestSuite()
     for name in modules_to_test:

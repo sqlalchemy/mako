@@ -12,6 +12,8 @@
   stack is properly handled for the def.
 - fix to RichTraceback and exception reporting to get template
   source code as a unicode object #37
+- html_error_template includes options "full=True", "css=True"
+  which control generation of HTML tags, CSS [ticket:39]
 - added the 'encoding_errors' parameter to Template/TemplateLookup
   for specifying the error handler associated with encoding to
   'output_encoding' [ticket:40]

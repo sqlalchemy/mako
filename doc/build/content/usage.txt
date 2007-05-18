@@ -148,6 +148,12 @@ Or for the HTML render function:
     except:
         print exceptions.html_error_template().render()
 
+The `html_error_template` template accepts two options: specifying `full=False` causes only a section of an HTML document to be rendered. Specifying `css=False` will disable the default stylesheet from being rendered.
+
+E.g.:
+
+        print exceptions.html_error_template().render(full=False)
+
 The HTML render function is also available built-in to `Template` using the `format_exceptions` flag.  In this case, any exceptions raised within the **render** stage of the template will result in the output being substituted with the output of `html_error_template`.
 
     {python}
