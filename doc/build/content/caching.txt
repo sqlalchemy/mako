@@ -9,7 +9,7 @@ Any template or component can be cached using the `cache` argument to the `<%pag
     
 The above template, after being executed the first time, will store its content within a cache that by default is scoped within memory.  Subsequent calls to the template's `render()` method will return content directly from the cache.  When the `Template` object itself falls out of scope, its corresponding cache is garbage collected along with the template.
 
-Caching requires that the `myghtyutils` package be installed on the system.
+Caching requires that the `beaker` package be installed on the system.
 
 The caching flag and all its options can be used with the `<%def>` tag.  
 
