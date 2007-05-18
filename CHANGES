@@ -1,6 +1,8 @@
 0.1.6 
 - caching is now supplied directly by Beaker, which has 
-  all of MyghtyUtils merged into it now
+  all of MyghtyUtils merged into it now.  The latest Beaker
+  (0.7.1) also fixes a bug related to how Mako was using the 
+  cache API.
 - fix to module_directory path generation when the path is "./"
   [ticket:34]
 - TGPlugin passes options to string-based templates [ticket:35]
