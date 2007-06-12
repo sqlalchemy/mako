@@ -3,20 +3,20 @@ from mako import exceptions
 try:
     import beaker.container as container
     import beaker.exceptions
+    clsmap = {
+        'memory':container.MemoryContainer,
+        'dbm':container.DBMContainer,
+        'file':container.FileContainer,
+    }
     try:
         import beaker.ext.memcached as memcached
-        clsmap = {
-            'memory':container.MemoryContainer,
-            'dbm':container.DBMContainer,
-            'file':container.FileContainer,
-            'memcached':memcached.MemcachedContainer
-        }
+        # XXX HACK: Python 2.3 under some circumstances will import this module
+        #           even though there's no memcached. This ensures its really
+        #           there before adding it.
+        if hasattr(memcached, 'MemcachedContainer'):
+            clsmap['memcached'] = memcached.MemcachedContainer
     except beaker.exceptions.BeakerException:
-        clsmap = {
-            'memory':container.MemoryContainer,
-            'dbm':container.DBMContainer,
-            'file':container.FileContainer,
-        }
+        pass
 except ImportError:
     container = None
     clsmap = {}
