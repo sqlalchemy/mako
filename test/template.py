@@ -322,7 +322,10 @@ for utf8 in (True, False):
             def do_test(self):
                 self.do_test_traceback(utf8, memory, syntax)
             name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', memory and 'memory' or 'file', syntax and 'syntax' or 'runtime')
-            do_test.__name__ = name
+            try:
+               do_test.__name__ = name
+            except:
+               pass
             setattr(RichTracebackTest, name, do_test)
 
         
