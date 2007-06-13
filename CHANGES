@@ -1,3 +1,9 @@
+0.1.7
+- one small fix to the unit tests to support python 2.3
+- a slight hack to how cache.py detects Beaker's memcached, 
+works around unexplained import behavior observed on some 
+python 2.3 installations
+
 0.1.6 
 - caching is now supplied directly by Beaker, which has 
   all of MyghtyUtils merged into it now.  The latest Beaker
