@@ -37,7 +37,9 @@ class TemplateCollection(object):
         return uri
         
 class TemplateLookup(TemplateCollection):
-    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, error_handler=None, output_encoding=None, encoding_errors='strict', cache_type=None, cache_dir=None, cache_url=None, modulename_callable=None, default_filters=['unicode'], buffer_filters=[], imports=None, input_encoding=None, preprocessor=None):
+    def __init__(self, directories=None, module_directory=None, filesystem_checks=True, collection_size=-1, format_exceptions=False, 
+    error_handler=None, output_encoding=None, encoding_errors='strict', cache_type=None, cache_dir=None, cache_url=None, 
+    modulename_callable=None, default_filters=['unicode'], buffer_filters=[], imports=None, input_encoding=None, preprocessor=None):
         if isinstance(directories, basestring):
             directories = [directories]        
         self.directories = [posixpath.normpath(d) for d in directories or []]

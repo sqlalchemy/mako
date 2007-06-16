@@ -16,7 +16,10 @@ import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
     
 class Template(object):
     """a compiled template"""
-    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, lookup=None, output_encoding=None, encoding_errors='strict', module_directory=None, cache_type=None, cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], buffer_filters=[], imports=None, preprocessor=None):
+    def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, 
+        lookup=None, output_encoding=None, encoding_errors='strict', module_directory=None, cache_type=None, 
+        cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], 
+        buffer_filters=[], imports=None, preprocessor=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -28,6 +31,7 @@ class Template(object):
         
         format_exceptions - catch exceptions and format them into an error display template
         """
+        
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri

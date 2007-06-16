@@ -1,3 +1,8 @@
+0.1.8
+- variable names declared in render methods by internal 
+codegen prefixed by "__M_" to prevent name collisions
+with user code
+
 0.1.7
 - one small fix to the unit tests to support python 2.3
 - a slight hack to how cache.py detects Beaker's memcached, 

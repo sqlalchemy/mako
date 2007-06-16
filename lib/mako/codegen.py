@@ -165,7 +165,7 @@ class _GenerateRenderMethod(object):
             self.identifier_stack[-1].argument_declared.add('pageargs')
 
         if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared)>0):
-            self.printer.writeline("__locals = dict(%s)" % ','.join(["%s=%s" % (x, x) for x in self.identifiers.argument_declared]))
+            self.printer.writeline("__M_locals = dict(%s)" % ','.join(["%s=%s" % (x, x) for x in self.identifiers.argument_declared]))
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
@@ -305,7 +305,7 @@ class _GenerateRenderMethod(object):
         namedecls = node.function_decl.get_argument_expressions()
         nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
         if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared) > 0):
-            nameargs.insert(0, 'context.locals_(__locals)')
+            nameargs.insert(0, 'context.locals_(__M_locals)')
         else:
             nameargs.insert(0, 'context')
         self.printer.writeline("def %s(%s):" % (funcname, ",".join(namedecls)))
@@ -359,11 +359,11 @@ class _GenerateRenderMethod(object):
         if buffered or filtered or cached:
             self.printer.writelines(
                 "finally:",
-                    "_buf = context.pop_buffer()"
+                    "__M_buf = context.pop_buffer()"
             )
             if callstack:
                 self.printer.writeline("context.caller_stack.pop_frame()")
-            s = "_buf.getvalue()"
+            s = "__M_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)
             self.printer.writeline(None)
@@ -379,7 +379,7 @@ class _GenerateRenderMethod(object):
 
     def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers, inline=False):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
-        self.printer.writeline("__%s = %s" % (name, name))
+        self.printer.writeline("__M_%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
         cacheargs = {}
         for arg in (('cache_type', 'type'), ('cache_dir', 'data_dir'), ('cache_timeout', 'expiretime'), ('cache_url', 'url')):
@@ -407,13 +407,13 @@ class _GenerateRenderMethod(object):
 
         self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
-            s = "context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg)
+            s = "context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg)
             # apply buffer_filters
             s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
-                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__%s(%s*args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
+                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s*args, **kwargs)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg),
                     "return ''",
                 None
             )
@@ -480,8 +480,8 @@ class _GenerateRenderMethod(object):
         if filtered:
             self.printer.writelines(
                 "finally:",
-                "_buf = context.pop_buffer()",
-                "context.write(%s)" % self.create_filter_callable(node.filter_args.args, "_buf.getvalue()", False),
+                "__M_buf = context.pop_buffer()",
+                "context.write(%s)" % self.create_filter_callable(node.filter_args.args, "__M_buf.getvalue()", False),
                 None
                 )
         
@@ -491,9 +491,9 @@ class _GenerateRenderMethod(object):
             self.printer.write_indented_block(node.text)
 
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
-                # if we are the "template" def, fudge locally declared/modified variables into the "__locals" dictionary,
+                # if we are the "template" def, fudge locally declared/modified variables into the "__M_locals" dictionary,
                 # which is used for def calls within the same template, to simulate "enclosing scope"
-                self.printer.writeline('__locals.update(dict([(k, locals()[k]) for k in [%s] if k in locals()]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
+                self.printer.writeline('__M_locals.update(dict([(__M_key, locals()[__M_key]) for __M_key in [%s] if __M_key in locals()]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
