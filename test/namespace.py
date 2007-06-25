@@ -405,6 +405,19 @@ class NamespaceTest(unittest.TestCase):
             "this is bar",
         ]
 
+    def test_import_local(self):
+        t = Template("""
+            <%namespace import="*">
+                <%def name="foo()">
+                    this is foo
+                </%def>
+            </%namespace>
+            
+            ${foo()}
+        
+        """)
+        assert flatten_result(t.render()) == "this is foo"
+        
     def test_ccall_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""

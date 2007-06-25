@@ -165,8 +165,8 @@ class Namespace(object):
     
     def _get_star(self):
         if self.callables is not None:
-            for k in self.callables:
-                yield (k, self.callables[key])
+            for key in self.callables:
+                yield (key, self.callables[key])
         if self.template is not None:
             def get(key):
                 callable_ = self.template.get_def(key).callable_
