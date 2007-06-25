@@ -13,9 +13,10 @@ def suite():
         'filters',
         'inheritance',
         'call',
-	'cache',
-	'exceptions_',
-	'babelplugin'
+        'cache',
+        'exceptions_',
+        'babelplugin',
+        'tgplugin'
         )
     alltests = unittest.TestSuite()
     for name in modules_to_test:

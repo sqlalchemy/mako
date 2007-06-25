@@ -5,6 +5,9 @@ with user code
 - added a Babel (http://babel.edgewall.org/) extractor entry
 point, allowing extraction of gettext messages directly from
 mako templates via Babel [ticket:45]
+- fix to turbogears plugin to work with dot-separated names
+(i.e. load_template('foo.bar')).  also takes file extension
+as a keyword argument (default is 'mak').
 
 0.1.7
 - one small fix to the unit tests to support python 2.3
