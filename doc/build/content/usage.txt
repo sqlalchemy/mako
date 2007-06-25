@@ -196,3 +196,57 @@ A sample WSGI application is included in the distrubution in the file `examples/
 
 A [Pygments](http://pygments.pocoo.org)-compatible syntax highlighting module is included under `mako.ext.pygmentplugin`.  This module is used in the generation of Mako documentation and also contains various setuptools entry points under the heading `pygments.lexers`, including `mako`, `html+mako`, `xml+mako` (see the `setup.py` file for all the entry points).
 
+#### Babel (Internationalization)
+
+Mako provides support for extracting gettext messages from templates via a [Babel](http://babel.edgewall.org/) extractor entry point under `mako.ext.babelplugin`.
+
+Gettext messages are extracted from all Python code sections, even the more obscure ones such as [control structures](rel:syntax_control), [def tag function declarations](rel:defs), [call tag exprs](rel:defs_defswithcontent) and even [page tag args](rel:syntax_tags_page).
+
+[Translator comments](http://babel.edgewall.org/wiki/Documentation/messages.html#comments-tags-and-translator-comments-explanation) may also be extracted from Mako templates when a comment tag is specified to [Babel](http://babel.edgewall.org/) (such as with the -c option).
+
+For example, a project '`myproj`' contains the following Mako template at myproj/myproj/templates/name.html:
+
+    <div id="name">
+      Name:
+      ## TRANSLATORS: This is a proper name. See the gettext
+      ## manual, section Names.
+      ${_('Francois Pinard')}
+    </div>
+
+To extract gettext messages from this template the project needs a Mako section in its [Babel Extraction Method Mapping file](http://babel.edgewall.org/wiki/Documentation/messages.html#extraction-method-mapping-and-configuration) (typically located at myproj/babel.cfg):
+
+    {ini}
+    # Extraction from Python source files
+
+    [python: myproj/**.py]
+
+    # Extraction from Mako templates
+
+    [mako: myproj/templates/**.html]
+    input_encoding = utf-8
+
+The Mako extractor supports an optional `input_encoding` parameter specifying the encoding of the templates (identical to `Template`/`TemplateLookup`'s `input_encoding` parameter).
+
+Invoking [Babel](http://babel.edgewall.org/)'s extractor at the command line in the project's root directory:
+
+    myproj$ babel extract -F babel.cfg -c "TRANSLATORS:" .
+
+Will output a gettext catalog to stdout including the following:
+
+    #. This is a proper name. See the gettext
+    #. manual, section Names.
+    #: myproj/templates/name.html:5
+    msgid "Francois Pinard"
+    msgstr ""
+
+This is only a basic example: [Babel](http://babel.edgewall.org/) can be invoked from setup.py and its command line options specified in the accompanying setup.cfg via [Babel Distutils/Setuptools Integration](http://babel.edgewall.org/wiki/Documentation/setup.html).
+
+Comments must immediately precede a gettext message to be extracted. In the following case the TRANSLATORS: comment would not have been extracted:
+
+    <div id="name">
+      ## TRANSLATORS: This is a proper name. See the gettext
+      ## manual, section Names.
+      Name: ${_('Francois Pinard')}
+    </div>
+
+See the [Babel User Guide](http://babel.edgewall.org/wiki/Documentation/index.html) for more information.

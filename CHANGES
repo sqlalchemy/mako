@@ -2,6 +2,9 @@
 - variable names declared in render methods by internal 
 codegen prefixed by "__M_" to prevent name collisions
 with user code
+- added a Babel (http://babel.edgewall.org/) extractor entry
+point, allowing extraction of gettext messages directly from
+mako templates via Babel [ticket:45]
 
 0.1.7
 - one small fix to the unit tests to support python 2.3

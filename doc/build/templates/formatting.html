@@ -54,9 +54,10 @@
     <%!
         import pygments
         from pygments.formatters import HtmlFormatter
-        from pygments.lexers import PythonLexer, HtmlLexer
+        from pygments.lexers import PythonLexer, HtmlLexer, IniLexer
         from mako.ext.pygmentplugin import MakoHtmlLexer
-        lexers = {'mako':MakoHtmlLexer(), 'python':PythonLexer(), 'html':HtmlLexer()}
+        lexers = {'mako':MakoHtmlLexer(), 'python':PythonLexer(), 'html':HtmlLexer(),
+                  'ini':IniLexer()}
     %>
     <%
         lexer = lexers.get(syntaxtype, None)

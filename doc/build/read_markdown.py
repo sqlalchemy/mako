@@ -131,7 +131,7 @@ def replace_pre_with_mako(tree):
     parents = get_parent_map(tree)
 
     for precode in tree.findall('.//pre/code'):
-        reg = re.compile(r'\{(python|mako|html)(?: title="(.*?)"){0,1}\}(.*)', re.S)
+        reg = re.compile(r'\{(python|mako|html|ini)(?: title="(.*?)"){0,1}\}(.*)', re.S)
         m = reg.match(precode[0].text.lstrip())
         if m:
             code = m.group(1)

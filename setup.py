@@ -48,5 +48,8 @@ SVN version:
       xml+mako = mako.ext.pygmentplugin:MakoXmlLexer
       js+mako = mako.ext.pygmentplugin:MakoJavascriptLexer
       css+mako = mako.ext.pygmentplugin:MakoCssLexer
+
+      [babel.extractors]
+      mako = mako.ext.babelplugin:extract
       """,
 )
