@@ -160,7 +160,7 @@ The HTML render function is also available built-in to `Template` using the `for
     template = Template(filename="/foo/bar", format_exceptions=True)
     print template.render()
     
-Note that the compile stage of the above template occurs when you construct the `Template` itself, and no output stream is defined.  Therefore exceptions which occur within the lookup/parse/compile stage will not be handled and will propigate normally.   While the pre-render traceback usually will not include any Mako-specific lines anyway, it will mean that exceptions which occur previous to rendering and those which occur within rendering will be handled differently...so the `try/except` patterns described previously are probably of more general use.
+Note that the compile stage of the above template occurs when you construct the `Template` itself, and no output stream is defined.  Therefore exceptions which occur within the lookup/parse/compile stage will not be handled and will propagate normally.   While the pre-render traceback usually will not include any Mako-specific lines anyway, it will mean that exceptions which occur previous to rendering and those which occur within rendering will be handled differently...so the `try/except` patterns described previously are probably of more general use.
 
 The underlying object used by the error template functions is the `RichTraceback` object.  This object can also be used directly to provide custom error views.  Here's an example usage which describes its general API:
 
@@ -190,7 +190,7 @@ The standard plugin methodology used by [Turbogears](http://www.turbogears.org) 
 
 #### WSGI
 
-A sample WSGI application is included in the distrubution in the file `examples/wsgi/run_wsgi.py`.  This runner is set up to pull files from a `templates` as well as an `htdocs` directory and includes a rudimental two-file layout.  The WSGI runner acts as a fully functional standalone web server, using `wsgiutils` to run itself, and propigates GET and POST arguments from the request into the `Context`, can serve images, css files and other kinds of files, and also displays errors using Mako's included exception-handling utilities.
+A sample WSGI application is included in the distrubution in the file `examples/wsgi/run_wsgi.py`.  This runner is set up to pull files from a `templates` as well as an `htdocs` directory and includes a rudimental two-file layout.  The WSGI runner acts as a fully functional standalone web server, using `wsgiutils` to run itself, and propagates GET and POST arguments from the request into the `Context`, can serve images, css files and other kinds of files, and also displays errors using Mako's included exception-handling utilities.
 
 #### Pygments
 
