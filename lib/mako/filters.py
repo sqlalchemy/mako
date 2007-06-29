@@ -44,9 +44,10 @@ class Decode(object):
         def decode(x):
             if isinstance(x, unicode):
                 return x
-            if not isinstance(x, str):
-                return str(x)
-            return unicode(x, encoding=key)
+            elif not isinstance(x, str):
+                return unicode(str(x), encoding=key)
+            else:
+                return unicode(x, encoding=key)
         return decode
 decode = Decode()
         
