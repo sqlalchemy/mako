@@ -139,9 +139,11 @@ class PythonFragment(PythonCode):
     etc.
     """
     def __init__(self, code, **exception_kwargs):
-        m = re.match(r'^(\w+)(?:\s+(.*?))?:$', code.strip(), re.S)
+        m = re.match(r'^(\w+)(?:\s+(.*?))?:\s*(#|$)', code.strip(), re.S)
         if not m:
             raise exceptions.CompileException("Fragment '%s' is not a partial control statement" % code, **exception_kwargs)
+        if m.group(3):
+            code = code[:m.start(3)]
         (keyword, expr) = m.group(1,2)
         if keyword in ['for','if', 'while']:
             code = code + "pass"

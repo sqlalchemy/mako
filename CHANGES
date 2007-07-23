@@ -1,6 +1,9 @@
 0.1.9
 - filters.Decode filter can also accept a non-basestring
 object and will call str() + unicode() on it [ticket:47]
+- comments can be placed at the end of control lines,
+i.e. if foo: # a comment, [ticket:53], thanks to 
+Paul Colomiets
 
 0.1.8
 - variable names declared in render methods by internal 

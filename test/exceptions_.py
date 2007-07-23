@@ -40,7 +40,7 @@ class ExceptionsTest(unittest.TestCase):
     def test_utf8_html_error_template(self):
         """test the html_error_template with a Template containing utf8 chars"""
         code = """# -*- coding: utf-8 -*-
-% if 2 == 2: # an innocently-looking comment
+% if 2 == 2: /an error
 ${u'привет'}
 % endif
 """
@@ -49,8 +49,8 @@ ${u'привет'}
             template.render()
         except exceptions.CompileException, ce:
             html_error = exceptions.html_error_template().render()
-            assert ("CompileException: Fragment 'if 2 == 2: # an "
-                    "innocently-looking comment' is not a partial control "
+            assert ("CompileException: Fragment 'if 2 == 2: /an "
+                    "error' is not a partial control "
                     "statement at line: 2 char: 1") in html_error
             assert u"3 ${u'привет'}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
