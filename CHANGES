@@ -4,6 +4,9 @@ object and will call str() + unicode() on it [ticket:47]
 - comments can be placed at the end of control lines,
 i.e. if foo: # a comment, [ticket:53], thanks to 
 Paul Colomiets
+- fixed expressions and page tag arguments and with embedded
+newlines in CRLF templates, follow up to [ticket:16], thanks
+Eric Woroshow
 
 0.1.8
 - variable names declared in render methods by internal 

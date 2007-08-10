@@ -202,7 +202,9 @@ class Lexer(object):
             if attr:
                 for att in re.findall(r"\s*(\w+)\s*=\s*(?:'([^']*)'|\"([^\"]*)\")", attr):
                     (key, val1, val2) = att
-                    attributes[key] = self.escape_code(val1 or val2)
+                    text = val1 or val2
+                    text = text.replace('\r\n', '\n')
+                    attributes[key] = self.escape_code(text)
             self.append_node(parsetree.Tag, keyword, attributes)
             if isend:
                 self.tag.pop()
@@ -285,6 +287,7 @@ class Lexer(object):
                 (escapes, end) = self.parse_until_text(r'}')
             else:
                 escapes = ""
+            text = text.replace('\r\n', '\n')
             self.append_node(parsetree.Expression, self.escape_code(text), escapes.strip(), lineno=line, pos=pos)
             return True
         else:

@@ -395,8 +395,8 @@ text text la la
     def test_crlf(self):
         template = file("./test_htdocs/crlf.html").read()
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (3, 9)), ControlLine(u'for', u'for x in [1,2,3]:', False, (7, 1)), Text(u'        ', (8, 1)), Expression(u'x', [], (8, 9)), Text(u'', (8, 13)), ControlLine(u'for', u'endfor', True, (9, 1)), Text(u'\r\n', (10, 1)), DefTag(u'def', {u'name': u'hi()'}, (11, 1), ["Text(u'\\r\\n    hi!\\r\\n', (11, 19))"]), Text(u'\r\n\r\n</html>', (13, 8))])"""
-        assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 </html>"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {u'args': u"a=['foo',\n                'bar']"}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (4, 26)), ControlLine(u'for', u'for x in [1,2,3]:', False, (8, 1)), Text(u'        ', (9, 1)), Expression(u'x', [], (9, 9)), Text(u'', (9, 13)), ControlLine(u'for', u'endfor', True, (10, 1)), Text(u'\r\n', (11, 1)), Expression(u"trumpeter == 'Miles' and trumpeter or \\\n      'Dizzy'", [], (12, 1)), Text(u'\r\n\r\n', (13, 15)), DefTag(u'def', {u'name': u'hi()'}, (15, 1), ["Text(u'\\r\\n    hi!\\r\\n', (15, 19))"]), Text(u'\r\n\r\n</html>\r\n', (17, 8))])"""
+        assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 Dizzy </html>"""
     
     def test_comments(self):
         template = """
