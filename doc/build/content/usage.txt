@@ -229,7 +229,7 @@ The Mako extractor supports an optional `input_encoding` parameter specifying th
 
 Invoking [Babel](http://babel.edgewall.org/)'s extractor at the command line in the project's root directory:
 
-    myproj$ babel extract -F babel.cfg -c "TRANSLATORS:" .
+    myproj$ pybabel extract -F babel.cfg -c "TRANSLATORS:" .
 
 Will output a gettext catalog to stdout including the following:
 
