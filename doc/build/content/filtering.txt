@@ -18,6 +18,7 @@ The built-in escape flags are:
 * `entity` : produces HTML entity references for applicable strings, derived from `htmlentitydefs`
 * `unicode` : produces a Python unicode string (this function is applied by default).
 * `decode.<some encoding>` : decode input into a Python unicode with the specified encoding
+* `n` : disable all default filtering; only filters specified in the local expression tag will be applied.
 
 To apply more than one filter, separate them by a comma:
 
@@ -56,7 +57,7 @@ Result:
 
 **New in version 0.1.2**
 
-In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering at the programmatic level.  This array-based argument defaults to `["unicode"]`:
+In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering for all expression tags at the programmatic level.  This array-based argument defaults to `["unicode"]`:
 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
@@ -87,6 +88,17 @@ The above will generate templates something like this:
     def render_body(context):
         context.write(myfilter(unicode("some text")))
 
+#### Turning off Filtering with the "n" filter
+
+In all cases the special `n` filter, used locally within an expression, will **disable** all filters declared in the `<%page>` tag as well `default_filters`.  Such as:
+
+    ${'myexpression' | n}
+
+Will render `myexpression` with no filtering of any kind, and
+
+    ${'myexpression' | n, trim}
+    
+will render `myexpression` using the `trim` filter only.  
 
 ### Filtering Defs
 
