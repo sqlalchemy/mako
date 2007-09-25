@@ -7,6 +7,8 @@ Paul Colomiets
 - fixed expressions and page tag arguments and with embedded
 newlines in CRLF templates, follow up to [ticket:16], thanks
 Eric Woroshow
+- added an IOError catch for source file not found in RichTraceback
+exception reporter [ticket:51]
 
 0.1.8
 - variable names declared in render methods by internal 

@@ -138,7 +138,10 @@ class RichTraceback(object):
                     self.lineno = new_trcback[l][5]
                     break
             else:
-                self.source = file(new_trcback[-1][0]).read()
+                try:
+                    self.source = file(new_trcback[-1][0]).read()
+                except IOError:
+                    self.source = ''
                 self.lineno = new_trcback[-1][1]
         return (type, value, new_trcback)
 
