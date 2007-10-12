@@ -87,6 +87,31 @@ class CallTest(unittest.TestCase):
             "OUTER END",
         ]
     
+    def test_stack_pop(self):
+        t = Template("""
+        <%def name="links()" buffered="True">
+           Some links
+        </%def>
+
+        <%def name="wrapper(links)">
+           <h1>${caller.body()}</h1>
+           ${links}
+        </%def>
+
+        ## links() pushes a stack frame on.  when complete,
+        ## 'nextcaller' must be restored
+        <%call expr="wrapper(links())">
+           Some title
+        </%call>
+
+        """)
+        assert result_lines(t.render()) == [
+        "<h1>",
+        "Some title",
+        "</h1>",
+        "Some links"
+        ]
+        
     def test_conditional_call(self):
         """test that 'caller' is non-None only if the immediate <%def> was called via <%call>"""
 

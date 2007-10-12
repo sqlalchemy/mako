@@ -1,3 +1,10 @@
+0.1.10
+- fixed propagation of 'caller' such that nested %def calls
+  within a <%call> tag's argument list propigates 'caller'
+  to the %call function itself (propigates to the inner
+  calls too, this is a slight side effect which previously
+  existed anyway)
+
 0.1.9
 - filters.Decode filter can also accept a non-basestring
 object and will call str() + unicode() on it [ticket:47]

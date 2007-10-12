@@ -73,16 +73,16 @@ class CallerStack(list):
     def __init__(self):
         self.nextcaller = None
     def __nonzero__(self):
-          return self._get_caller() and True or False
+        return self._get_caller() and True or False
     def _get_caller(self):
-        return self.nextcaller or self[-1]
+        return self[-1]
     def __getattr__(self, key):
         return getattr(self._get_caller(), key)
     def push_frame(self):
         self.append(self.nextcaller or None)
         self.nextcaller = None
     def pop_frame(self):
-        self.pop()
+        self.nextcaller = self.pop()
         
         
 class Undefined(object):
