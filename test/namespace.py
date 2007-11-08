@@ -210,6 +210,53 @@ class NamespaceTest(unittest.TestCase):
             "this is ns.html->bar"
         ]
     
+    def test_dont_pollute_self(self):
+        # test that get_namespace() doesn't modify the original context
+        # incompatibly
+        
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+
+        <%def name="foo()">
+        <%
+            foo = local.get_namespace("foo.html")
+        %>
+        </%def>
+
+        name: ${self.name}
+        name via bar: ${bar()}
+
+        ${next.body()}
+
+        name: ${self.name}
+        name via bar: ${bar()}
+        <%def name="bar()">
+            ${self.name}
+        </%def>
+
+
+        """)
+
+        collection.put_string("page.html", """
+        <%inherit file="base.html"/>
+
+        ${self.foo()}
+
+        hello world
+
+        """)
+
+        collection.put_string("foo.html", """<%inherit file="base.html"/>""")
+        assert result_lines(collection.get_template("page.html").render()) == [
+            "name: self:page.html",
+            "name via bar:",
+            "self:page.html",
+            "hello world",
+            "name: self:page.html",
+            "name via bar:",
+            "self:page.html"
+        ]
+        
     def test_inheritance(self):
         """test namespace initialization in a base inherited template that doesnt otherwise access the namespace"""
         collection = lookup.TemplateLookup()

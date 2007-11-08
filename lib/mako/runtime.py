@@ -134,7 +134,7 @@ class Namespace(object):
         if self.context.namespaces.has_key(key):
             return self.context.namespaces[key]
         else:
-            ns = Namespace(uri, self.context, templateuri=uri, calling_uri=self._templateuri) 
+            ns = Namespace(uri, self.context._copy(), templateuri=uri, calling_uri=self._templateuri) 
             self.context.namespaces[key] = ns
             return ns
     

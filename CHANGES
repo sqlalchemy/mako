@@ -4,6 +4,8 @@
   to the %call function itself (propigates to the inner
   calls too, this is a slight side effect which previously
   existed anyway)
+- fixed bug where local.get_namespace() could put an 
+  incorrect "self" in the current context
 
 0.1.9
 - filters.Decode filter can also accept a non-basestring
