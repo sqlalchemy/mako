@@ -6,7 +6,10 @@
   existed anyway)
 - fixed bug where local.get_namespace() could put an 
   incorrect "self" in the current context
-
+- fixed another namespace bug where the namespace functions
+  did not have access to the correct context containing
+  their 'self' and 'parent'
+  
 0.1.9
 - filters.Decode filter can also accept a non-basestring
 object and will call str() + unicode() on it [ticket:47]

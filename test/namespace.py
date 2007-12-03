@@ -282,6 +282,40 @@ class NamespaceTest(unittest.TestCase):
             "this is index",
             "this is ns.html->bar"
         ]
+
+    def test_inheritance_two(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%def name="foo()">
+                base.foo
+            </%def>
+            
+            <%def name="bat()">
+                base.bat
+            </%def>
+""")
+        collection.put_string("lib.html", """
+            <%inherit file="base.html"/>
+            <%def name="bar()">
+                lib.bar
+                ${parent.foo()}
+                ${self.foo()}
+                ${parent.bat()}
+                ${self.bat()}
+            </%def>
+            
+            <%def name="foo()">
+                lib.foo
+            </%def>
+                
+        """)
+
+        collection.put_string("front.html", """
+            <%namespace name="lib" file="lib.html"/>
+            ${lib.bar()}
+        """)
+
+        assert result_lines(collection.get_template("front.html").render()) == ['lib.bar', 'base.foo', 'lib.foo', 'base.bat', 'base.bat']
         
     def test_ccall(self):
         collection = lookup.TemplateLookup()

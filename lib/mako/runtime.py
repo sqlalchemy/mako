@@ -120,7 +120,7 @@ class Namespace(object):
         else:
             self.callables = None
         if populate_self and self.template is not None:
-            (lclcallable, self.context) = _populate_self_namespace(context, self.template, self_ns=self)
+            (lclcallable, lclcontext) = _populate_self_namespace(context, self.template, self_ns=self)
 
     module = property(lambda s:s._module or s.template.module)
     filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
