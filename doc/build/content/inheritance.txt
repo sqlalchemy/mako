@@ -97,7 +97,7 @@ Lets also add an intermediate template called `layout.html`, which inherits from
         ${next.body()}
     </div>
     
-    <%def name="toolbar">
+    <%def name="toolbar()">
         <li>selection 1</li>
         <li>selection 2</li>
         <li>selection 3</li>
