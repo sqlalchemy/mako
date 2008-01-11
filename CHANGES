@@ -1,3 +1,8 @@
+0.2.0
+- fixed bug in python generation when variable names are used
+  with identifiers like "else", "finally", etc. inside them
+  [ticket:68]
+  
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls
   within a <%call> tag's argument list propigates 'caller'

@@ -138,7 +138,7 @@ class PythonPrinter(object):
         
         # if the current line doesnt have one of the "unindentor" keywords,
         # return False
-        match = re.match(r"^\s*(else|elif|except|finally)", line)
+        match = re.match(r"^\s*(else|elif|except|finally).*\:", line)
         if not match: 
             return False
         

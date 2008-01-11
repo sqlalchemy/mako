@@ -99,7 +99,32 @@ and more block.
     do_more_stuff(g)
 
 """
-
+    
+    def test_false_unindendor(self):
+        stream = StringIO()
+        printer = PythonPrinter(stream)
+        for line in [
+            "try:",
+            "elsemyvar = 12",
+            "if True:",
+            "print 'hi'",
+            None,
+            "finally:",
+            "dosomething",
+            None
+        ]:
+            printer.writeline(line)
+        
+        assert stream.getvalue() == \
+"""try:
+    elsemyvar = 12
+    if True:
+        print 'hi'
+finally:
+    dosomething
+"""    , stream.getvalue()
+        
+        
     def test_backslash_line(self):
         block = \
 """
