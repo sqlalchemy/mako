@@ -100,7 +100,7 @@ and more block.
 
 """
     
-    def test_false_unindendor(self):
+    def test_false_unindentor(self):
         stream = StringIO()
         printer = PythonPrinter(stream)
         for line in [
