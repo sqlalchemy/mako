@@ -1,4 +1,5 @@
 from mako.template import Template
+from mako.lookup import TemplateLookup
 from mako import lookup
 import unittest, os
 from util import result_lines
@@ -87,6 +88,31 @@ class CacheTest(unittest.TestCase):
         t.render()
         t.render()
         assert result_lines(t.render()) == [
+            "this is foo",
+            "callcount: [1]"
+        ]
+        assert m.kwargs == {}
+    
+    def test_dynamic_key_with_imports(self):
+        lookup = TemplateLookup()
+        lookup.put_string("foo.html", """
+        <%!
+            callcount = [0]
+        %>
+        <%namespace file="ns.html" import="*"/>
+        <%page cached="True" cache_key="${foo}"/>
+        this is foo
+        <%
+        callcount[0] += 1
+        %>
+        callcount: ${callcount}
+""")
+        lookup.put_string("ns.html", """""")
+        t = lookup.get_template("foo.html")
+        m = self._install_mock_cache(t)
+        t.render(foo='somekey')
+        t.render(foo='somekey')
+        assert result_lines(t.render(foo='somekey')) == [
             "this is foo",
             "callcount: [1]"
         ]

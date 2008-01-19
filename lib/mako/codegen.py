@@ -176,7 +176,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline(None)
         self.printer.write("\n\n")
         if cached:
-            self.write_cache_decorator(node, name, buffered, self.identifiers)
+            self.write_cache_decorator(node, name, buffered, self.identifiers, toplevel=True)
         
     def write_module_code(self, module_code):
         """write module-level template code, i.e. that which is enclosed in <%! %> tags
@@ -340,7 +340,7 @@ class _GenerateRenderMethod(object):
         self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
         if cached:
-            self.write_cache_decorator(node, node.name, False, identifiers, inline=True)
+            self.write_cache_decorator(node, node.name, False, identifiers, inline=True, toplevel=False)
         
     def write_def_finish(self, node, buffered, filtered, cached, callstack=True):
         """write the end section of a rendering function, either outermost or inline.
@@ -377,7 +377,7 @@ class _GenerateRenderMethod(object):
                     "return ''"
                 )
 
-    def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers, inline=False):
+    def write_cache_decorator(self, node_or_pagetag, name, buffered, identifiers, inline=False, toplevel=False):
         """write a post-function decorator to replace a rendering callable with a cached version of itself."""
         self.printer.writeline("__M_%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
@@ -405,7 +405,7 @@ class _GenerateRenderMethod(object):
             
         self.printer.writeline("def %s(%s*args, **kwargs):" % (name, ctx_arg))
 
-        self.write_variable_declares(identifiers, limit=node_or_pagetag.undeclared_identifiers())
+        self.write_variable_declares(identifiers, toplevel=toplevel, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
             s = "context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s*args, **kwargs))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ctx_arg)
             # apply buffer_filters

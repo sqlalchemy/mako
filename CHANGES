@@ -2,6 +2,9 @@
 - fixed bug in python generation when variable names are used
   with identifiers like "else", "finally", etc. inside them
   [ticket:68]
+- fixed codegen bug which occured when using <%page> level
+  caching, combined with an expression-based cache_key, 
+  combined with the usage of <%namespace import="*"/>
 - fixed lexer exceptions not cleaning up temporary files, which
   could lead to a maximum number of file descriptors used in the
   process [ticket:69]
