@@ -2,6 +2,9 @@
 - fixed bug in python generation when variable names are used
   with identifiers like "else", "finally", etc. inside them
   [ticket:68]
+- fixed lexer exceptions not cleaning up temporary files, which
+  could lead to a maximum number of file descriptors used in the
+  process [ticket:69]
   
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls

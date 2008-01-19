@@ -200,10 +200,10 @@ def _compile_text(template, text, filename):
 
 def _compile_module_file(template, text, filename, outputpath):
     identifier = template.module_id
-    (dest, name) = tempfile.mkstemp()
     lexer = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
     node = lexer.parse()
     source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding)
+    (dest, name) = tempfile.mkstemp()
     os.write(dest, source)
     os.close(dest)
     shutil.move(name, outputpath)
