@@ -13,28 +13,30 @@ except:
 try:
     from cStringIO import StringIO
 except:
-   from StringIO import StringIO
+    from StringIO import StringIO
 
 import weakref, os, time
 
 try:
-   import threading
-   import thread
+    import threading
+    import thread
 except ImportError:
-   import dummy_threading as threading
-   import dummy_thread as thread
+    import dummy_threading as threading
+    import dummy_thread as thread
 
 def verify_directory(dir):
-   """create and/or verify a filesystem directory."""
-   tries = 0
-   while not os.access(dir, os.F_OK):
-       try:
-           tries += 1
-           os.makedirs(dir, 0750)
-       except:
-           if tries > 5:
-               raise
-  
+    """create and/or verify a filesystem directory."""
+    
+    tries = 0
+    
+    while not os.access(dir, os.F_OK):
+        try:
+            tries += 1
+            os.makedirs(dir, 0750)
+        except:
+            if tries > 5:
+                raise
+
 class SetLikeDict(dict):
     """a dictionary that has some setlike methods on it"""
     def union(self, other):
@@ -44,15 +46,18 @@ class SetLikeDict(dict):
         x = SetLikeDict(**self)
         x.update(other)
         return x
-         
+
 class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, but doesnt crash on unicode data like cStringIO."""
+    
     def __init__(self, encoding=None, errors='strict'):
         self.data = []
         self.encoding = encoding
         self.errors = errors
+    
     def write(self, text):
         self.data.append(text)
+    
     def getvalue(self):
         if self.encoding:
             return u''.join(self.data).encode(self.encoding, self.errors)
@@ -62,12 +67,12 @@ class FastEncodingBuffer(object):
 class LRUCache(dict):
     """A dictionary-like object that stores a limited number of items, discarding
     lesser used items periodically.
-
+    
     this is a rewrite of LRUCache from Myghty to use a periodic timestamp-based
     paradigm so that synchronization is not really needed.  the size management 
     is inexact.
     """
-
+    
     class _Item(object):
         def __init__(self, key, value):
             self.key = key
@@ -75,16 +80,16 @@ class LRUCache(dict):
             self.timestamp = time.time()
         def __repr__(self):
             return repr(self.value)
-
+    
     def __init__(self, capacity, threshold=.5):
         self.capacity = capacity
         self.threshold = threshold
-
+    
     def __getitem__(self, key):
         item = dict.__getitem__(self, key)
         item.timestamp = time.time()
         return item.value
-
+    
     def values(self):
         return [i.value for i in dict.values(self)]
     
@@ -94,7 +99,7 @@ class LRUCache(dict):
         else:
             self[key] = value
             return value
-                
+    
     def __setitem__(self, key, value):
         item = dict.get(self, key)
         if item is None:
@@ -103,7 +108,7 @@ class LRUCache(dict):
         else:
             item.value = value
         self._manage_size()
-
+    
     def _manage_size(self):
         while len(self) > self.capacity + self.capacity * self.threshold:
             bytime = dict.values(self)
