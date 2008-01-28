@@ -329,8 +329,8 @@ def _exec_template(callable_, context, args=None, kwargs=None):
                 if not result:
                     raise error
             else:
-                context._buffer_stack[:] = [util.FastEncodingBuffer()]
                 error_template = exceptions.html_error_template()
+                context._buffer_stack[:] = [util.FastEncodingBuffer(error_template.output_encoding, error_template.encoding_errors)]
                 context._with_template = error_template
                 error_template.render_context(context, error=error)
     else:

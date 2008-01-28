@@ -73,6 +73,17 @@ ${foobar}
         """)
 
         assert '<div class="sourceline">${foobar}</div>' in result_lines(l.get_template("foo.html").render())
+    
+    def test_utf8_format_exceptions(self):
+        """test that htmlentityreplace formatting is applied to exceptions reported with format_exceptions=True"""
+        
+        l = TemplateLookup(format_exceptions=True)
+
+        l.put_string("foo.html", """# -*- coding: utf-8 -*-
+${u'привет' + foobar}
+""")
+
+        assert '''<div class="highlight">2 ${u\'&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;\' + foobar}</div>''' in result_lines(l.get_template("foo.html").render())
         
 if __name__ == '__main__':
     unittest.main()
