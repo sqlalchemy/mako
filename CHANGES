@@ -8,6 +8,9 @@
 - fixed lexer exceptions not cleaning up temporary files, which
   could lead to a maximum number of file descriptors used in the
   process [ticket:69]
+- fixed issue with inline format_exceptions that was producing
+  blank exception pages when an inheriting template is 
+  present [ticket:71]
   
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls

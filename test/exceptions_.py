@@ -4,6 +4,8 @@ import unittest
 
 from mako import exceptions
 from mako.template import Template
+from mako.lookup import TemplateLookup
+from util import result_lines
 
 class ExceptionsTest(unittest.TestCase):
     def test_html_error_template(self):
@@ -57,6 +59,20 @@ ${u'привет'}
         else:
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
-            
+    
+    def test_format_exceptions(self):
+        l = TemplateLookup(format_exceptions=True)
+
+        l.put_string("foo.html", """
+<%inherit file="base.html"/>
+${foobar}
+        """)
+
+        l.put_string("base.html", """
+        ${self.body()}
+        """)
+
+        assert '<div class="sourceline">${foobar}</div>' in result_lines(l.get_template("foo.html").render())
+        
 if __name__ == '__main__':
     unittest.main()
