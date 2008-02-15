@@ -94,6 +94,17 @@ class Undefined(object):
 
 UNDEFINED = Undefined()
 
+class _NSAttr(object):
+    def __init__(self, parent):
+        self.__parent = parent
+    def __getattr__(self, key):
+        ns = self.__parent
+        while ns:
+            if hasattr(ns.module, key):
+                return getattr(ns.module, key)
+            else:
+                ns = ns.inherits
+        raise AttributeError(key)    
     
 class Namespace(object):
     """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
@@ -121,11 +132,17 @@ class Namespace(object):
             self.callables = None
         if populate_self and self.template is not None:
             (lclcallable, lclcontext) = _populate_self_namespace(context, self.template, self_ns=self)
-
+        
     module = property(lambda s:s._module or s.template.module)
     filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
     uri = property(lambda s:s.template.uri)
     
+    def attr(self):
+        if not hasattr(self, '_attr'):
+            self._attr = _NSAttr(self)
+        return self._attr
+    attr = property(attr)
+
     def get_namespace(self, uri):
         """return a namespace corresponding to the given template uri.
         
@@ -164,16 +181,16 @@ class Namespace(object):
                 d[ident] = getattr(self, ident)
     
     def _get_star(self):
-        if self.callables is not None:
+        if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
-        if self.template is not None:
+        if self.template:
             def get(key):
                 callable_ = self.template.get_def(key).callable_
                 return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
             for k in self.template.module._exports:
                 yield (k, get(k))
-        if self._module is not None:
+        if self._module:
             def get(key):
                 callable_ = getattr(self._module, key)
                 return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
@@ -182,23 +199,17 @@ class Namespace(object):
                     yield (k, get(k))
                             
     def __getattr__(self, key):
-        if self.callables is not None:
-            try:
-                return self.callables[key]
-            except KeyError:
-                pass
-        if self.template is not None:
-            try:
-                callable_ = self.template.get_def(key).callable_
-                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
-            except AttributeError:
-                pass
-        if self._module is not None:
-            try:
-                callable_ = getattr(self._module, key)
-                return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
-            except AttributeError:
-                pass
+        if self.callables and key in self.callables:
+            return self.callables[key]
+
+        if self.template and self.template.has_def(key):
+            callable_ = self.template.get_def(key).callable_
+            return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
+
+        if self._module and hasattr(self._module, key):
+            callable_ = getattr(self._module, key)
+            return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
+
         if self.inherits is not None:
             return getattr(self.inherits, key)
         raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))

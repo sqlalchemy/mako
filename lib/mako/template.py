@@ -124,6 +124,9 @@ class Template(object):
         if getattr(context, '_with_template', None) is None:
             context._with_template = self
         runtime._render_context(self, self.callable_, context, *args, **kwargs)
+    
+    def has_def(self, name):
+        return hasattr(self.module, "render_%s" % name)
         
     def get_def(self, name):
         """return a def of this template as an individual Template of its own."""

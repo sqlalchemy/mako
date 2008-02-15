@@ -1,4 +1,7 @@
 0.2.0
+- added "attr" accessor to namespaces.  Returns attributes
+  configured as module level attributes, i.e. within 
+  <%! %> sections [ticket:62]
 - fixed bug in python generation when variable names are used
   with identifiers like "else", "finally", etc. inside them
   [ticket:68]
