@@ -326,9 +326,16 @@ class NamespaceTest(unittest.TestCase):
             onlyfoo = "only foo"
         %>
         <%inherit file="base.html"/>
+        <%def name="setup()">
+            <%
+            self.attr.foolala = "foo lala"
+            %>
+        </%def>
         ${self.attr.basefoo}
         ${self.attr.foofoo}
         ${self.attr.onlyfoo}
+        ${self.attr.lala}
+        ${self.attr.foolala}
         """)
 
         l.put_string("base.html", """
@@ -336,9 +343,16 @@ class NamespaceTest(unittest.TestCase):
             basefoo = "base foo 1"
             foofoo = "base foo 2"
         %>
+        <%
+            self.attr.lala = "base lala"
+        %>
+        
         ${self.attr.basefoo}
         ${self.attr.foofoo}
         ${self.attr.onlyfoo}
+        ${self.attr.lala}
+        ${self.setup()}
+        ${self.attr.foolala}
         body
         ${self.body()}
         """)
@@ -347,10 +361,14 @@ class NamespaceTest(unittest.TestCase):
             "base foo 1",
             "foo foo",
             "only foo",
+            "base lala",
+            "foo lala",
             "body",
             "base foo 1",
             "foo foo",
             "only foo",
+            "base lala",
+            "foo lala",
         ]
         
     def test_ccall(self):
