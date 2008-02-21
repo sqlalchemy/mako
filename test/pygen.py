@@ -162,8 +162,77 @@ class WhitespaceTest(unittest.TestCase):
 for x in range(0,15):
     print x
 print "hi"
-
 """
+
+    def test_blank_lines(self):
+        text = """
+    print "hi"  # a comment
+    
+    # more comments
+    
+    print g
+"""
+        assert adjust_whitespace(text) == \
+"""
+print "hi"  # a comment
+
+# more comments
+
+print g
+"""        
+    
+    def test_open_quotes_with_pound(self):
+        text = '''
+        print """  this is text
+          # and this is text
+        # and this is too """
+'''
+        assert adjust_whitespace(text) == \
+'''
+print """  this is text
+          # and this is text
+        # and this is too """
+'''
+
+    def test_quote_with_comments(self):
+        text= """
+            print 'hi'
+            # this is a comment
+            # another comment
+            x = 7 # someone's '''comment
+            print '''
+        there
+        '''
+            # someone else's comment
+"""
+
+        assert adjust_whitespace(text) == \
+"""
+print 'hi'
+# this is a comment
+# another comment
+x = 7 # someone's '''comment
+print '''
+        there
+        '''
+# someone else's comment
+"""        
+
+
+    def test_quotes_with_pound(self):
+        text = '''
+        if True:
+            """#"""
+        elif False:
+            "bar"
+'''
+        assert adjust_whitespace(text) == \
+'''
+if True:
+    """#"""
+elif False:
+    "bar"
+'''
 
     def test_quotes(self):
         text = """
@@ -180,7 +249,6 @@ askdjfnaskfd fkasnf dknf sadkfjn asdkfjna sdakjn
 asdkfjnads kfajns '''
 if x:
     print y
-
 """
 
 if __name__ == '__main__':

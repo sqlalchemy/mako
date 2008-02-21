@@ -272,7 +272,7 @@ class Lexer(object):
         if match:
             (line, pos) = (self.matched_lineno, self.matched_charpos)
             (text, end) = self.parse_until_text(r'%>')
-            text = adjust_whitespace(text)
+            text = adjust_whitespace(text) + "\n"   # the trailing newline helps compiler.parse() not complain about indentation
             self.append_node(parsetree.Code, self.escape_code(text), match.group(1)=='!', lineno=line, pos=pos)
             return True
         else:

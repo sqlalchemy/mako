@@ -16,6 +16,9 @@
   present [ticket:71]
 - format_exceptions will apply the encoding options
   of html_error_template() to the buffered output
+- rewrote the "whitespace adjuster" function to work with
+  more elaborate combinations of quotes and comments
+  [ticket:75]
   
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls

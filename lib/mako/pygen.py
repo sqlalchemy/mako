@@ -213,30 +213,55 @@ def adjust_whitespace(text):
     """remove the left-whitespace margin of a block of Python code."""
     state = [False, False]
     (backslashed, triplequoted) = (0, 1)
+
     def in_multi_line(line):
-        current_state = (state[backslashed] or state[triplequoted]) 
+        start_state = (state[backslashed] or state[triplequoted])
+        
         if re.search(r"\\$", line):
             state[backslashed] = True
         else:
             state[backslashed] = False
-        line = re.split(r'#', line)[0]
-        triples = len(re.findall(r"\"\"\"|\'\'\'", line))
-        if triples == 1 or triples % 2 != 0:
-            state[triplequoted] = not state[triplequoted]
-        return current_state
+        
+        def match(reg, t):
+            m = re.match(reg, t)
+            if m:
+                return m, t[len(m.group(0)):]
+            else:
+                return None, t
+                
+        while line:
+            if state[triplequoted]:
+                m, line = match(r"%s" % state[triplequoted], line)
+                if m:
+                    state[triplequoted] = False
+                else:
+                    m, line = match(r".*?(?=%s|$)" % state[triplequoted], line)
+            else:
+                m, line = match(r'#', line)
+                if m:
+                    return start_state
+                
+                m, line = match(r"\"\"\"|\'\'\'", line)
+                if m:
+                    state[triplequoted] = m.group(0)
+                    continue
+
+                m, line = match(r".*?(?=\"\"\"|\'\'\'|#|$)", line)
+            
+        return start_state
 
     def _indent_line(line, stripspace = ''):
         return re.sub(r"^%s" % stripspace, '', line)
 
-    stream = StringIO()
+    lines = []
     stripspace = None
 
     for line in re.split(r'\r?\n', text):
         if in_multi_line(line):
-            stream.write(line + "\n")
+            lines.append(line)
         else:
             line = string.expandtabs(line)
             if stripspace is None and re.search(r"^[ \t]*[^# \t]", line):
                 stripspace = re.match(r"^([ \t]*)", line).group(1)
-            stream.write(_indent_line(line, stripspace) + "\n")
-    return stream.getvalue()
+            lines.append(_indent_line(line, stripspace))
+    return "\n".join(lines)
