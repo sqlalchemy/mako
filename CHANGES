@@ -19,6 +19,10 @@
 - rewrote the "whitespace adjuster" function to work with
   more elaborate combinations of quotes and comments
   [ticket:75]
+- cache_key argument can now render arguments passed 
+  directly to the %page or %def, i.e.
+  <%def name="foo(x)" cached="True" cache_key="${x}"/>
+  [ticket:78]
   
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls

@@ -92,7 +92,43 @@ class CacheTest(unittest.TestCase):
             "callcount: [1]"
         ]
         assert m.kwargs == {}
-    
+
+    def test_dynamic_key_with_funcargs(self):
+        t = Template("""
+            <%def name="foo(num=5)" cached="True" cache_key="foo_${str(num)}">
+             hi
+            </%def>
+
+            ${foo()}
+        """)
+        m = self._install_mock_cache(t)
+        t.render()
+        t.render()
+        assert result_lines(t.render()) == ['hi']
+        assert m.key == "foo_5"
+
+        t = Template("""
+            <%def name="foo(*args, **kwargs)" cached="True" cache_key="foo_${kwargs['bar']}">
+             hi
+            </%def>
+
+            ${foo(1, 2, bar='lala')}
+        """)
+        m = self._install_mock_cache(t)
+        t.render()
+        assert result_lines(t.render()) == ['hi']
+        assert m.key == "foo_lala"
+
+        t = Template('''
+        <%page args="bar='hi'" cache_key="foo_${bar}" cached="True"/>
+         hi
+        ''')
+        m = self._install_mock_cache(t)
+        t.render()
+        assert result_lines(t.render()) == ['hi']
+        assert m.key == "foo_hi"
+
+        
     def test_dynamic_key_with_imports(self):
         lookup = TemplateLookup()
         lookup.put_string("foo.html", """
