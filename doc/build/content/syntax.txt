@@ -84,7 +84,7 @@ Any arbitrary block of python can be dropped in using the `<% %>` tags:
         y = [z.element for z in x if x.frobnizzle==5]
     %>
     % for elem in y:
-        element: ${y}
+        element: ${elem}
     % endfor
     
 Within `<% %>`, you're writing a regular block of Python code.  While the code can appear with an arbitrary level of preceding whitespace,  it has to be consistently formatted with itself.  Mako's compiler will adjust the block of Python to be consistent with the surrounding generated Python code.
