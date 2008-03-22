@@ -163,6 +163,7 @@ DEFAULT_ESCAPES = {
     'entity':'filters.html_entities_escape',
     'unicode':'unicode',
     'decode':'decode',
+    'str':'str',
     'n':'n'
 }
     

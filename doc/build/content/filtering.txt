@@ -57,7 +57,7 @@ Result:
 
 **New in version 0.1.2**
 
-In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering for all expression tags at the programmatic level.  This array-based argument defaults to `["unicode"]`:
+In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering for all expression tags at the programmatic level.  This array-based argument, when given its default argument of `None`, will be internally set to `["unicode"]`, except when `disable_unicode=True` is set in which case it defaults to `["str"]`:
 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
@@ -66,6 +66,11 @@ To replace the usual `unicode` function with a specific encoding, the `decode` f
 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['decode.utf8'])
+
+To disable `default_filters` entirely, set it to an empty list:
+
+    {python}
+    t = TemplateLookup(directories=['/tmp'], default_filters=[])
     
 Any string name can be added to `default_filters` where it will be added to all expressions as a filter.  The filters are applied from left to right, meaning the leftmost filter is applied first.
 

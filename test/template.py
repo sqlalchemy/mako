@@ -39,6 +39,11 @@ class EncodingTest(unittest.TestCase):
         template = Template(filename='./test_htdocs/unicode.html', module_directory='./test_htdocs')
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
+    def test_unicode_file_lookup(self):
+        lookup = TemplateLookup(directories=['./test_htdocs'], output_encoding='utf-8', default_filters=['decode.utf8'])
+        template = lookup.get_template('/chs_unicode.html')
+        assert flatten_result(template.render(name='毛泽东')) == '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.'
+
     def test_unicode_bom(self):
         template = Template(filename='./test_htdocs/bom.html', module_directory='./test_htdocs')
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
@@ -56,7 +61,7 @@ class EncodingTest(unittest.TestCase):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         val = "## coding: utf-8\n" + val.encode('utf-8')
         template = Template(val)
-        #print template.code
+        assert isinstance(template.code, unicode)
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
     
     def test_unicode_text(self):
@@ -159,7 +164,22 @@ class EncodingTest(unittest.TestCase):
         lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True, output_encoding='utf-8')
         template = lookup.get_template('/read_unicode.html')
         data = template.render(path=os.path.join('./test_htdocs', 'internationalization.html'))
-        
+
+    def test_bytestring_passthru(self):
+        lookup = TemplateLookup(directories=['./test_htdocs'], default_filters=[], disable_unicode=True)
+        template = lookup.get_template('/chs_utf8.html')
+        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.')
+
+        lookup = TemplateLookup(directories=['./test_htdocs'], disable_unicode=True)
+        template = lookup.get_template('/chs_utf8.html')
+        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.')
+        self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
+
+        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')
+        assert template.render() == """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", input_encoding='utf8', output_encoding='utf8', disable_unicode=False, default_filters=[])
+        self.assertRaises(UnicodeDecodeError, template.render)  # raises because expression contains an encoded bytestring which cannot be decoded
+
 
 class PageArgsTest(unittest.TestCase):
     def test_basic(self):

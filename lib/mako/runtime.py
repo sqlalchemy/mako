@@ -289,7 +289,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     """create a Context and return the string output of the given template and template callable."""
     if as_unicode:
         buf = util.FastEncodingBuffer()
-    elif template.output_encoding:
+    elif not template.disable_unicode and template.output_encoding:
         buf = util.FastEncodingBuffer(template.output_encoding, template.encoding_errors)
     else:
         buf = util.StringIO()

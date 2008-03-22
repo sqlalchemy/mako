@@ -14,21 +14,27 @@ from mako import util, ast, parsetree, filters
 MAGIC_NUMBER = 2
 
 
-def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None):
+def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
     """generate module source code given a parsetree node, uri, and optional source filename"""
-    buf = util.FastEncodingBuffer()
+    
+    if generate_unicode:
+        buf = util.FastEncodingBuffer()  # creates Unicode
+    else:
+        buf = util.StringIO()  # returns whatever was passed in
+
     printer = PythonPrinter(buf)
-    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports, source_encoding), node)
+    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports, source_encoding, generate_unicode), node)
     return buf.getvalue()
 
 class _CompileContext(object):
-    def __init__(self, uri, filename, default_filters, buffer_filters, imports, source_encoding):
+    def __init__(self, uri, filename, default_filters, buffer_filters, imports, source_encoding, generate_unicode):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
         self.buffer_filters = buffer_filters
         self.imports = imports
         self.source_encoding = source_encoding
+        self.generate_unicode = generate_unicode
         
 class _GenerateRenderMethod(object):
     """a template visitor object which generates the full module source for a template."""
@@ -110,6 +116,9 @@ class _GenerateRenderMethod(object):
         module_identifiers.declared = module_ident
         
         # module-level names, python code
+        if not self.compiler.generate_unicode and self.compiler.source_encoding:
+            self.printer.writeline("# -*- encoding:%s -*-" % self.compiler.source_encoding)
+            
         self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
@@ -159,7 +168,7 @@ class _GenerateRenderMethod(object):
         )
         if buffered or filtered or cached:
             self.printer.writeline("context.push_buffer()")
-
+        
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
         if not self.in_def and '**pageargs' in args:
             self.identifier_stack[-1].argument_declared.add('pageargs')
@@ -424,8 +433,6 @@ class _GenerateRenderMethod(object):
         def locate_encode(name):
             if re.match(r'decode\..+', name):
                 return "filters." + name
-            elif name == 'unicode':
-                return 'unicode'
             else:
                 return filters.DEFAULT_ESCAPES.get(name, name)
         
@@ -544,6 +551,7 @@ class _GenerateRenderMethod(object):
             )
         self.write_variable_declares(body_identifiers)
         self.identifier_stack.append(body_identifiers)
+        
         for n in node.nodes:
             n.accept_visitor(self)
         self.identifier_stack.pop()
@@ -563,7 +571,7 @@ class _GenerateRenderMethod(object):
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
-                "context.write(unicode(%s))" % node.attributes['expr'],
+                "context.write(%s)" % self.create_filter_callable([], node.attributes['expr'], True),
             "finally:",
                 "context.caller_stack.nextcaller = None",
             None

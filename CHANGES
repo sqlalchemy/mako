@@ -23,7 +23,15 @@
   directly to the %page or %def, i.e.
   <%def name="foo(x)" cached="True" cache_key="${x}"/>
   [ticket:78]
-  
+- added "bytestring passthru" mode, via `disable_unicode=True`
+  argument passed to Template or TemplateLookup.  All
+  unicode-awareness and filtering is turned off, and template 
+  modules are generated with the appropriate magic encoding
+  comment.  In this mode, template expressions can only
+  receive raw bytestrings or Unicode objects which represent
+  straight ASCII, and render_unicode() may not be used. 
+  [ticket:77]  (courtesy anonymous guest)
+
 0.1.10
 - fixed propagation of 'caller' such that nested %def calls
   within a <%call> tag's argument list propigates 'caller'

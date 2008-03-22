@@ -18,7 +18,7 @@ class Template(object):
     """a compiled template"""
     def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, 
         lookup=None, output_encoding=None, encoding_errors='strict', module_directory=None, cache_type=None, 
-        cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, default_filters=['unicode'], 
+        cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, disable_unicode=False, default_filters=None, 
         buffer_filters=[], imports=None, preprocessor=None):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
@@ -42,9 +42,19 @@ class Template(object):
             self.module_id = "memory:" + hex(id(self))
             self.uri = self.module_id
         
-        self.default_filters = default_filters
-        self.buffer_filters = buffer_filters
         self.input_encoding = input_encoding
+        self.output_encoding = output_encoding
+        self.encoding_errors = encoding_errors
+        self.disable_unicode = disable_unicode
+        if default_filters is None:
+            if self.disable_unicode:
+                self.default_filters = ['str']
+            else:
+                self.default_filters = ['unicode']
+        else:
+            self.default_filters = default_filters
+        self.buffer_filters = buffer_filters
+            
         self.imports = imports
         self.preprocessor = preprocessor
         
@@ -94,8 +104,6 @@ class Template(object):
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
         self.lookup = lookup
-        self.output_encoding = output_encoding
-        self.encoding_errors = encoding_errors
         self.cache_type = cache_type
         self.cache_dir = cache_dir
         self.cache_url = cache_url
@@ -141,6 +149,7 @@ class DefTemplate(Template):
         self.buffer_filters = parent.buffer_filters
         self.input_encoding = parent.input_encoding
         self.imports = parent.imports
+        self.disable_unicode = parent.disable_unicode
         self.output_encoding = parent.output_encoding
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
@@ -191,9 +200,9 @@ class ModuleInfo(object):
         
 def _compile_text(template, text, filename):
     identifier = template.module_id
-    lexer = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
+    lexer = Lexer(text, filename, disable_unicode=template.disable_unicode, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
     node = lexer.parse()
-    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding)
+    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding, generate_unicode=not template.disable_unicode)
     #print source
     cid = identifier
     module = imp.new_module(cid)
@@ -203,9 +212,9 @@ def _compile_text(template, text, filename):
 
 def _compile_module_file(template, text, filename, outputpath):
     identifier = template.module_id
-    lexer = Lexer(text, filename, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
+    lexer = Lexer(text, filename, disable_unicode=template.disable_unicode, input_encoding=template.input_encoding, preprocessor=template.preprocessor)
     node = lexer.parse()
-    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding)
+    source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding, generate_unicode=not template.disable_unicode)
     (dest, name) = tempfile.mkstemp()
     os.write(dest, source)
     os.close(dest)
