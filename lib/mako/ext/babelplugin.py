@@ -115,9 +115,5 @@ def extract_nodes(nodes, keywords, comment_tags, options):
 def _split_comment(lineno, comment):
     """Return the multiline comment at lineno split into a list of comment line
     numbers and the accompanying comment line"""
-    comments = []
-    comment_index = 0
-    for comment_line in comment.splitlines():
-        comments.append((lineno + comment_index, comment_line))
-        comment_index += 1
-    return comments
+    return [(lineno + index, line) for index, line in
+            enumerate(comment.splitlines())]
