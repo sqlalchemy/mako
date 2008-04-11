@@ -1,7 +1,6 @@
 import unittest
 
-from mako import ast, util, exceptions
-from compiler import parse
+from mako import ast, exceptions, pyparser, util
 
 exception_kwargs = {'source':'', 'lineno':0, 'pos':0, 'filename':''}
 
@@ -183,8 +182,8 @@ import x as bar
         local_dict = dict(x=x, y=y, foo=F(), lala=lala)
         
         code = "str((x+7*y) / foo.bar(5,6)) + lala('ho')"
-        astnode = parse(code)
-        newcode = ast.ExpressionGenerator(astnode).value()
+        astnode = pyparser.parse(code)
+        newcode = pyparser.ExpressionGenerator(astnode).value()
         #print "newcode:" + newcode
         #print "result:" + eval(code, local_dict)
         assert (eval(code, local_dict) == eval(newcode, local_dict))
@@ -194,22 +193,22 @@ import x as bar
         g = [1,2,3,4,5]
         local_dict = dict(a=a,hoho=hoho,g=g)
         code = "a[2] + hoho['somevalue'] + repr(g[3:5]) + repr(g[3:]) + repr(g[:5])"
-        astnode = parse(code)
-        newcode = ast.ExpressionGenerator(astnode).value()
+        astnode = pyparser.parse(code)
+        newcode = pyparser.ExpressionGenerator(astnode).value()
         #print newcode
         #print "result:", eval(code, local_dict)
         assert(eval(code, local_dict) == eval(newcode, local_dict))
         
         local_dict={'f':lambda :9, 'x':7}
         code = "x+f()"
-        astnode = parse(code)
-        newcode = ast.ExpressionGenerator(astnode).value()
+        astnode = pyparser.parse(code)
+        newcode = pyparser.ExpressionGenerator(astnode).value()
         assert(eval(code, local_dict)) == eval(newcode, local_dict)
 
         for code in ["repr({'x':7,'y':18})", "repr([])", "repr({})", "repr([{3:[]}])", "repr({'x':37*2 + len([6,7,8])})", "repr([1, 2, {}, {'x':'7'}])", "repr({'x':-1})", "repr(((1,2,3), (4,5,6)))", "repr(1 and 2 and 3 and 4)", "repr(True and False or 55)", "repr(1 & 2 | 3)", "repr(3//5)", "repr(3^5)", "repr([q.endswith('e') for q in ['one', 'two', 'three']])", "repr([x for x in (5,6,7) if x == 6])", "repr(not False)"]:
             local_dict={}
-            astnode = parse(code)
-            newcode = ast.ExpressionGenerator(astnode).value()
+            astnode = pyparser.parse(code)
+            newcode = pyparser.ExpressionGenerator(astnode).value()
             #print code, newcode
             assert(eval(code, local_dict)) == eval(newcode, local_dict), "%s != %s" % (code, newcode)
 

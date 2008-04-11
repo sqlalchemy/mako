@@ -6,18 +6,9 @@
 
 """utilities for analyzing expressions and blocks of Python code, as well as generating Python from AST nodes"""
 
-from compiler import ast, visitor
-from compiler import parse as compiler_parse
-from mako import util, exceptions
-from StringIO import StringIO
+from mako import exceptions, pyparser, util
 import re
 
-def parse(code, mode, **exception_kwargs):
-    try:
-        return compiler_parse(code, mode)
-    except SyntaxError, e:
-        raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), **exception_kwargs)
-    
 class PythonCode(object):
     """represents information about a string containing Python code"""
     def __init__(self, code, **exception_kwargs):
@@ -36,71 +27,12 @@ class PythonCode(object):
         # - AST is less likely to break with version changes (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
         if isinstance(code, basestring):
-            expr = parse(code.lstrip(), "exec", **exception_kwargs)
+            expr = pyparser.parse(code.lstrip(), "exec", **exception_kwargs)
         else:
             expr = code
-        
-        class FindIdentifiers(object):
-            def __init__(self):
-                self.in_function = False
-                self.local_ident_stack = {}
-            def _add_declared(s, name):
-                if not s.in_function:
-                    self.declared_identifiers.add(name)
-            def visitClass(self, node, *args):
-                self._add_declared(node.name)
-            def visitAssName(self, node, *args):
-                self._add_declared(node.name)
-            def visitAssign(self, node, *args):
-                # flip around the visiting of Assign so the expression gets evaluated first, 
-                # in the case of a clause like "x=x+5" (x is undeclared)
-                self.visit(node.expr, *args)
-                for n in node.nodes:
-                    self.visit(n, *args)
-            def visitFunction(self,node, *args):
-                self._add_declared(node.name)
-                # push function state onto stack.  dont log any
-                # more identifiers as "declared" until outside of the function,
-                # but keep logging identifiers as "undeclared".
-                # track argument names in each function header so they arent counted as "undeclared"
-                saved = {}
-                inf = self.in_function
-                self.in_function = True
-                for arg in node.argnames:
-                    if arg in self.local_ident_stack:
-                        saved[arg] = True
-                    else:
-                        self.local_ident_stack[arg] = True
-                for n in node.getChildNodes():
-                    self.visit(n, *args)
-                self.in_function = inf
-                for arg in node.argnames:
-                    if arg not in saved:
-                        del self.local_ident_stack[arg]
-            def visitFor(self, node, *args):
-                # flip around visit
-                self.visit(node.list, *args)
-                self.visit(node.assign, *args)
-                self.visit(node.body, *args)
-            def visitName(s, node, *args):
-                if node.name not in __builtins__ and node.name not in self.declared_identifiers and node.name not in s.local_ident_stack:
-                    self.undeclared_identifiers.add(node.name)
-            def visitImport(self, node, *args):
-                for (mod, alias) in node.names:
-                    if alias is not None:
-                        self._add_declared(alias)
-                    else:
-                        self._add_declared(mod.split('.')[0])
-            def visitFrom(self, node, *args):
-                for (mod, alias) in node.names:
-                    if alias is not None:
-                        self._add_declared(alias)
-                    else:
-                        if mod == '*':
-                            raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", **exception_kwargs)
-                        self._add_declared(mod)
-        f = FindIdentifiers()
-        visitor.walk(expr, f) #, walker=walker())
+
+        f = pyparser.FindIdentifiers(self, **exception_kwargs)
+        f.visit(expr)
 
 class ArgumentList(object):
     """parses a fragment of code as a comma-separated list of expressions"""
@@ -109,25 +41,17 @@ class ArgumentList(object):
         self.args = []
         self.declared_identifiers = util.Set()
         self.undeclared_identifiers = util.Set()
-        class FindTuple(object):
-            def visitTuple(s, node, *args):
-                for n in node.nodes:
-                    p = PythonCode(n, **exception_kwargs)
-                    self.codeargs.append(p)
-                    self.args.append(ExpressionGenerator(n).value())
-                    self.declared_identifiers = self.declared_identifiers.union(p.declared_identifiers)
-                    self.undeclared_identifiers = self.undeclared_identifiers.union(p.undeclared_identifiers)
         if isinstance(code, basestring):
             if re.match(r"\S", code) and not re.match(r",\s*$", code):
                 # if theres text and no trailing comma, insure its parsed
                 # as a tuple by adding a trailing comma
                 code  += ","
-            expr = parse(code, "exec", **exception_kwargs)
+            expr = pyparser.parse(code, "exec", **exception_kwargs)
         else:
             expr = code
 
-        f = FindTuple()
-        visitor.walk(expr, f)
+        f = pyparser.FindTuple(self, PythonCode, **exception_kwargs)
+        f.visit(expr)
         
 class PythonFragment(PythonCode):
     """extends PythonCode to provide identifier lookups in partial control statements
@@ -157,27 +81,15 @@ class PythonFragment(PythonCode):
             raise exceptions.CompileException("Unsupported control keyword: '%s'" % keyword, **exception_kwargs)
         super(PythonFragment, self).__init__(code, **exception_kwargs)
         
-class walker(visitor.ASTVisitor):
-    def dispatch(self, node, *args):
-        print "Node:", str(node)
-        #print "dir:", dir(node)
-        return visitor.ASTVisitor.dispatch(self, node, *args)
         
 class FunctionDecl(object):
     """function declaration"""
     def __init__(self, code, allow_kwargs=True, **exception_kwargs):
         self.code = code
-        expr = parse(code, "exec", **exception_kwargs)
-        class ParseFunc(object):
-            def visitFunction(s, node, *args):
-                self.funcname = node.name
-                self.argnames = node.argnames
-                self.defaults = node.defaults
-                self.varargs = node.varargs
-                self.kwargs = node.kwargs
+        expr = pyparser.parse(code, "exec", **exception_kwargs)
                 
-        f = ParseFunc()
-        visitor.walk(expr, f)
+        f = pyparser.ParseFunc(self, **exception_kwargs)
+        f.visit(expr)
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException("Code '%s' is not a function declaration" % code, **exception_kwargs)
         if not allow_kwargs and self.kwargs:
@@ -202,7 +114,7 @@ class FunctionDecl(object):
             else:
                 default = len(defaults) and defaults.pop() or None
             if include_defaults and default:
-                namedecls.insert(0, "%s=%s" % (arg, ExpressionGenerator(default).value()))
+                namedecls.insert(0, "%s=%s" % (arg, pyparser.ExpressionGenerator(default).value()))
             else:
                 namedecls.insert(0, arg)
         return namedecls
@@ -211,135 +123,3 @@ class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
     def __init__(self, code, **kwargs):
         super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, **kwargs)
-        
-            
-class ExpressionGenerator(object):
-    """given an AST node, generates an equivalent literal Python expression."""
-    def __init__(self, astnode):
-        self.buf = StringIO()
-        visitor.walk(astnode, self) #, walker=walker())
-    def value(self):
-        return self.buf.getvalue()        
-    def operator(self, op, node, *args):
-        self.buf.write("(")
-        self.visit(node.left, *args)
-        self.buf.write(" %s " % op)
-        self.visit(node.right, *args)
-        self.buf.write(")")
-    def booleanop(self, op, node, *args):
-        self.visit(node.nodes[0])
-        for n in node.nodes[1:]:
-            self.buf.write(" " + op + " ")
-            self.visit(n, *args)
-    def visitConst(self, node, *args):
-        self.buf.write(repr(node.value))
-    def visitAssName(self, node, *args):
-        # TODO: figure out OP_ASSIGN, other OP_s
-        self.buf.write(node.name)
-    def visitName(self, node, *args):
-        self.buf.write(node.name)
-    def visitMul(self, node, *args):
-        self.operator("*", node, *args)
-    def visitAnd(self, node, *args):
-        self.booleanop("and", node, *args)
-    def visitOr(self, node, *args):
-        self.booleanop("or", node, *args)
-    def visitBitand(self, node, *args):
-        self.booleanop("&", node, *args)
-    def visitBitor(self, node, *args):
-        self.booleanop("|", node, *args)
-    def visitBitxor(self, node, *args):
-        self.booleanop("^", node, *args)
-    def visitAdd(self, node, *args):
-        self.operator("+", node, *args)
-    def visitGetattr(self, node, *args):
-        self.visit(node.expr, *args)
-        self.buf.write(".%s" % node.attrname)
-    def visitSub(self, node, *args):
-        self.operator("-", node, *args)
-    def visitNot(self, node, *args):
-        self.buf.write("not ")
-        self.visit(node.expr)
-    def visitDiv(self, node, *args):
-        self.operator("/", node, *args)
-    def visitFloorDiv(self, node, *args):
-        self.operator("//", node, *args)
-    def visitSubscript(self, node, *args):
-        self.visit(node.expr)
-        self.buf.write("[")
-        [self.visit(x) for x in node.subs]
-        self.buf.write("]")
-    def visitUnarySub(self, node, *args):
-        self.buf.write("-")
-        self.visit(node.expr)
-    def visitUnaryAdd(self, node, *args):
-        self.buf.write("-")
-        self.visit(node.expr)
-    def visitSlice(self, node, *args):
-        self.visit(node.expr)
-        self.buf.write("[")
-        if node.lower is not None:
-            self.visit(node.lower)
-        self.buf.write(":")
-        if node.upper is not None:
-            self.visit(node.upper)
-        self.buf.write("]")
-    def visitDict(self, node):
-        self.buf.write("{")
-        c = node.getChildren()
-        for i in range(0, len(c), 2):
-            self.visit(c[i])
-            self.buf.write(": ")
-            self.visit(c[i+1])
-            if i<len(c) -2:
-                self.buf.write(", ")
-        self.buf.write("}")
-    def visitTuple(self, node):
-        self.buf.write("(")
-        c = node.getChildren()
-        for i in range(0, len(c)):
-            self.visit(c[i])
-            if i<len(c) - 1:
-                self.buf.write(", ")
-        self.buf.write(")")
-    def visitList(self, node):
-        self.buf.write("[")
-        c = node.getChildren()
-        for i in range(0, len(c)):
-            self.visit(c[i])
-            if i<len(c) - 1:
-                self.buf.write(", ")
-        self.buf.write("]")
-    def visitListComp(self, node):
-        self.buf.write("[")
-        self.visit(node.expr)
-        self.buf.write(" ")
-        for n in node.quals:
-            self.visit(n)
-        self.buf.write("]")
-    def visitListCompFor(self, node):
-        self.buf.write(" for ")
-        self.visit(node.assign)
-        self.buf.write(" in ")
-        self.visit(node.list)
-        for n in node.ifs:
-            self.visit(n)
-    def visitListCompIf(self, node):
-        self.buf.write(" if ")
-        self.visit(node.test)
-    def visitCompare(self, node):
-        self.visit(node.expr)
-        for tup in node.ops:
-            self.buf.write(tup[0])
-            self.visit(tup[1])
-    def visitCallFunc(self, node, *args):
-        self.visit(node.node)
-        self.buf.write("(")
-        if len(node.args):
-            self.visit(node.args[0])
-            for a in node.args[1:]:
-                self.buf.write(", ")
-                self.visit(a)
-        self.buf.write(")")
-        
-        

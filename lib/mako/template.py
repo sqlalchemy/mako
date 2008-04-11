@@ -10,8 +10,7 @@ as well as template runtime operations."""
 from mako.lexer import Lexer
 from mako import codegen
 from mako import runtime, util, exceptions
-import imp, time, weakref, tempfile, shutil,  os, stat, sys, re
-
+import imp, os, re, shutil, stat, sys, tempfile, time, types, weakref
 
     
 class Template(object):
@@ -205,7 +204,9 @@ def _compile_text(template, text, filename):
     source = codegen.compile(node, template.uri, filename, default_filters=template.default_filters, buffer_filters=template.buffer_filters, imports=template.imports, source_encoding=lexer.encoding, generate_unicode=not template.disable_unicode)
     #print source
     cid = identifier
-    module = imp.new_module(cid)
+    if isinstance(cid, unicode):
+        cid = cid.encode()
+    module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
     exec code in module.__dict__, module.__dict__
     return (source, module)
