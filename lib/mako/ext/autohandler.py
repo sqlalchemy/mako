@@ -50,7 +50,7 @@ def autohandler(template, context, name='autohandler'):
 def _file_exists(lookup, path):
     psub = re.sub(r'^/', '',path)
     for d in lookup.directories:
-        if os.access(d + '/' + psub, os.F_OK):
+        if os.path.exists(d + '/' + psub):
             return True
     else:
         return False

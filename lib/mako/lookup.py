@@ -66,7 +66,7 @@ class TemplateLookup(TemplateCollection):
             u = re.sub(r'^\/+', '', uri)
             for dir in self.directories:
                 srcfile = posixpath.normpath(posixpath.join(dir, u))
-                if os.access(srcfile, os.F_OK):
+                if os.path.exists(srcfile):
                     return self.__load(srcfile, uri)
             else:
                 raise exceptions.TopLevelLookupException("Cant locate template for uri '%s'" % uri)
@@ -120,7 +120,7 @@ class TemplateLookup(TemplateCollection):
     def __check(self, uri, template):
         if template.filename is None:
             return template
-        if not os.access(template.filename, os.F_OK):
+        if not os.path.exists(template.filename):
             self.__collection.pop(uri, None)
             raise exceptions.TemplateLookupException("Cant locate template for uri '%s'" % uri)
         elif template.module._modified_time < os.stat(template.filename)[stat.ST_MTIME]:

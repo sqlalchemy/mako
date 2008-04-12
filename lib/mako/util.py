@@ -35,7 +35,7 @@ def verify_directory(dir):
     
     tries = 0
     
-    while not os.access(dir, os.F_OK):
+    while not os.path.exists(dir):
         try:
             tries += 1
             os.makedirs(dir, 0750)

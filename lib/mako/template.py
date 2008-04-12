@@ -78,7 +78,7 @@ class Template(object):
             if path is not None:
                 util.verify_directory(os.path.dirname(path))
                 filemtime = os.stat(filename)[stat.ST_MTIME]
-                if not os.access(path, os.F_OK) or os.stat(path)[stat.ST_MTIME] < filemtime:
+                if not os.path.exists(path) or os.stat(path)[stat.ST_MTIME] < filemtime:
                     _compile_module_file(self, file(filename).read(), filename, path)
                 module = imp.load_source(self.module_id, path, file(path))
                 del sys.modules[self.module_id]
