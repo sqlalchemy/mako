@@ -4,6 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import sys
 try:
     Set = set
 except:
@@ -24,6 +25,11 @@ except ImportError:
     import dummy_threading as threading
     import dummy_thread as thread
 
+if sys.platform.startswith('win') or sys.platform.startswith('java'):
+    time_func = time.clock
+else:
+    time_func = time.time 
+   
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""
     
@@ -77,7 +83,7 @@ class LRUCache(dict):
         def __init__(self, key, value):
             self.key = key
             self.value = value
-            self.timestamp = time.time()
+            self.timestamp = time_func()
         def __repr__(self):
             return repr(self.value)
     
@@ -87,7 +93,7 @@ class LRUCache(dict):
     
     def __getitem__(self, key):
         item = dict.__getitem__(self, key)
-        item.timestamp = time.time()
+        item.timestamp = time_func()
         return item.value
     
     def values(self):
