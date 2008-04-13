@@ -89,7 +89,7 @@ if new_ast:
         def visit_Name(self, node):
             if isinstance(node.ctx, _ast.Store):
                 self._add_declared(node.id)
-            if node.id not in __builtin__.__dict__ and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
+            if not hasattr(__builtin__, node.id) and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)
         def visit_Import(self, node):
             for name in node.names:
@@ -187,7 +187,7 @@ else:
             self.visit(node.assign, *args)
             self.visit(node.body, *args)
         def visitName(self, node, *args):
-            if node.name not in __builtin__.__dict__ and node.name not in self.listener.declared_identifiers and node.name not in self.local_ident_stack:
+            if not hasattr(__builtin__, node.name) and node.name not in self.listener.declared_identifiers and node.name not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.name)
         def visitImport(self, node, *args):
             for (mod, alias) in node.names:
