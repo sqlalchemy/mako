@@ -194,3 +194,19 @@ This tag suspends the Mako lexer's normal parsing of Mako template directives, a
         heres some fake mako ${syntax}
         <%def name="x()">${x}</%def>
     %CLOSETEXT
+
+### Returning early from a template
+
+Sometimes you want to stop processing a template or `<%def>` method in the middle and just use the text you've accumulated so far.  You can use a ``return`` statement inside a Python block to do that.
+
+    % if len(records) == 0:
+        No records found.
+        <% return %>
+    % endif
+
+Or perhaps:
+
+    <%
+        if len(records) == 0:
+            return
+    %>
