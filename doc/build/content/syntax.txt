@@ -3,7 +3,7 @@ Syntax {@name=syntax}
 
 A Mako template is parsed from a text stream containing any kind of content, XML, HTML, email text, etc.  The template can further contain Mako-specific directives which represent variable and/or expression substitutions, control structures (i.e. conditionals and loops), server-side comments, full blocks of Python code, as well as various tags that offer additional functionality.  All of these constructs compile into real Python code.  This means that you can leverage the full power of Python in almost every aspect of a Mako template.
 
-### Expression Substiution
+### Expression Substitution
 
 The simplest expression is just a variable substitution.  The syntax for this is the `${}` construct, which is inspired by Perl, Genshi, JSP EL, and others:
 
