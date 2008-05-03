@@ -1,11 +1,16 @@
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import lookup
-import unittest, os
+import shutil, unittest, os
 from util import result_lines
 
 if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
+for cache_dir in ('container_dbm', 'container_dbm_lock', 'container_file',
+            'container_file_lock'):
+    fullpath = os.path.join('./test_htdocs', cache_dir)
+    if os.path.exists(fullpath):
+        shutil.rmtree(fullpath)
 
 class MockCache(object):
     def __init__(self, realcache):
