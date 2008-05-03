@@ -34,6 +34,7 @@ class FilterTest(unittest.TestCase):
             </%def>
             ${foo()}
 """)
+
         assert flatten_result(t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)) == "MYFILTER-> this is foo <-MYFILTER"
 
     def test_import(self):

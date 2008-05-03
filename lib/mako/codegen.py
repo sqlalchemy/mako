@@ -163,11 +163,11 @@ class _GenerateRenderMethod(object):
         this could be the main render() method or that of a top-level def."""
         self.printer.writelines(
             "def %s(%s):" % (name, ','.join(args)),
-                "context.caller_stack.push_frame()",
+                "context.caller_stack._push_frame()",
                 "try:"
         )
         if buffered or filtered or cached:
-            self.printer.writeline("context.push_buffer()")
+            self.printer.writeline("context._push_buffer()")
         
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
         if not self.in_def and '**pageargs' in args:
@@ -302,6 +302,8 @@ class _GenerateRenderMethod(object):
                 else:
                     self.printer.writeline("%s = context.get(%s, UNDEFINED)" % (ident, repr(ident)))
         
+        self.printer.writeline("__M_writer = context.writer()")
+        
     def write_source_comment(self, node):
         """write a source comment containing the line number of the corresponding template line."""
         if self.last_source_line != node.lineno:
@@ -329,12 +331,12 @@ class _GenerateRenderMethod(object):
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
         self.printer.writelines(
-            "context.caller_stack.push_frame()",
+            "context.caller_stack._push_frame()",
             "try:"
             )
         if buffered or filtered or cached:
             self.printer.writelines(
-                "context.push_buffer()",
+                "context._push_buffer()",
                 )
 
         identifiers = identifiers.branch(node, nested=nested)
@@ -362,16 +364,16 @@ class _GenerateRenderMethod(object):
             if callstack:
                 self.printer.writelines(
                     "finally:",
-                        "context.caller_stack.pop_frame()",
+                        "context.caller_stack._pop_frame()",
                     None
                 )
         if buffered or filtered or cached:
             self.printer.writelines(
                 "finally:",
-                    "__M_buf = context.pop_buffer()"
+                    "__M_buf, __M_writer = context._pop_buffer_and_writer()"
             )
             if callstack:
-                self.printer.writeline("context.caller_stack.pop_frame()")
+                self.printer.writeline("context.caller_stack._pop_frame()")
             s = "__M_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)
@@ -382,7 +384,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("return %s" % s)
             else:
                 self.printer.writelines(
-                    "context.write(%s)" % s,
+                    "__M_writer(%s)" % s,
                     "return ''"
                 )
 
@@ -420,7 +422,7 @@ class _GenerateRenderMethod(object):
             self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
-                    "context.write(context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args)),
+                    "__M_writer(context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args)),
                     "return ''",
                 None
             )
@@ -460,9 +462,9 @@ class _GenerateRenderMethod(object):
         self.write_source_comment(node)
         if len(node.escapes) or (self.compiler.pagetag is not None and len(self.compiler.pagetag.filter_args.args)) or len(self.compiler.default_filters):
             s = self.create_filter_callable(node.escapes_code.args, "%s" % node.text, True)
-            self.printer.writeline("context.write(%s)" % s)
+            self.printer.writeline("__M_writer(%s)" % s)
         else:
-            self.printer.writeline("context.write(%s)" % node.text)
+            self.printer.writeline("__M_writer(%s)" % node.text)
             
     def visitControlLine(self, node):
         if node.isend:
@@ -472,12 +474,12 @@ class _GenerateRenderMethod(object):
             self.printer.writeline(node.text)
     def visitText(self, node):
         self.write_source_comment(node)
-        self.printer.writeline("context.write(%s)" % repr(node.content))
+        self.printer.writeline("__M_writer(%s)" % repr(node.content))
     def visitTextTag(self, node):
         filtered = len(node.filter_args.args) > 0
         if filtered:
             self.printer.writelines(
-                "context.push_buffer()",
+                "__M_writer = context._push_writer()",
                 "try:",
             )
         for n in node.nodes:
@@ -485,8 +487,8 @@ class _GenerateRenderMethod(object):
         if filtered:
             self.printer.writelines(
                 "finally:",
-                "__M_buf = context.pop_buffer()",
-                "context.write(%s)" % self.create_filter_callable(node.filter_args.args, "__M_buf.getvalue()", False),
+                "__M_buf, __M_writer = context._pop_buffer_and_writer()",
+                "__M_writer(%s)" % self.create_filter_callable(node.filter_args.args, "__M_buf.getvalue()", False),
                 None
                 )
         
@@ -544,7 +546,7 @@ class _GenerateRenderMethod(object):
         buffered = False
         if buffered:
             self.printer.writelines(
-                "context.push_buffer()",
+                "context._push_buffer()",
                 "try:"
             )
         self.write_variable_declares(body_identifiers)
@@ -569,7 +571,7 @@ class _GenerateRenderMethod(object):
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
-                "context.write(%s)" % self.create_filter_callable([], node.attributes['expr'], True),
+                "__M_writer(%s)" % self.create_filter_callable([], node.attributes['expr'], True),
             "finally:",
                 "context.caller_stack.nextcaller = None",
             None

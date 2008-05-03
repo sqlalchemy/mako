@@ -23,27 +23,61 @@ class Context(object):
         
         # "caller" stack used by def calls with content
         self.caller_stack = data['caller'] = CallerStack()
+        
     lookup = property(lambda self:self._with_template.lookup)
     kwargs = property(lambda self:self._kwargs.copy())
+    
     def push_caller(self, caller):
         self.caller_stack.append(caller)
+        
     def pop_caller(self):
         del self.caller_stack[-1]
+        
     def keys(self):
         return self._data.keys()
+        
     def __getitem__(self, key):
         return self._data[key]
-    def push_buffer(self):
+
+    def _push_writer(self):
+        """push a capturing buffer onto this Context and return the new Writer function."""
+        
+        buf = util.FastEncodingBuffer()
+        self._buffer_stack.append(buf)
+        return buf.write
+
+    def _pop_buffer_and_writer(self):
+        """pop the most recent capturing buffer from this Context 
+        and return the current writer after the pop.
+        
+        """
+
+        buf = self._buffer_stack.pop()
+        return buf, self._buffer_stack[-1].write
+        
+    def _push_buffer(self):
         """push a capturing buffer onto this Context."""
-        self._buffer_stack.append(util.FastEncodingBuffer())
-    def pop_buffer(self):
+        
+        self._push_writer()
+        
+    def _pop_buffer(self):
         """pop the most recent capturing buffer from this Context."""
+        
         return self._buffer_stack.pop()
+        
     def get(self, key, default=None):
         return self._data.get(key, default)
+        
     def write(self, string):
         """write a string to this Context's underlying output buffer."""
+        
         self._buffer_stack[-1].write(string)
+        
+    def writer(self):
+        """return the current writer function"""
+
+        return self._buffer_stack[-1].write
+
     def _copy(self):
         c = Context.__new__(Context)
         c._buffer_stack = self._buffer_stack
@@ -78,10 +112,10 @@ class CallerStack(list):
         return self[-1]
     def __getattr__(self, key):
         return getattr(self._get_caller(), key)
-    def push_frame(self):
+    def _push_frame(self):
         self.append(self.nextcaller or None)
         self.nextcaller = None
-    def pop_frame(self):
+    def _pop_frame(self):
         self.nextcaller = self.pop()
         
         
@@ -217,22 +251,22 @@ class Namespace(object):
 def supports_caller(func):
     """apply a caller_stack compatibility decorator to a plain Python function."""
     def wrap_stackframe(context,  *args, **kwargs):
-        context.caller_stack.push_frame()
+        context.caller_stack._push_frame()
         try:
             return func(context, *args, **kwargs)
         finally:
-            context.caller_stack.pop_frame()
+            context.caller_stack._pop_frame()
     return wrap_stackframe
         
 def capture(context, callable_, *args, **kwargs):
     """execute the given template def, capturing the output into a buffer."""
     if not callable(callable_):
         raise exceptions.RuntimeException("capture() function expects a callable as its argument (i.e. capture(func, *args, **kwargs))")
-    context.push_buffer()
+    context._push_buffer()
     try:
         callable_(*args, **kwargs)
     finally:
-        buf = context.pop_buffer()
+        buf = context._pop_buffer()
     return buf.getvalue()
         
 def _include_file(context, uri, calling_uri, **kwargs):
@@ -296,7 +330,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     context = Context(buf, **data)
     context._with_template = template
     _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
-    return context.pop_buffer().getvalue()
+    return context._pop_buffer().getvalue()
 
 def _kwargs_for_callable(callable_, data, **kwargs):
     argspec = inspect.getargspec(callable_)

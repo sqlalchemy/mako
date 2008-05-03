@@ -105,6 +105,7 @@ class CallTest(unittest.TestCase):
         </%call>
 
         """)
+
         assert result_lines(t.render()) == [
         "<h1>",
         "Some title",
@@ -395,6 +396,8 @@ class CallTest(unittest.TestCase):
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call", 'the embedded "d" is:', 'this is d']
 
 class SelfCacheTest(unittest.TestCase):
+    """this test uses a now non-public API."""
+    
     def test_basic(self):
         t = Template("""
         <%!
@@ -405,11 +408,11 @@ class SelfCacheTest(unittest.TestCase):
                 global cached
                 if cached:
                     return "cached: " + cached
-                context.push_buffer()
+                __M_writer = context._push_writer()
             %>
             this is foo
             <%
-                buf = context.pop_buffer()
+                buf, __M_writer = context._pop_buffer_and_writer()
                 cached = buf.getvalue()
                 return cached
             %>
