@@ -60,10 +60,8 @@ class FastEncodingBuffer(object):
         self.data = []
         self.encoding = encoding
         self.errors = errors
-    
-    def write(self, text):
-        self.data.append(text)
-    
+        self.write = self.data.append
+        
     def getvalue(self):
         if self.encoding:
             return u''.join(self.data).encode(self.encoding, self.errors)
