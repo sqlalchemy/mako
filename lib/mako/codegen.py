@@ -409,8 +409,6 @@ class _GenerateRenderMethod(object):
         
         self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
         
-        self.write_variable_declares(identifiers, toplevel=toplevel, limit=node_or_pagetag.undeclared_identifiers())
-       
         # form "arg1, arg2, arg3=arg3, arg4=arg4", etc.
         pass_args = [ '=' in a and "%s=%s" % ((a.split('=')[0],)*2) or a for a in args]
 
