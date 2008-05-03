@@ -168,11 +168,12 @@ class EncodingTest(unittest.TestCase):
     def test_bytestring_passthru(self):
         lookup = TemplateLookup(directories=['./test_htdocs'], default_filters=[], disable_unicode=True)
         template = lookup.get_template('/chs_utf8.html')
-        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.')
+        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.')
 
         lookup = TemplateLookup(directories=['./test_htdocs'], disable_unicode=True)
         template = lookup.get_template('/chs_utf8.html')
-        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.')
+        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.')
+        
         self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
 
         template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')

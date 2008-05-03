@@ -16,11 +16,8 @@ MAGIC_NUMBER = 2
 
 def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
     """generate module source code given a parsetree node, uri, and optional source filename"""
-    
-    if generate_unicode:
-        buf = util.FastEncodingBuffer()  # creates Unicode
-    else:
-        buf = util.StringIO()  # returns whatever was passed in
+
+    buf = util.FastEncodingBuffer(unicode=generate_unicode)
 
     printer = PythonPrinter(buf)
     _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports, source_encoding, generate_unicode), node)

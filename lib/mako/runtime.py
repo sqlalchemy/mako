@@ -321,10 +321,9 @@ def _populate_self_namespace(context, template, self_ns=None):
 
 def _render(template, callable_, args, data, as_unicode=False):
     """create a Context and return the string output of the given template and template callable."""
-    if as_unicode:
-        buf = util.FastEncodingBuffer()
-    elif not template.disable_unicode and template.output_encoding:
-        buf = util.FastEncodingBuffer(template.output_encoding, template.encoding_errors)
+
+    if as_unicode or template.output_encoding:
+        buf = util.FastEncodingBuffer(unicode=as_unicode, encoding=template.output_encoding, errors=template.encoding_errors)
     else:
         buf = util.StringIO()
     context = Context(buf, **data)
