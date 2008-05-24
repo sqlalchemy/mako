@@ -8,21 +8,23 @@
 
 from mako import exceptions, util
 import inspect, sys
+import __builtin__
 
 class Context(object):
     """provides runtime namespace, output buffer, and various callstacks for templates."""
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
-        self._data = data
+        self._data = dict(__builtin__.__dict__)
+        self._data.update(data)
         self._kwargs = data.copy()
         self._with_template = None
         self.namespaces = {}
         
         # "capture" function which proxies to the generic "capture" function
-        data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
+        self._data['capture'] = lambda x, *args, **kwargs: capture(self, x, *args, **kwargs)
         
         # "caller" stack used by def calls with content
-        self.caller_stack = data['caller'] = CallerStack()
+        self.caller_stack = self._data['caller'] = CallerStack()
         
     lookup = property(lambda self:self._with_template.lookup)
     kwargs = property(lambda self:self._kwargs.copy())

@@ -9,10 +9,13 @@
 Parsing to AST is done via _ast on Python > 2.5, otherwise the compiler
 module is used.
 """
-import __builtin__
+
 import sys
 from StringIO import StringIO
 from mako import exceptions, util
+
+# words that cannot be assigned to (notably smaller than the total keys in __builtins__)
+reserved = set(['True', 'False', 'None'])
 
 new_ast = sys.version_info > (2, 5)
 
@@ -89,7 +92,7 @@ if new_ast:
         def visit_Name(self, node):
             if isinstance(node.ctx, _ast.Store):
                 self._add_declared(node.id)
-            if not hasattr(__builtin__, node.id) and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
+            if node.id not in reserved and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)
         def visit_Import(self, node):
             for name in node.names:
@@ -187,7 +190,7 @@ else:
             self.visit(node.assign, *args)
             self.visit(node.body, *args)
         def visitName(self, node, *args):
-            if not hasattr(__builtin__, node.name) and node.name not in self.listener.declared_identifiers and node.name not in self.local_ident_stack:
+            if node.name not in reserved and node.name not in self.listener.declared_identifiers and node.name not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.name)
         def visitImport(self, node, *args):
             for (mod, alias) in node.names:

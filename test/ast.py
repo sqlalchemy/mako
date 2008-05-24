@@ -56,7 +56,7 @@ for y in range(1, y):
 (q for q in range (1, q))
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q'])
+        assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q', 'range'])
     
     def test_locate_identifiers_4(self):
         code = """

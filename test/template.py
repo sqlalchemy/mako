@@ -215,6 +215,13 @@ class PageArgsTest(unittest.TestCase):
         """)
         
         assert flatten_result(template.render(id="im the id")) == "this is page, id is im the id"
+    
+    def test_canuse_builtin_names(self):
+        template = Template("""
+            exception: ${exception}
+            id: ${id}
+        """)
+        assert flatten_result(template.render(id='some id', exception='some exception')) == "exception: some exception id: some id"
         
 class IncludeTest(unittest.TestCase):
     def test_basic(self):

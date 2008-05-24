@@ -48,7 +48,10 @@
     caller_stack._push_frame(), caller_stack._pop_frame().
 
 - Bugfixes:
-
+  - can now use most names from __builtins__ as variable
+    names without explicit declaration (i.e. 'id', 
+    'exception', 'range', etc.) [ticket:83]
+    
   - fixed bug in python generation when variable names are
     used with identifiers like "else", "finally", etc.
     inside them [ticket:68]
