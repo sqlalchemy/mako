@@ -118,6 +118,8 @@ class _GenerateRenderMethod(object):
             
         self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
+        self.printer.writeline("__M_dict_builtin = dict")
+        self.printer.writeline("__M_locals_builtin = locals")
         self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
         self.printer.writeline("_modified_time = %s" % repr(time.time()))
         self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
@@ -171,7 +173,7 @@ class _GenerateRenderMethod(object):
             self.identifier_stack[-1].argument_declared.add('pageargs')
 
         if not self.in_def and (len(self.identifiers.locally_assigned) > 0 or len(self.identifiers.argument_declared)>0):
-            self.printer.writeline("__M_locals = dict(%s)" % ','.join(["%s=%s" % (x, x) for x in self.identifiers.argument_declared]))
+            self.printer.writeline("__M_locals = __M_dict_builtin(%s)" % ','.join(["%s=%s" % (x, x) for x in self.identifiers.argument_declared]))
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
@@ -497,7 +499,7 @@ class _GenerateRenderMethod(object):
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
                 # if we are the "template" def, fudge locally declared/modified variables into the "__M_locals" dictionary,
                 # which is used for def calls within the same template, to simulate "enclosing scope"
-                self.printer.writeline('__M_locals.update(dict([(__M_key, locals()[__M_key]) for __M_key in [%s] if __M_key in locals()]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
+                self.printer.writeline('__M_locals.update(__M_dict_builtin([(__M_key, __M_locals_builtin()[__M_key]) for __M_key in [%s] if __M_key in __M_locals_builtin()]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
                 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)

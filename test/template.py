@@ -218,11 +218,22 @@ class PageArgsTest(unittest.TestCase):
     
     def test_canuse_builtin_names(self):
         template = Template("""
-            exception: ${exception}
+            exception: ${Exception}
             id: ${id}
         """)
-        assert flatten_result(template.render(id='some id', exception='some exception')) == "exception: some exception id: some id"
-        
+        assert flatten_result(template.render(id='some id', Exception='some exception')) == "exception: some exception id: some id"
+    
+    def test_dict_locals(self):
+        template = Template("""
+            <%
+                dict = "this is dict"
+                locals = "this is locals"
+            %>
+            dict: ${dict}
+            locals: ${locals}
+        """)
+        assert flatten_result(template.render()) == "dict: this is dict locals: this is locals"
+
 class IncludeTest(unittest.TestCase):
     def test_basic(self):
         lookup = TemplateLookup()

@@ -50,7 +50,10 @@
 - Bugfixes:
   - can now use most names from __builtins__ as variable
     names without explicit declaration (i.e. 'id', 
-    'exception', 'range', etc.) [ticket:83]
+    'exception', 'range', etc.) [ticket:83] [ticket:84]
+    
+  - can also use builtin names as local variable names 
+    (i.e. dict, locals) (came from fix for [ticket:84])
     
   - fixed bug in python generation when variable names are
     used with identifiers like "else", "finally", etc.
