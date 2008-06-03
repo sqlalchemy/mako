@@ -34,6 +34,7 @@ SVN version:
       license='MIT',
       package_dir={'':'lib'},
       packages=find_packages('lib', exclude=['ez_setup', 'examples', 'tests']),
+      scripts=['scripts/mako-render'],
       zip_safe=False,
       install_requires=[
           'Beaker',

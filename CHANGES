@@ -47,6 +47,10 @@
     _push_buffer(), _pop_buffer(),
     caller_stack._push_frame(), caller_stack._pop_frame().
 
+  - added a runner script "mako-render" which renders 
+    standard input as a template to stdout [ticket:81] 
+    [ticket:56]
+    
 - Bugfixes:
   - can now use most names from __builtins__ as variable
     names without explicit declaration (i.e. 'id', 
