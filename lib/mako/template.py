@@ -122,6 +122,7 @@ class Template(object):
     
     def render_unicode(self, *args, **data):
         """render the output of this template as a unicode object."""
+        
         return runtime._render(self, self.callable_, args, data, as_unicode=True)
         
     def render_context(self, context, *args, **kwargs):

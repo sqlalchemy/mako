@@ -1,3 +1,7 @@
+0.2.1
+- fixed bug where 'output_encoding' parameter would prevent 
+render_unicode() from returning a unicode object
+
 0.2.0
 - Speed improvements (as though we needed them, but people
   contributed and there you go):
