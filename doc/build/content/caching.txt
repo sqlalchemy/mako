@@ -26,8 +26,10 @@ The options available are:
 
 * cached="False|True" - turn caching on
 * cache_timeout - number of seconds in which to invalidate the cached data.  after this timeout, the content is re-generated on the next call.
-* cache_type - type of caching.  `memory`, `file`, `dbm`, or `memcached`.  (TODO: describe extra arguments for memcached)
+* cache_type - type of caching.  `memory`, `file`, `dbm`, or `memcached`.
+* cache_url - (only used for `memcached` but required) a single IP address or a semi-colon separated list of IP address of memcache servers to use.
 * cache_dir  - In the case of the `file` and `dbm` cache types, this is the filesystem directory with which to store data files.  If this option is not present, the value of `module_directory` is used (i.e. the directory where compiled template modules are stored).  If neither option is available an exception is thrown.
+In the case of the `memcached` type, this attribute is required and it's used to store the lock files.
 * cache_key - the "key" used to uniquely identify this content in the cache.  the total namespace of keys within the cache is local to the current template, and the default value of "key" is the name of the def which is storing its data.  It is an evaluable tag, so you can put a Python expression to calculate the value of the key on the fly.  For example, heres a page that caches any page which inherits from it, based on the filename of the calling template:
     
         <%page cached="True" cache_key="${self.filename}"/>

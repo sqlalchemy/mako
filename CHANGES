@@ -1,6 +1,11 @@
 0.2.1
 - fixed bug where 'output_encoding' parameter would prevent 
-render_unicode() from returning a unicode object
+render_unicode() from returning a unicode object.
+- bumped magic number, which forces template recompile for 
+this version (fixes incompatible compile symbols from 0.1 
+series).
+- added a few docs for cache options, specifically those that
+help with memcached.
 
 0.2.0
 - Speed improvements (as though we needed them, but people

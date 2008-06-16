@@ -11,7 +11,7 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters
 
-MAGIC_NUMBER = 2
+MAGIC_NUMBER = 3
 
 
 def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
