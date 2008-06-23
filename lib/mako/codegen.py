@@ -370,9 +370,9 @@ class _GenerateRenderMethod(object):
         if buffered or filtered or cached:
             if buffered or cached:
                 # in a caching scenario, don't try to get a writer
-                # from the context after popping - if the callable
-                # is called within a cache refresh operation, there's
-                # no more buffers on the stack
+                # from the context after popping; assume the caching
+                # implemenation might be using a context with no
+                # extra buffers
                 self.printer.writelines(
                     "finally:",
                         "__M_buf = context._pop_buffer()"

@@ -320,6 +320,22 @@ class CacheTest(unittest.TestCase):
         time.sleep(3)
         x2 = t.render()
         assert x1.strip() == x2.strip() == "foo"
+    
+    def test_cache_uses_current_context(self):
+        t = Template("""
+        ${foo()}
+        <%def name="foo()" cached="True" cache_timeout="2">
+            foo: ${x}
+        </%def>
+        """)
+        
+        import time
+        x1 = t.render(x=1)
+        time.sleep(3)
+        x2 = t.render(x=2)
+        assert x1.strip() == "foo: 1"
+        assert x2.strip() == "foo: 2"
+        
         
     def _install_mock_cache(self, template):
         m = MockCache(template.module._template_cache)

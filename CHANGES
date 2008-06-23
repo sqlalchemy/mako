@@ -1,4 +1,7 @@
 0.2.2
+- cached blocks now use the current context when rendering
+an expired section, instead of the original context
+passed in [ticket:87]
 - fixed a critical issue regarding caching, whereby 
 a cached block would raise an error when called within a
 cache-refresh operation that was initiated after the 

@@ -34,12 +34,9 @@ class Cache(object):
     def get(self, key, type='memory', **kwargs):
         return self._get_container(key, type, **kwargs).get_value()
     def _get_container(self, key, type, **kwargs):
-        try:
-            return self._containers[key]
-        except KeyError:
-            if container is None:
-                raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
-            kw = self.kwargs.copy()
-            kw.update(kwargs)
-            return self._containers.setdefault(key, clsmap[type](key, self.context, self.id, starttime=self.starttime, **kw))
+        if not container:
+            raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
+        kw = self.kwargs.copy()
+        kw.update(kwargs)
+        return clsmap[type](key, self.context, self.id, starttime=self.starttime, **kw)
     
