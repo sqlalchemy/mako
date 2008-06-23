@@ -11,7 +11,7 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters
 
-MAGIC_NUMBER = 3
+MAGIC_NUMBER = 4
 
 
 def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
@@ -366,13 +366,26 @@ class _GenerateRenderMethod(object):
                         "context.caller_stack._pop_frame()",
                     None
                 )
+                
         if buffered or filtered or cached:
-            self.printer.writelines(
-                "finally:",
-                    "__M_buf, __M_writer = context._pop_buffer_and_writer()"
-            )
+            if buffered or cached:
+                # in a caching scenario, don't try to get a writer
+                # from the context after popping - if the callable
+                # is called within a cache refresh operation, there's
+                # no more buffers on the stack
+                self.printer.writelines(
+                    "finally:",
+                        "__M_buf = context._pop_buffer()"
+                )
+            else:
+                self.printer.writelines(
+                    "finally:",
+                        "__M_buf, __M_writer = context._pop_buffer_and_writer()"
+                )
+                
             if callstack:
                 self.printer.writeline("context.caller_stack._pop_frame()")
+                
             s = "__M_buf.getvalue()"
             if filtered:
                 s = self.create_filter_callable(node.filter_args.args, s, False)

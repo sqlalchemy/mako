@@ -1,3 +1,9 @@
+0.2.2
+- fixed a critical issue regarding caching, whereby 
+a cached block would raise an error when called within a
+cache-refresh operation that was initiated after the 
+initiating template had completed rendering.
+
 0.2.1
 - fixed bug where 'output_encoding' parameter would prevent 
 render_unicode() from returning a unicode object.
