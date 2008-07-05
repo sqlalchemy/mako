@@ -142,7 +142,11 @@ A tag that is familiar from other template languages, %include is a regular joe 
         hello world
         
     <%include file="footer.html"/>
-    
+
+Include also accepts arguments which are available as `<%page>` arguments in the receiving template:
+
+    <%include file="toolbar.html" args="current_section='members', username='ed'"/>
+
 #### <%def>
 
 The `%def` tag defines a Python function which contains a set of content, that can be called at some other point in the template.  The basic idea is simple:
