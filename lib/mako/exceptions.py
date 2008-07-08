@@ -7,6 +7,7 @@
 """exception classes"""
 
 import traceback, sys, re
+from mako import util
 
 class MakoException(Exception):
     pass
@@ -139,7 +140,14 @@ class RichTraceback(object):
                     break
             else:
                 try:
-                    self.source = file(new_trcback[-1][0]).read()
+                    # A normal .py file (not a Template)
+                    fp = open(new_trcback[-1][0])
+                    encoding = util.parse_encoding(fp)
+                    fp.seek(0)
+                    self.source = fp.read()
+                    fp.close()
+                    if encoding:
+                        self.source = self.source.decode(encoding)
                 except IOError:
                     self.source = ''
                 self.lineno = new_trcback[-1][1]

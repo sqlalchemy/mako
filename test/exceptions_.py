@@ -60,6 +60,15 @@ ${u'привет'}
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
     
+    def test_py_utf8_html_error_template(self):
+        try:
+            foo = u'日本'
+            raise RuntimeError('test')
+        except:
+            html_error = exceptions.html_error_template().render()
+            assert 'RuntimeError: test' in html_error
+            assert "foo = u'&#x65E5;&#x672C;'" in html_error
+
     def test_format_exceptions(self):
         l = TemplateLookup(format_exceptions=True)
 

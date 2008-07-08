@@ -1,3 +1,7 @@
+0.2.3 
+- fixed the html_error_template not handling tracebacks from
+normal .py files with a magic encoding comment [ticket:88]
+
 0.2.2
 - cached blocks now use the current context when rendering
 an expired section, instead of the original context
