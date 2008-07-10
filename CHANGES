@@ -1,4 +1,10 @@
-0.2.3 
+0.2.3
+- cache module now uses Beaker's clsmap to get at 
+container classes, so cache types such as 
+"ext:google", "ext:sqla", etc. are available.  
+memcached is available as both "ext:memcached" and
+"memcached", the latter for backwards compatibility.
+
 - fixed the html_error_template not handling tracebacks from
 normal .py files with a magic encoding comment [ticket:88]
 
