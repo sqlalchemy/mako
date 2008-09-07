@@ -74,7 +74,7 @@ class DefTest(unittest.TestCase):
                 this is b, ${x} ${y}
             </%def>
                 
-        """)
+        """, output_encoding='utf-8')
         assert flatten_result(template.get_def("a").render()) == "this is a"
         assert flatten_result(template.get_def("b").render(x=10, y=15)) == "this is b, 10 15"
         assert flatten_result(template.get_def("body").render()) == "this is the body"

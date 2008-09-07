@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mako.template import Template
+from mako.template import Template, ModuleTemplate
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
 from mako import exceptions
@@ -391,6 +391,42 @@ class ModuleDirTest(unittest.TestCase):
         assert t.module.__file__ == 'test_htdocs/foo/modtest.html.py'
         assert t2.module.__file__ == 'test_htdocs/subdir/foo/modtest.html.py'
 
+class ModuleTemplateTest(unittest.TestCase):
+    def test_module_roundtrip(self):
+        lookup = TemplateLookup()
+
+        template = Template("""
+        <%inherit file="base.html"/>
+        
+        % for x in range(5):
+            ${x}
+        % endfor
+""", lookup=lookup)
+
+        base = Template("""
+        This is base.
+        ${self.body()}
+""", lookup=lookup)
+
+        lookup.put_template("base.html", base)
+        lookup.put_template("template.html", template)
+        
+        assert result_lines(template.render()) == [
+            "This is base.", "0", "1", "2", "3", "4"
+        ]
+        
+        lookup = TemplateLookup()
+        template = ModuleTemplate(template.module, lookup=lookup)
+        base = ModuleTemplate(base.module, lookup=lookup)
+
+        lookup.put_template("base.html", base)
+        lookup.put_template("template.html", template)
+        
+        assert result_lines(template.render()) == [
+            "This is base.", "0", "1", "2", "3", "4"
+        ]
+        
+    
 class PreprocessTest(unittest.TestCase):
     def test_old_comments(self):
         t = Template("""

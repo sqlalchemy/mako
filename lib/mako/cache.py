@@ -27,5 +27,6 @@ class Cache(object):
             raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
         kw = self.kwargs.copy()
         kw.update(kwargs)
-        return clsmap[type](key, self.context, self.id, starttime=self.starttime, **kw)
+        
+        return container.Value(key, self.context, self.id, clsmap[type], starttime=self.starttime, **kw)
     

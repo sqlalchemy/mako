@@ -107,9 +107,16 @@ class Template(object):
         self.cache_dir = cache_dir
         self.cache_url = cache_url
 
-    source = property(lambda self:_get_module_info_from_callable(self.callable_).source, doc="""return the template source code for this Template.""")
-    code = property(lambda self:_get_module_info_from_callable(self.callable_).code, doc="""return the module source code for this Template""")
-        
+    def source(self):
+        """return the template source code for this Template."""
+        return _get_module_info_from_callable(self.callable_).source
+    source = property(source)
+    
+    def code(self):
+        """return the module source code for this Template"""
+        return _get_module_info_from_callable(self.callable_).code
+    code = property(code)
+    
     def render(self, *args, **data):
         """render the output of this template as a string.
         
@@ -139,27 +146,60 @@ class Template(object):
     def get_def(self, name):
         """return a def of this template as an individual Template of its own."""
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
+    
+
+class ModuleTemplate(Template):
+    """A Template which is constructed given an existing Python module.
+    
+        e.g.::
         
+        t = Template("this is a template")
+        f = file("mymodule.py")
+        f.write(t.code)
+        f.close()
+        
+        import mymodule
+        
+        t = ModuleTemplate(mymodule)
+        print t.render()
+    
+    """
+    
+    def __init__(self, module, 
+        module_filename=None, 
+        template=None, template_filename=None, 
+        module_source=None, template_source=None,
+        output_encoding=None, encoding_errors='strict', disable_unicode=False, format_exceptions=False,
+        error_handler=None, lookup=None, cache_type=None, cache_dir=None, cache_url=None
+    ):
+        self.module_id = re.sub(r'\W', "_", module._template_uri)
+        self.uri = module._template_uri
+        self.input_encoding = module._source_encoding
+        self.output_encoding = output_encoding
+        self.encoding_errors = encoding_errors
+        self.disable_unicode = disable_unicode
+        self.module = module
+        self.filename = template_filename
+        ModuleInfo(module, module_filename, self, template_filename, module_source, template_source)
+        
+        self.callable_ = self.module.render_body
+        self.format_exceptions = format_exceptions
+        self.error_handler = error_handler
+        self.lookup = lookup
+        self.cache_type = cache_type
+        self.cache_dir = cache_dir
+        self.cache_url = cache_url
+    
 class DefTemplate(Template):
     """a Template which represents a callable def in a parent template."""
     def __init__(self, parent, callable_):
         self.parent = parent
         self.callable_ = callable_
-        self.default_filters = parent.default_filters
-        self.buffer_filters = parent.buffer_filters
-        self.input_encoding = parent.input_encoding
-        self.imports = parent.imports
-        self.disable_unicode = parent.disable_unicode
         self.output_encoding = parent.output_encoding
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
         self.lookup = parent.lookup
-        self.module = parent.module
-        self.filename = parent.filename
-        self.cache_type = parent.cache_type
-        self.cache_dir = parent.cache_dir
-        self.cache_url = parent.cache_url
 
     def get_def(self, name):
         return self.parent.get_def(name)
