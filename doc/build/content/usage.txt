@@ -33,7 +33,7 @@ The `template.render()` method calls upon Mako to create a `Context` object, whi
     ctx = Context(buf, name="jack")
     mytemplate.render_context(ctx)
     print buf.getvalue()
-    
+
 ### Using File-Based Templates {@name=file}
 
 A `Template` can also load its template source code from a file, using the `filename` keyword argument:

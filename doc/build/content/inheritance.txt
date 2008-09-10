@@ -185,3 +185,30 @@ Above, we implemented a `toolbar()` function, which is meant to override the def
     </html>
 
 and you're now a template inheritance ninja !
+
+### Inheritable Attributes
+
+The `attr` accessor of the `Namespace` object allows access to module level variables declared in a template.  By accessing `self.attr`, you can access regular attributes from the inheritance chain as declared in `<%! %>` sections.  Such as:
+
+    <%!
+        class_ = "grey"
+    %>
+    
+    <div class="${self.attr.class_}">
+        ${self.body()}
+    </div>
+    
+If a an inheriting template overrides `class_` to be `white`, as in:
+
+    <%!
+        class_ = "white"
+    %>
+    <%inherit file="parent.html"/>
+    
+    This is the body
+    
+You'll get output like:
+
+    <div class="white">
+        This is the body
+    </div>

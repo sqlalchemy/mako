@@ -61,6 +61,27 @@ The `<%namespace>` tag also supports some of the other semantics of Python's `im
 
 This is just a quick intro to the concept of a **namespace**, which is a central Mako concept that has its own chapter in these docs.  For more detail and examples, see [namespaces](rel:namespaces).
 
+### Calling defs programmatically {@name=programmatic}
+
+You can call def's programmatically from any `Template` object using the `get_def()` method, which returns a `DefTemplate` object.  This is a `Template` subclass which the parent `Template` creates, and is usable like any other template:
+
+    {python}
+    from mako.template import Template
+    
+    template = Template("""
+        <%def name="hi(name)">
+            hi ${name}!
+        </%def>
+        
+        <%def name="bye(name)">
+            bye ${name}!
+        </%def>
+    """)
+    
+    print template.get_def("hi").render(name="ed")
+    print template.get_def("bye").render(name="ed")
+    
+
 ### Defs within Defs {@name=nesteddefs}
 
 The def model follows regular Python rules for closures.  Declaring `<%def>` inside another `<%def>` declares it within the parent's **enclosing scope**:

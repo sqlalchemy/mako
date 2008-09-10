@@ -93,6 +93,7 @@ The usefulness of calls like the above become more apparent when one works with 
 
 The `Namespace` class includes helpful accessors and methods:
 
+* `attr` - allows access module level attributes by name.  This accessor allows templates to supply "scalar" attributes which are particularly handy in inheritance relationships.  See the example in [inheritance](rel:inheritance).
 * `module` - the Python module referenced by this Namespace.  If the namespace references a `Template`, then this module is the equivalent of `template.module`, i.e. the generated module for the template.
 * `filename` - the path of the filesystem file used for this Namespace's module or template.  If this is a pure module-based Namespace, this evaluates to `module.__file__`.  If a template-based namespace, it evaluates to the original template file location.
 * `template` - the `Template` object referenced by this Namespace, if any.
