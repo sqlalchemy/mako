@@ -1,4 +1,6 @@
 0.2.3
+- added support for Jython 2.5.
+
 - cache module now uses Beaker's clsmap to get at 
 container classes, so cache types such as 
 "ext:google", "ext:sqla", etc. are available.  

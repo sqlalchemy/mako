@@ -17,13 +17,14 @@ from mako import exceptions, util
 # words that cannot be assigned to (notably smaller than the total keys in __builtins__)
 reserved = util.Set(['True', 'False', 'None'])
 
-new_ast = sys.version_info > (2, 5)
+jython = sys.platform.startswith('java')
 
-if new_ast:
+try:
     import _ast
     util.restore__ast(_ast)
     import _ast_util
-else:
+except ImportError:
+    _ast = None
     from compiler import parse as compiler_parse
     from compiler import visitor
 
@@ -31,7 +32,7 @@ else:
 def parse(code, mode='exec', **exception_kwargs):
     """Parse an expression into AST"""
     try:
-        if new_ast:
+        if _ast:
             return _ast_util.parse(code, '<unknown>', mode)
         else:
             return compiler_parse(code, mode)
@@ -39,7 +40,7 @@ def parse(code, mode='exec', **exception_kwargs):
         raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), **exception_kwargs)
 
 
-if new_ast:
+if _ast:
     class FindIdentifiers(_ast_util.NodeVisitor):
         def __init__(self, listener, **exception_kwargs):
             self.in_function = False
@@ -90,7 +91,10 @@ if new_ast:
             for statement in node.orelse:
                 self.visit(statement)
         def visit_Name(self, node):
-            if isinstance(node.ctx, _ast.Store):
+            if jython:
+                if node.ctx == _ast.Store:
+                    self._add_declared(node.id)
+            elif isinstance(node.ctx, _ast.Store):
                 self._add_declared(node.id)
             if node.id not in reserved and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)
