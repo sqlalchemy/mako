@@ -20,6 +20,9 @@ to work correctly.
 
 - fixed Python 2.3 compat. in mako.pyparser [ticket:90]
 
+- fix Babel 0.9.3 compatibility; stripping comment tags is now
+  optional (and enabled by default).
+
 
 0.2.2
 - cached blocks now use the current context when rendering

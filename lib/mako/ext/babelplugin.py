@@ -55,9 +55,8 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             for comment_tag in comment_tags:
                 if value.startswith(comment_tag):
                     in_translator_comments = True
-                    comment = value[len(comment_tag):].strip()
                     translator_comments.extend(_split_comment(node.lineno,
-                                                              comment))
+                                                              value))
             continue
 
         if isinstance(node, parsetree.DefTag):
