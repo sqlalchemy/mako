@@ -139,7 +139,7 @@ To achieve this, the target def is invoked using the `<%call>` tag instead of th
         </table>
     </%def>
     
-    <%call expr="buildtable">
+    <%call expr="buildtable()">
         I am the table body.
     </%call>
     
@@ -212,7 +212,11 @@ Produces (whitespace formatted):
     <table>
         <tr>
             <td>Body data: 1</td><td>Body data: 2</td><td>Body data: 3</td>
+        </tr>
+        <tr>
             <td>Body data: 4</td><td>Body data: 5</td><td>Body data: 6</td>
+        </tr>
+        <tr>
             <td>Body data: 7</td><td>Body data: 8</td><td>Body data: 9</td>
         </tr>
     </table>
@@ -235,7 +239,7 @@ You don't have to stick to calling just the `body()` function.  The caller can d
     </%def>
 
     ## calls the layout def
-    <%call expr="layout">
+    <%call expr="layout()">
         <%def name="header()">
             I am the header
         </%def>

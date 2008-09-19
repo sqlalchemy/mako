@@ -131,7 +131,7 @@ This is because `somedef()` fully executes before the expression returns the res
 
 Mako provides two ways to work around this.  One is by applying buffering to the `%def` itself:
 
-    <%def name="somedef()" buffered="true">
+    <%def name="somedef()" buffered="True">
         somedef's results
     </%def>
     
