@@ -8,6 +8,18 @@ memcached is available as both "ext:memcached" and
 "memcached", the latter for backwards compatibility.
 This requires Beaker>=1.0.1.
 
+- added "cache" accessor to Template, Namespace.
+  e.g.  ${local.cache.get('somekey')} or
+  template.cache.invalidate_body()
+
+- the Cache object now supports invalidate_def(name),
+  invalidate_body(), invalidate_closure(name), 
+  invalidate(key), which will remove the given key 
+  from the cache, if it exists.  The cache arguments
+  (i.e. storage type) are derived from whatever has
+  been already persisted for that template.
+  [ticket:92]
+  
 - fixed the html_error_template not handling tracebacks from
 normal .py files with a magic encoding comment [ticket:88]
 

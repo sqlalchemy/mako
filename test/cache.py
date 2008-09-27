@@ -335,6 +335,52 @@ class CacheTest(unittest.TestCase):
         x2 = t.render(x=2)
         assert x1.strip() == "foo: 1"
         assert x2.strip() == "foo: 2"
+
+    def test_namespace_access(self):
+        t = Template("""
+            <%def name="foo(x)" cached="True">
+                foo: ${x}
+            </%def>
+
+            <%
+                foo(1)
+                foo(2)
+                local.cache.invalidate_def('foo')
+                foo(3)
+                foo(4)
+            %>
+        """)
+        assert result_lines(t.render()) == ['foo: 1', 'foo: 1', 'foo: 3', 'foo: 3']
+        
+    def test_invalidate(self):
+        t = Template("""
+            <%def name="foo()" cached="True">
+                foo: ${x}
+            </%def>
+
+            <%def name="bar()" cached="True" cache_type='dbm' cache_dir='./test_htdocs'>
+                bar: ${x}
+            </%def>
+            ${foo()} ${bar()}
+        """)
+
+        assert result_lines(t.render(x=1)) == ["foo: 1", "bar: 1"]
+        assert result_lines(t.render(x=2)) == ["foo: 1", "bar: 1"]
+        t.cache.invalidate_def('foo')
+        assert result_lines(t.render(x=3)) == ["foo: 3", "bar: 1"]
+        t.cache.invalidate_def('bar')
+        assert result_lines(t.render(x=4)) == ["foo: 3", "bar: 4"]
+        
+        t = Template("""
+            <%page cached="True" cache_type="dbm" cache_dir="./test_htdocs"/>
+            
+            page: ${x}
+        """)
+        assert result_lines(t.render(x=1)) == ["page: 1"]
+        assert result_lines(t.render(x=2)) == ["page: 1"]
+        t.cache.invalidate_body()
+        assert result_lines(t.render(x=3)) == ["page: 3"]
+        assert result_lines(t.render(x=4)) == ["page: 3"]
         
         
     def _install_mock_cache(self, template):

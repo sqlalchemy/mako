@@ -117,6 +117,10 @@ class Template(object):
         return _get_module_info_from_callable(self.callable_).code
     code = property(code)
     
+    def cache(self):
+        return self.module._template_cache
+    cache = property(cache)
+    
     def render(self, *args, **data):
         """render the output of this template as a string.
         

@@ -202,8 +202,12 @@ class Namespace(object):
                 kwargs.setdefault('type', self.template.cache_type)
             if self.template.cache_url:
                 kwargs.setdefault('url', self.template.cache_url)
-        return self.template.module._template_cache.get(key, **kwargs)
-        
+        return self.cache.get(key, **kwargs)
+    
+    def cache(self):
+        return self.template.cache
+    cache = property(cache)
+    
     def include_file(self, uri, **kwargs):
         """include a file at the given uri"""
         _include_file(self.context, uri, self._templateuri, **kwargs)
