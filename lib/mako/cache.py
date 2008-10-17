@@ -1,60 +1,55 @@
 from mako import exceptions
 
 try:
-    from beaker import container, exceptions, cache
-    clsmap = cache.clsmap
-
-    if 'ext:memcached' in clsmap:
-        clsmap['memcached'] = clsmap['ext:memcached']
+    from beaker import cache
+    cache = cache.CacheManager()
 except ImportError:
-    container = None
-    clsmap = {}
+    cache = None
 
 class Cache(object):
     def __init__(self, id, starttime):
         self.id = id
         self.starttime = starttime
-        if container is not None:
-            self.context = container.ContainerContext()
         self.def_regions = {}
         
     def put(self, key, value, **kwargs):
-        c = self._get_container(key, **kwargs)
-        if not c:
-            raise exceptions.RuntimeException("No cache container exists for key %r" % key)
-        c.set_value(value)
+        defname = kwargs.pop('defname', None)
+        expiretime = kwargs.pop('expiretime', None)
+        createfunc = kwargs.pop('createfunc', None)
+        
+        self._get_cache(defname, **kwargs).put_value(key, starttime=self.starttime, expiretime=expiretime)
         
     def get(self, key, **kwargs):
-        c = self._get_container(key, **kwargs)
-        if c:
-            return c.get_value()
-        else:
-            return None
+        defname = kwargs.pop('defname', None)
+        expiretime = kwargs.pop('expiretime', None)
+        createfunc = kwargs.pop('createfunc', None)
         
-    def invalidate(self, key, defname, **kwargs):
-        c = self._get_container(key, defname, **kwargs)
-        if c:
-            c.clear_value()
+        return self._get_cache(defname, **kwargs).get_value(key, starttime=self.starttime, expiretime=expiretime, createfunc=createfunc)
+        
+    def invalidate(self, key, **kwargs):
+        defname = kwargs.pop('defname', None)
+        expiretime = kwargs.pop('expiretime', None)
+        createfunc = kwargs.pop('createfunc', None)
+        
+        self._get_cache(defname, **kwargs).remove_value(key, starttime=self.starttime, expiretime=expiretime)
     
     def invalidate_body(self):
-        self.invalidate('render_body', 'render_body')
+        self.invalidate('render_body', defname='render_body')
     
     def invalidate_def(self, name):
-        self.invalidate('render_%s' % name, 'render_%s' % name)
+        self.invalidate('render_%s' % name, defname='render_%s' % name)
         
     def invalidate_closure(self, name):
-        self.invalidate(name, name)
-        
-    def _get_container(self, key, defname, **kwargs):
-        if not container:
+        self.invalidate(name, defname=name)
+    
+    def _get_cache(self, defname, type=None, **kw):
+        if not cache:
             raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
-        
-        type = kwargs.pop('type', None)
+        if type == 'memcached':
+            type = 'ext:memcached'
         if not type:
-            type = self.def_regions.get(defname, 'memory')
+            (type, kw) = self.def_regions.get(defname, ('memory', {}))
         else:
-            self.def_regions[defname] = type
-
-        return container.Value(key, self.context, self.id, clsmap[type], starttime=self.starttime, **kwargs)
-
-
+            self.def_regions[defname] = (type, kw)
+        return cache.get_cache(self.id, type=type, **kw)
+        
