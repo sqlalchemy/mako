@@ -19,6 +19,7 @@ class MockCache(object):
         self.key = key
         self.kwargs = kwargs.copy()
         self.kwargs.pop('createfunc', None)
+        self.kwargs.pop('defname', None)
         return self.realcache.get(key, **kwargs)
     
 class CacheTest(unittest.TestCase):
@@ -363,7 +364,6 @@ class CacheTest(unittest.TestCase):
             </%def>
             ${foo()} ${bar()}
         """)
-
         assert result_lines(t.render(x=1)) == ["foo: 1", "bar: 1"]
         assert result_lines(t.render(x=2)) == ["foo: 1", "bar: 1"]
         t.cache.invalidate_def('foo')

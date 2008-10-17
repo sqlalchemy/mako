@@ -11,7 +11,7 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters
 
-MAGIC_NUMBER = 4
+MAGIC_NUMBER = 5
 
 
 def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
@@ -428,13 +428,13 @@ class _GenerateRenderMethod(object):
 
         self.write_variable_declares(identifiers, toplevel=toplevel, limit=node_or_pagetag.undeclared_identifiers())
         if buffered:
-            s = "context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args))
+            s = "context.get('local').get_cached(%s, defname=%r, %screatefunc=lambda:__M_%s(%s))" % (cachekey, name, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args))
             # apply buffer_filters
             s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
-                    "__M_writer(context.get('local').get_cached(%s, %screatefunc=lambda:__M_%s(%s)))" % (cachekey, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args)),
+                    "__M_writer(context.get('local').get_cached(%s, defname=%r, %screatefunc=lambda:__M_%s(%s)))" % (cachekey, name, ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), name, ','.join(pass_args)),
                     "return ''",
                 None
             )

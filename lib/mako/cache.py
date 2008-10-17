@@ -16,7 +16,7 @@ class Cache(object):
         self.starttime = starttime
         if container is not None:
             self.context = container.ContainerContext()
-        self._values = {}
+        self.def_regions = {}
         
     def put(self, key, value, **kwargs):
         c = self._get_container(key, **kwargs)
@@ -31,29 +31,30 @@ class Cache(object):
         else:
             return None
         
-    def invalidate(self, key, **kwargs):
-        c = self._get_container(key, **kwargs)
+    def invalidate(self, key, defname, **kwargs):
+        c = self._get_container(key, defname, **kwargs)
         if c:
             c.clear_value()
     
     def invalidate_body(self):
-        self.invalidate('render_body')
+        self.invalidate('render_body', 'render_body')
     
     def invalidate_def(self, name):
-        self.invalidate('render_%s' % name)
+        self.invalidate('render_%s' % name, 'render_%s' % name)
         
     def invalidate_closure(self, name):
-        self.invalidate(name)
+        self.invalidate(name, name)
         
-    def _get_container(self, key, **kwargs):
+    def _get_container(self, key, defname, **kwargs):
         if not container:
             raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
         
-        if kwargs:
-            type = kwargs.pop('type', 'memory')
-            self._values[key] = k = container.Value(key, self.context, self.id, clsmap[type], starttime=self.starttime, **kwargs)
-            return k
+        type = kwargs.pop('type', None)
+        if not type:
+            type = self.def_regions.get(defname, 'memory')
         else:
-            return self._values.get(key, None)
+            self.def_regions[defname] = type
+
+        return container.Value(key, self.context, self.id, clsmap[type], starttime=self.starttime, **kwargs)
 
 

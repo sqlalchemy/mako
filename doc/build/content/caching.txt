@@ -32,11 +32,11 @@ The options available are:
 In the case of the `memcached` type, this attribute is required and it's used to store the lock files.
 * cache_key - the "key" used to uniquely identify this content in the cache.  the total namespace of keys within the cache is local to the current template, and the default value of "key" is the name of the def which is storing its data.  It is an evaluable tag, so you can put a Python expression to calculate the value of the key on the fly.  For example, heres a page that caches any page which inherits from it, based on the filename of the calling template:
     
-    <%page cached="True" cache_key="${self.filename}"/>
+        <%page cached="True" cache_key="${self.filename}"/>
     
-    ${next.body()}
+        ${next.body()}
         
-    ## rest of template
+        ## rest of template
     
 ### Accessing the Cache {@name=accessing}
 
@@ -61,3 +61,4 @@ More commonly the `cache` object is used to invalidate cached sections programma
     
     # invalidate an arbitrary key
     template.cache.invalidate('somekey')
+    
