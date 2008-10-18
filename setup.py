@@ -37,7 +37,7 @@ SVN version:
       scripts=['scripts/mako-render'],
       zip_safe=False,
       install_requires=[
-          'Beaker>=1.0.4',
+          'Beaker==dev,>=1.0.4dev',
       ],
       entry_points="""
       [python.templating.engines]
