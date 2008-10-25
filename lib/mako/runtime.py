@@ -196,6 +196,13 @@ class Namespace(object):
         
     def get_cached(self, key, **kwargs):
         if self.template:
+            if not self.template.cache_enabled:
+                createfunc = kwargs.get('createfunc', None)
+                if createfunc:
+                    return createfunc()
+                else:
+                    return None
+                
             if self.template.cache_dir:
                 kwargs.setdefault('data_dir', self.template.cache_dir)
             if self.template.cache_type:

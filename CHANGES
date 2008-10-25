@@ -10,6 +10,12 @@
   e.g.  ${local.cache.get('somekey')} or
   template.cache.invalidate_body()
 
+- added "cache_enabled=True" flag to Template, 
+  TemplateLookup.  Setting this to False causes cache
+  operations to "pass through" and execute every time;
+  this flag should be integrated in Pylons with its own
+  cache_enabled configuration setting.
+  
 - the Cache object now supports invalidate_def(name),
   invalidate_body(), invalidate_closure(name), 
   invalidate(key), which will remove the given key 

@@ -18,7 +18,7 @@ class Template(object):
     def __init__(self, text=None, filename=None, uri=None, format_exceptions=False, error_handler=None, 
         lookup=None, output_encoding=None, encoding_errors='strict', module_directory=None, cache_type=None, 
         cache_dir=None, cache_url=None, module_filename=None, input_encoding=None, disable_unicode=False, default_filters=None, 
-        buffer_filters=[], imports=None, preprocessor=None):
+        buffer_filters=[], imports=None, preprocessor=None, cache_enabled=True):
         """construct a new Template instance using either literal template text, or a previously loaded template module
         
         text - textual template source, or None if a module is to be provided
@@ -106,6 +106,7 @@ class Template(object):
         self.cache_type = cache_type
         self.cache_dir = cache_dir
         self.cache_url = cache_url
+        self.cache_enabled = cache_enabled
 
     def source(self):
         """return the template source code for this Template."""
@@ -174,7 +175,7 @@ class ModuleTemplate(Template):
         template=None, template_filename=None, 
         module_source=None, template_source=None,
         output_encoding=None, encoding_errors='strict', disable_unicode=False, format_exceptions=False,
-        error_handler=None, lookup=None, cache_type=None, cache_dir=None, cache_url=None
+        error_handler=None, lookup=None, cache_type=None, cache_dir=None, cache_url=None, cache_enabled=True
     ):
         self.module_id = re.sub(r'\W', "_", module._template_uri)
         self.uri = module._template_uri
@@ -193,7 +194,8 @@ class ModuleTemplate(Template):
         self.cache_type = cache_type
         self.cache_dir = cache_dir
         self.cache_url = cache_url
-    
+        self.cache_enabled = cache_enabled
+        
 class DefTemplate(Template):
     """a Template which represents a callable def in a parent template."""
     def __init__(self, parent, callable_):

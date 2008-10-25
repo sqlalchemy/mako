@@ -49,6 +49,22 @@ class CacheTest(unittest.TestCase):
         ]
         assert m.kwargs == {}
 
+    def test_cache_enable(self):
+        t = Template("""
+            <%!
+                callcount = [0]
+            %>
+            <%def name="foo()" cached="True">
+                <% callcount[0] += 1 %>
+            </%def>
+            ${foo()}
+            ${foo()}
+            callcount: ${callcount}
+        """, cache_enabled=False)
+        m = self._install_mock_cache(t)
+
+        assert t.render().strip() =="callcount: [2]"
+                
     def test_nested_def(self):
         t = Template("""
         <%!
