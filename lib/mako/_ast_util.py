@@ -46,9 +46,7 @@ if sys.platform.startswith('java'):
                 result = "Load"
             elif result == "AugStore":
                 result = "Store"
-        else:
-            result = result.split(".")[-1]
-            if result.endswith("Type"):
+        elif result.endswith("Type"):
                 result = result[:-4]
         return result
 
