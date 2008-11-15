@@ -1,4 +1,15 @@
 0.2.3
+- the <%namespacename:defname> syntax described at
+  http://techspot.zzzeek.org/?p=28 has now 
+  been added as a built in syntax, and is recommended
+  as a more modern syntax versus <%call expr="expression">.
+  The %call tag itself will always remain, 
+  with <%namespacename:defname> presenting a more HTML-like
+  alternative to calling defs, both plain and 
+  nested.  Many examples of the new syntax are in the
+  "Calling a def with embedded content" section
+  of the docs.
+  
 - added support for Jython 2.5.
 
 - cache module now uses Beaker's CacheManager
@@ -24,12 +35,14 @@
   been already persisted for that template.
   [ticket:92]
 
-- For cache changes to work fully, Beaker 1.0.4 is required.
+- For cache changes to work fully, Beaker 1.1 is required.
   1.0.1 and up will work as well with the exception of 
-  cache expiry.  Note that Beaker 1.0.4 is **required**
+  cache expiry.  Note that Beaker 1.1 is **required**
   for applications which use dynamically generated keys,
   since previous versions will permanently store state in memory 
-  for each individual key and thus use up all available memory.
+  for each individual key, thus consuming all available 
+  memory for an arbitrarily large number of distinct 
+  keys.
   
 - fixed the html_error_template not handling tracebacks from
   normal .py files with a magic encoding comment [ticket:88]

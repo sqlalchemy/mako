@@ -129,7 +129,9 @@ Assigning to a name inside of a def declares that name as local to the scope of 
 
 A flip-side to def within def is a def call with content.  This is where you call a def, and at the same time declare a block of content (or multiple blocks) that can be used by the def being called.  The main point of such a call is to create custom, nestable tags, just like any other template language's custom-tag creation system - where the external tag controls the execution of the nested tags and can communicate state to them.  Only with Mako, you don't have to use any external Python modules, you can define arbitrarily nestable tags right in your templates.
 
-To achieve this, the target def is invoked using the `<%call>` tag instead of the normal `${}` syntax.  The target def then gets a variable `caller` placed in its context which contains a **namespace** containing the body and other defs defined within the `<%call>` tag.  The body itself is referenced by the method `body()`:
+To achieve this, the target def is invoked using the form `<%namepacename:defname>` instead of the normal `${}` syntax.  This syntax, introduced in Mako 0.2.3, is functionally equivalent another tag known as `call`, which takes the form `<%call expr='namespacename.defname(args)'>`.  While `%call` is available in all versions of Mako, the newer style is probably more familiar looking.  The `namespace` portion of the call is the name of the **namespace** in which the def is defined - in the most simple cases, this can be `local` or `self` to reference the current template's namespace (the difference between `local` and `self` is one of inheritance - see [namespaces_builtin](rel:namespaces_builtin) for details).
+
+When the target def is invoked, a variable `caller` is placed in its context which contains another namespace containing the body and other defs defined by the caller.  The body itself is referenced by the method `body()`.  Below, we build a `%def` that operates upon `caller.body()` to invoke the body of the custom tag:
 
     <%def name="buildtable()">
         <table>
@@ -139,9 +141,9 @@ To achieve this, the target def is invoked using the `<%call>` tag instead of th
         </table>
     </%def>
     
-    <%call expr="buildtable()">
+    <%self:buildtable>
         I am the table body.
-    </%call>
+    </%self:buildtable>
     
 This produces the output (whitespace formatted):
 
@@ -152,6 +154,20 @@ This produces the output (whitespace formatted):
         </td></tr>
     </table>
 
+Using the older `%call` syntax looks like:
+
+    <%def name="buildtable()">
+        <table>
+            <tr><td>
+                ${caller.body()}
+            </td></tr>
+        </table>
+    </%def>
+
+    <%call expr="buildtable()">
+        I am the table body.
+    </%call>
+
 The `body()` can be executed multiple times or not at all.  This means you can use def-call-with-content to build iterators, conditionals, etc:
 
     <%def name="lister(count)">
@@ -160,9 +176,9 @@ The `body()` can be executed multiple times or not at all.  This means you can u
         % endfor
     </%def>
     
-    <%call expr="lister(3)">
+    <%self:lister count="${3}">
         hi
-    </%call>
+    </%self:lister>
     
 Produces:
     
@@ -171,54 +187,62 @@ Produces:
     hi
     hi
 
+Notice above we pass `3` as a Python expression, so that it remains as an integer.
+
 A custom "conditional" tag:
     
-    <%def name="conditional(expr)">
-        % if expr:
+    <%def name="conditional(expression)">
+        % if expression:
             ${caller.body()}
         % endif
     </%def>
 
-    <%call expr="conditional(4==4)">
+    <%self:conditional expression="${4==4}">
         im the result
-    </%call>
+    </%self:conditional>
 
 Produces:
 
     {html}
     im the result
 
-But that's not all.  The `body()` function also can handle arguments, which will augment the local namespace of the body callable:
+But that's not all.  The `body()` function also can handle arguments, which will augment the local namespace of the body callable.  The caller must define the arguments which it expects to receive from its target def using the `args` attribute, which is a comma-separated list of argument names.  Below, our `<%def>` calls the `body()` of its caller, passing in an element of data from its argument:
 
     <%def name="layoutdata(somedata)">
         <table>
         % for item in somedata:
             <tr>
             % for col in item:
-                <td>${caller.body(col=col)}</td>\
+                <td>${caller.body(col=col)}</td>
             % endfor
             </tr>
         % endfor
         </table>
     </%def>
+
+    <%self:layoutdata somedata="${[[1,2,3],[4,5,6],[7,8,9]]}" args="col">\
+    Body data: ${col}\
+    </%self:layoutdata>
     
-    <%call expr="layoutdata([[1,2,3],[4,5,6],[7,8,9]])" args="col">
-        Body data: ${col}
-    </%call>
-    
-Produces (whitespace formatted):
+Produces:
 
     {html}
     <table>
-        <tr>
-            <td>Body data: 1</td><td>Body data: 2</td><td>Body data: 3</td>
-        </tr>
-        <tr>
-            <td>Body data: 4</td><td>Body data: 5</td><td>Body data: 6</td>
-        </tr>
-        <tr>
-            <td>Body data: 7</td><td>Body data: 8</td><td>Body data: 9</td>
-        </tr>
+       <tr>
+           <td>Body data: 1</td>
+           <td>Body data: 2</td>
+           <td>Body data: 3</td>
+       </tr>
+       <tr>
+           <td>Body data: 4</td>
+           <td>Body data: 5</td>
+           <td>Body data: 6</td>
+       </tr>
+       <tr>
+           <td>Body data: 7</td>
+           <td>Body data: 8</td>
+           <td>Body data: 9</td>
+       </tr>
     </table>
     
 You don't have to stick to calling just the `body()` function.  The caller can define any number of callables, allowing the `<%call>` tag to produce whole layouts:
@@ -239,7 +263,7 @@ You don't have to stick to calling just the `body()` function.  The caller can d
     </%def>
 
     ## calls the layout def
-    <%call expr="layout()">
+    <%self:layout>
         <%def name="header()">
             I am the header
         </%def>
@@ -251,24 +275,26 @@ You don't have to stick to calling just the `body()` function.  The caller can d
         </%def>
         
             this is the body
-    </%call>
+    </%self:layout>
     
-The above layout would produce (whitespace formatted):
+The above layout would produce:
 
     <div class="mainlayout">
-        <div class="header">
-            I am the header
-        </div>
-        <div class="sidebar">
-            <ul>
-                <li>sidebar 1</li>
-                <li>sidebar 2</li>
-            </ul>
-        </div>
-        <div class="content">
-            this is the body
-        </div>
+       <div class="header">
+       I am the header
+       </div>
+
+       <div class="sidebar">
+       <ul>
+           <li>sidebar 1</li>
+           <li>sidebar 2</li>
+       </ul>
+       </div>
+
+       <div class="content">
+       this is the body
+       </div>
     </div>
 
-The number of things you can do with `<%call>` is enormous.  You can create form widget libraries, such as an enclosing `<FORM>` tag and nested HTML input elements, or portable wrapping schemes using `<div>` or other elements.  You can create tags that interpret rows of data, such as from a database, providing the individual columns of each row to a `body()` callable which lays out the row any way it wants.  Basically anything you'd do with a "custom tag" or tag library in some other system, Mako provides via `<%def>`s or even plain Python callables which are called via `<%call>`.
+The number of things you can do with `<%call>` and/or the `<%namespacename:defname>` calling syntax is enormous.  You can create form widget libraries, such as an enclosing `<FORM>` tag and nested HTML input elements, or portable wrapping schemes using `<div>` or other elements.  You can create tags that interpret rows of data, such as from a database, providing the individual columns of each row to a `body()` callable which lays out the row any way it wants.  Basically anything you'd do with a "custom tag" or tag library in some other system, Mako provides via `<%def>`s and plain Python callables which are invoked via `<%namespacename:defname>` or `<%call>`.
 

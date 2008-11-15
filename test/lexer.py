@@ -122,7 +122,25 @@ class LexerTest(unittest.TestCase):
             assert False
         except exceptions.CompileException, e:
             assert str(e) == "Missing parenthesis in %def at line: 2 char: 9"
-                
+    
+    def test_ns_tag_closed(self):
+        template = """
+        
+            <%self:go x="1" y="2" z="${'hi' + ' ' + 'there'}"/>
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'y': u'2', u'x': u'1', u'z': u"${'hi' + ' ' + 'there'}"}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
+
+    def test_ns_tag_open(self):
+        template = """
+        
+            <%self:go x="1" y="${process()}">
+                this is the body
+            </%self:go>
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'y': u'${process()}', u'x': u'1'}, (3, 13), ["Text(u'\\n                this is the body\\n            ', (3, 46))"]), Text(u'\n        ', (5, 24))])"""
+    
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
         

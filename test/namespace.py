@@ -370,6 +370,81 @@ class NamespaceTest(unittest.TestCase):
             "base lala",
             "foo lala",
         ]
+    
+    
+    def test_custom_tag_1(self):
+        template = Template("""
+        
+            <%def name="foo(x, y)">
+                foo: ${x} ${y}
+            </%def>
+            
+            <%self:foo x="5" y="${7+8}"/>
+        """)
+        assert result_lines(template.render()) == ['foo: 5 15']
+
+    def test_custom_tag_2(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%def name="foo(x, y)">
+                foo: ${x} ${y}
+            </%def>
+            
+            <%def name="bat(g)"><%
+                return "the bat! %s" % g
+            %></%def>
+            
+            <%def name="bar(x)">
+                ${caller.body(z=x)}
+            </%def>
+        """)
+        
+        collection.put_string("index.html", """
+            <%namespace name="myns" file="base.html"/>
+            
+            <%myns:foo x="${'some x'}" y="some y"/>
+            
+            <%myns:bar x="${myns.bat(10)}" args="z">
+                record: ${z}
+            </%myns:bar>
+        
+        """)
+        
+        assert result_lines(collection.get_template("index.html").render()) == [
+            'foo: some x some y', 
+            'record: the bat! 10'
+        ]
+        
+    def test_custom_tag_3(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string("base.html", """
+            <%namespace name="foo" file="ns.html" inheritable="True"/>
+
+            ${next.body()}
+    """)
+        collection.put_string("ns.html", """
+            <%def name="bar()">
+                this is ns.html->bar
+                caller body: ${caller.body()}
+            </%def>
+        """)
+
+        collection.put_string("index.html", """
+            <%inherit file="base.html"/>
+
+            this is index
+            <%self.foo:bar>
+                call body
+            </%self.foo:bar>
+        """)
+        
+        assert result_lines(collection.get_template("index.html").render()) == [
+            "this is index",
+            "this is ns.html->bar",
+            "caller body:",
+            "call body"
+        ]
+        
         
     def test_ccall(self):
         collection = lookup.TemplateLookup()

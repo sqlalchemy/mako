@@ -183,7 +183,7 @@ class Lexer(object):
         match = self.match(r'''
             \<%     # opening tag
             
-            (\w+)   # keyword
+            ([\w\.\:]+)   # keyword
             
             ((?:\s+\w+|=|".*?"|'.*?')*)  # attrname, = sign, string expression
             

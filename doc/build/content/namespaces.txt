@@ -10,8 +10,8 @@ If the file `components.html` defines these two components:
         this is comp1
     </%def>
     
-    <%def name="comp2()">
-        this is comp2
+    <%def name="comp2(x)">
+        this is comp2, x is ${x}
     </%def>
     
 You can make another file, for example `index.html`, that pulls those two components into a namespace called `comp`:
@@ -20,7 +20,7 @@ You can make another file, for example `index.html`, that pulls those two compon
     <%namespace name="comp" file="components.html"/>
     
     Heres comp1:  ${comp.comp1()}
-    Heres comp2:  ${comp.comp2()}
+    Heres comp2:  ${comp.comp2(x=5)}
 
 The `comp` variable above is an instance of `mako.runtime.Namespace`, a **proxy object** which delivers method calls to the underlying template callable using the current context.
 
@@ -29,16 +29,49 @@ The `comp` variable above is an instance of `mako.runtime.Namespace`, a **proxy 
     <%namespace file="components.html" import="comp1, comp2"/>
     
     Heres comp1:  ${comp1()}
-    Heres comp2:  ${comp2()}
+    Heres comp2:  ${comp2(x=5)}
     
 `import` also supports the "*" operator:
 
     <%namespace file="components.html" import="*"/>
 
     Heres comp1:  ${comp1()}
-    Heres comp2:  ${comp2()}
+    Heres comp2:  ${comp2(x=5)}
 
 The names imported by the `import` attribute take precedence over any names that exist within the current context.
+
+**Note** - in current versions of Mako, usage of "import='*'" is known to decrease performance of the template.  This will be fixed in a future release.
+
+### Ways to Call Namespaces {@name=howtocall}
+
+There are essentially four ways to call a function from a namespace.
+
+The "expression" format, as described previously.  Namespaces are just Python objects with functions on them, and can
+be used in expressions like any other function:
+
+    ${mynamespace.somefunction('some arg1', 'some arg2', arg3='some arg3', arg4='some arg4')}
+    
+Synonymous with the "expression" format is the "custom tag" format, when a "closed" tag is used.  This format, introduced in Mako 0.2.3, allows the usage of a "custom" Mako tag, with the function arguments passed in using named attributes:
+
+    <%mynamespace:somefunction arg1="some arg1" arg2="some arg2" arg3="some arg3" arg4="some arg4"/>
+    
+When using tags, the values of the arguments are taken as literal strings by default.  To embed Python expressions as arguments, use the embedded expression format:
+
+    <%mynamespace:somefunction arg1="${someobject.format()}" arg2="${somedef(5, 12)}"/>
+
+The "custom tag" format is intended mainly for namespace functions which recognize body content, which in Mako is known as a "def with embedded content":
+
+    <%mynamespace:somefunction arg1="some argument" args="x, y">
+        Some record: ${x}, ${y}
+    </%mynamespace:somefunction>
+
+The "classic" way to call defs with embedded content is the `<%call>` tag:
+
+    <%call expr="mynamespace.somefunction(arg1='some argument')" args="x, y">
+        Some record: ${x}, ${y}
+    </%call>
+
+For information on how to construct defs that embed content from the caller, see [defs_defswithcontent](rel:defs_defswithcontent).
 
 ### Namespaces from Regular Python Modules {@name=frommodules}
 

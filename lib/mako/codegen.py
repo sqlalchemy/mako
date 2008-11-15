@@ -528,6 +528,12 @@ class _GenerateRenderMethod(object):
     def visitDefTag(self, node):
         pass
 
+    def visitCallNamespaceTag(self, node):
+        # TODO: we can put namespace-specific checks here, such
+        # as ensure the given namespace will be imported,
+        # pre-import the namespace, etc.
+        self.visitCallTag(node)
+        
     def visitCallTag(self, node):
         self.printer.writeline("def ccall(caller):")
         export = ['body']
@@ -583,7 +589,7 @@ class _GenerateRenderMethod(object):
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
-                "__M_writer(%s)" % self.create_filter_callable([], node.attributes['expr'], True),
+                "__M_writer(%s)" % self.create_filter_callable([], node.expression, True),
             "finally:",
                 "context.caller_stack.nextcaller = None",
             None
@@ -680,7 +686,10 @@ class _Identifiers(object):
         for ident in node.declared_identifiers():
             self.argument_declared.add(ident)
         self.check_declared(node)
-                    
+    
+    def visitCallNamespaceTag(self, node):
+        self.visitCallTag(node)
+        
     def visitCallTag(self, node):
         if node is self.node:
             for ident in node.undeclared_identifiers():

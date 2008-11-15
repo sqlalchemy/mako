@@ -175,9 +175,19 @@ Inherit allows templates to arrange themselves in **inheritance chains**.  This 
 
 When using the %inherit tag, control is passed to the topmost inherited template first, which then decides how to handle calling areas of content from its inheriting templates.  Mako offers a lot of flexbility in this area, including dynamic inheritance, content wrapping, and polymorphic method calls.  Check it out in [inheritance](rel:inheritance).
 
+#### <%namespacename:defname>
+
+As of Mako 0.2.3, any user-defined "tag" can be created against a namespace by using a tag with a name of the form *namespacename*:*defname*.  The closed and open formats of such a tag are equivalent to an inline expression and the `<%call>` tag, respectively.
+
+    <%mynamespace:somedef param="some value">
+        this is the body
+    </%mynamespace:somedef>
+
+To create custom tags which accept a body, see [defs_defswithcontent](rel:defs_defswithcontent).
+
 #### <%call>
 
-The call tag is used to call `<%defs>` with additional embedded content.  This tag is described in [defs_defswithcontent](rel:defs_defswithcontent).
+The call tag is the "classic" form of a user-defined tag, and is roughly equiavlent to the `<%namespacename:defname>` syntax described above.  This tag is also described in [defs_defswithcontent](rel:defs_defswithcontent).
 
 #### <%doc>
 
