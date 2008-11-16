@@ -129,7 +129,7 @@ class LexerTest(unittest.TestCase):
             <%self:go x="1" y="2" z="${'hi' + ' ' + 'there'}"/>
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'y': u'2', u'x': u'1', u'z': u"${'hi' + ' ' + 'there'}"}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'x': u'1', u'y': u'2', u'z': u"${'hi' + ' ' + 'there'}"}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
 
     def test_ns_tag_open(self):
         template = """
@@ -139,7 +139,7 @@ class LexerTest(unittest.TestCase):
             </%self:go>
         """
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'y': u'${process()}', u'x': u'1'}, (3, 13), ["Text(u'\\n                this is the body\\n            ', (3, 46))"]), Text(u'\n        ', (5, 24))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'x': u'1', u'y': u'${process()}'}, (3, 13), ["Text(u'\\n                this is the body\\n            ', (3, 46))"]), Text(u'\n        ', (5, 24))])"""
     
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
@@ -160,7 +160,7 @@ class LexerTest(unittest.TestCase):
             some template
         """    
         nodes = Lexer(template).parse()
-        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), PageTag(u'page', {u'cached': u'True', u'args': u'a, b'}, (2, 13), []), Text(u'\n            \n            some template\n        ', (2, 48))])"""
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), PageTag(u'page', {u'args': u'a, b', u'cached': u'True'}, (2, 13), []), Text(u'\n            \n            some template\n        ', (2, 48))])"""
         
     def test_nesting(self):
         template = """
@@ -397,15 +397,8 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        expected = r"""TemplateNode({}, [NamespaceTag(u'namespace', {u'name': u'foo', u'file': u'somefile.html'}, (1, 1), []), Text(u'\n', (1, 46)), Comment(u'inherit from foobar.html', (2, 1)), InheritTag(u'inherit', {u'file': u'foobar.html'}, (3, 1), []), Text(u'\n\n', (3, 31)), DefTag(u'def', {u'name': u'header()'}, (5, 1), ["Text(u'\\n     <div>header</div>\\n', (5, 23))"]), Text(u'\n', (7, 8)), DefTag(u'def', {u'name': u'footer()'}, (8, 1), ["Text(u'\\n    <div> footer</div>\\n', (8, 23))"]), Text(u'\n\n<table>\n', (10, 8)), ControlLine(u'for', u'for j in data():', False, (13, 1)), Text(u'    <tr>\n', (14, 1)), ControlLine(u'for', u'for x in j:', False, (15, 1)), Text(u'            <td>Hello ', (16, 1)), Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n', (16, 30)), ControlLine(u'for', u'endfor', True, (17, 1)), Text(u'    </tr>\n', (18, 1)), ControlLine(u'for', u'endfor', True, (19, 1)), Text(u'</table>\n', (20, 1))])"""
-        result = repr(nodes)
-        # Don't assume dict ordering. Annoying
-        assert len(result) == len(expected)
-        start = expected.find("{u'name':")
-        end = expected.find("somefile.html'},")
-        assert expected[:start] == result[:start]
-        assert expected[end:] == result[end:]
-        assert result[start:end] in ({u'name': u'foo', u'file': u'somefile.html'}, {u'file': u'somefile.html', u'name': u'foo'})
+        expected = r"""TemplateNode({}, [NamespaceTag(u'namespace', {u'file': u'somefile.html', u'name': u'foo'}, (1, 1), []), Text(u'\n', (1, 46)), Comment(u'inherit from foobar.html', (2, 1)), InheritTag(u'inherit', {u'file': u'foobar.html'}, (3, 1), []), Text(u'\n\n', (3, 31)), DefTag(u'def', {u'name': u'header()'}, (5, 1), ["Text(u'\\n     <div>header</div>\\n', (5, 23))"]), Text(u'\n', (7, 8)), DefTag(u'def', {u'name': u'footer()'}, (8, 1), ["Text(u'\\n    <div> footer</div>\\n', (8, 23))"]), Text(u'\n\n<table>\n', (10, 8)), ControlLine(u'for', u'for j in data():', False, (13, 1)), Text(u'    <tr>\n', (14, 1)), ControlLine(u'for', u'for x in j:', False, (15, 1)), Text(u'            <td>Hello ', (16, 1)), Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n', (16, 30)), ControlLine(u'for', u'endfor', True, (17, 1)), Text(u'    </tr>\n', (18, 1)), ControlLine(u'for', u'endfor', True, (19, 1)), Text(u'</table>\n', (20, 1))])"""
+        assert repr(nodes) == expected
         
     def test_comment_after_statement(self):
         template = """

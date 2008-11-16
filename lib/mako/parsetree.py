@@ -43,7 +43,7 @@ class TemplateNode(Node):
         return self.nodes
         
     def __repr__(self):
-        return "TemplateNode(%r, %r)" % (self.page_attributes, self.nodes)
+        return "TemplateNode(%s, %r)" % (util.sorted_dict_repr(self.page_attributes), self.nodes)
         
 class ControlLine(Node):
     """defines a control line, a line-oriented python line or end tag.
@@ -293,9 +293,9 @@ class Tag(Node):
         return self.expression_undeclared_identifiers
 
     def __repr__(self):
-        return "%s(%r, %r, %r, %r)" % (self.__class__.__name__, 
+        return "%s(%r, %s, %r, %r)" % (self.__class__.__name__, 
                                         self.keyword, 
-                                        self.attributes, 
+                                        util.sorted_dict_repr(self.attributes),
                                         (self.lineno, self.pos), 
                                         [repr(x) for x in self.nodes]
                                     )

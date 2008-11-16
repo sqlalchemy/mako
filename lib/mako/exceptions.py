@@ -64,10 +64,11 @@ class RichTraceback(object):
     traceback - a list of 4-tuples, in the same format as a regular python traceback, with template-corresponding 
     traceback records replacing the originals
     reverse_traceback - the traceback list in reverse
+    
     """
-    def __init__(self):
+    def __init__(self, traceback=None):
         (self.source, self.lineno) = ("", 0)
-        (t, self.error, self.records) = self._init()
+        (t, self.error, self.records) = self._init(traceback)
         if self.error is None:
             self.error = t
         if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
@@ -90,14 +91,15 @@ class RichTraceback(object):
     reverse_traceback = property(lambda self:self._get_reformatted_records(self.reverse_records), doc="""
         return the same data as traceback, except in reverse order
     """)
-    def _init(self):
+    def _init(self, trcback):
         """format a traceback from sys.exc_info() into 7-item tuples, containing
         the regular four traceback tuple items, plus the original template 
         filename, the line number adjusted relative to the template source, and
         code line from that line number of the template."""
         import mako.template
         mods = {}
-        (type, value, trcback) = sys.exc_info()
+        if not trcback:
+            (type, value, trcback) = sys.exc_info()
         rawrecords = traceback.extract_tb(trcback)
         new_trcback = []
         for filename, lineno, function, line in rawrecords:
@@ -160,11 +162,12 @@ def text_error_template(lookup=None):
     source template, as applicable."""
     import mako.template
     return mako.template.Template(r"""
+<%page args="traceback=None"/>
 <%!
     from mako.exceptions import RichTraceback
 %>\
 <%
-    tback = RichTraceback()
+    tback = RichTraceback(traceback=traceback)
 %>\
 Traceback (most recent call last):
 % for (filename, lineno, function, line) in tback.traceback:
@@ -189,7 +192,7 @@ def html_error_template():
 <%!
     from mako.exceptions import RichTraceback
 %>
-<%page args="full=True, css=True"/>
+<%page args="full=True, css=True, traceback=None"/>
 % if full:
 <html>
 <head>
@@ -214,7 +217,7 @@ def html_error_template():
 
 <h2>Error !</h2>
 <%
-    tback = RichTraceback()
+    tback = RichTraceback(traceback=traceback)
     src = tback.source
     line = tback.lineno
     if src:

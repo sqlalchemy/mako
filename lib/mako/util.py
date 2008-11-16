@@ -180,6 +180,16 @@ def parse_encoding(fp):
     finally:
         fp.seek(pos)
 
+def sorted_dict_repr(d):
+    """repr() a dictionary with the keys in order.
+    
+    Used by the lexer unit test to compare parse trees based on strings.
+    
+    """
+    keys = d.keys()
+    keys.sort()
+    return "{" + ", ".join(["%r: %r" % (k, d[k]) for k in keys]) + "}"
+    
 def restore__ast(_ast):
     """Attempt to restore the required classes to the _ast module if it
     appears to be missing them
