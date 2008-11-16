@@ -271,7 +271,7 @@ class Tag(Node):
                     if m:
                         code = ast.PythonCode(m.group(1), **self.exception_kwargs)
                         undeclared_identifiers = undeclared_identifiers.union(code.undeclared_identifiers)
-                        expr.append(m.group(1))
+                        expr.append("(%s)" % m.group(1))
                     else:
                         if x:
                             expr.append(repr(x))

@@ -445,6 +445,25 @@ class NamespaceTest(unittest.TestCase):
             "call body"
         ]
         
+
+    def test_expr_grouping(self):
+        """test that parenthesis are placed around string-embedded expressions."""
+        
+        template = Template("""
+            <%def name="bar(x, y)">
+                ${x}
+                ${y}
+            </%def>
+            
+            <%self:bar x=" ${foo} " y="x${g and '1' or '2'}y"/>
+        """, input_encoding='utf-8')
+
+        # the concat has to come out as "x + (g and '1' or '2') + y"
+        assert result_lines(template.render(foo='this is foo', g=False)) == [
+            "this is foo",
+            "x2y"
+        ]
+
         
     def test_ccall(self):
         collection = lookup.TemplateLookup()

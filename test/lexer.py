@@ -159,6 +159,7 @@ class LexerTest(unittest.TestCase):
         nodes = Lexer(template).parse()
         #print nodes
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), CallTag(u'call', {u'expr': u"foo>bar and 'lala' or 'hoho'"}, (2, 13), []), Text(u'\n            ', (2, 57)), CallTag(u'call', {u'expr': u'foo<bar and hoho>lala and "x" + "y"'}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
+    
         
     def test_pagetag(self):
         template = """
