@@ -130,7 +130,14 @@ class LexerTest(unittest.TestCase):
         """
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'x': u'1', u'y': u'2', u'z': u"${'hi' + ' ' + 'there'}"}, (3, 13), []), Text(u'\n        ', (3, 64))])"""
-
+    
+    def test_ns_tag_empty(self):
+        template = """
+            <%form:option value=""></%form:option>
+        """
+        nodes = Lexer(template).parse()
+        assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), CallNamespaceTag(u'form:option', {u'value': u''}, (2, 13), []), Text(u'\n        ', (2, 51))])"""
+        
     def test_ns_tag_open(self):
         template = """
         
@@ -140,7 +147,7 @@ class LexerTest(unittest.TestCase):
         """
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n        \n            ', (1, 1)), CallNamespaceTag(u'self:go', {u'x': u'1', u'y': u'${process()}'}, (3, 13), ["Text(u'\\n                this is the body\\n            ', (3, 46))"]), Text(u'\n        ', (5, 24))])"""
-    
+        
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
         

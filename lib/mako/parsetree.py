@@ -275,7 +275,7 @@ class Tag(Node):
                     else:
                         if x:
                             expr.append(repr(x))
-                self.parsed_attributes[key] = " + ".join(expr)
+                self.parsed_attributes[key] = " + ".join(expr) or repr('')
             elif key in nonexpressions:
                 if re.search(r'${.+?}', self.attributes[key]):
                     raise exceptions.CompileException(
