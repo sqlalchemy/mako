@@ -8,13 +8,13 @@
 
 from mako import exceptions, util
 import inspect, sys
-import __builtin__
 
 class Context(object):
     """provides runtime namespace, output buffer, and various callstacks for templates."""
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
-        self._data = dict(__builtin__.__dict__)
+        self._orig = data  # original data, minus the builtins
+        self._data = dict(__builtins__)     # the context data which includes builtins
         self._data.update(data)
         self._kwargs = data.copy()
         self._with_template = None
@@ -84,6 +84,7 @@ class Context(object):
         c = Context.__new__(Context)
         c._buffer_stack = self._buffer_stack
         c._data = self._data.copy()
+        c._orig = self._orig
         c._kwargs = self._kwargs
         c._with_template = self._with_template
         c.namespaces = self.namespaces
@@ -286,7 +287,7 @@ def _include_file(context, uri, calling_uri, **kwargs):
     """locate the template from the given uri and include it in the current output."""
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
-    callable_(ctx, **_kwargs_for_callable(callable_, context._data, **kwargs))
+    callable_(ctx, **_kwargs_for_callable(callable_, context._orig, **kwargs))
         
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start

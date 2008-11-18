@@ -43,6 +43,10 @@
   for each individual key, thus consuming all available 
   memory for an arbitrarily large number of distinct 
   keys.
+
+- fixed bug whereby an <%included> template with 
+  <%page> args named the same as a __builtin__ would not
+  honor the default value specified in <%page> [ticket:93]
   
 - fixed the html_error_template not handling tracebacks from
   normal .py files with a magic encoding comment [ticket:88]
