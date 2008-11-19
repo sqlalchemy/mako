@@ -7,14 +7,14 @@
 """provides runtime services for templates, including Context, Namespace, and various helper functions."""
 
 from mako import exceptions, util
-import inspect, sys
+import __builtin__, inspect, sys
 
 class Context(object):
     """provides runtime namespace, output buffer, and various callstacks for templates."""
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
         self._orig = data  # original data, minus the builtins
-        self._data = dict(__builtins__)     # the context data which includes builtins
+        self._data = __builtin__.__dict__.copy() # the context data which includes builtins
         self._data.update(data)
         self._kwargs = data.copy()
         self._with_template = None
