@@ -186,7 +186,11 @@ ${next.body()}
         collection.put_string("base", """
             this is the base.
 
-            pageargs: ${pageargs}
+            <%
+            sorted = pageargs.items()
+            sorted.sort()
+            %>
+            pageargs: (type: ${type(pageargs)}) ${sorted}
             <%def name="foo()">
                 ${next.body(**context.kwargs)}
             </%def>
@@ -200,7 +204,7 @@ ${next.body()}
         """)
         assert result_lines(collection.get_template('index').render(x=5,y=10)) == [
             "this is the base.",
-            "pageargs: {'y': 10, 'x': 5}",
+            "pageargs: (type: <type 'dict'>) [('x', 5), ('y', 10)]",
             "print 5, 10, 7"
         ]
     def test_pageargs_2(self):
