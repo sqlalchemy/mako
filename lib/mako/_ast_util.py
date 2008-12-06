@@ -25,35 +25,7 @@
     :copyright: Copyright 2008 by Armin Ronacher.
     :license: Python License.
 """
-import sys
 from _ast import *
-
-if sys.platform.startswith('java'):
-    import array
-
-    ast_list = array.ArrayType
-    get_symbol_key = lambda op: op
-        
-    def get_class_name(t):
-        result = t.__class__.__name__
-        if result in ("expr_contextType",
-                      "boolopType",
-                      "unaryopType",
-                      "cmpopType",
-                      "operatorType"):
-            result = str(t)
-            if result == "AugLoad":
-                result = "Load"
-            elif result == "AugStore":
-                result = "Store"
-        elif result.endswith("Type"):
-            result = result[:-4]
-        return result
-
-else:
-    ast_list = list
-    get_symbol_key = type
-    get_class_name = lambda node: node.__class__.__name__
 
 
 BOOLOP_SYMBOLS = {
@@ -137,7 +109,7 @@ def dump(node):
             return '%s(%s)' % (node.__class__.__name__,
                                ', '.join('%s=%s' % (a, _format(b))
                                          for a, b in iter_fields(node)))
-        elif isinstance(node, ast_list):
+        elif isinstance(node, list):
             return '[%s]' % ', '.join(_format(x) for x in node)
         return repr(node)
     if not isinstance(node, AST):
@@ -199,8 +171,6 @@ def increment_lineno(node, n=1):
 
 def iter_fields(node):
     """Iterate over all fields of a node, only yielding existing fields."""
-    if not hasattr(node, '_fields') or not node._fields:
-        return
     for field in node._fields:
         try:
             yield field, getattr(node, field)
@@ -218,7 +188,7 @@ def iter_child_nodes(node):
     for name, field in iter_fields(node):
         if isinstance(field, AST):
             yield field
-        elif isinstance(field, ast_list):
+        elif isinstance(field, list):
             for item in field:
                 if isinstance(item, AST):
                     yield item
@@ -290,7 +260,7 @@ class NodeVisitor(object):
         exists for this node.  In that case the generic visit function is
         used instead.
         """
-        method = 'visit_' + get_class_name(node)
+        method = 'visit_' + node.__class__.__name__
         return getattr(self, method, None)
 
     def visit(self, node):
@@ -303,7 +273,7 @@ class NodeVisitor(object):
     def generic_visit(self, node):
         """Called if no explicit visitor function exists for a node."""
         for field, value in iter_fields(node):
-            if isinstance(value, ast_list):
+            if isinstance(value, list):
                 for item in value:
                     if isinstance(item, AST):
                         self.visit(item)
@@ -349,7 +319,7 @@ class NodeTransformer(NodeVisitor):
     def generic_visit(self, node):
         for field, old_value in iter_fields(node):
             old_value = getattr(node, field, None)
-            if isinstance(old_value, ast_list):
+            if isinstance(old_value, list):
                 new_values = []
                 for value in old_value:
                     if isinstance(value, AST):
@@ -450,7 +420,7 @@ class SourceGenerator(NodeVisitor):
     def visit_AugAssign(self, node):
         self.newline()
         self.visit(node.target)
-        self.write(BINOP_SYMBOLS[get_symbol_key(node.op)] + '=')
+        self.write(BINOP_SYMBOLS[type(node.op)] + '=')
         self.visit(node.value)
 
     def visit_ImportFrom(self, node):
@@ -726,7 +696,7 @@ class SourceGenerator(NodeVisitor):
     def visit_BinOp(self, node):
         self.write('(')
         self.visit(node.left)
-        self.write(' %s ' % BINOP_SYMBOLS[get_symbol_key(node.op)])
+        self.write(' %s ' % BINOP_SYMBOLS[type(node.op)])
         self.visit(node.right)
         self.write(')')
 
@@ -734,7 +704,7 @@ class SourceGenerator(NodeVisitor):
         self.write('(')
         for idx, value in enumerate(node.values):
             if idx:
-                self.write(' %s ' % BOOLOP_SYMBOLS[get_symbol_key(node.op)])
+                self.write(' %s ' % BOOLOP_SYMBOLS[type(node.op)])
             self.visit(value)
         self.write(')')
 
@@ -742,13 +712,13 @@ class SourceGenerator(NodeVisitor):
         self.write('(')
         self.visit(node.left)
         for op, right in zip(node.ops, node.comparators):
-            self.write(' %s ' % CMPOP_SYMBOLS[get_symbol_key(op)])
+            self.write(' %s ' % CMPOP_SYMBOLS[type(op)])
             self.visit(right)
         self.write(')')
 
     def visit_UnaryOp(self, node):
         self.write('(')
-        op = UNARYOP_SYMBOLS[get_symbol_key(node.op)]
+        op = UNARYOP_SYMBOLS[type(node.op)]
         self.write(op)
         if op == 'not':
             self.write(' ')

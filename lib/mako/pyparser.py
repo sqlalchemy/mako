@@ -10,14 +10,11 @@ Parsing to AST is done via _ast on Python > 2.5, otherwise the compiler
 module is used.
 """
 
-import sys
 from StringIO import StringIO
 from mako import exceptions, util
 
 # words that cannot be assigned to (notably smaller than the total keys in __builtins__)
 reserved = util.Set(['True', 'False', 'None'])
-
-jython = sys.platform.startswith('java')
 
 try:
     import _ast
@@ -91,10 +88,7 @@ if _ast:
             for statement in node.orelse:
                 self.visit(statement)
         def visit_Name(self, node):
-            if jython:
-                if node.ctx == _ast.Store:
-                    self._add_declared(node.id)
-            elif isinstance(node.ctx, _ast.Store):
+            if isinstance(node.ctx, _ast.Store):
                 self._add_declared(node.id)
             if node.id not in reserved and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)

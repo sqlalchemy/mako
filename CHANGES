@@ -1,3 +1,6 @@
+0.2.4
+- Fixed compatibility with Jython 2.5b1.
+
 0.2.3
 - the <%namespacename:defname> syntax described at
   http://techspot.zzzeek.org/?p=28 has now 
