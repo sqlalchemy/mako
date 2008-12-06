@@ -171,6 +171,9 @@ def increment_lineno(node, n=1):
 
 def iter_fields(node):
     """Iterate over all fields of a node, only yielding existing fields."""
+    # CPython 2.5 compat
+    if not hasattr(node, '_fields') or not node._fields:
+        return
     for field in node._fields:
         try:
             yield field, getattr(node, field)
