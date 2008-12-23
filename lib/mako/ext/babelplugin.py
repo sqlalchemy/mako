@@ -22,7 +22,7 @@ def extract(fileobj, keywords, comment_tags, options):
     template_node = lexer.Lexer(fileobj.read(),
                                 input_encoding=encoding).parse()
     for extracted in extract_nodes(template_node.get_children(),
-                                        keywords, comment_tags, options):
+                                   keywords, comment_tags, options):
         yield extracted
 
 def extract_nodes(nodes, keywords, comment_tags, options):
