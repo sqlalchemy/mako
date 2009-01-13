@@ -152,7 +152,10 @@ class Template(object):
         """return a def of this template as an individual Template of its own."""
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
     
-
+    def last_modified(self): 
+        return self.module._modified_time    
+    last_modified = property(last_modified)
+    
 class ModuleTemplate(Template):
     """A Template which is constructed given an existing Python module.
     
@@ -202,6 +205,7 @@ class DefTemplate(Template):
         self.parent = parent
         self.callable_ = callable_
         self.output_encoding = parent.output_encoding
+        self.module = parent.module
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler

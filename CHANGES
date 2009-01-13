@@ -1,3 +1,8 @@
+0.2.5
+- Added last_modified accessor to Template,
+  returns the time.time() when the module
+  was created. [ticket:97]
+  
 0.2.4
 - Fixed compatibility with Jython 2.5b1.
 
