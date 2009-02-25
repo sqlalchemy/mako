@@ -37,7 +37,7 @@ Since defs are just Python functions, you can define and pass arguments to them 
         account name: ${accountname}, type ${type}
     </%def>
 
-When you declare an argument signature for your def, they are required following normal Python conventions (i.e., all arguments are required except keyword arguments with a default value).  This is in contrast to using context-level variables, which evaluate to `UNDEFINED` if you reference a name that does not exist.
+When you declare an argument signature for your def, they are required to follow normal Python conventions (i.e., all arguments are required except keyword arguments with a default value).  This is in contrast to using context-level variables, which evaluate to `UNDEFINED` if you reference a name that does not exist.
 
 ### Calling defs from Other Files {@name=remotedefs}
 
@@ -171,7 +171,7 @@ Using the older `%call` syntax looks like:
 The `body()` can be executed multiple times or not at all.  This means you can use def-call-with-content to build iterators, conditionals, etc:
 
     <%def name="lister(count)">
-        % for x in range(1,count):
+        % for x in range(count):
             ${caller.body()}
         % endfor
     </%def>

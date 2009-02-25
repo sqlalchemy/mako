@@ -157,7 +157,7 @@ The `%def` tag defines a Python function which contains a set of content, that c
     
     ${myfunc(7)}
     
-The %def tag is a lot more powerful than a plain Python def, as the Mako compiler provides many extra services with %def that you wouldn't normally have, such as the ability to export defs as template "methods", automatic propigation of the current `Context`, buffering/filtering/caching flags, and def calls with content, which enable packages of defs to be sent as arguments to other def calls (not as hard as it sounds).  Get the full deal on what %def can do in [defs](rel:defs).
+The %def tag is a lot more powerful than a plain Python def, as the Mako compiler provides many extra services with %def that you wouldn't normally have, such as the ability to export defs as template "methods", automatic propagation of the current `Context`, buffering/filtering/caching flags, and def calls with content, which enable packages of defs to be sent as arguments to other def calls (not as hard as it sounds).  Get the full deal on what %def can do in [defs](rel:defs).
 
 #### <%namespace>
 
