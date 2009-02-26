@@ -185,7 +185,7 @@ class Lexer(object):
             
             ([\w\.\:]+)   # keyword
             
-            ((?:\s+\w+|=|".*?"|'.*?')*)  # attrname, = sign, string expression
+            ((?:\s+\w+|\s*=\s*|".*?"|'.*?')*)  # attrname, = sign, string expression
             
             \s*     # more whitespace
             

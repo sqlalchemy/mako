@@ -122,7 +122,17 @@ class LexerTest(unittest.TestCase):
             assert False
         except exceptions.CompileException, e:
             assert str(e) == "Missing parenthesis in %def at line: 2 char: 9"
-    
+
+    def test_whitespace_equals(self):
+        template = """
+            <%def name = "adef()" >
+              adef
+            </%def>
+        """    
+
+        node = Lexer(template).parse()
+        assert repr(node) == r"""TemplateNode({}, [Text(u'\n            ', (1, 1)), DefTag(u'def', {u'name': u'adef()'}, (2, 13), ["Text(u'\\n              adef\\n            ', (2, 36))"]), Text(u'\n        ', (4, 20))])"""
+
     def test_ns_tag_closed(self):
         template = """
         
