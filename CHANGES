@@ -6,9 +6,14 @@
   other uses there may be (but there may be).
   Examples are in the "filtering" docs.
   
+- Fixed namespace.__getattr__() to raise 
+  AttributeError on attribute not found 
+  instead of RuntimeError.  [ticket:104]
+  
 - Added last_modified accessor to Template,
   returns the time.time() when the module
   was created. [ticket:97]
+
 - Fixed lexing support for whitespace
   around '=' sign in defs. [ticket:102]
   

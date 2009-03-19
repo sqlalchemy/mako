@@ -371,7 +371,22 @@ class NamespaceTest(unittest.TestCase):
             "foo lala",
         ]
     
-    
+    def test_attr_raise(self):
+        l = lookup.TemplateLookup()
+
+        l.put_string("foo.html", """
+            <%def name="foo()">
+            </%def>
+        """)
+
+        l.put_string("bar.html", """
+        <%namespace name="foo" file="foo.html"/>
+        
+        ${foo.notfoo()}
+        """)
+
+        self.assertRaises(AttributeError, l.get_template("bar.html").render)
+        
     def test_custom_tag_1(self):
         template = Template("""
         

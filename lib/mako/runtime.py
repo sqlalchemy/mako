@@ -260,7 +260,7 @@ class Namespace(object):
 
         if self.inherits is not None:
             return getattr(self.inherits, key)
-        raise exceptions.RuntimeException("Namespace '%s' has no member '%s'" % (self.name, key))
+        raise AttributeError("Namespace '%s' has no member '%s'" % (self.name, key))
 
 def supports_caller(func):
     """apply a caller_stack compatibility decorator to a plain Python function."""
