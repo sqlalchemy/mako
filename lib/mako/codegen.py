@@ -160,6 +160,12 @@ class _GenerateRenderMethod(object):
         """write a top-level render callable.
         
         this could be the main render() method or that of a top-level def."""
+        
+        if self.in_def:
+            decorator = node.decorator
+            if decorator:
+                self.printer.writeline("@runtime._decorate_toplevel(%s)" % decorator)
+        
         self.printer.writelines(
             "def %s(%s):" % (name, ','.join(args)),
                 "context.caller_stack._push_frame()",
@@ -325,6 +331,10 @@ class _GenerateRenderMethod(object):
     def write_inline_def(self, node, identifiers, nested):
         """write a locally-available def callable inside an enclosing def."""
         namedecls = node.function_decl.get_argument_expressions()
+        
+        decorator = node.decorator
+        if decorator:
+            self.printer.writeline("@runtime._decorate_inline(context, %s)" % decorator)
         self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))

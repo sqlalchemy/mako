@@ -298,3 +298,4 @@ The above layout would produce:
 
 The number of things you can do with `<%call>` and/or the `<%namespacename:defname>` calling syntax is enormous.  You can create form widget libraries, such as an enclosing `<FORM>` tag and nested HTML input elements, or portable wrapping schemes using `<div>` or other elements.  You can create tags that interpret rows of data, such as from a database, providing the individual columns of each row to a `body()` callable which lays out the row any way it wants.  Basically anything you'd do with a "custom tag" or tag library in some other system, Mako provides via `<%def>`s and plain Python callables which are invoked via `<%namespacename:defname>` or `<%call>`.
 
+

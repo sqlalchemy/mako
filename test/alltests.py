@@ -9,6 +9,7 @@ def suite():
         'template',
         'lookup',
         'def',
+        'decorators',
         'namespace',
         'filters',
         'inheritance',

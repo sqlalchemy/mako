@@ -161,4 +161,41 @@ The above call is equivalent to the unbuffered call:
 
     ${somedef(17, 'hi', use_paging=True)}
     
+### Decorating
+
+This is a feature that's new as of version 0.2.5.   Somewhat like a filter for a %def but more flexible, the `decorator` argument to `%def` allows the creation of a function that will work in a similar manner to a Python decorator.   The function can control whether or not the function executes.   The original intent of this function is to allow the creation of custom cache logic, but there may be other uses as well.
+
+`decorator` is intended to be used with a regular Python function, such as one defined in a library module.  Here we'll illustrate the python function defined in the template for simplicities' sake:
+
+    <%!
+        def bar(fn):
+            def decorate(context, *args, **kw):
+                context.write("BAR")
+                fn(*args, **kw)
+                context.write("BAR")
+                return ''
+            return decorate
+    %>
     
+    <%def name="foo()" decorator="bar">
+        this is foo
+    </%def>
+    
+    ${foo()}
+    
+The above template will return, with more whitespace than this, `"BAR this is foo BAR"`.  The function is the render callable itself (or possibly a wrapper around it), and by default will write to the context.  To capture its output, use the `capture` callable in the `mako.runtime` module (available in templates as just  `runtime`):
+
+    <%!
+        def bar(fn):
+            def decorate(context, *args, **kw):
+                return "BAR" + runtime.capture(context, fn, *args, **kw) + "BAR"
+            return decorate
+    %>
+
+    <%def name="foo()" decorator="bar">
+        this is foo
+    </%def>
+
+    ${foo()}
+
+The decorator can be used with top-level defs as well as nested defs.  Note that when calling a top-level def from the `Template` api, i.e. `template.get_def('somedef').render()`, the decorator has to write the output to the `context`, i.e. as in the first example.  The return value gets discarded.

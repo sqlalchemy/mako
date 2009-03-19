@@ -341,7 +341,7 @@ class DefTag(Tag):
                 keyword, 
                 attributes, 
                 ('buffered', 'cached', 'cache_key', 'cache_timeout', 'cache_type', 'cache_dir', 'cache_url'), 
-                ('name','filter'), 
+                ('name','filter', 'decorator'), 
                 ('name',), 
                 **kwargs)
         name = attributes['name']
@@ -349,6 +349,7 @@ class DefTag(Tag):
             raise exceptions.CompileException("Missing parenthesis in %def", **self.exception_kwargs)
         self.function_decl = ast.FunctionDecl("def " + name + ":pass", **self.exception_kwargs)
         self.name = self.function_decl.funcname
+        self.decorator = attributes.get('decorator', '')
         self.filter_args = ast.ArgumentList(attributes.get('filter', ''), **self.exception_kwargs)
 
     def declared_identifiers(self):

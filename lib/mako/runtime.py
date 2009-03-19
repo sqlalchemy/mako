@@ -282,7 +282,24 @@ def capture(context, callable_, *args, **kwargs):
     finally:
         buf = context._pop_buffer()
     return buf.getvalue()
-        
+
+def _decorate_toplevel(fn):
+    def decorate_render(render_fn):
+        def go(context, *args, **kw):
+            def y(*args, **kw):
+                return render_fn(context, *args, **kw)
+            return fn(y)(context, *args, **kw)
+        return go
+    return decorate_render
+    
+def _decorate_inline(context, fn):
+    def decorate_render(render_fn):
+        dec = fn(render_fn)
+        def go(*args, **kw):
+            return dec(context, *args, **kw)
+        return go
+    return decorate_render
+            
 def _include_file(context, uri, calling_uri, **kwargs):
     """locate the template from the given uri and include it in the current output."""
     template = _lookup_template(context, uri, calling_uri)
