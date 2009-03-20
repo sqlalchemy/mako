@@ -5,6 +5,14 @@
   custom caching algorithms, not sure what
   other uses there may be (but there may be).
   Examples are in the "filtering" docs.
+
+- When Mako creates subdirectories in which
+  to store templates, it uses the more
+  permissive mode of 0775 instead of 0750,
+  helping out with certain multi-process 
+  scenarios. Note that the mode is always
+  subject to the restrictions of the existing
+  umask. [ticket:101]
   
 - Fixed namespace.__getattr__() to raise 
   AttributeError on attribute not found 
