@@ -196,7 +196,7 @@ class Lexer(object):
             re.I | re.S | re.X)
             
         if match:
-            (keyword, attr, isend) = (match.group(1).lower(), match.group(2), match.group(3))
+            (keyword, attr, isend) = (match.group(1), match.group(2), match.group(3))
             self.keyword = keyword
             attributes = {}
             if attr:

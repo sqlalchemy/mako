@@ -41,11 +41,7 @@ class LexerTest(unittest.TestCase):
             
             hi.
         """
-        try:
-            nodes = Lexer(template).parse()
-            assert False
-        except exceptions.SyntaxException, e:
-            assert str(e) == "Closing tag without opening tag: </%namespace> at line: 6 char: 13"
+        self.assertRaises(exceptions.SyntaxException, Lexer(template).parse)
 
     def test_unmatched_tag(self):
         template = """
@@ -58,22 +54,23 @@ class LexerTest(unittest.TestCase):
         
         hi.
 """
-        try:
-            nodes = Lexer(template).parse()
-            assert False
-        except exceptions.SyntaxException, e:
-            assert str(e) == "Closing tag </%namespace> does not match tag: <%def> at line: 5 char: 13"
+        self.assertRaises(exceptions.SyntaxException, Lexer(template).parse)
 
     def test_nonexistent_tag(self):
         template = """
             <%lala x="5"/>
         """
-        try:
-            node = Lexer(template).parse()
-            assert False
-        except exceptions.CompileException, e:
-            assert str(e) == "No such tag: 'lala' at line: 2 char: 13"
+        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
     
+    def test_wrongcase_tag(self):
+        template = """
+            <%DEF name="foo()">
+            </%def>
+        
+        """
+        
+        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        
     def test_text_tag(self):
         template = """
         ## comment
@@ -105,11 +102,7 @@ class LexerTest(unittest.TestCase):
             hi
         </%def>
 """
-        try:
-            node = Lexer(template).parse()
-            assert False
-        except exceptions.CompileException, e:
-            assert str(e) == "Missing attribute(s): 'name' at line: 2 char: 9"
+        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
     
     def test_def_syntax_2(self):
         template = """
@@ -117,11 +110,7 @@ class LexerTest(unittest.TestCase):
             hi
         </%def>
     """
-        try:
-            node = Lexer(template).parse()
-            assert False
-        except exceptions.CompileException, e:
-            assert str(e) == "Missing parenthesis in %def at line: 2 char: 9"
+        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
 
     def test_whitespace_equals(self):
         template = """

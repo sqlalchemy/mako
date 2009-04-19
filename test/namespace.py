@@ -460,7 +460,23 @@ class NamespaceTest(unittest.TestCase):
             "call body"
         ]
         
+    def test_custom_tag_case_sensitive(self):
+        t = Template("""
+        <%def name="renderPanel()">
+            panel ${caller.body()}
+        </%def>
 
+        <%def name="renderTablePanel()">
+            <%self:renderPanel>
+                hi
+            </%self:renderPanel>
+        </%def>
+        
+        <%self:renderTablePanel/>
+        """)
+        assert result_lines(t.render()) == ['panel', 'hi']
+        
+        
     def test_expr_grouping(self):
         """test that parenthesis are placed around string-embedded expressions."""
         

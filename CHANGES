@@ -24,6 +24,11 @@
 
 - Fixed lexing support for whitespace
   around '=' sign in defs. [ticket:102]
+
+- Removed errant "lower()" in the lexer which
+  was causing tags to compile with 
+  case-insensitive names, thus messing up
+  custom <%call> names. [ticket:108]
   
 0.2.4
 - Fixed compatibility with Jython 2.5b1.

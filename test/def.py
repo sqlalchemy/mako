@@ -25,7 +25,6 @@ class DefTest(unittest.TestCase):
         ${mycomp()}""")
         assert template.render(variable='hi').strip() == """hello mycomp hi"""
 
-        
     def test_def_args(self):
         template = Template("""
         <%def name="mycomp(a, b)">
