@@ -234,7 +234,7 @@ class Namespace(object):
                 yield (key, self.callables[key])
         if self.template:
             def get(key):
-                callable_ = self.template.get_def(key).callable_
+                callable_ = self.template._get_def_callable(key)
                 return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
             for k in self.template.module._exports:
                 yield (k, get(k))
@@ -251,7 +251,7 @@ class Namespace(object):
             return self.callables[key]
 
         if self.template and self.template.has_def(key):
-            callable_ = self.template.get_def(key).callable_
+            callable_ = self.template._get_def_callable(key)
             return lambda *args, **kwargs:callable_(self.context, *args, **kwargs)
 
         if self._module and hasattr(self._module, key):

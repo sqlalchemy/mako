@@ -151,6 +151,9 @@ class Template(object):
     def get_def(self, name):
         """return a def of this template as an individual Template of its own."""
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
+
+    def _get_def_callable(self, name):
+        return getattr(self.module, "render_%s" % name)
     
     def last_modified(self): 
         return self.module._modified_time    
