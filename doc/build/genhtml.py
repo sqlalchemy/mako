@@ -5,7 +5,7 @@ import cPickle as pickle
 sys.path = ['../../lib', './lib/'] + sys.path
 
 from mako.lookup import TemplateLookup
-from mako import exceptions
+from mako import exceptions, __version__ as version
 
 import read_markdown, toc
 
@@ -24,7 +24,6 @@ files = [
     ]
 
 title='Mako Documentation'
-version = '0.2.3'
 
 root = toc.TOCElement('', 'root', '', version=version, doctitle=title)
 

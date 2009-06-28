@@ -1,9 +1,13 @@
 from setuptools import setup, find_packages
+import os
+import re
 
-version = '0.2.5'
+v = file(os.path.join(os.path.dirname(__file__), 'lib', 'mako', '__init__.py'))
+VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
+v.close()
 
 setup(name='Mako',
-      version=version,
+      version=VERSION,
       description="A super-fast templating language that borrows the \
  best ideas from the existing templating languages.",
       long_description="""\

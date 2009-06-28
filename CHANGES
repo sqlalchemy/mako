@@ -29,6 +29,9 @@
   was causing tags to compile with 
   case-insensitive names, thus messing up
   custom <%call> names. [ticket:108]
+
+- added "mako.__version__" attribute to
+  the base module.  [ticket:110]
   
 0.2.4
 - Fixed compatibility with Jython 2.5b1.
