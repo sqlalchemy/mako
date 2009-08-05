@@ -11,7 +11,8 @@ The most basic way to create a template and render it is through the `Template` 
     mytemplate = Template("hello world!")
     print mytemplate.render()
     
-Above, the text argument to `Template` is **compiled** into a Python module representation.  This module contains a function called `render_body()`, which produces the output of the template.  When `mytemplate.render()` is called, Mako sets up a runtime environment for the template and calls the `render_body()` function, capturing the output into a buffer and returning it's string contents.
+Above, the text argument to `Template` is **compiled** into a Python module representation. This module contains a function called `render_body()`, which produces the output of the template. When `mytemplate.render()` is called, Mako sets up a runtime environment for the template and calls the `render_body()` function, capturing the output into a buffer and returning its string contents.
+
 
 The code inside the `render_body()` function has access to a namespace of variables.  You can specify these variables by sending them as additional keyword arguments to the `render()` method:
 
@@ -95,7 +96,7 @@ The above lookup will continue to load templates into memory until it reaches a 
 
 #### Setting Filesystem Checks {@name=checks}
 
-Another important flag on `TemplateLookup` is `filesystem_checks`.  This defaults to `True`, and says that each time a template is returned by the `get_template()` method, the revision time of the original template file is checked against the last time the template was loaded, and if the file is newer will reload its contents and recompile the template.  On a production system, seting `filesystem_checks` to `False` can afford a small to moderate performance increase (depending on the type of filesystem used).
+Another important flag on `TemplateLookup` is `filesystem_checks`. This defaults to `True`, and says that each time a template is returned by the `get_template()` method, the revision time of the original template file is checked against the last time the template was loaded, and if the file is newer will reload its contents and recompile the template. On a production system, setting `filesystem_checks` to `False` can afford a small to moderate performance increase (depending on the type of filesystem used).
 
 ### Using Unicode and Encoding
 
