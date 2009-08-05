@@ -70,8 +70,8 @@ def guess_type(path):
         return extensions_map['']
         
 if __name__ == '__main__':
-    from wsgiutils import wsgiServer
-    server = wsgiServer.WSGIServer (('localhost', port), {'/': serve})
+    import wsgiref.simple_server
+    server = wsgiref.simple_server.make_server('', port, serve)
     print "Server listening on port %d" % port
     server.serve_forever()
 
