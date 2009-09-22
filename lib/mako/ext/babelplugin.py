@@ -67,6 +67,11 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             child_nodes = node.nodes
         elif isinstance(node, parsetree.PageTag):
             code = node.body_decl.code
+        elif isinstance(node, parsetree.CallNamespaceTag):
+            attribs = ', '.join(['%s=%s' % (key, val)
+                                 for key, val in node.attributes.iteritems()])
+            code = '{%s}' % attribs
+            child_nodes = node.nodes
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:
                 translator_comments = []

@@ -1,3 +1,7 @@
+0.2.6
+- Support the <%namespacename:defname> syntax in
+  the babel extractor. [ticket:118]
+
 0.2.5
 - Added a "decorator" kw argument to <%def>,
   allows custom decoration functions to wrap

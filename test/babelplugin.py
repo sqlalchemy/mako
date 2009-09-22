@@ -27,7 +27,11 @@ try:
                  (45, 'ungettext', (u'hella', u'hellas', None), []),
                  (62, '_', u'Goodbye, really!', [u'TRANSLATOR: HTML comment']),
                  (65, '_', u'P.S. byebye', []),
-                 (71, '_', u'Top', [])]
+                 (71, '_', u'Top', []), 
+                 (77, '_', u'foo', []),
+                 (77, '_', u'baz', []),
+                 (79, '_', u'bar', [])
+                 ]
             self.assertEqual(expected, messages)
 
 except ImportError:

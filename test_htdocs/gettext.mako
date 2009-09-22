@@ -71,3 +71,13 @@ top = gettext('Begin')
     ${_('Top')}
   </a>
 </div>
+
+<%def name="panel()">
+
+${_(u'foo')} <%self:block_tpl title="123", name="_(u'baz')">
+
+${_(u'bar')}
+
+</%self:block_tpl>
+
+</%def>
