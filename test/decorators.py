@@ -68,8 +68,46 @@ class DecoratorTest(unittest.TestCase):
 
         assert flatten_result(template.render()) == "BAT this is bar BAT"
         
-    
-    
+    def test_toplevel_decorated_name(self):
+        template = Template("""
+            <%!
+                def bar(fn):
+                    def decorate(context, *args, **kw):
+                        return "function " + fn.__name__ + " " + runtime.capture(context, fn, *args, **kw)
+                    return decorate
+            %>
+
+            <%def name="foo(y, x)" decorator="bar">
+                this is foo ${y} ${x}
+            </%def>
+
+            ${foo(1, x=5)}
+        """)
+
+        assert flatten_result(template.render()) == "function foo this is foo 1 5"
+
+    def test_nested_decorated_name(self):
+        template = Template("""
+            <%!
+                def bat(fn):
+                    def decorate(context):
+                        return "function " + fn.__name__ + " " + runtime.capture(context, fn)
+                    return decorate
+            %>
+
+            <%def name="foo()">
+
+                <%def name="bar()" decorator="bat">
+                    this is bar
+                </%def>
+                ${bar()}
+            </%def>
+
+            ${foo()}
+        """)
+
+        assert flatten_result(template.render()) == "function bar this is bar"
+        
+
 if __name__ == '__main__':
     unittest.main()
-    

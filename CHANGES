@@ -1,4 +1,9 @@
 0.2.6
+
+- Fix mako function decorators to preserve the
+  original function's name in all cases. Patch
+  from Scott Torborg.
+
 - Support the <%namespacename:defname> syntax in
   the babel extractor. [ticket:118]
 

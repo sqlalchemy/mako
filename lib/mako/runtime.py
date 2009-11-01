@@ -288,6 +288,11 @@ def _decorate_toplevel(fn):
         def go(context, *args, **kw):
             def y(*args, **kw):
                 return render_fn(context, *args, **kw)
+            try:
+                y.__name__ = render_fn.__name__[7:]
+            except TypeError:
+                # < Python 2.4
+                pass
             return fn(y)(context, *args, **kw)
         return go
     return decorate_render
