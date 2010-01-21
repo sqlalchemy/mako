@@ -116,7 +116,7 @@ Additionally, the `render_unicode()` method exists which will return the templat
     {python}
     print mytemplate.render_unicode()
     
-The above method disgards the output encoding keyword argument; you can encode yourself by saying:
+The above method disregards the output encoding keyword argument; you can encode yourself by saying:
 
     {python}
     print mytemplate.render_unicode().encode('utf-8', 'replace')
