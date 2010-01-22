@@ -69,6 +69,15 @@ ${u'привет'}
             assert 'RuntimeError: test' in html_error
             assert "foo = u'&#x65E5;&#x672C;'" in html_error
 
+
+    def test_py_unicode_error_html_error_template(self):
+        try:
+            raise RuntimeError(u'日本')
+        except:
+            html_error = exceptions.html_error_template().render()
+            assert 'RuntimeError: &#x65E5;&#x672C;' in html_error
+            assert "RuntimeError(u'&#x65E5;&#x672C;')" in html_error
+
     def test_format_exceptions(self):
         l = TemplateLookup(format_exceptions=True)
 

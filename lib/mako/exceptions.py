@@ -53,6 +53,7 @@ class RichTraceback(object):
     Properties:
     
     error - the exception instance.  
+    message - the exception error message as unicode
     source - source code of the file where the error occured.  if the error occured within a compiled template,
     this is the template source.
     lineno - line number where the error occured.  if the error occured within a compiled template, the line number
@@ -78,6 +79,22 @@ class RichTraceback(object):
             self._has_source = True
         self.reverse_records = [r for r in self.records]
         self.reverse_records.reverse()
+        self.init_message()
+
+    def init_message(self):
+        """Find a unicode representation of self.error"""
+        try:
+            self.message = unicode(self.error)
+        except UnicodeError:
+            try:
+                self.message = str(self.error)
+            except UnicodeEncodeError:
+                # Fallback to args as neither unicode nor
+                # str(Exception(u'\xe6')) work in Python < 2.6
+                self.message = self.error.args[0]
+        if not isinstance(self.message, unicode):
+            self.message = unicode(self.message, 'ascii', 'replace')
+
     def _get_reformatted_records(self, records):
         for rec in records:
             if rec[6] is not None:
@@ -112,6 +129,17 @@ class RichTraceback(object):
                     template_source = info.source
                     template_filename = info.template_filename or filename
                 except KeyError:
+                    # A normal .py file (not a Template)
+                    try:
+                        fp = open(filename)
+                        encoding = util.parse_encoding(fp)
+                        fp.close()
+                    except IOError:
+                        encoding = None
+                    if encoding:
+                        line = line.decode(encoding)
+                    else:
+                        line = line.decode('ascii', 'replace')
                     new_trcback.append((filename, lineno, function, line, None, None, None, None))
                     continue
 
@@ -174,7 +202,7 @@ Traceback (most recent call last):
   File "${filename}", line ${lineno}, in ${function or '?'}
     ${line | unicode.strip}
 % endfor
-${str(tback.error.__class__.__name__)}: ${str(tback.error)}
+${str(tback.error.__class__.__name__)}: ${tback.message}
 """)
 
 def html_error_template():
@@ -225,7 +253,7 @@ def html_error_template():
     else:
         lines = None
 %>
-<h3>${str(tback.error.__class__.__name__)}: ${str(tback.error)}</h3>
+<h3>${str(tback.error.__class__.__name__)}: ${tback.message}</h3>
 
 % if lines:
     <div class="sample">

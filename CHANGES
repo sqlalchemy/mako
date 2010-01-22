@@ -7,6 +7,9 @@
 - Support the <%namespacename:defname> syntax in
   the babel extractor. [ticket:118]
 
+- Further fixes to unicode handling of .py files with the
+  html_error_template. [ticket:88]
+
 0.2.5
 - Added a "decorator" kw argument to <%def>,
   allows custom decoration functions to wrap
