@@ -1,5 +1,5 @@
 # util.py
-# Copyright (C) 2006, 2007, 2008, 2009 Michael Bayer mike_mp@zzzcomputing.com
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Michael Bayer mike_mp@zzzcomputing.com
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -42,6 +42,14 @@ def verify_directory(dir):
         except:
             if tries > 5:
                 raise
+
+def to_list(x, default=None):
+    if x is None:
+        return default
+    if not isinstance(x, (list, tuple)):
+        return [x]
+    else:
+        return x
 
 class SetLikeDict(dict):
     """a dictionary that has some setlike methods on it"""

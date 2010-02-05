@@ -1,5 +1,5 @@
 # codegen.py
-# Copyright (C) 2006, 2007, 2008, 2009 Michael Bayer mike_mp@zzzcomputing.com
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Michael Bayer mike_mp@zzzcomputing.com
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -13,18 +13,41 @@ from mako import util, ast, parsetree, filters
 
 MAGIC_NUMBER = 5
 
-
-def compile(node, uri, filename=None, default_filters=None, buffer_filters=None, imports=None, source_encoding=None, generate_unicode=True):
-    """generate module source code given a parsetree node, uri, and optional source filename"""
+def compile(node, 
+                uri, 
+                filename=None, 
+                default_filters=None, 
+                buffer_filters=None, 
+                imports=None, 
+                source_encoding=None, 
+                generate_unicode=True):
+                
+    """Generate module source code given a parsetree node, 
+      uri, and optional source filename"""
 
     buf = util.FastEncodingBuffer(unicode=generate_unicode)
 
     printer = PythonPrinter(buf)
-    _GenerateRenderMethod(printer, _CompileContext(uri, filename, default_filters, buffer_filters, imports, source_encoding, generate_unicode), node)
+    _GenerateRenderMethod(printer, 
+                            _CompileContext(uri, 
+                                            filename, 
+                                            default_filters, 
+                                            buffer_filters,
+                                            imports, 
+                                            source_encoding,
+                                            generate_unicode), 
+                                node)
     return buf.getvalue()
 
 class _CompileContext(object):
-    def __init__(self, uri, filename, default_filters, buffer_filters, imports, source_encoding, generate_unicode):
+    def __init__(self, 
+                    uri, 
+                    filename, 
+                    default_filters, 
+                    buffer_filters, 
+                    imports, 
+                    source_encoding, 
+                    generate_unicode):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
@@ -34,7 +57,10 @@ class _CompileContext(object):
         self.generate_unicode = generate_unicode
         
 class _GenerateRenderMethod(object):
-    """a template visitor object which generates the full module source for a template."""
+    """A template visitor object which generates the 
+       full module source for a template.
+       
+    """
     def __init__(self, printer, compiler, node):
         self.printer = printer
         self.last_source_line = -1
@@ -70,17 +96,24 @@ class _GenerateRenderMethod(object):
         else:
             args = [a for a in ['context'] + args]
             
-        self.write_render_callable(pagetag or node, name, args, buffered, filtered, cached)
+        self.write_render_callable(
+                            pagetag or node, 
+                            name, args, 
+                            buffered, filtered, cached)
         
         if defs is not None:
             for node in defs:
                 _GenerateRenderMethod(printer, compiler, node)
     
-    identifiers = property(lambda self:self.identifier_stack[-1])
+    @property
+    def identifiers(self):
+        return self.identifier_stack[-1]
     
     def write_toplevel(self):
-        """traverse a template structure for module-level directives and generate the
-        start of module-level code."""
+        """Traverse a template structure for module-level directives and
+        generate the start of module-level code.
+        
+        """
         inherit = []
         namespaces = {}
         module_code = []
@@ -113,36 +146,50 @@ class _GenerateRenderMethod(object):
         module_identifiers.declared = module_ident
         
         # module-level names, python code
-        if not self.compiler.generate_unicode and self.compiler.source_encoding:
-            self.printer.writeline("# -*- encoding:%s -*-" % self.compiler.source_encoding)
+        if not self.compiler.generate_unicode and \
+            self.compiler.source_encoding:
+            self.printer.writeline("# -*- encoding:%s -*-" %
+                                    self.compiler.source_encoding)
             
         self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
         self.printer.writeline("__M_dict_builtin = dict")
         self.printer.writeline("__M_locals_builtin = locals")
-        self.printer.writeline("_magic_number = %s" % repr(MAGIC_NUMBER))
-        self.printer.writeline("_modified_time = %s" % repr(time.time()))
-        self.printer.writeline("_template_filename=%s" % repr(self.compiler.filename))
-        self.printer.writeline("_template_uri=%s" % repr(self.compiler.uri))
-        self.printer.writeline("_template_cache=cache.Cache(__name__, _modified_time)")
-        self.printer.writeline("_source_encoding=%s" % repr(self.compiler.source_encoding))
+        self.printer.writeline("_magic_number = %r" % MAGIC_NUMBER)
+        self.printer.writeline("_modified_time = %r" % time.time())
+        self.printer.writeline(
+                            "_template_filename=%r" % self.compiler.filename)
+        self.printer.writeline("_template_uri=%r" % self.compiler.uri)
+        self.printer.writeline(
+                    "_template_cache=cache.Cache(__name__, _modified_time)")
+        self.printer.writeline(
+                    "_source_encoding=%r" % self.compiler.source_encoding)
         if self.compiler.imports:
             buf = ''
             for imp in self.compiler.imports:
                 buf += imp + "\n"
                 self.printer.writeline(imp)
-            impcode = ast.PythonCode(buf, source='', lineno=0, pos=0, filename='template defined imports')
+            impcode = ast.PythonCode(
+                            buf, 
+                            source='', lineno=0, 
+                            pos=0, 
+                            filename='template defined imports')
         else:
             impcode = None
         
         main_identifiers = module_identifiers.branch(self.node)
-        module_identifiers.topleveldefs = module_identifiers.topleveldefs.union(main_identifiers.topleveldefs)
-        [module_identifiers.declared.add(x) for x in ["UNDEFINED"]]
+        module_identifiers.topleveldefs = \
+            module_identifiers.topleveldefs.\
+                union(main_identifiers.topleveldefs)
+        module_identifiers.declared.add("UNDEFINED")
         if impcode:
-            [module_identifiers.declared.add(x) for x in impcode.declared_identifiers]
+            module_identifiers.declared.update(impcode.declared_identifiers)
             
         self.compiler.identifiers = module_identifiers
-        self.printer.writeline("_exports = %s" % repr([n.name for n in main_identifiers.topleveldefs.values()]))
+        self.printer.writeline("_exports = %r" % 
+                            [n.name for n in
+                            main_identifiers.topleveldefs.values()]
+                        )
         self.printer.write("\n\n")
 
         if len(module_code):
@@ -155,6 +202,8 @@ class _GenerateRenderMethod(object):
             self.write_namespaces(namespaces)
 
         return main_identifiers.topleveldefs.values()
+
+##### continue [ticket:98] below ####
 
     def write_render_callable(self, node, name, args, buffered, filtered, cached):
         """write a top-level render callable.
