@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import re
 
-v = file(os.path.join(os.path.dirname(__file__), 'lib', 'mako', '__init__.py'))
+v = file(os.path.join(os.path.dirname(__file__), 'mako', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
 
@@ -36,8 +36,7 @@ SVN version:
       author_email='mike@zzzcomputing.com',
       url='http://www.makotemplates.org/',
       license='MIT',
-      package_dir={'':'lib'},
-      packages=find_packages('lib', exclude=['ez_setup', 'examples', 'tests']),
+      packages=find_packages('.', exclude=['ez_setup', 'examples', 'tests']),
       scripts=['scripts/mako-render'],
       zip_safe=False,
       install_requires=[

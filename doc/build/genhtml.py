@@ -2,7 +2,7 @@
 import sys,re,os,shutil
 import cPickle as pickle
 
-sys.path = ['../../lib', './lib/'] + sys.path
+sys.path = ['../../', './lib/'] + sys.path
 
 from mako.lookup import TemplateLookup
 from mako import exceptions, __version__ as version
