@@ -39,6 +39,3 @@ class TestTGPlugun(unittest.TestCase):
     def test_string(self):
         t = tl.load_template('foo', "hello world")
         assert t.render() == "hello world"
-        
-if __name__ == '__main__':
-    unittest.main()

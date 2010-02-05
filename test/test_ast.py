@@ -212,7 +212,5 @@ import x as bar
             #print code, newcode
             assert(eval(code, local_dict)) == eval(newcode, local_dict), "%s != %s" % (code, newcode)
 
-if __name__ == '__main__':
-    unittest.main()
     
     

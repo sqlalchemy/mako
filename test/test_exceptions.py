@@ -103,5 +103,3 @@ ${u'привет' + foobar}
 
         assert '''<div class="highlight">2 ${u\'&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;\' + foobar}</div>''' in result_lines(l.get_template("foo.html").render())
         
-if __name__ == '__main__':
-    unittest.main()

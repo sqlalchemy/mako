@@ -363,7 +363,7 @@ class GlobalsTest(unittest.TestCase):
         assert t.render().strip() == "y is hi"
 
 class RichTracebackTest(unittest.TestCase):
-    def do_test_traceback(self, utf8, memory, syntax):
+    def _do_test_traceback(self, utf8, memory, syntax):
         if memory:
             if syntax:
                 source = u'## coding: utf-8\n<% print "m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>'
@@ -398,14 +398,15 @@ class RichTracebackTest(unittest.TestCase):
 for utf8 in (True, False):
     for memory in (True, False):
         for syntax in (True, False):
-            def do_test(self):
-                self.do_test_traceback(utf8, memory, syntax)
+            def _do_test(self):
+                self._do_test_traceback(utf8, memory, syntax)
             name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', memory and 'memory' or 'file', syntax and 'syntax' or 'runtime')
             try:
-               do_test.__name__ = name
+               _do_test.__name__ = name
             except:
                pass
-            setattr(RichTracebackTest, name, do_test)
+            setattr(RichTracebackTest, name, _do_test)
+            del _do_test
 
         
 class ModuleDirTest(unittest.TestCase):
@@ -476,6 +477,3 @@ class PreprocessTest(unittest.TestCase):
 """, preprocessor=convert_comments)
 
         assert flatten_result(t.render()) == "im a template - # not a comment - ## not a comment"
-            
-if __name__ == '__main__':
-    unittest.main()

@@ -108,6 +108,3 @@ class DecoratorTest(unittest.TestCase):
 
         assert flatten_result(template.render()) == "function bar this is bar"
         
-
-if __name__ == '__main__':
-    unittest.main()

@@ -427,5 +427,3 @@ class SelfCacheTest(unittest.TestCase):
             "this is foo"
         ]
         
-if __name__ == '__main__':
-    unittest.main()

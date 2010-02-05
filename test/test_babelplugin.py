@@ -39,5 +39,3 @@ except ImportError:
     warnings.warn('babel not installed: skipping babelplugin test',
                   RuntimeWarning, 1)
 
-if __name__ == '__main__':
-    unittest.main()

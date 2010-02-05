@@ -403,6 +403,3 @@ class CacheTest(unittest.TestCase):
         m = MockCache(template.module._template_cache)
         template.module._template_cache = m
         return m
-            
-if __name__ == '__main__':
-    unittest.main()

@@ -64,5 +64,3 @@ class LookupTest(unittest.TestCase):
         tl._uri_cache[('foo', 'bar')] = '/some/path'
         assert tl._uri_cache[('foo', 'bar')] == '/some/path'
         
-if __name__ == '__main__':
-    unittest.main()

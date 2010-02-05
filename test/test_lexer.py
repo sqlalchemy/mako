@@ -472,5 +472,3 @@ hi
         nodes = Lexer(template, preprocessor=preproc).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n    hi\n', (1, 1)), Comment(u'old style comment', (3, 1)), Comment(u'another comment', (4, 1))])"""
         
-if __name__ == '__main__':
-    unittest.main()

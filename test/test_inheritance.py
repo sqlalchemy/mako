@@ -339,5 +339,3 @@ ${next.body()}
             "Oh yea!"
         ]
 
-if __name__ == '__main__':
-    unittest.main()

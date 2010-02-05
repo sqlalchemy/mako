@@ -536,6 +536,3 @@ class ExceptionTest(unittest.TestCase):
     """, error_handler=handle)
         assert template.render().strip() == """error message is this is a test"""
         
-
-if __name__ == '__main__':
-    unittest.main()

@@ -105,5 +105,4 @@ class LRUTest(unittest.TestCase):
         assert hotzone_avg > total_avg * 5 > control_avg * 5
         
         
-if __name__ == "__main__":
-    unittest.main()
+

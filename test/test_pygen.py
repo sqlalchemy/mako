@@ -250,6 +250,3 @@ asdkfjnads kfajns '''
 if x:
     print y
 """
-
-if __name__ == '__main__':
-    unittest.main()

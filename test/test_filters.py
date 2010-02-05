@@ -264,5 +264,3 @@ class BufferTest(unittest.TestCase):
         #print t.render()
         assert flatten_result(t.render()) == "this is foo. body: ccall body"
         
-if __name__ == '__main__':
-    unittest.main()

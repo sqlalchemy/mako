@@ -1,6 +1,9 @@
 0.3
 - Python 2.3 support is dropped (who can resist
-  @decorators)
+  @decorators) [ticket:123]
+  
+- Unit tests now run with nose.  [ticket:127]
+
   
 0.2.6
 
