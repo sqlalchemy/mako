@@ -352,7 +352,7 @@ def _compile_text(template, text, filename):
                             buffer_filters=template.buffer_filters, 
                             imports=template.imports, 
                             source_encoding=lexer.encoding,
-                            generate_unicode=not template.disable_unicode)
+                            generate_magic_comment=template.disable_unicode)
 
     cid = identifier
     if isinstance(cid, unicode):
@@ -378,8 +378,12 @@ def _compile_module_file(template, text, filename, outputpath):
                                 buffer_filters=template.buffer_filters,
                                 imports=template.imports,
                                 source_encoding=lexer.encoding,
-                                generate_unicode=not template.disable_unicode)
+                                generate_magic_comment=True)
     (dest, name) = tempfile.mkstemp()
+    
+    if isinstance(source, unicode):
+        source = source.encode(lexer.encoding or 'ascii')
+        
     os.write(dest, source)
     os.close(dest)
     shutil.move(name, outputpath)

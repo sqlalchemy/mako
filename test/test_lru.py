@@ -41,7 +41,7 @@ class LRUTest(unittest.TestCase):
         for id in (25, 24, 23, 14, 12, 19, 18, 17, 16, 15):
             self.assert_(l.has_key(id))    
 
-    def disabled_test_threaded(self):
+    def _disabled_test_threaded(self):
         size = 100
         threshold = .5
         all_elems = 2000
@@ -76,6 +76,7 @@ class LRUTest(unittest.TestCase):
                     cache[id] = e
                     
                 time.sleep(random.random() / 1000)
+
         for x in range(0,20):
             thread.start_new_thread(request_elem, ())
         
@@ -100,7 +101,9 @@ class LRUTest(unittest.TestCase):
         total_avg = average_regets_in_range(0, 2000)
         
         # hotzone should be way above the others
-        print "total fetches", total[0], "hotzone", hotzone_avg, "control", control_avg, "total", total_avg
+        print "total fetches", total[0], "hotzone", \
+                                hotzone_avg, "control", \
+                                control_avg, "total", total_avg
         
         assert hotzone_avg > total_avg * 5 > control_avg * 5
         

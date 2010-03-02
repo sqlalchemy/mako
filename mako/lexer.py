@@ -128,15 +128,10 @@ class Lexer(object):
                                 (node.keyword, self.control_line[-1].keyword),
                                 **self.exception_kwargs)
 
-    def escape_code(self, text):
-        if not self.disable_unicode and self.encoding:
-            return text.encode('ascii', 'backslashreplace')
-        else:
-            return text
-            
     def parse(self):
         for preproc in self.preprocessor:
             self.text = preproc(self.text)
+            
         if not isinstance(self.text, unicode) and self.text.startswith(codecs.BOM_UTF8):
             self.text = self.text[len(codecs.BOM_UTF8):]
             parsed_encoding = 'utf-8'
@@ -149,6 +144,7 @@ class Lexer(object):
                                 0, 0, self.filename)
         else:
             parsed_encoding = self.match_encoding()
+            
         if parsed_encoding:
             self.encoding = parsed_encoding
             
@@ -242,7 +238,7 @@ class Lexer(object):
                     key, val1, val2 = att
                     text = val1 or val2
                     text = text.replace('\r\n', '\n')
-                    attributes[key] = self.escape_code(text)
+                    attributes[key] = text
             self.append_node(parsetree.Tag, keyword, attributes)
             if isend:
                 self.tag.pop()
@@ -326,7 +322,7 @@ class Lexer(object):
             text = adjust_whitespace(text) + "\n"   
             self.append_node(
                             parsetree.Code, 
-                            self.escape_code(text), 
+                            text, 
                             match.group(1)=='!', lineno=line, pos=pos)
             return True
         else:
@@ -344,7 +340,7 @@ class Lexer(object):
             text = text.replace('\r\n', '\n')
             self.append_node(
                             parsetree.Expression, 
-                            self.escape_code(text), escapes.strip(), 
+                            text, escapes.strip(), 
                             lineno=line, pos=pos)
             return True
         else:
@@ -376,7 +372,7 @@ class Lexer(object):
                                 "Keyword '%s' doesn't match keyword '%s'" % 
                                 (text, self.control_line[-1].keyword), 
                                 **self.exception_kwargs)
-                self.append_node(parsetree.ControlLine, keyword, isend, self.escape_code(text))
+                self.append_node(parsetree.ControlLine, keyword, isend, text)
             else:
                 self.append_node(parsetree.Comment, text)
             return True

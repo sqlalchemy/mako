@@ -142,6 +142,29 @@ class EncodingTest(TemplateTest):
             filters=lambda s:s.strip(),
         )
     
+    def test_unicode_literal_in_tag(self):
+        self._do_file_test(
+            "unicode_arguments.html",
+            [
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+            ],
+            filters=result_lines
+        )
+
+        self._do_memory_test(
+            file(self._file_path("unicode_arguments.html")).read(),
+            [
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petit voix m’a réveillé',
+            ],
+            filters=result_lines
+        )
+        
     def test_unicode_literal_in_def(self):
         self._do_memory_test(
             u"""## -*- coding: utf-8 -*-

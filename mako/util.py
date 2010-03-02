@@ -72,7 +72,8 @@ class SetLikeDict(dict):
         return x
 
 class FastEncodingBuffer(object):
-    """a very rudimentary buffer that is faster than StringIO, but doesnt crash on unicode data like cStringIO."""
+    """a very rudimentary buffer that is faster than StringIO, 
+    but doesnt crash on unicode data like cStringIO."""
     
     def __init__(self, encoding=None, errors='strict', unicode=False):
         self.data = []

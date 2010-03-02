@@ -361,7 +361,10 @@ def _render(template, callable_, args, data, as_unicode=False):
     if as_unicode:
         buf = util.FastEncodingBuffer(unicode=True)
     elif template.output_encoding:
-        buf = util.FastEncodingBuffer(unicode=as_unicode, encoding=template.output_encoding, errors=template.encoding_errors)
+        buf = util.FastEncodingBuffer(
+                        unicode=as_unicode, 
+                        encoding=template.output_encoding, 
+                        errors=template.encoding_errors)
     else:
         buf = util.StringIO()
     context = Context(buf, **data)

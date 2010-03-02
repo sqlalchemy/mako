@@ -28,10 +28,14 @@ except ImportError:
 
 def parse(code, mode='exec', **exception_kwargs):
     """Parse an expression into AST"""
+    
+
     try:
         if _ast:
             return _ast_util.parse(code, '<unknown>', mode)
         else:
+            if isinstance(code, unicode):
+                code = code.encode('ascii', 'backslashreplace')
             return compiler_parse(code, mode)
     except Exception, e:
         raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), **exception_kwargs)

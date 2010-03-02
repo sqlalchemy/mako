@@ -20,12 +20,12 @@ def compile(node,
                 buffer_filters=None, 
                 imports=None, 
                 source_encoding=None, 
-                generate_unicode=True):
+                generate_magic_comment=True):
                 
     """Generate module source code given a parsetree node, 
       uri, and optional source filename"""
 
-    buf = util.FastEncodingBuffer(unicode=generate_unicode)
+    buf = util.FastEncodingBuffer()
 
     printer = PythonPrinter(buf)
     _GenerateRenderMethod(printer, 
@@ -35,7 +35,7 @@ def compile(node,
                                             buffer_filters,
                                             imports, 
                                             source_encoding,
-                                            generate_unicode), 
+                                            generate_magic_comment), 
                                 node)
     return buf.getvalue()
 
@@ -47,14 +47,14 @@ class _CompileContext(object):
                     buffer_filters, 
                     imports, 
                     source_encoding, 
-                    generate_unicode):
+                    generate_magic_comment):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
         self.buffer_filters = buffer_filters
         self.imports = imports
         self.source_encoding = source_encoding
-        self.generate_unicode = generate_unicode
+        self.generate_magic_comment = generate_magic_comment
         
 class _GenerateRenderMethod(object):
     """A template visitor object which generates the 
@@ -146,7 +146,7 @@ class _GenerateRenderMethod(object):
         module_identifiers.declared = module_ident
         
         # module-level names, python code
-        if not self.compiler.generate_unicode and \
+        if self.compiler.generate_magic_comment and \
             self.compiler.source_encoding:
             self.printer.writeline("# -*- encoding:%s -*-" %
                                     self.compiler.source_encoding)
