@@ -14,7 +14,7 @@ from StringIO import StringIO
 from mako import exceptions, util
 
 # words that cannot be assigned to (notably smaller than the total keys in __builtins__)
-reserved = util.Set(['True', 'False', 'None'])
+reserved = set(['True', 'False', 'None'])
 
 try:
     import _ast

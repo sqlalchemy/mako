@@ -5,7 +5,6 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import sys
-Set = set
 
 try:
     from cStringIO import StringIO

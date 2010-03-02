@@ -80,9 +80,9 @@ class ControlLine(Node):
         """return true if the given keyword is a ternary keyword for this ControlLine"""
         
         return keyword in {
-            'if':util.Set(['else', 'elif']),
-            'try':util.Set(['except', 'finally']),
-            'for':util.Set(['else'])
+            'if':set(['else', 'elif']),
+            'try':set(['except', 'finally']),
+            'for':set(['else'])
         }.get(self.keyword, [])
         
     def __repr__(self):
@@ -174,7 +174,7 @@ class Expression(Node):
         # TODO: make the "filter" shortcut list configurable at parse/gen time
         return self.code.undeclared_identifiers.union(
                 self.escapes_code.undeclared_identifiers.difference(
-                    util.Set(filters.DEFAULT_ESCAPES.keys())
+                    set(filters.DEFAULT_ESCAPES.keys())
                 )
             )
 
@@ -235,9 +235,9 @@ class Tag(Node):
         
         attributes - raw dictionary of attribute key/value pairs
         
-        expressions - a util.Set of identifiers that are legal attributes, which can also contain embedded expressions
+        expressions - a set of identifiers that are legal attributes, which can also contain embedded expressions
         
-        nonexpressions - a util.Set of identifiers that are legal attributes, which cannot contain embedded expressions
+        nonexpressions - a set of identifiers that are legal attributes, which cannot contain embedded expressions
         
         **kwargs - other arguments passed to the Node superclass (lineno, pos)
         
@@ -261,7 +261,7 @@ class Tag(Node):
         return self.nodes
         
     def _parse_attributes(self, expressions, nonexpressions):
-        undeclared_identifiers = util.Set()
+        undeclared_identifiers = set()
         self.parsed_attributes = {}
         for key in self.attributes:
             if key in expressions:
@@ -311,7 +311,7 @@ class IncludeTag(Tag):
         return []
 
     def undeclared_identifiers(self):
-        identifiers = self.page_args.undeclared_identifiers.difference(util.Set(["__DUMMY"]))
+        identifiers = self.page_args.undeclared_identifiers.difference(set(["__DUMMY"]))
         return identifiers.union(super(IncludeTag, self).undeclared_identifiers())
     
 class NamespaceTag(Tag):
@@ -359,7 +359,7 @@ class DefTag(Tag):
         res = []
         for c in self.function_decl.defaults:
             res += list(ast.PythonCode(c, **self.exception_kwargs).undeclared_identifiers)
-        return res + list(self.filter_args.undeclared_identifiers.difference(util.Set(filters.DEFAULT_ESCAPES.keys())))
+        return res + list(self.filter_args.undeclared_identifiers.difference(set(filters.DEFAULT_ESCAPES.keys())))
 
 class CallTag(Tag):
     __keyword__ = 'call'

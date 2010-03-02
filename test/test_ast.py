@@ -25,12 +25,12 @@ print "hello world, ", a, b
 print "Another expr", c
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.declared_identifiers == util.Set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
-        assert parsed.undeclared_identifiers == util.Set(['x', 'q', 'foo', 'gah', 'blah'])
+        assert parsed.declared_identifiers == set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
+        assert parsed.undeclared_identifiers == set(['x', 'q', 'foo', 'gah', 'blah'])
     
         parsed = ast.PythonCode("x + 5 * (y-z)", **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z'])
-        assert parsed.declared_identifiers == util.Set()
+        assert parsed.undeclared_identifiers == set(['x', 'y', 'z'])
+        assert parsed.declared_identifiers == set()
 
     def test_locate_identifiers_2(self):
         code = """
@@ -43,8 +43,8 @@ for x in data:
     result.append(x+7)
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['get_data'])
-        assert parsed.declared_identifiers == util.Set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
+        assert parsed.undeclared_identifiers == set(['get_data'])
+        assert parsed.declared_identifiers == set(['result', 'data', 'x', 'hoho', 'foobar', 'foo', 'yaya'])
 
     def test_locate_identifiers_3(self):
         """test that combination assignment/expressions of the same identifier log the ident as 'undeclared'"""
@@ -56,7 +56,7 @@ for y in range(1, y):
 (q for q in range (1, q))
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['x', 'y', 'z', 'q', 'range'])
+        assert parsed.undeclared_identifiers == set(['x', 'y', 'z', 'q', 'range'])
     
     def test_locate_identifiers_4(self):
         code = """
@@ -66,8 +66,8 @@ def mydef(mydefarg):
     print "mda is", mydefarg
 """    
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['y'])
-        assert parsed.declared_identifiers == util.Set(['mydef', 'x'])
+        assert parsed.undeclared_identifiers == set(['y'])
+        assert parsed.declared_identifiers == set(['mydef', 'x'])
     
     def test_locate_identifiers_5(self):
         code = """
@@ -77,7 +77,7 @@ except:
     print y
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['x', 'y'])
+        assert parsed.undeclared_identifiers == set(['x', 'y'])
     
     def test_locate_identifiers_6(self):
         code = """
@@ -85,7 +85,7 @@ def foo():
     return bar()
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['bar'])
+        assert parsed.undeclared_identifiers == set(['bar'])
     
         code = """
 def lala(x, y):
@@ -93,8 +93,8 @@ def lala(x, y):
 print x
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['z', 'x'])
-        assert parsed.declared_identifiers == util.Set(['lala'])
+        assert parsed.undeclared_identifiers == set(['z', 'x'])
+        assert parsed.declared_identifiers == set(['lala'])
     
         code = """
 def lala(x, y):
@@ -104,16 +104,16 @@ def lala(x, y):
 print z
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['z'])
-        assert parsed.declared_identifiers == util.Set(['lala'])
+        assert parsed.undeclared_identifiers == set(['z'])
+        assert parsed.declared_identifiers == set(['lala'])
     
     def test_locate_identifiers_7(self):
         code = """
 import foo.bar
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.declared_identifiers == util.Set(['foo'])
-        assert parsed.undeclared_identifiers == util.Set()
+        assert parsed.declared_identifiers == set(['foo'])
+        assert parsed.undeclared_identifiers == set()
 
     def test_locate_identifiers_8(self):
         code = """
@@ -123,8 +123,8 @@ class Hi(object):
         x = 5
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
-        assert parsed.declared_identifiers == util.Set(['Hi'])
-        assert parsed.undeclared_identifiers == util.Set()
+        assert parsed.declared_identifiers == set(['Hi'])
+        assert parsed.undeclared_identifiers == set()
         
     def test_no_global_imports(self):
         code = """
@@ -139,18 +139,18 @@ import x as bar
             
     def test_python_fragment(self):
         parsed = ast.PythonFragment("for x in foo:", **exception_kwargs)
-        assert parsed.declared_identifiers == util.Set(['x'])
-        assert parsed.undeclared_identifiers == util.Set(['foo'])
+        assert parsed.declared_identifiers == set(['x'])
+        assert parsed.undeclared_identifiers == set(['foo'])
         
         parsed = ast.PythonFragment("try:", **exception_kwargs)
 
         parsed = ast.PythonFragment("except MyException, e:", **exception_kwargs)
-        assert parsed.declared_identifiers == util.Set(['e'])
-        assert parsed.undeclared_identifiers == util.Set(['MyException'])
+        assert parsed.declared_identifiers == set(['e'])
+        assert parsed.undeclared_identifiers == set(['MyException'])
     
     def test_argument_list(self):
         parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", **exception_kwargs)
-        assert parsed.undeclared_identifiers == util.Set(['x', 'context'])
+        assert parsed.undeclared_identifiers == set(['x', 'context'])
         assert [x for x in parsed.args] == ["3", "5", "'hi'", "(x + 5)", "context.get('lala')"]
 
         parsed = ast.ArgumentList("h", **exception_kwargs)

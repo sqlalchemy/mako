@@ -138,7 +138,7 @@ class _GenerateRenderMethod(object):
 
         self.compiler.namespaces = namespaces
 
-        module_ident = util.Set()
+        module_ident = set()
         for n in module_code:
             module_ident = module_ident.union(n.declared_identifiers())
 
@@ -313,13 +313,13 @@ class _GenerateRenderMethod(object):
         
         # collection of all defs available to us in this scope
         comp_idents = dict([(c.name, c) for c in identifiers.defs])
-        to_write = util.Set()
+        to_write = set()
         
         # write "context.get()" for all variables we are going to need that arent in the namespace yet
         to_write = to_write.union(identifiers.undeclared)
         
         # write closure functions for closures that we define right here
-        to_write = to_write.union(util.Set([c.name for c in identifiers.closuredefs.values()]))
+        to_write = to_write.union(set([c.name for c in identifiers.closuredefs.values()]))
 
         # remove identifiers that are declared in the argument signature of the callable
         to_write = to_write.difference(identifiers.argument_declared)
@@ -659,7 +659,7 @@ class _Identifiers(object):
     def __init__(self, node=None, parent=None, nested=False):
         if parent is not None:
             # things that have already been declared in an enclosing namespace (i.e. names we can just use)
-            self.declared = util.Set(parent.declared).union([c.name for c in parent.closuredefs.values()]).union(parent.locally_declared).union(parent.argument_declared)
+            self.declared = set(parent.declared).union([c.name for c in parent.closuredefs.values()]).union(parent.locally_declared).union(parent.argument_declared)
             
             # if these identifiers correspond to a "nested" scope, it means whatever the 
             # parent identifiers had as undeclared will have been declared by that parent, 
@@ -670,22 +670,22 @@ class _Identifiers(object):
             # top level defs that are available
             self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
         else:
-            self.declared = util.Set()
+            self.declared = set()
             self.topleveldefs = util.SetLikeDict()
         
         # things within this level that are referenced before they are declared (e.g. assigned to)
-        self.undeclared = util.Set()
+        self.undeclared = set()
         
         # things that are declared locally.  some of these things could be in the "undeclared"
         # list as well if they are referenced before declared
-        self.locally_declared = util.Set()
+        self.locally_declared = set()
     
         # assignments made in explicit python blocks.  these will be propigated to 
         # the context of local def calls.
-        self.locally_assigned = util.Set()
+        self.locally_assigned = set()
         
         # things that are declared in the argument signature of the def callable
-        self.argument_declared = util.Set()
+        self.argument_declared = set()
         
         # closure defs that are defined in this level
         self.closuredefs = util.SetLikeDict()
@@ -699,7 +699,7 @@ class _Identifiers(object):
         """create a new Identifiers for a new Node, with this Identifiers as the parent."""
         return _Identifiers(node, self, **kwargs)
     
-    defs = property(lambda self:util.Set(self.topleveldefs.union(self.closuredefs).values()))
+    defs = property(lambda self:set(self.topleveldefs.union(self.closuredefs).values()))
     
     def __repr__(self):
         return "Identifiers(declared=%s, locally_declared=%s, undeclared=%s, topleveldefs=%s, closuredefs=%s, argumenetdeclared=%s)" % (repr(list(self.declared)), repr(list(self.locally_declared)), repr(list(self.undeclared)), repr([c.name for c in self.topleveldefs.values()]), repr([c.name for c in self.closuredefs.values()]), repr(self.argument_declared))

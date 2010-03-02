@@ -15,10 +15,10 @@ class PythonCode(object):
         self.code = code
         
         # represents all identifiers which are assigned to at some point in the code
-        self.declared_identifiers = util.Set()
+        self.declared_identifiers = set()
         
         # represents all identifiers which are referenced before their assignment, if any
-        self.undeclared_identifiers = util.Set()
+        self.undeclared_identifiers = set()
         
         # note that an identifier can be in both the undeclared and declared lists.
 
@@ -39,8 +39,8 @@ class ArgumentList(object):
     def __init__(self, code, **exception_kwargs):
         self.codeargs = []
         self.args = []
-        self.declared_identifiers = util.Set()
-        self.undeclared_identifiers = util.Set()
+        self.declared_identifiers = set()
+        self.undeclared_identifiers = set()
         if isinstance(code, basestring):
             if re.match(r"\S", code) and not re.match(r",\s*$", code):
                 # if theres text and no trailing comma, insure its parsed
