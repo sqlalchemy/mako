@@ -12,10 +12,28 @@ if not os.access('./test_htdocs', os.F_OK):
     os.mkdir('./test_htdocs')
 if not os.access('./test_htdocs/subdir', os.F_OK):
     os.mkdir('./test_htdocs/subdir')
+
+# TODO: all these need to become static files in source control
+    
 file('./test_htdocs/unicode.html', 'w').write("""## -*- coding: utf-8 -*-
 Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
+
+file('./test_htdocs/unicode_code.html', 'w').write("""## -*- coding: utf-8 -*-
+<%
+    x = u"drôle de petit voix m’a réveillé."
+%>
+% if x==u"drôle de petit voix m’a réveillé.":
+    hi, ${x}
+% endif
+""")
+
 file('./test_htdocs/unicode_syntax_error.html', 'w').write("""## -*- coding: utf-8 -*-
 <% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>""")
+
+file('./test_htdocs/unicode_expr.html', 'w').write("""## -*- coding: utf-8 -*-
+${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
+""")
+
 file('./test_htdocs/unicode_runtime_error.html', 'w').write("""## -*- coding: utf-8 -*-
 <% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »' + int(5/0) %>""")
 
@@ -24,7 +42,10 @@ Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voi
 file('./test_htdocs/badbom.html', 'w').write(codecs.BOM_UTF8 + """## -*- coding: ascii -*-
 Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
 file('./test_htdocs/bom.html', 'w').write(codecs.BOM_UTF8 + """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-    
+
+# TODO: all these tests need to derive from the 
+# file based tests, and run in an automated fashion.
+# everything here needs to be tested as file template + memory template
 class EncodingTest(unittest.TestCase):
     def test_unicode(self):
         template = Template(u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
@@ -42,6 +63,10 @@ class EncodingTest(unittest.TestCase):
     def test_unicode_file(self):
         template = Template(filename='./test_htdocs/unicode.html', module_directory='./test_htdocs')
         assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_file_code(self):
+        template = Template(filename='./test_htdocs/unicode_code.html', module_directory='./test_htdocs')
+        assert flatten_result(template.render_unicode()) == u"""hi, drôle de petit voix m’a réveillé."""
 
     def test_unicode_file_lookup(self):
         lookup = TemplateLookup(directories=['./test_htdocs'], output_encoding='utf-8', default_filters=['decode.utf8'])
@@ -92,6 +117,11 @@ class EncodingTest(unittest.TestCase):
         template = Template(u"""## -*- coding: utf-8 -*-
         ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
         """.encode('utf-8'))
+        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+
+    def test_unicode_literal_in_expr_file(self):
+        template = Template(filename='./test_htdocs/unicode_expr.html', module_directory='./test_htdocs')
+         
         assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
 
     def test_unicode_literal_in_code(self):
