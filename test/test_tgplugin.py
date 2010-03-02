@@ -2,10 +2,11 @@ import unittest
 
 from mako.ext.turbogears import TGPlugin
 from util import flatten_result, result_lines
+from test import TemplateTest, template_base
 
-tl = TGPlugin(options=dict(directories=['./test_htdocs']), extension='html')
+tl = TGPlugin(options=dict(directories=[template_base]), extension='html')
 
-class TestTGPlugun(unittest.TestCase):
+class TestTGPlugin(TemplateTest):
     def test_basic(self):
         t = tl.load_template('/index.html')
         assert result_lines(t.render()) == [

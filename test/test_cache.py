@@ -3,15 +3,14 @@ from mako.lookup import TemplateLookup
 from mako import lookup
 import shutil, unittest, os
 from util import result_lines
+from test import TemplateTest, template_base, module_base
 
-if not os.access('./test_htdocs', os.F_OK):
-    os.mkdir('./test_htdocs')
-for cache_dir in ('container_dbm', 'container_dbm_lock', 'container_file',
-            'container_file_lock'):
-    fullpath = os.path.join('./test_htdocs', cache_dir)
-    if os.path.exists(fullpath):
-        shutil.rmtree(fullpath)
-
+try:
+    import beaker
+except:
+    from nose import SkipTest
+    raise SkipTest("Beaker is required for these tests.")
+    
 class MockCache(object):
     def __init__(self, realcache):
         self.realcache = realcache
@@ -22,7 +21,7 @@ class MockCache(object):
         self.kwargs.pop('defname', None)
         return self.realcache.get(key, **kwargs)
     
-class CacheTest(unittest.TestCase):
+class CacheTest(TemplateTest):
     def test_def(self):
         t = Template("""
         <%!
@@ -177,7 +176,7 @@ class CacheTest(unittest.TestCase):
         assert m.kwargs == {}
         
     def test_fileargs_implicit(self):
-        l = lookup.TemplateLookup(module_directory='./test_htdocs')
+        l = lookup.TemplateLookup(module_directory=module_base)
         l.put_string("test","""
                 <%!
                     callcount = [0]
@@ -202,25 +201,25 @@ class CacheTest(unittest.TestCase):
             'this is foo',
             'callcount: [1]',
         ]
-        assert m.kwargs == {'type':'dbm', 'data_dir':'./test_htdocs'}
+        assert m.kwargs == {'type':'dbm', 'data_dir':module_base}
         
     def test_fileargs_deftag(self):
         t = Template("""
-        <%!
+        <%%!
             callcount = [0]
-        %>
-        <%def name="foo()" cached="True" cache_type='file' cache_dir='./test_htdocs'>
+        %%>
+        <%%def name="foo()" cached="True" cache_type='file' cache_dir='%s'>
             this is foo
-            <%
+            <%%
             callcount[0] += 1
-            %>
-        </%def>
+            %%>
+        </%%def>
 
         ${foo()}
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-""")
+""" % module_base)
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             'this is foo',
@@ -228,26 +227,26 @@ class CacheTest(unittest.TestCase):
             'this is foo',
             'callcount: [1]',
         ]
-        assert m.kwargs == {'type':'file','data_dir':'./test_htdocs'}
+        assert m.kwargs == {'type':'file','data_dir':module_base}
 
     def test_fileargs_pagetag(self):
         t = Template("""
-        <%page cache_dir='./test_htdocs' cache_type='dbm'/>
-        <%!
+        <%%page cache_dir='%s' cache_type='dbm'/>
+        <%%!
             callcount = [0]
-        %>
-        <%def name="foo()" cached="True">
+        %%>
+        <%%def name="foo()" cached="True">
             this is foo
-            <%
+            <%%
             callcount[0] += 1
-            %>
-        </%def>
+            %%>
+        </%%def>
 
         ${foo()}
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-""")
+""" % module_base)
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             'this is foo',
@@ -255,30 +254,30 @@ class CacheTest(unittest.TestCase):
             'this is foo',
             'callcount: [1]',
         ]
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'dbm'}
+        assert m.kwargs == {'data_dir':module_base, 'type':'dbm'}
 
     def test_args_complete(self):
         t = Template("""
-        <%def name="foo()" cached="True" cache_timeout="30" cache_dir="./test_htdocs" cache_type="file" cache_key='somekey'>
+        <%%def name="foo()" cached="True" cache_timeout="30" cache_dir="%s" cache_type="file" cache_key='somekey'>
             this is foo
-        </%def>
+        </%%def>
 
         ${foo()}
-""")
+""" % module_base)
         m = self._install_mock_cache(t)
         t.render()
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'expiretime':30}
+        assert m.kwargs == {'data_dir':module_base, 'type':'file', 'expiretime':30}
         
         t2 = Template("""
-        <%page cached="True" cache_timeout="30" cache_dir="./test_htdocs" cache_type="file" cache_key='somekey'/>
+        <%%page cached="True" cache_timeout="30" cache_dir="%s" cache_type="file" cache_key='somekey'/>
         hi
-        """)
+        """ % module_base)
         m = self._install_mock_cache(t2)
         t2.render()
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file', 'expiretime':30}
+        assert m.kwargs == {'data_dir':module_base, 'type':'file', 'expiretime':30}
 
     def test_fileargs_lookup(self):
-        l = lookup.TemplateLookup(cache_dir='./test_htdocs', cache_type='file')
+        l = lookup.TemplateLookup(cache_dir=module_base, cache_type='file')
         l.put_string("test","""
                 <%!
                     callcount = [0]
@@ -304,7 +303,7 @@ class CacheTest(unittest.TestCase):
             'this is foo',
             'callcount: [1]',
         ]
-        assert m.kwargs == {'data_dir':'./test_htdocs', 'type':'file'}
+        assert m.kwargs == {'data_dir':module_base, 'type':'file'}
     
     def test_buffered(self):
         t = Template("""
@@ -371,15 +370,15 @@ class CacheTest(unittest.TestCase):
         
     def test_invalidate(self):
         t = Template("""
-            <%def name="foo()" cached="True">
+            <%%def name="foo()" cached="True">
                 foo: ${x}
-            </%def>
+            </%%def>
 
-            <%def name="bar()" cached="True" cache_type='dbm' cache_dir='./test_htdocs'>
+            <%%def name="bar()" cached="True" cache_type='dbm' cache_dir='%s'>
                 bar: ${x}
-            </%def>
+            </%%def>
             ${foo()} ${bar()}
-        """)
+        """ % module_base)
         assert result_lines(t.render(x=1)) == ["foo: 1", "bar: 1"]
         assert result_lines(t.render(x=2)) == ["foo: 1", "bar: 1"]
         t.cache.invalidate_def('foo')
@@ -388,10 +387,10 @@ class CacheTest(unittest.TestCase):
         assert result_lines(t.render(x=4)) == ["foo: 3", "bar: 4"]
         
         t = Template("""
-            <%page cached="True" cache_type="dbm" cache_dir="./test_htdocs"/>
+            <%%page cached="True" cache_type="dbm" cache_dir="%s"/>
             
             page: ${x}
-        """)
+        """ % module_base)
         assert result_lines(t.render(x=1)) == ["page: 1"]
         assert result_lines(t.render(x=2)) == ["page: 1"]
         t.cache.invalidate_body()

@@ -5,8 +5,10 @@ from mako import exceptions
 from util import flatten_result, result_lines
 from mako.template import Template
 import re
+from test import TemplateTest, template_base, skip_if
 
-class LexerTest(unittest.TestCase):
+
+class LexerTest(TemplateTest):
     def test_text_and_tag(self):
         template = """
 <b>Hello world</b>
@@ -419,7 +421,7 @@ text text la la
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'\n', (1, 1)), ControlLine(u'if', u'if x: #comment', False, (2, 1)), Text(u'            hi\n', (3, 1)), ControlLine(u'else', u'else: #next', False, (4, 1)), Text(u'            hi\n', (5, 1)), ControlLine(u'if', u'endif #end', True, (6, 1))])"""
 
     def test_crlf(self):
-        template = file("./test_htdocs/crlf.html").read()
+        template = file(self._file_path("crlf.html")).read()
         nodes = Lexer(template).parse()
         assert repr(nodes) == r"""TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {u'args': u"a=['foo',\n                'bar']"}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (4, 26)), ControlLine(u'for', u'for x in [1,2,3]:', False, (8, 1)), Text(u'        ', (9, 1)), Expression(u'x', [], (9, 9)), Text(u'', (9, 13)), ControlLine(u'for', u'endfor', True, (10, 1)), Text(u'\r\n', (11, 1)), Expression(u"trumpeter == 'Miles' and trumpeter or \\\n      'Dizzy'", [], (12, 1)), Text(u'\r\n\r\n', (13, 15)), DefTag(u'def', {u'name': u'hi()'}, (15, 1), ["Text(u'\\r\\n    hi!\\r\\n', (15, 19))"]), Text(u'\r\n\r\n</html>\r\n', (17, 8))])"""
         assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 Dizzy </html>"""

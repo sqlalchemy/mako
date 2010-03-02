@@ -5,16 +5,16 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import sys
-try:
-    Set = set
-except:
-    import sets
-    Set = sets.Set
+Set = set
 
 try:
     from cStringIO import StringIO
 except:
     from StringIO import StringIO
+
+py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
+jython = sys.platform.startswith('java')
+win32 = sys.platform.startswith('win')
 
 import codecs, re, weakref, os, time
 
@@ -25,10 +25,20 @@ except ImportError:
     import dummy_threading as threading
     import dummy_thread as thread
 
-if sys.platform.startswith('win') or sys.platform.startswith('java'):
+if win32 or jython:
     time_func = time.clock
 else:
     time_func = time.time 
+   
+def function_named(fn, name):
+    """Return a function with a given __name__.
+
+    Will assign to __name__ and return the original function if possible on
+    the Python implementation, otherwise a new function will be constructed.
+
+    """
+    fn.__name__ = name
+    return fn
    
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""

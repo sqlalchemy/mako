@@ -4,101 +4,88 @@ from mako.template import Template, ModuleTemplate
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
 from mako import exceptions
-import unittest, re, os
+import re, os
 from util import flatten_result, result_lines
 import codecs
 
-if not os.access('./test_htdocs', os.F_OK):
-    os.mkdir('./test_htdocs')
-if not os.access('./test_htdocs/subdir', os.F_OK):
-    os.mkdir('./test_htdocs/subdir')
+from test import TemplateTest, eq_, template_base, module_base, skip_if
 
-# TODO: all these need to become static files in source control
-    
-file('./test_htdocs/unicode.html', 'w').write("""## -*- coding: utf-8 -*-
-Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-
-file('./test_htdocs/unicode_code.html', 'w').write("""## -*- coding: utf-8 -*-
-<%
-    x = u"drôle de petit voix m’a réveillé."
-%>
-% if x==u"drôle de petit voix m’a réveillé.":
-    hi, ${x}
-% endif
-""")
-
-file('./test_htdocs/unicode_syntax_error.html', 'w').write("""## -*- coding: utf-8 -*-
-<% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>""")
-
-file('./test_htdocs/unicode_expr.html', 'w').write("""## -*- coding: utf-8 -*-
-${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
-""")
-
-file('./test_htdocs/unicode_runtime_error.html', 'w').write("""## -*- coding: utf-8 -*-
-<% print 'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »' + int(5/0) %>""")
-
-file('./test_htdocs/bommagic.html', 'w').write(codecs.BOM_UTF8 + """## -*- coding: utf-8 -*-
-Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-file('./test_htdocs/badbom.html', 'w').write(codecs.BOM_UTF8 + """## -*- coding: ascii -*-
-Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-file('./test_htdocs/bom.html', 'w').write(codecs.BOM_UTF8 + """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-
-# TODO: all these tests need to derive from the 
-# file based tests, and run in an automated fashion.
-# everything here needs to be tested as file template + memory template
-class EncodingTest(unittest.TestCase):
+class EncodingTest(TemplateTest):
     def test_unicode(self):
-        template = Template(u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""")
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
 
     def test_encoding_doesnt_conflict(self):
-        template = Template(u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""", output_encoding='utf-8')
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            output_encoding='utf-8'
+        )
         
     def test_unicode_arg(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        template = Template("${val}")
-        assert template.render_unicode(val=val) == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            "${val}",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            template_args={'val':val}
+        )
 
     def test_unicode_file(self):
-        template = Template(filename='./test_htdocs/unicode.html', module_directory='./test_htdocs')
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_file_test(
+            "unicode.html",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
 
     def test_unicode_file_code(self):
-        template = Template(filename='./test_htdocs/unicode_code.html', module_directory='./test_htdocs')
-        assert flatten_result(template.render_unicode()) == u"""hi, drôle de petit voix m’a réveillé."""
+        self._do_file_test(
+            'unicode_code.html',
+            u"""hi, drôle de petit voix m’a réveillé.""",
+            filters=flatten_result
+        )
 
     def test_unicode_file_lookup(self):
-        lookup = TemplateLookup(directories=['./test_htdocs'], output_encoding='utf-8', default_filters=['decode.utf8'])
+        lookup = TemplateLookup(
+                    directories=[template_base], 
+                    output_encoding='utf-8', 
+                    default_filters=['decode.utf8'])
         template = lookup.get_template('/chs_unicode.html')
-        assert flatten_result(template.render(name='毛泽东')) == '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.'
+        eq_(
+            flatten_result(template.render(name='毛泽东')),
+            '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京.'
+        )
 
     def test_unicode_bom(self):
-        template = Template(filename='./test_htdocs/bom.html', module_directory='./test_htdocs')
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_file_test(
+            'bom.html',
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
 
-        template = Template(filename='./test_htdocs/bommagic.html', module_directory='./test_htdocs')
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_file_test(
+            'bommagic.html',
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
 
-        try:
-            template = Template(filename='./test_htdocs/badbom.html', module_directory='./test_htdocs')
-            assert False
-        except exceptions.CompileException:
-            assert True
+        self.assertRaises(
+            exceptions.CompileException,
+            Template, filename=self._file_path('badbom.html'),
+            module_directory=module_base
+        )
 
     def test_unicode_memory(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        val = "## coding: utf-8\n" + val.encode('utf-8')
-        template = Template(val)
-        assert isinstance(template.code, unicode)
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            "## -*- coding: utf-8 -*-\n" + val.encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
     
     def test_unicode_text(self):
         val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
-        val = "## -*- coding: utf-8 -*-\n" + val.encode('utf-8')
-        template = Template(val)
-        #print template.code
-        assert template.render_unicode() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            "## -*- coding: utf-8 -*-\n" + val.encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        )
 
     def test_unicode_text_ccall(self):
         val = u"""
@@ -108,106 +95,155 @@ class EncodingTest(unittest.TestCase):
         <%call expr="foo()">
         <%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>
         </%call>"""
-        val = "## -*- coding: utf-8 -*-\n" + val.encode('utf-8')
-        template = Template(val)
-        #print template.code
-        assert flatten_result(template.render_unicode()) == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            "## -*- coding: utf-8 -*-\n" + val.encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            filters=flatten_result
+        )
         
     def test_unicode_literal_in_expr(self):
-        template = Template(u"""## -*- coding: utf-8 -*-
-        ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
-        """.encode('utf-8'))
-        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_memory_test(
+            u"""## -*- coding: utf-8 -*-
+            ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
+            """.encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            filters = lambda s:s.strip()
+        )
 
     def test_unicode_literal_in_expr_file(self):
-        template = Template(filename='./test_htdocs/unicode_expr.html', module_directory='./test_htdocs')
-         
-        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        self._do_file_test(
+            'unicode_expr.html',
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            lambda t:t.strip()
+        )
 
     def test_unicode_literal_in_code(self):
-        template = Template(u"""## -*- coding: utf-8 -*-
-        <%
-            context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
-        %>
-        """.encode('utf-8'))
-        assert template.render_unicode().strip() == u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-
+        self._do_memory_test(
+            u"""## -*- coding: utf-8 -*-
+            <%
+                context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
+            %>
+            """.encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            filters=lambda s:s.strip()
+        )
+    
     def test_unicode_literal_in_controlline(self):
-        template = Template(u"""## -*- coding: utf-8 -*-
-        <%
-            x = u"drôle de petit voix m’a réveillé."
-        %>
-        % if x==u"drôle de petit voix m’a réveillé.":
-            hi, ${x}
-        % endif
-        """.encode('utf-8'))
-        assert template.render_unicode().strip() == u"""hi, drôle de petit voix m’a réveillé."""
+        self._do_memory_test(
+            u"""## -*- coding: utf-8 -*-
+            <%
+                x = u"drôle de petit voix m’a réveillé."
+            %>
+            % if x==u"drôle de petit voix m’a réveillé.":
+                hi, ${x}
+            % endif
+            """.encode('utf-8'),
+            u"""hi, drôle de petit voix m’a réveillé.""",
+            filters=lambda s:s.strip(),
+        )
     
     def test_unicode_literal_in_def(self):
-        template = Template(u"""## -*- coding: utf-8 -*-
-        <%def name="bello(foo, bar)">
-        Foo: ${ foo }
-        Bar: ${ bar }
-        </%def>
-        <%call expr="bello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
-        </%call>""".encode('utf-8'))
-        assert flatten_result(template.render_unicode()) == u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP"""
+        self._do_memory_test(
+            u"""## -*- coding: utf-8 -*-
+            <%def name="bello(foo, bar)">
+            Foo: ${ foo }
+            Bar: ${ bar }
+            </%def>
+            <%call expr="bello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
+            </%call>""".encode('utf-8'),
+            u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP""",
+            filters=flatten_result
+        )
         
-        template = Template(u"""## -*- coding: utf-8 -*-
-        <%def name="hello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
-        Foo: ${ foo }
-        Bar: ${ bar }
-        </%def>
-        ${ hello() }""".encode('utf-8'))
-        assert flatten_result(template.render_unicode()) == u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP"""
+        self._do_memory_test(
+            u"""## -*- coding: utf-8 -*-
+            <%def name="hello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
+            Foo: ${ foo }
+            Bar: ${ bar }
+            </%def>
+            ${ hello() }""".encode('utf-8'),
+            u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP""",
+            filters=flatten_result
+        )
         
     def test_input_encoding(self):
-        """test the 'input_encoding' flag on Template, and that unicode objects arent double-decoded"""
-        s2 = u"hello ${f(u'śląsk')}"
-        res = Template(s2, input_encoding='utf-8').render_unicode(f=lambda x:x)
-        assert res == u"hello śląsk"
+        """test the 'input_encoding' flag on Template, and that unicode 
+            objects arent double-decoded"""
+        
+        self._do_memory_test(
+            u"hello ${f(u'śląsk')}",
+            u"hello śląsk",
+            input_encoding='utf-8',
+            template_args={'f':lambda x:x}
+        )    
 
-        s2 = u"## -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}"
-        res = Template(s2).render_unicode(f=lambda x:x)
-        assert res == u"hello śląsk"
+        self._do_memory_test(
+            u"## -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}",
+            u"hello śląsk",
+            template_args={'f':lambda x:x}
+        )
 
     def test_raw_strings(self):
         """test that raw strings go straight thru with default_filters turned off"""
-        g = 'śląsk'
-        s = u"## -*- coding: utf-8 -*-\nhello ${x}"
-        t = Template(s, default_filters=[])
-        y = t.render(x=g)
-        assert y == "hello śląsk"
+
+        self._do_memory_test(
+            u"## -*- coding: utf-8 -*-\nhello ${x}",
+            "hello śląsk",
+            default_filters=[],
+            template_args={'x':'śląsk'},
+            unicode_=False
+        )
 
         # now, the way you *should* be doing it....
-        q = g.decode('utf-8')
-        y = t.render_unicode(x=q)
-        assert y == u"hello śląsk"
+        self._do_memory_test(
+            u"## -*- coding: utf-8 -*-\nhello ${x}",
+            u"hello śląsk",
+            template_args={'x':u'śląsk'}
+        )
         
     def test_encoding(self):
-        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        template = Template(val, output_encoding='utf-8')
-        assert template.render() == val.encode('utf-8')
+        self._do_memory_test(
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""".encode('utf-8'),
+            output_encoding='utf-8',
+            unicode_=False
+        )
 
     def test_encoding_errors(self):
-        val = u"""KGB (transliteration of "КГБ") is the Russian-language abbreviation for Committee for State Security, (Russian: Комит́ет Госуд́арственной Безоп́асности (help·info); Komitet Gosudarstvennoy Bezopasnosti)"""
-        template = Template(val, output_encoding='iso-8859-1', encoding_errors='replace')
-        assert template.render() == val.encode('iso-8859-1', 'replace')
+        self._do_memory_test(
+            u"""KGB (transliteration of "КГБ") is the Russian-language abbreviation for Committee for State Security, (Russian: Комит́ет Госуд́арственной Безоп́асности (help·info); Komitet Gosudarstvennoy Bezopasnosti)""",
+            u"""KGB (transliteration of "КГБ") is the Russian-language abbreviation for Committee for State Security, (Russian: Комит́ет Госуд́арственной Безоп́асности (help·info); Komitet Gosudarstvennoy Bezopasnosti)""".encode('iso-8859-1', 'replace'),
+            output_encoding='iso-8859-1', encoding_errors='replace',
+            unicode_=False
+        )
     
     def test_read_unicode(self):
-        lookup = TemplateLookup(directories=['./test_htdocs'], filesystem_checks=True, output_encoding='utf-8')
+        lookup = TemplateLookup(directories=[template_base], 
+                                filesystem_checks=True, output_encoding='utf-8')
         template = lookup.get_template('/read_unicode.html')
-        data = template.render(path=os.path.join('./test_htdocs', 'internationalization.html'))
+        data = template.render(path=self._file_path('internationalization.html'))
 
     def test_bytestring_passthru(self):
-        lookup = TemplateLookup(directories=['./test_htdocs'], default_filters=[], disable_unicode=True)
-        template = lookup.get_template('/chs_utf8.html')
-        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.')
+        self._do_file_test(
+            'chs_utf8.html',
+            '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.',
+            default_filters=[],
+            disable_unicode=True,
+            template_args={'name':'毛泽东'},
+            filters=flatten_result, 
+            unicode_=False
+        )
 
-        lookup = TemplateLookup(directories=['./test_htdocs'], disable_unicode=True)
-        template = lookup.get_template('/chs_utf8.html')
-        self.assertEquals(flatten_result(template.render(name='毛泽东')), '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.')
-        
+        self._do_file_test(
+            'chs_utf8.html',
+            '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.',
+            disable_unicode=True,
+            template_args={'name':'毛泽东'},
+            filters=flatten_result,
+            unicode_=False
+        )
+
+        template = self._file_template('chs_utf8.html', disable_unicode=True)
         self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
 
         template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')
@@ -216,7 +252,7 @@ class EncodingTest(unittest.TestCase):
         self.assertRaises(UnicodeDecodeError, template.render)  # raises because expression contains an encoded bytestring which cannot be decoded
 
 
-class PageArgsTest(unittest.TestCase):
+class PageArgsTest(TemplateTest):
     def test_basic(self):
         template = Template("""
             <%page args="x, y, z=7"/>
@@ -287,7 +323,7 @@ class PageArgsTest(unittest.TestCase):
         """)
         assert flatten_result(template.render()) == "dict: this is dict locals: this is locals"
 
-class IncludeTest(unittest.TestCase):
+class IncludeTest(TemplateTest):
     def test_basic(self):
         lookup = TemplateLookup()
         lookup.put_string("a", """
@@ -354,7 +390,7 @@ class IncludeTest(unittest.TestCase):
         """)
         assert flatten_result(lookup.get_template("c").render()) == "bar: calling bar this is a"
         
-class ControlTest(unittest.TestCase):
+class ControlTest(TemplateTest):
     def test_control(self):
         t = Template("""
     ## this is a template.
@@ -382,23 +418,29 @@ class ControlTest(unittest.TestCase):
         #print t.code
         assert flatten_result(t.render()) == "1 2 3"
         
-class GlobalsTest(unittest.TestCase):
+class GlobalsTest(TemplateTest):
     def test_globals(self):
-        t= Template("""
-            <%!
-                y = "hi"
-            %>
-        y is ${y}
-""")
-        assert t.render().strip() == "y is hi"
+        self._do_memory_test(
+            """
+                <%!
+                    y = "hi"
+                %>
+            y is ${y}
+            """,
+            "y is hi",
+            filters=lambda t:t.strip()
+        )
 
-class RichTracebackTest(unittest.TestCase):
+class RichTracebackTest(TemplateTest):
+    
     def _do_test_traceback(self, utf8, memory, syntax):
         if memory:
             if syntax:
-                source = u'## coding: utf-8\n<% print "m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>'
+                source = u'## coding: utf-8\n<% print "m’a réveillé. '\
+                        u'Elle disait: « S’il vous plaît… dessine-moi un mouton! » %>'
             else:
-                source = u'## coding: utf-8\n<% print u"m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »" + str(5/0) %>'
+                source = u'## coding: utf-8\n<% print u"m’a réveillé. '\
+                        u'Elle disait: « S’il vous plaît… dessine-moi un mouton! »" + str(5/0) %>'
             if utf8:
                 source = source.encode('utf-8')
             else:
@@ -406,13 +448,13 @@ class RichTracebackTest(unittest.TestCase):
             templateargs = {'text':source}
         else:
             if syntax:
-                filename = './test_htdocs/unicode_syntax_error.html'
+                filename = 'unicode_syntax_error.html'
             else:
-                filename = './test_htdocs/unicode_runtime_error.html'
-            source = file(filename).read()
+                filename = 'unicode_runtime_error.html'
+            source = file(self._file_path(filename)).read()
             if not utf8:
                 source = source.decode('utf-8')
-            templateargs = {'filename':filename}
+            templateargs = {'filename':self._file_path(filename)}
         try:
             template = Template(**templateargs)
             if not syntax:
@@ -430,35 +472,48 @@ for utf8 in (True, False):
         for syntax in (True, False):
             def _do_test(self):
                 self._do_test_traceback(utf8, memory, syntax)
-            name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', memory and 'memory' or 'file', syntax and 'syntax' or 'runtime')
-            try:
-               _do_test.__name__ = name
-            except:
-               pass
+            name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', 
+                                        memory and 'memory' or 'file', 
+                                        syntax and 'syntax' or 'runtime')
+            _do_test.__name__ = name
             setattr(RichTracebackTest, name, _do_test)
             del _do_test
 
-        
-class ModuleDirTest(unittest.TestCase):
+class ModuleDirTest(TemplateTest):
     def test_basic(self):
-        file('./test_htdocs/modtest.html', 'w').write("""this is a test""")
-        file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
-        t = Template(filename='./test_htdocs/modtest.html', module_directory='./test_htdocs/modules')
-        t2 = Template(filename='./test_htdocs/subdir/modtest.html', module_directory='./test_htdocs/modules')
-        assert t.module.__file__ == os.path.abspath('./test_htdocs/modules/test_htdocs/modtest.html.py')
-        assert t2.module.__file__ == os.path.abspath('./test_htdocs/modules/test_htdocs/subdir/modtest.html.py')
+        t = self._file_template("modtest.html")
+        t2 = self._file_template('subdir/modtest.html')
+
+        eq_(
+            t.module.__file__,
+            os.path.join(module_base, 'modtest.html.py')
+        )
+        eq_(
+            t2.module.__file__,
+            os.path.join(module_base, 'subdir', 'modtest.html.py')
+        )
+ 
     def test_callable(self):
-        file('./test_htdocs/modtest.html', 'w').write("""this is a test""")
-        file('./test_htdocs/subdir/modtest.html', 'w').write("""this is a test""")
         def get_modname(filename, uri):
-            return os.path.dirname(filename) + "/foo/" + os.path.basename(filename) + ".py"
-        lookup = TemplateLookup('./test_htdocs', modulename_callable=get_modname)
+            return os.path.join(
+                        module_base, 
+                        os.path.dirname(uri)[1:], 
+                        'foo', 
+                        os.path.basename(filename) + ".py")
+
+        lookup = TemplateLookup(template_base, modulename_callable=get_modname)
         t = lookup.get_template('/modtest.html')
         t2 = lookup.get_template('/subdir/modtest.html')
-        assert t.module.__file__ == 'test_htdocs/foo/modtest.html.py'
-        assert t2.module.__file__ == 'test_htdocs/subdir/foo/modtest.html.py'
+        eq_(
+            t.module.__file__, 
+            os.path.join(module_base, 'foo', 'modtest.html.py')
+        )
+        eq_(
+            t2.module.__file__, 
+            os.path.join(module_base, 'subdir', 'foo', 'modtest.html.py')
+        )
 
-class ModuleTemplateTest(unittest.TestCase):
+class ModuleTemplateTest(TemplateTest):
     def test_module_roundtrip(self):
         lookup = TemplateLookup()
 
@@ -494,7 +549,7 @@ class ModuleTemplateTest(unittest.TestCase):
         ]
         
     
-class PreprocessTest(unittest.TestCase):
+class PreprocessTest(TemplateTest):
     def test_old_comments(self):
         t = Template("""
         im a template
