@@ -18,6 +18,7 @@ class Context(object):
         self._data.update(data)
         self._kwargs = data.copy()
         self._with_template = None
+        self._outputting_as_unicode = None
         self.namespaces = {}
         
         # "capture" function which proxies to the generic "capture" function
@@ -26,8 +27,13 @@ class Context(object):
         # "caller" stack used by def calls with content
         self.caller_stack = self._data['caller'] = CallerStack()
         
-    lookup = property(lambda self:self._with_template.lookup)
-    kwargs = property(lambda self:self._kwargs.copy())
+    @property
+    def lookup(self):
+        return self._with_template.lookup
+        
+    @property
+    def kwargs(self):
+        return self._kwargs.copy()
     
     def push_caller(self, caller):
         self.caller_stack.append(caller)
@@ -87,6 +93,7 @@ class Context(object):
         c._orig = self._orig
         c._kwargs = self._kwargs
         c._with_template = self._with_template
+        c._outputting_as_unicode = self._outputting_as_unicode
         c.namespaces = self.namespaces
         c.caller_stack = self.caller_stack
         return c
@@ -368,6 +375,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     else:
         buf = util.StringIO()
     context = Context(buf, **data)
+    context._outputting_as_unicode = as_unicode
     context._with_template = template
     _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
     return context._pop_buffer().getvalue()
@@ -404,19 +412,24 @@ def _exec_template(callable_, context, args=None, kwargs=None):
         try:
             callable_(context, *args, **kwargs)
         except Exception, e:
-            error = e
+            _render_error(template, context, e)
         except:                
             e = sys.exc_info()[0]
-            error = e
-        if error:
-            if template.error_handler:
-                result = template.error_handler(context, error)
-                if not result:
-                    raise error
-            else:
-                error_template = exceptions.html_error_template()
-                context._buffer_stack[:] = [util.FastEncodingBuffer(error_template.output_encoding, error_template.encoding_errors)]
-                context._with_template = error_template
-                error_template.render_context(context, error=error)
+            _render_error(template, context, e)
     else:
         callable_(context, *args, **kwargs)
+
+
+def _render_error(template, context, error):
+    if template.error_handler:
+        result = template.error_handler(context, error)
+        if not result:
+            raise error
+    else:
+        error_template = exceptions.html_error_template()
+        if context._outputting_as_unicode:
+            context._buffer_stack[:] = [util.FastEncodingBuffer(unicode=True)]
+        else:
+            context._buffer_stack[:] = [util.FastEncodingBuffer(error_template.output_encoding, error_template.encoding_errors)]
+        context._with_template = error_template
+        error_template.render_context(context, error=error)

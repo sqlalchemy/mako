@@ -15,17 +15,26 @@ class TemplateTest(unittest.TestCase):
         return Template(uri=filename, filename=filepath, module_directory=module_base, **kw)
     
     def _file_path(self, filename):
+        name, ext = os.path.splitext(filename)
+        
+        if py3k:
+            py3k_path = os.path.join(template_base, name + "_py3k" + ext)
+            if os.path.exists(py3k_path):
+                return py3k_path
+        
         return os.path.join(template_base, filename)
         
     def _do_file_test(self, filename, expected, filters=None, 
                         unicode_=True, template_args=None, **kw):
         t1 = self._file_template(filename, **kw)
-        self._do_test(t1, expected, filters=filters, unicode_=unicode_, template_args=template_args)
+        self._do_test(t1, expected, filters=filters, 
+                        unicode_=unicode_, template_args=template_args)
     
     def _do_memory_test(self, source, expected, filters=None, 
                         unicode_=True, template_args=None, **kw):
         t1 = Template(text=source, **kw)
-        self._do_test(t1, expected, filters=filters, unicode_=unicode_, template_args=template_args)
+        self._do_test(t1, expected, filters=filters, 
+                        unicode_=unicode_, template_args=template_args)
     
     def _do_test(self, template, expected, filters=None, template_args=None, unicode_=True):
         if template_args is None:

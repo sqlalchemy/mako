@@ -1,9 +1,9 @@
 from mako.template import Template
 from mako import lookup
-import unittest
+from test import TemplateTest
 from util import flatten_result, result_lines
 
-class DefTest(unittest.TestCase):
+class DefTest(TemplateTest):
     def test_def_noargs(self):
         template = Template("""
         
@@ -61,6 +61,7 @@ class DefTest(unittest.TestCase):
 
     def test_toplevel(self):
         """test calling a def from the top level"""
+
         template = Template("""
         
             this is the body
@@ -73,15 +74,20 @@ class DefTest(unittest.TestCase):
                 this is b, ${x} ${y}
             </%def>
                 
-        """, output_encoding='utf-8')
-        assert flatten_result(template.get_def("a").render()) == "this is a"
-        assert flatten_result(template.get_def("b").render(x=10, y=15)) == "this is b, 10 15"
-        assert flatten_result(template.get_def("body").render()) == "this is the body"
+        """)
         
-class ScopeTest(unittest.TestCase):
+        self._do_test(template.get_def("a"), "this is a", filters=flatten_result)
+        self._do_test(template.get_def("b"), "this is b, 10 15", 
+                                                            template_args={'x':10, 'y':15}, 
+                                                            filters=flatten_result)
+        self._do_test(template.get_def("body"), "this is the body", filters=flatten_result)
+        
+        
+class ScopeTest(TemplateTest):
     """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
+    
     def test_scope_one(self):
-        t = Template("""
+        self._do_memory_test("""
         <%def name="a()">
             this is a, and y is ${y}
         </%def>
@@ -94,8 +100,11 @@ class ScopeTest(unittest.TestCase):
 
         ${a()}
 
-""")
-        assert flatten_result(t.render(y=None)) == "this is a, and y is None this is a, and y is 7"
+""",
+            "this is a, and y is None this is a, and y is 7",
+            filters=flatten_result,
+            template_args={'y':None}
+        )
 
     def test_scope_two(self):
         t = Template("""
@@ -372,7 +381,7 @@ class ScopeTest(unittest.TestCase):
             "this is a, x is 15"
         ]
 
-class NestedDefTest(unittest.TestCase):
+class NestedDefTest(TemplateTest):
     def test_nested_def(self):
         t = Template("""
 
@@ -512,7 +521,7 @@ class NestedDefTest(unittest.TestCase):
 """)
         assert flatten_result(t.render(x=5)) == "b. c. x is 10. a: x is 5 x is 5"
             
-class ExceptionTest(unittest.TestCase):
+class ExceptionTest(TemplateTest):
     def test_raise(self):
         template = Template("""
             <%

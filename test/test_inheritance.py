@@ -1,5 +1,5 @@
 from mako.template import Template
-from mako import lookup
+from mako import lookup, util
 import unittest
 from util import flatten_result, result_lines
 
@@ -187,10 +187,10 @@ ${next.body()}
             this is the base.
 
             <%
-            sorted = pageargs.items()
-            sorted.sort()
+            sorted_ = pageargs.items()
+            sorted_ = sorted(sorted_)
             %>
-            pageargs: (type: ${type(pageargs)}) ${sorted}
+            pageargs: (type: ${type(pageargs)}) ${sorted_}
             <%def name="foo()">
                 ${next.body(**context.kwargs)}
             </%def>
@@ -202,11 +202,20 @@ ${next.body()}
             <%page args="x, y, z=7"/>
             print ${x}, ${y}, ${z}
         """)
-        assert result_lines(collection.get_template('index').render(x=5,y=10)) == [
-            "this is the base.",
-            "pageargs: (type: <type 'dict'>) [('x', 5), ('y', 10)]",
-            "print 5, 10, 7"
-        ]
+        
+        if util.py3k:
+            assert result_lines(collection.get_template('index').render_unicode(x=5,y=10)) == [
+                "this is the base.",
+                "pageargs: (type: <class 'dict'>) [('x', 5), ('y', 10)]",
+                "print 5, 10, 7"
+            ]
+        else:
+            assert result_lines(collection.get_template('index').render_unicode(x=5,y=10)) == [
+                "this is the base.",
+                "pageargs: (type: <type 'dict'>) [('x', 5), ('y', 10)]",
+                "print 5, 10, 7"
+            ]
+        
     def test_pageargs_2(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """

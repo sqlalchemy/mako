@@ -1,6 +1,13 @@
 from setuptools import setup, find_packages
 import os
 import re
+import sys
+
+extra = {}
+if sys.version_info >= (3, 0):
+    extra.update(
+        use_2to3=True,
+    )
 
 v = file(os.path.join(os.path.dirname(__file__), 'mako', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
@@ -25,10 +32,11 @@ SVN version:
 
 """,
       classifiers=[
-      "Development Status :: 5 - Production/Stable",
+      'Development Status :: 5 - Production/Stable',
       'Environment :: Web Environment',
       'Intended Audience :: Developers',
       'Programming Language :: Python',
+      'Programming Language :: Python :: 3',
       'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
       ],
       keywords='wsgi myghty mako',

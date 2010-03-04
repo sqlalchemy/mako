@@ -1,14 +1,12 @@
 import unittest
 
 from mako import ast, exceptions, pyparser, util
+from test import eq_
 
 exception_kwargs = {'source':'', 'lineno':0, 'pos':0, 'filename':''}
 
 class AstParseTest(unittest.TestCase):
-    def setUp(self):
-        pass
-    def tearDown(self):
-        pass
+
     def test_locate_identifiers(self):
         """test the location of identifiers in a python code string"""
         code = """
@@ -21,8 +19,8 @@ foo.hoho.lala.bar = 7 + gah.blah + u + blah
 for lar in (1,2,3):
     gh = 5
     x = 12
-print "hello world, ", a, b
-print "Another expr", c
+("hello world, ", a, b)
+("Another expr", c)
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
@@ -51,7 +49,7 @@ for x in data:
         code = """
 x = x + 5
 for y in range(1, y):
-    print "hi"
+    ("hi",)
 [z for z in range(1, z)]
 (q for q in range (1, q))
 """
@@ -59,9 +57,17 @@ for y in range(1, y):
         assert parsed.undeclared_identifiers == set(['x', 'y', 'z', 'q', 'range'])
     
     def test_locate_identifiers_4(self):
-        code = """
+        if util.py3k:
+            code = """
 x = 5
-print y
+(y, )
+def mydef(mydefarg):
+    print("mda is", mydefarg)
+"""    
+        else:
+            code = """
+x = 5
+(y, )
 def mydef(mydefarg):
     print "mda is", mydefarg
 """    
@@ -70,7 +76,16 @@ def mydef(mydefarg):
         assert parsed.declared_identifiers == set(['mydef', 'x'])
     
     def test_locate_identifiers_5(self):
-        code = """
+        if util.py3k:
+            code = """
+try:
+    print(x)
+except:
+    print(y)
+"""
+        else:
+            
+            code = """
 try:
     print x
 except:
@@ -86,8 +101,15 @@ def foo():
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['bar'])
-    
-        code = """
+        
+        if util.py3k:
+            code = """
+def lala(x, y):
+    return x, y, z
+print(x)
+"""
+        else:
+            code = """
 def lala(x, y):
     return x, y, z
 print x
@@ -95,8 +117,17 @@ print x
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['z', 'x'])
         assert parsed.declared_identifiers == set(['lala'])
-    
-        code = """
+        
+        if util.py3k:
+            code = """
+def lala(x, y):
+    def hoho():
+        def bar():
+            z = 7
+print(z)
+"""
+        else:
+            code = """
 def lala(x, y):
     def hoho():
         def bar():
@@ -131,11 +162,7 @@ class Hi(object):
 from foo import *
 import x as bar
 """
-        try:
-            parsed = ast.PythonCode(code, **exception_kwargs)
-            assert False
-        except exceptions.CompileException, e:
-            assert str(e).startswith("'import *' is not supported")
+        self.assertRaises(exceptions.CompileException, ast.PythonCode, code, **exception_kwargs)
             
     def test_python_fragment(self):
         parsed = ast.PythonFragment("for x in foo:", **exception_kwargs)
@@ -144,9 +171,12 @@ import x as bar
         
         parsed = ast.PythonFragment("try:", **exception_kwargs)
 
-        parsed = ast.PythonFragment("except MyException, e:", **exception_kwargs)
-        assert parsed.declared_identifiers == set(['e'])
-        assert parsed.undeclared_identifiers == set(['MyException'])
+        if util.py3k:
+            parsed = ast.PythonFragment("except MyException as e:", **exception_kwargs)
+        else:
+            parsed = ast.PythonFragment("except MyException, e:", **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['e']))
+        eq_(parsed.undeclared_identifiers, set(['MyException']))
     
     def test_argument_list(self):
         parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", **exception_kwargs)
@@ -184,8 +214,6 @@ import x as bar
         code = "str((x+7*y) / foo.bar(5,6)) + lala('ho')"
         astnode = pyparser.parse(code)
         newcode = pyparser.ExpressionGenerator(astnode).value()
-        #print "newcode:" + newcode
-        #print "result:" + eval(code, local_dict)
         assert (eval(code, local_dict) == eval(newcode, local_dict))
         
         a = ["one", "two", "three"]
@@ -195,8 +223,6 @@ import x as bar
         code = "a[2] + hoho['somevalue'] + repr(g[3:5]) + repr(g[3:]) + repr(g[:5])"
         astnode = pyparser.parse(code)
         newcode = pyparser.ExpressionGenerator(astnode).value()
-        #print newcode
-        #print "result:", eval(code, local_dict)
         assert(eval(code, local_dict) == eval(newcode, local_dict))
         
         local_dict={'f':lambda :9, 'x':7}
@@ -209,7 +235,6 @@ import x as bar
             local_dict={}
             astnode = pyparser.parse(code)
             newcode = pyparser.ExpressionGenerator(astnode).value()
-            #print code, newcode
             assert(eval(code, local_dict)) == eval(newcode, local_dict), "%s != %s" % (code, newcode)
 
     

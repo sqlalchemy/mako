@@ -66,8 +66,14 @@ class Template(object):
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
+
+        if util.py3k and disable_unicode:
+            raise exceptions.UnsupportedError(
+                                    "Mako for Python 3 does not "
+                                    "support disabling Unicode")
+        
         if default_filters is None:
-            if self.disable_unicode:
+            if util.py3k or self.disable_unicode:
                 self.default_filters = ['str']
             else:
                 self.default_filters = ['unicode']
@@ -108,18 +114,18 @@ class Template(object):
                             os.stat(path)[stat.ST_MTIME] < filemtime:
                     _compile_module_file(
                                 self, 
-                                file(filename).read(), 
+                                open(filename, 'rb').read(), 
                                 filename, 
                                 path)
-                module = imp.load_source(self.module_id, path, file(path))
+                module = imp.load_source(self.module_id, path, open(path, 'rb'))
                 del sys.modules[self.module_id]
                 if module._magic_number != codegen.MAGIC_NUMBER:
                     _compile_module_file(
                                 self, 
-                                file(filename).read(), 
+                                open(filename, 'rb').read(), 
                                 filename, 
                                 path)
-                    module = imp.load_source(self.module_id, path, file(path))
+                    module = imp.load_source(self.module_id, path, open(path, 'rb'))
                     del sys.modules[self.module_id]
                 ModuleInfo(module, path, self, filename, None, None)
             else:
@@ -127,7 +133,7 @@ class Template(object):
                 # in memory
                 (code, module) = _compile_text(
                                     self, 
-                                    file(filename).read(), 
+                                    open(filename, 'rb').read(), 
                                     filename)
                 self._source = None
                 self._code = code
@@ -318,7 +324,7 @@ class ModuleInfo(object):
         if self.module_source is not None:
             return self.module_source
         else:
-            return file(self.module_filename).read()
+            return open(self.module_filename).read()
     
     @property
     def source(self):
@@ -331,10 +337,10 @@ class ModuleInfo(object):
                 return self.template_source
         else:
             if self.module._source_encoding:
-                return file(self.template_filename).read().\
+                return open(self.template_filename, 'rb').read().\
                                 decode(self.module._source_encoding)
             else:
-                return file(self.template_filename).read()
+                return open(self.template_filename).read()
         
 def _compile_text(template, text, filename):
     identifier = template.module_id
@@ -355,7 +361,7 @@ def _compile_text(template, text, filename):
                             generate_magic_comment=template.disable_unicode)
 
     cid = identifier
-    if isinstance(cid, unicode):
+    if not util.py3k and isinstance(cid, unicode):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')

@@ -7,7 +7,7 @@
 """provides the Lexer class for parsing template strings into parse trees."""
 
 import re, codecs
-from mako import parsetree, exceptions
+from mako import parsetree, exceptions, util
 from mako.pygen import adjust_whitespace
 
 _regexp_cache = {}
@@ -27,6 +27,12 @@ class Lexer(object):
         self.control_line = []
         self.disable_unicode = disable_unicode
         self.encoding = input_encoding
+        
+        if util.py3k and disable_unicode:
+            raise exceptions.UnsupportedError(
+                                    "Mako for Python 3 does not "
+                                    "support disabling Unicode")
+        
         if preprocessor is None:
             self.preprocessor = []
         elif not hasattr(preprocessor, '__iter__'):
@@ -42,10 +48,8 @@ class Lexer(object):
                 'filename':self.filename}
     
     def match(self, regexp, flags=None):
-        """match the given regular expression string and flags to the current text position.
+        """compile the given regexp, cache the reg, and call match_reg()."""
         
-        if a match occurs, update the current text and line position."""
-        mp = self.match_position
         try:
             reg = _regexp_cache[(regexp, flags)]
         except KeyError:
@@ -54,6 +58,17 @@ class Lexer(object):
             else:
                 reg = re.compile(regexp)
             _regexp_cache[(regexp, flags)] = reg
+        
+        return self.match_reg(reg)
+        
+    def match_reg(self, reg):
+        """match the given regular expression object to the current text position.
+        
+        if a match occurs, update the current text and line position.
+        
+        """
+
+        mp = self.match_position
 
         match = reg.match(self.text, self.match_position)
         if match:
@@ -128,45 +143,61 @@ class Lexer(object):
                                 (node.keyword, self.control_line[-1].keyword),
                                 **self.exception_kwargs)
 
-    def parse(self):
-        for preproc in self.preprocessor:
-            self.text = preproc(self.text)
-            
-        if not isinstance(self.text, unicode) and self.text.startswith(codecs.BOM_UTF8):
-            self.text = self.text[len(codecs.BOM_UTF8):]
+    _coding_re = re.compile(r'#.*coding[:=]\s*([-\w.]+).*\r?\n')
+
+    def decode_raw_stream(self, text, decode_raw, known_encoding, filename):
+        """given string/unicode or bytes/string, determine encoding
+           from magic encoding comment, return body as unicode
+           or raw if decode_raw=False
+
+        """
+        if isinstance(text, unicode):
+            m = self._coding_re.match(text)
+            encoding = m and m.group(1) or known_encoding or 'ascii'
+            return encoding, text
+
+        if text.startswith(codecs.BOM_UTF8):
+            text = text[len(codecs.BOM_UTF8):]
             parsed_encoding = 'utf-8'
-            me = self.match_encoding()
-            if me is not None and me != 'utf-8':
+            m = self._coding_re.match(text.decode('utf-8', 'ignore'))
+            if m is not None and m.group(1) != 'utf-8':
                 raise exceptions.CompileException(
                                 "Found utf-8 BOM in file, with conflicting "
-                                "magic encoding comment of '%s'" % me, 
-                                self.text.decode('utf-8', 'ignore'), 
-                                0, 0, self.filename)
+                                "magic encoding comment of '%s'" % m.group(1), 
+                                text.decode('utf-8', 'ignore'), 
+                                0, 0, filename)
         else:
-            parsed_encoding = self.match_encoding()
-            
-        if parsed_encoding:
-            self.encoding = parsed_encoding
-            
-        if not self.disable_unicode and not isinstance(self.text, unicode):
-            if self.encoding:
-                try:
-                    self.text = self.text.decode(self.encoding)
-                except UnicodeDecodeError, e:
-                    raise exceptions.CompileException(
-                                    "Unicode decode operation of encoding '%s' failed" %
-                                    self.encoding, 
-                                    self.text.decode('utf-8', 'ignore'), 
-                                    0, 0, self.filename)
+            m = self._coding_re.match(text.decode('utf-8', 'ignore'))
+            if m:
+                parsed_encoding = m.group(1)
             else:
-                try:
-                    self.text = self.text.decode()
-                except UnicodeDecodeError, e:
-                    raise exceptions.CompileException(
-                                    "Could not read template using encoding of 'ascii'.  "
-                                    "Did you forget a magic encoding comment?",
-                                    self.text.decode('utf-8', 'ignore'), 0, 0, self.filename)
+                parsed_encoding = known_encoding or 'ascii'
 
+        if decode_raw:
+            try:
+                text = text.decode(parsed_encoding)
+            except UnicodeDecodeError, e:
+                raise exceptions.CompileException(
+                                "Unicode decode operation of encoding '%s' failed" %
+                                parsed_encoding, 
+                                text.decode('utf-8', 'ignore'), 
+                                0, 0, filename)
+
+        return parsed_encoding, text
+
+    def parse(self):
+        self.encoding, self.text = self.decode_raw_stream(self.text, 
+                                        not self.disable_unicode, 
+                                        self.encoding,
+                                        self.filename,)
+
+        for preproc in self.preprocessor:
+            self.text = preproc(self.text)
+        
+        # push the match marker past the 
+        # encoding comment.
+        self.match_reg(self._coding_re)
+        
         self.textlength = len(self.text)
             
         while (True):
@@ -206,13 +237,6 @@ class Lexer(object):
                                             self.control_line[-1].pos, self.filename)
         return self.template
 
-    def match_encoding(self):
-        match = self.match(r'#.*coding[:=]\s*([-\w.]+).*\r?\n')
-        if match:
-            return match.group(1)
-        else:
-            return None
-            
     def match_tag_start(self):
         match = self.match(r'''
             \<%     # opening tag

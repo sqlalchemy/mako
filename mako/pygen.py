@@ -8,6 +8,7 @@
 
 import re, string
 from StringIO import StringIO
+from mako import exceptions
 
 class PythonPrinter(object):
     def __init__(self, stream):
@@ -84,7 +85,7 @@ class PythonPrinter(object):
                 # probably put extra closures - the resulting
                 # module wont compile.  
                 if len(self.indent_detail) == 0:  
-                    raise "Too many whitespace closures"
+                    raise exceptions.SyntaxException("Too many whitespace closures")
                 self.indent_detail.pop()
         
         if line is None:
@@ -200,7 +201,7 @@ class PythonPrinter(object):
             if self._in_multi_line(entry):
                 self.stream.write(entry + "\n")
             else:
-                entry = string.expandtabs(entry)
+                entry = entry.expandtabs()
                 if stripspace is None and re.search(r"^[ \t]*[^# \t]", entry):
                     stripspace = re.match(r"^([ \t]*)", entry).group(1)
                 self.stream.write(self._indent_line(entry, stripspace) + "\n")
@@ -260,7 +261,7 @@ def adjust_whitespace(text):
         if in_multi_line(line):
             lines.append(line)
         else:
-            line = string.expandtabs(line)
+            line = line.expandtabs()
             if stripspace is None and re.search(r"^[ \t]*[^# \t]", line):
                 stripspace = re.match(r"^([ \t]*)", line).group(1)
             lines.append(_indent_line(line, stripspace))

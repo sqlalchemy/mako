@@ -12,9 +12,23 @@ module is used.
 
 from StringIO import StringIO
 from mako import exceptions, util
+import operator
 
-# words that cannot be assigned to (notably smaller than the total keys in __builtins__)
-reserved = set(['True', 'False', 'None'])
+if util.py3k:
+    # words that cannot be assigned to (notably 
+    # smaller than the total keys in __builtins__)
+    reserved = set(['True', 'False', 'None', 'print'])
+
+    # the "id" attribute on a function node
+    arg_id = operator.attrgetter('arg')
+else:
+    # words that cannot be assigned to (notably 
+    # smaller than the total keys in __builtins__)
+    reserved = set(['True', 'False', 'None'])
+    
+    # the "id" attribute on a function node
+    arg_id = operator.attrgetter('id')
+
 
 try:
     import _ast
@@ -63,6 +77,18 @@ if _ast:
             for n in node.targets:
                 self.visit(n)
             self.in_assign_targets = in_a
+        
+        if util.py3k:
+            # ExceptHandler is in Python 2, but this
+            # block only works in Python 3 (and is required there)
+            def visit_ExceptHandler(self, node):
+                if node.name is not None:
+                    self._add_declared(node.name)
+                if node.type is not None:
+                    self.listener.undeclared_identifiers.add(node.type.id)
+                for statement in node.body:
+                    self.visit(statement)
+                
         def visit_FunctionDef(self, node):
             self._add_declared(node.name)
             # push function state onto stack.  dont log any
@@ -72,17 +98,19 @@ if _ast:
             saved = {}
             inf = self.in_function
             self.in_function = True
+            
             for arg in node.args.args:
-                if arg.id in self.local_ident_stack:
-                    saved[arg.id] = True
+                if arg_id(arg) in self.local_ident_stack:
+                    saved[arg_id(arg)] = True
                 else:
-                    self.local_ident_stack[arg.id] = True
+                    self.local_ident_stack[arg_id(arg)] = True
             for n in node.body:
                 self.visit(n)
             self.in_function = inf
             for arg in node.args.args:
-                if arg.id not in saved:
-                    del self.local_ident_stack[arg.id]
+                if arg_id(arg) not in saved:
+                    del self.local_ident_stack[arg_id(arg)]
+                    
         def visit_For(self, node):
             # flip around visit
             self.visit(node.iter)
@@ -94,7 +122,9 @@ if _ast:
         def visit_Name(self, node):
             if isinstance(node.ctx, _ast.Store):
                 self._add_declared(node.id)
-            if node.id not in reserved and node.id not in self.listener.declared_identifiers and node.id not in self.local_ident_stack:
+            if node.id not in reserved and \
+                        node.id not in self.listener.declared_identifiers and \
+                        node.id not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)
         def visit_Import(self, node):
             for name in node.names:
@@ -128,9 +158,10 @@ if _ast:
         def __init__(self, listener, **exception_kwargs):
             self.listener = listener
             self.exception_kwargs = exception_kwargs
+            
         def visit_FunctionDef(self, node):
             self.listener.funcname = node.name
-            argnames = [arg.id for arg in node.args.args]
+            argnames = [arg_id(arg) for arg in node.args.args]
             if node.args.vararg:
                 argnames.append(node.args.vararg)
             if node.args.kwarg:

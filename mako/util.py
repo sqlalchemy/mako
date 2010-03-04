@@ -6,16 +6,20 @@
 
 import sys
 
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
 
 py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
 jython = sys.platform.startswith('java')
 win32 = sys.platform.startswith('win')
 
-import codecs, re, weakref, os, time
+if py3k:
+    from io import StringIO
+else:
+    try:
+        from cStringIO import StringIO
+    except:
+        from StringIO import StringIO
+
+import codecs, re, weakref, os, time, operator
 
 try:
     import threading
@@ -60,6 +64,10 @@ def to_list(x, default=None):
     else:
         return x
 
+
+    
+
+
 class SetLikeDict(dict):
     """a dictionary that has some setlike methods on it"""
     def union(self, other):
@@ -84,6 +92,9 @@ class FastEncodingBuffer(object):
         self.unicode = unicode
         self.errors = errors
         self.write = self.data.append
+    
+    def truncate(self):
+        self.data =[]
         
     def getvalue(self):
         if self.encoding:
@@ -138,8 +149,8 @@ class LRUCache(dict):
     
     def _manage_size(self):
         while len(self) > self.capacity + self.capacity * self.threshold:
-            bytime = dict.values(self)
-            bytime.sort(lambda a, b: cmp(b.timestamp, a.timestamp))
+            bytime = sorted(dict.values(self), 
+                            key=operator.attrgetter('timestamp'), reverse=True)
             for item in bytime[self.capacity:]:
                 try:
                     del self[item.key]
@@ -154,13 +165,13 @@ _PYTHON_MAGIC_COMMENT_re = re.compile(
     re.VERBOSE)
 
 def parse_encoding(fp):
-    """Deduce the encoding of a source file from magic comment.
+    """Deduce the encoding of a Python source file (binary mode) from magic comment.
 
     It does this in the same way as the `Python interpreter`__
 
     .. __: http://docs.python.org/ref/encodings.html
 
-    The ``fp`` argument should be a seekable file object.
+    The ``fp`` argument should be a seekable file object in binary mode.
     """
     pos = fp.tell()
     fp.seek(0)
@@ -170,11 +181,11 @@ def parse_encoding(fp):
         if has_bom:
             line1 = line1[len(codecs.BOM_UTF8):]
 
-        m = _PYTHON_MAGIC_COMMENT_re.match(line1)
+        m = _PYTHON_MAGIC_COMMENT_re.match(line1.decode('ascii', 'ignore'))
         if not m:
             try:
                 import parser
-                parser.suite(line1)
+                parser.suite(line1.decode('ascii', 'ignore'))
             except (ImportError, SyntaxError):
                 # Either it's a real syntax error, in which case the source
                 # is not valid python source, or line2 is a continuation of
@@ -183,7 +194,7 @@ def parse_encoding(fp):
                 pass
             else:
                 line2 = fp.readline()
-                m = _PYTHON_MAGIC_COMMENT_re.match(line2)
+                m = _PYTHON_MAGIC_COMMENT_re.match(line2.decode('ascii', 'ignore'))
 
         if has_bom:
             if m:

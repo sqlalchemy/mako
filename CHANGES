@@ -1,5 +1,9 @@
 0.3
 - Python 2.3 support is dropped. [ticket:123]
+
+- Python 3 support is added ! See README.py3k
+  for installation and testing notes.
+  [ticket:119]
   
 - Unit tests now run with nose.  [ticket:127]
 

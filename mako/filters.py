@@ -7,6 +7,7 @@
 
 import re, cgi, urllib, htmlentitydefs, codecs
 from StringIO import StringIO
+from mako import util
 
 xml_escapes = {
     '&' : '&amp;',
@@ -166,5 +167,9 @@ DEFAULT_ESCAPES = {
     'str':'str',
     'n':'n'
 }
-    
+
+if util.py3k:
+    DEFAULT_ESCAPES.update({
+        'unicode':'str'
+    })
 

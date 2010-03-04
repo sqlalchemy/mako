@@ -25,6 +25,14 @@ def compile(node,
     """Generate module source code given a parsetree node, 
       uri, and optional source filename"""
 
+    # if on Py2K, push the "source_encoding" string to be
+    # a bytestring itself, as we will be embedding it into 
+    # the generated source and we don't want to coerce the 
+    # result into a unicode object, in "disable_unicode" mode
+    if not util.py3k and isinstance(source_encoding, unicode):
+        source_encoding = source_encoding.encode(source_encoding)
+        
+        
     buf = util.FastEncodingBuffer()
 
     printer = PythonPrinter(buf)
@@ -571,8 +579,9 @@ class _GenerateRenderMethod(object):
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
                 # if we are the "template" def, fudge locally declared/modified variables into the "__M_locals" dictionary,
                 # which is used for def calls within the same template, to simulate "enclosing scope"
-                self.printer.writeline('__M_locals.update(__M_dict_builtin([(__M_key, __M_locals_builtin()[__M_key]) for __M_key in [%s] if __M_key in __M_locals_builtin()]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
-                
+                self.printer.writeline('__M_locals_builtin_stored = __M_locals_builtin()')
+                self.printer.writeline('__M_locals.update(__M_dict_builtin([(__M_key, __M_locals_builtin_stored[__M_key]) for __M_key in [%s] if __M_key in __M_locals_builtin_stored]))' % ','.join([repr(x) for x in node.declared_identifiers()]))
+
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
         args = node.attributes.get('args')
