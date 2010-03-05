@@ -72,12 +72,18 @@ class RichTraceback(object):
     reverse_traceback - the traceback list in reverse
     
     """
-    def __init__(self, traceback=None):
+    def __init__(self, error=None, traceback=None):
         (self.source, self.lineno) = ("", 0)
-        (t, self.error, self.records) = self._init(traceback)
-        if self.error is None:
-            self.error = t
-        if isinstance(self.error, CompileException) or isinstance(self.error, SyntaxException):
+
+        if error is None or traceback is None:
+            t, value, traceback = sys.exc_info()
+            self.error = value or t
+        else:
+            self.error = error
+            
+        self.records = self._init(traceback)
+            
+        if isinstance(self.error, (CompileException, SyntaxException)):
             import mako.template
             self.source = self.error.source
             self.lineno = self.error.lineno
@@ -106,13 +112,20 @@ class RichTraceback(object):
                 yield (rec[4], rec[5], rec[2], rec[6])
             else:
                 yield tuple(rec[0:4])
-    traceback = property(lambda self:self._get_reformatted_records(self.records), doc="""
-        return a list of 4-tuple traceback records (i.e. normal python format)
-        with template-corresponding lines remapped to the originating template
-    """)
-    reverse_traceback = property(lambda self:self._get_reformatted_records(self.reverse_records), doc="""
-        return the same data as traceback, except in reverse order
-    """)
+                
+    @property
+    def traceback(self):
+        """return a list of 4-tuple traceback records (i.e. normal python format)
+            with template-corresponding lines remapped to the originating template
+        """
+        return self._get_reformatted_records(self.records)
+    
+    @property
+    def reverse_traceback(self):
+        """return the same data as traceback, except in reverse order
+        """
+        return self._get_reformatted_records(self.reverse_records)
+
     def _init(self, trcback):
         """format a traceback from sys.exc_info() into 7-item tuples, containing
         the regular four traceback tuple items, plus the original template 
@@ -120,8 +133,6 @@ class RichTraceback(object):
         code line from that line number of the template."""
         import mako.template
         mods = {}
-        if not trcback:
-            (type, value, trcback) = sys.exc_info()
         rawrecords = traceback.extract_tb(trcback)
         new_trcback = []
         for filename, lineno, function, line in rawrecords:
@@ -190,7 +201,7 @@ class RichTraceback(object):
                 except IOError:
                     self.source = ''
                 self.lineno = new_trcback[-1][1]
-        return (type, value, new_trcback)
+        return new_trcback
 
                 
 def text_error_template(lookup=None):
@@ -199,12 +210,12 @@ def text_error_template(lookup=None):
     source template, as applicable."""
     import mako.template
     return mako.template.Template(r"""
-<%page args="traceback=None"/>
+<%page args="error=None, traceback=None"/>
 <%!
     from mako.exceptions import RichTraceback
 %>\
 <%
-    tback = RichTraceback(traceback=traceback)
+    tback = RichTraceback(error=error, traceback=traceback)
 %>\
 Traceback (most recent call last):
 % for (filename, lineno, function, line) in tback.traceback:
@@ -229,7 +240,7 @@ def html_error_template():
 <%!
     from mako.exceptions import RichTraceback
 %>
-<%page args="full=True, css=True, traceback=None"/>
+<%page args="full=True, css=True, error=None, traceback=None"/>
 % if full:
 <html>
 <head>
@@ -254,7 +265,7 @@ def html_error_template():
 
 <h2>Error !</h2>
 <%
-    tback = RichTraceback(traceback=traceback)
+    tback = RichTraceback(error=error, traceback=traceback)
     src = tback.source
     line = tback.lineno
     if src:
