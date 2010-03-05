@@ -29,6 +29,9 @@
 - A percent sign can be emitted as the first
   non-whitespace character on a line by escaping
   it as in "%%". [ticket:112]
+ 
+- Template accepts empty control structure, i.e.
+  % if: %endif, etc. [ticket:94]
   
 0.2.6
 

@@ -509,7 +509,17 @@ class ControlTest(TemplateTest):
             "no x does not have test",
             "yes x has test"
         ]
-
+    
+    def test_blank_control(self):
+        self._do_memory_test(
+            """
+            % if True:
+            % endif
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+        
     def test_multiline_control(self):
         t = Template("""
     % for x in \\
