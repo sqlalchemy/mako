@@ -46,6 +46,8 @@ SVN version:
       license='MIT',
       packages=find_packages('.', exclude=['ez_setup', 'examples', 'tests']),
       scripts=['scripts/mako-render'],
+      tests_require = ['nose >= 0.11'],
+      test_suite = "nose.collector",
       zip_safe=False,
       install_requires=[
           'Beaker>=1.1',

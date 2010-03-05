@@ -137,7 +137,7 @@ ${foobar}
         try:
             raise RuntimeError("error 2")
         except:
-            html_error = exceptions.html_error_template().render(error=t, traceback=tback)
+            html_error = exceptions.html_error_template().render_unicode(error=t, traceback=tback)
         
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
