@@ -79,8 +79,10 @@ Namespaces can also import regular Python functions from modules.  These callabl
 
 A module file `some/module.py` might contain the callable:
 
+    {python}
     def my_tag(context):
         context.write("hello world")
+        return ''
 
 A template can use this module via:
     
@@ -88,7 +90,29 @@ A template can use this module via:
 
     ${hw.my_tag()}
     
-Note that the `context` argument is not needed in the call; the `namespace` tag creates a locally-scoped callable which takes care of it.
+Note that the `context` argument is not needed in the call; the `namespace` tag creates a locally-scoped callable which takes care of it.   The `return ''` is so that the def does not dump a `None` into the output stream - the return value of any def is rendered after the def completes, in addition to whatever was passed to `context.write()` within its body.
+
+If your def is to be called in an "embedded content" context, that is as described in [defs_defswithcontent](rel:defs_defswithcontent), you should use the `@supports_caller` decorator, which will ensure that Mako will ensure the correct "caller" variable is available when your def is called, supporting embedded content:
+
+    {python}
+    from mako.runtime import supports_caller
+    
+    @supports_caller
+    def my_tag(context):
+        context.write("<div>")
+        context['caller'].body()
+        context.write("</div>")
+        return ''
+        
+Capturing of output is available as well, using the outside-of-templates version of the `capture()` function, which accepts the "context" as its first argument:
+
+    {python}
+    from mako.runtime import supports_caller, capture
+
+    @supports_caller
+    def my_tag(context):
+        return "<div>%s</div>" % \
+                capture(context, context['caller'].body, x="foo", y="bar")
 
 ### Declaring defs in namespaces.
 

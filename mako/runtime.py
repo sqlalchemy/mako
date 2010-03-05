@@ -151,8 +151,13 @@ class _NSAttr(object):
         raise AttributeError(key)    
     
 class Namespace(object):
-    """provides access to collections of rendering methods, which can be local, from other templates, or from imported modules"""
-    def __init__(self, name, context, module=None, template=None, templateuri=None, callables=None, inherits=None, populate_self=True, calling_uri=None):
+    """provides access to collections of rendering methods, which 
+      can be local, from other templates, or from imported modules"""
+    
+    def __init__(self, name, context, module=None, 
+                            template=None, templateuri=None, 
+                            callables=None, inherits=None, 
+                            populate_self=True, calling_uri=None):
         self.name = name
         if module is not None:
             mod = __import__(module)
@@ -176,16 +181,27 @@ class Namespace(object):
             self.callables = None
         if populate_self and self.template is not None:
             (lclcallable, lclcontext) = _populate_self_namespace(context, self.template, self_ns=self)
-        
-    module = property(lambda s:s._module or s.template.module)
-    filename = property(lambda s:s._module and s._module.__file__ or s.template.filename)
-    uri = property(lambda s:s.template.uri)
     
+    @property
+    def module(self):
+        return self._module or self.template.module
+    
+    @property
+    def filename(self):
+        if self._module:
+            return self._module.__file__
+        else:
+            return self.template.filename
+    
+    @property
+    def uri(self):
+        return self.template.uri
+
+    @property
     def attr(self):
         if not hasattr(self, '_attr'):
             self._attr = _NSAttr(self)
         return self._attr
-    attr = property(attr)
 
     def get_namespace(self, uri):
         """return a namespace corresponding to the given template uri.
@@ -219,9 +235,9 @@ class Namespace(object):
                 kwargs.setdefault('url', self.template.cache_url)
         return self.cache.get(key, **kwargs)
     
+    @property
     def cache(self):
         return self.template.cache
-    cache = property(cache)
     
     def include_file(self, uri, **kwargs):
         """include a file at the given uri"""
@@ -271,6 +287,7 @@ class Namespace(object):
 
 def supports_caller(func):
     """apply a caller_stack compatibility decorator to a plain Python function."""
+    
     def wrap_stackframe(context,  *args, **kwargs):
         context.caller_stack._push_frame()
         try:
@@ -281,8 +298,12 @@ def supports_caller(func):
         
 def capture(context, callable_, *args, **kwargs):
     """execute the given template def, capturing the output into a buffer."""
+    
     if not callable(callable_):
-        raise exceptions.RuntimeException("capture() function expects a callable as its argument (i.e. capture(func, *args, **kwargs))")
+        raise exceptions.RuntimeException(
+                                "capture() function expects a callable as "
+                                "its argument (i.e. capture(func, *args, **kwargs))"
+                            )
     context._push_buffer()
     try:
         callable_(*args, **kwargs)
