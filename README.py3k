@@ -50,5 +50,7 @@ can be acquired from Bitbucket using Mercurial:
     cd nose3
     python3 setup.py install
 
-The tests can then be run using the "nosetests3" script installed by the above.
+The tests can then be run using the "nosetests3" script installed 
+by the above (python3 setup.py test doesn't seem to be working with 
+nose3).
 
