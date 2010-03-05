@@ -16,7 +16,7 @@ The built-in escape flags are:
 * `x` : XML escaping
 * `trim` : whitespace trimming, provided by `string.strip()`
 * `entity` : produces HTML entity references for applicable strings, derived from `htmlentitydefs`
-* `unicode` : produces a Python unicode string (this function is applied by default).
+* `unicode` (`str` on Python 3): produces a Python unicode string (this function is applied by default).
 * `decode.<some encoding>` : decode input into a Python unicode with the specified encoding
 * `n` : disable all default filtering; only filters specified in the local expression tag will be applied.
 
@@ -55,14 +55,12 @@ Result:
 
 #### The default_filters Argument {@name=defaultfilters}
 
-**New in version 0.1.2**
-
-In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering for all expression tags at the programmatic level.  This array-based argument, when given its default argument of `None`, will be internally set to `["unicode"]`, except when `disable_unicode=True` is set in which case it defaults to `["str"]`:
+In addition to the `expression_filter` argument, the `default_filters` argument to both `Template` and `TemplateLookup` can specify filtering for all expression tags at the programmatic level.  This array-based argument, when given its default argument of `None`, will be internally set to `["unicode"]` (or `["str"]` on Python 3), except when `disable_unicode=True` is set in which case it defaults to `["str"]`:
 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
 
-To replace the usual `unicode` function with a specific encoding, the `decode` filter can be substituted:
+To replace the usual `unicode`/`str` function with a specific encoding, the `decode` filter can be substituted:
 
     {python}
     t = TemplateLookup(directories=['/tmp'], default_filters=['decode.utf8'])

@@ -1,17 +1,17 @@
 The Unicode Chapter   {@name=unicode}
 ======================
 
-The Python language in the 2.x series supports two ways of representing string objects.  One is the `string` type and the other is the `unicode` type, both of which extend a type called `basestring`.  A key issue in Python, which is hopefully to be resolved in Python 3000, is that objects of type `string` (i.e. created from an expression such as `"hello world"`) contain no information regarding what **encoding** the data is stored in.   For this reason they are often referred to as **byte strings**.  The origins of this come from Python's background of being developed before the Unicode standard was even available, back when strings were C-style strings and were just that, a series of bytes.  Strings that had only values below 128 just happened to be **ascii** strings and were printable on the console, whereas strings with values above 128 would produce all kinds of graphical characters and bells.
+The Python language supports two ways of representing what we know as "strings", i.e. series of characters.   In Python 2, the two types are `string` and `unicode`, and in Python 3 they are `bytes` and `string`.   A key aspect of the Python 2 `string` and Python 3 `bytes` types are that they  contain no information regarding what **encoding** the data is stored in.   For this reason they were commonly referred to as **byte strings** on Python 2, and Python 3 makes this name more explicit.  The origins of this come from Python's background of being developed before the Unicode standard was even available, back when strings were C-style strings and were just that, a series of bytes.  Strings that had only values below 128 just happened to be **ascii** strings and were printable on the console, whereas strings with values above 128 would produce all kinds of graphical characters and bells.
 
-Contrast the Python `string` type with the Python `unicode` type.  Objects of this type are created whenever you say something like `u"hello world"`.  In this case, Python represents each character in the string internally using multiple bytes per character (something similar to UTF-16).  Whats important is that when using the `unicode` type to store strings, Python knows the data's encoding; its in its own internal format.  Whereas when using the `string` type, it does not.
+Contrast the "bytestring" types with the "unicode/string" type.   Objects of this type are created whenever you say something like `u"hello world"` (or in Python 3, just `"hello world"`).  In this case, Python represents each character in the string internally using multiple bytes per character (something similar to UTF-16).  Whats important is that when using the `unicode`/`string` type to store strings, Python knows the data's encoding; its in its own internal format.  Whereas when using the `string`/`bytes` type, it does not.
 
-When Python attempts to treat a byte-string as a string, which means its attempting to compare/parse its characters, to coerce it into another encoding, or to decode it to a unicode object, it has to guess what the encoding is.  In this case, it will pretty much always guess the encoding as `ascii`...and if the bytestring contains bytes above value 128, you'll get an error.
+When Python 2 attempts to treat a byte-string as a string, which means its attempting to compare/parse its characters, to coerce it into another encoding, or to decode it to a unicode object, it has to guess what the encoding is.  In this case, it will pretty much always guess the encoding as `ascii`...and if the bytestring contains bytes above value 128, you'll get an error.  Python 3 eliminates much of this confusion by just raising an error unconditionally if a bytestring is used in a character-aware context.
 
-There is one operation that Python *can* do with a non-ascii bytestring, and its a great source of confusion:  it can dump the bytestring straight out to a stream or a file, with nary a care what the encoding is.  To Python, this is pretty much like dumping any other kind of binary data (like an image) to a stream somewhere.  So in a lot of cases, programs that embed all kinds of international characters and encodings into plain byte-strings (i.e. using `"hello world"` style literals) can fly right through their run, sending reams of strings out to whereever they are going, and the programmer, seeing the same output as was expressed in the input, is now under the illusion that his or her program is Unicode-compliant.  In fact, their program has no unicode awareness whatsoever, and similarly has no ability to interact with libraries that *are* unicode aware.
+There is one operation that Python *can* do with a non-ascii bytestring, and its a great source of confusion:  it can dump the bytestring straight out to a stream or a file, with nary a care what the encoding is.  To Python, this is pretty much like dumping any other kind of binary data (like an image) to a stream somewhere.  In Python 2, it is common to see programs that embed all kinds of international characters and encodings into plain byte-strings (i.e. using `"hello world"` style literals) can fly right through their run, sending reams of strings out to whereever they are going, and the programmer, seeing the same output as was expressed in the input, is now under the illusion that his or her program is Unicode-compliant.  In fact, their program has no unicode awareness whatsoever, and similarly has no ability to interact with libraries that *are* unicode aware.   Python 3 makes this much less likely by defaulting to unicode as the storage format for strings.
 
-The "pass through encoded data" scheme is what template languages like Cheetah and earlier versions of Myghty do by default.  Mako as of version 0.2 also supports this mode of operation using the "disable_unicode=True" flag.  However, when using Mako in its default mode of unicode-aware, it requires explicitness when dealing with non-ascii encodings.  Additionally, if you ever need to handle unicode strings and other kinds of encoding conversions more intelligently, the usage of raw bytestrings quickly becomes a nightmare, since you are sending the Python interpreter collections of bytes for which it can make no intelligent decisions with regards to encoding.
+The "pass through encoded data" scheme is what template languages like Cheetah and earlier versions of Myghty do by default.  Mako as of version 0.2 also supports this mode of operation when using Python 2, using the "disable_unicode=True" flag.  However, when using Mako in its default mode of unicode-aware, it requires explicitness when dealing with non-ascii encodings.  Additionally, if you ever need to handle unicode strings and other kinds of encoding conversions more intelligently, the usage of raw bytestrings quickly becomes a nightmare, since you are sending the Python interpreter collections of bytes for which it can make no intelligent decisions with regards to encoding.   In Python 3 Mako only allows usage of native, unicode strings.
 
-In normal Mako operation, all parsed template constructs and output streams are handled internally as Python `unicode` objects.  Its only at the point of `render()` that this unicode stream is rendered into whatever the desired output encoding is.  The implication here is that the template developer must ensure that the encoding of all non-ascii templates is explicit, that all non-ascii-encoded expressions are in one way or another converted to unicode, and that the output stream of the template is handled as a unicode stream being encoded to some encoding.
+In normal Mako operation, all parsed template constructs and output streams are handled internally as Python `unicode` objects.  Its only at the point of `render()` that this unicode stream may be rendered into whatever the desired output encoding is.  The implication here is that the template developer must ensure that the encoding of all non-ascii templates is explicit (still required in Python 3), that all non-ascii-encoded expressions are in one way or another converted to unicode (not much of a burden in Python 3), and that the output stream of the template is handled as a unicode stream being encoded to some encoding (still required in Python 3).
 
 ### Specifying the Encoding of a Template File
 
@@ -45,19 +45,26 @@ looks something like this:
 
     {python}
     context.write(unicode("hello world"))
-    
-That is, **the output of all expressions is run through the `unicode` builtin**.  This is the default setting, and can be modified to expect various encodings.  The `unicode` step serves both the purpose of rendering non-string expressions into strings (such as integers or objects which contain `__str()__` methods), and to ensure that the final output stream is constructed as a unicode object.  The main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this:
 
-    ${"voix m’a réveillé."}  ## error !
+In Python 3, its just:
+
+    {python}
+    context.write(str("hello world"))
+    
+That is, **the output of all expressions is run through the `unicode` builtin**.  This is the default setting, and can be modified to expect various encodings.  The `unicode` step serves both the purpose of rendering non-string expressions into strings (such as integers or objects which contain `__str()__` methods), and to ensure that the final output stream is constructed as a unicode object.  The main implication of this is that **any raw bytestrings that contain an encoding other than ascii must first be decoded to a Python unicode object**.   It means you can't say this in Python 2:
+
+    ${"voix m’a réveillé."}  ## error in Python 2!
 
 You must instead say this:
 
     ${u"voix m’a réveillé."}  ## OK !
 
-Similarly, if you are reading data from a file, or returning data from some object that is returning a Python bytestring containing a non-ascii encoding, you have to explcitly decode to unicode first, such as:
+Similarly, if you are reading data from a file that is streaming bytes, or returning data from some object that is returning a Python bytestring containing a non-ascii encoding, you have to explcitly decode to unicode first, such as:
 
     ${call_my_object().decode('utf-8')}
     
+Note that filehandles acquired by `open()` in Python 3 default to returning "text", that is the decoding is done for you.  See Python 3's documentation for the `open()` builtin for details on this.
+
 If you want a certain encoding applied to *all* expressions, override the `unicode` builtin with the `decode` builtin at the `Template` or `TemplateLookup` level:
 
     {python}
@@ -81,8 +88,10 @@ As stated in the "Usage" chapter, both `Template` and `TemplateLookup` accept `o
     
     mytemplate = mylookup.get_template("foo.txt")
     print mytemplate.render()
-    
-And `render_unicode()` will return the template output as a Python `unicode` object:
+
+`render()` will return a `bytes` object in Python 3 if an output encoding is specified.  By default it performs no encoding and returns a native string.
+
+`render_unicode()` will return the template output as a Python `unicode` object (or `string` in Python 3):
 
     {python}
     print mytemplate.render_unicode()
@@ -100,7 +109,7 @@ When calling `render()` on a template that does not specify any output encoding 
 
 ### Saying to Heck with it:  Disabling the usage of Unicode entirely
 
-Some segements of Mako's userbase choose to make no usage of Unicode whatsoever, and instead would prefer the "passthru" approach; all string expressions in their templates return encoded bytestrings, and they would like these strings to pass right through.   The generated template module is also in the same encoding as the template and additionally carries Python's "magic encoding comment" at the top.   The only advantage to this approach is that templates need not use `u""` for literal strings; there's an arguable speed improvement as well since raw bytestrings generally perform slightly faster than unicode objects in Python.  For these users, they will have to get used to using Unicode when Python 3000 becomes the standard, but for now they can hit the `disable_unicode=True` flag, introduced in version 0.2 of Mako, as so:
+Some segements of Mako's userbase choose to make no usage of Unicode whatsoever, and instead would prefer the "passthru" approach; all string expressions in their templates return encoded bytestrings, and they would like these strings to pass right through.   The only advantage to this approach is that templates need not use `u""` for literal strings; there's an arguable speed improvement as well since raw bytestrings generally perform slightly faster than unicode objects in Python.  For these users, assuming they're sticking with Python 2, they can hit the `disable_unicode=True` flag as so:
 
     {python}
     # -*- encoding:utf-8 -*-
@@ -108,7 +117,9 @@ Some segements of Mako's userbase choose to make no usage of Unicode whatsoever,
     
     t = Template("drôle de petit voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
     print t.code
-    
+
+The `disable_unicode` mode is strictly a Python 2 thing.  It is not supported at all in Python 3.
+
 The generated module source code will contain elements like these:
 
     {python}
@@ -126,7 +137,7 @@ The generated module source code will contain elements like these:
         finally:
             context.caller_stack.pop_frame()
 
-Where above you can see that the `encoding` magic source comment is at the top, and the string literal used within `context.write` is a regular bytestring. 
+Where above that the string literal used within `context.write` is a regular bytestring. 
 
 When `disable_unicode=True` is turned on, the `default_filters` argument which normally defaults to `["unicode"]` now defaults to `["str"]` instead.  Setting default_filters to the empty list `[]` can remove the overhead of the `str` call.  Also, in this mode you **cannot** safely call `render_unicode()` - you'll get unicode/decode errors.
 
@@ -134,6 +145,6 @@ When `disable_unicode=True` is turned on, the `default_filters` argument which n
 
  * don't use this mode unless you really, really want to and you absolutely understand what you're doing
  * don't use this option just because you don't want to learn to use Unicode properly; we aren't supporting user issues in this mode of operation.  We will however offer generous help for the vast majority of users who stick to the Unicode program.
- * it's extremely unlikely this mode of operation will be present in the Python 3000 version of Mako since P3K strings are unicode objects by default; bytestrings are relegated to a "bytes" type that is not intended for dealing with text.
+ * Python 3 is unicode by default, and the flag is not available when running on Python 3.
     
 
