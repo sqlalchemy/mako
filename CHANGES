@@ -44,6 +44,12 @@
   no longer get doubly-rendered in the body() scope,
   and now allow local variable assignment without
   breakage.  [ticket:109]
+
+- Windows paths are handled correctly if a Template
+  is passed only an absolute filename (i.e. with c: 
+  drive etc.)  and no URI - the URI is converted
+  to a forward-slash path and module_directory
+  is treated as a windows path.  [ticket:128]
   
 0.2.6
 

@@ -678,6 +678,69 @@ class ModuleDirTest(TemplateTest):
             os.path.join(module_base, 'subdir', 'foo', 'modtest.html.py')
         )
 
+class FilenameToURITest(TemplateTest):
+    def test_windows_paths(self):
+        """test that windows filenames are handled appropriately by Template."""
+        
+        current_path = os.path
+        import ntpath
+        os.path = ntpath
+        try:
+            class NoCompileTemplate(Template):
+                def _compile_from_file(self, path, filename):
+                    self.path = path
+                    return Template("foo bar").module
+                    
+            t1 = NoCompileTemplate(
+                                    filename="c:\\foo\\template.html", 
+                                    module_directory="c:\\modules\\")
+            
+            eq_(t1.uri, "/foo/template.html")
+            eq_(t1.path, "c:\\modules\\foo\\template.html.py")
+
+            t1 = NoCompileTemplate(
+                                    filename="c:\\path\\to\\templates\\template.html", 
+                                    uri = "/bar/template.html",
+                                    module_directory="c:\\modules\\")
+            
+            eq_(t1.uri, "/bar/template.html")
+            eq_(t1.path, "c:\\modules\\bar\\template.html.py")
+
+        finally:
+            os.path = current_path
+
+    def test_posix_paths(self):
+        """test that posixs filenames are handled appropriately by Template."""
+
+        current_path = os.path
+        import posixpath
+        os.path = posixpath
+        try:
+            class NoCompileTemplate(Template):
+                def _compile_from_file(self, path, filename):
+                    self.path = path
+                    return Template("foo bar").module
+
+            t1 = NoCompileTemplate(
+                                    filename="/var/www/htdocs/includes/template.html", 
+                                    module_directory="/var/lib/modules")
+
+            eq_(t1.uri, "/var/www/htdocs/includes/template.html")
+            eq_(t1.path, "/var/lib/modules/var/www/htdocs/includes/template.html.py")
+
+            t1 = NoCompileTemplate(
+                                    filename="/var/www/htdocs/includes/template.html", 
+                                    uri = "/bar/template.html",
+                                    module_directory="/var/lib/modules")
+
+            eq_(t1.uri, "/bar/template.html")
+            eq_(t1.path, "/var/lib/modules/bar/template.html.py")
+
+        finally:
+            os.path = current_path
+        
+    
+    
 class ModuleTemplateTest(TemplateTest):
     def test_module_roundtrip(self):
         lookup = TemplateLookup()

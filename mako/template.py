@@ -57,7 +57,9 @@ class Template(object):
             self.uri = uri
         elif filename:
             self.module_id = re.sub(r'\W', "_", filename)
-            self.uri = filename
+            drive, path = os.path.splitdrive(filename)
+            path = os.path.normpath(path).replace(os.path.sep, "/")
+            self.uri = path
         else:
             self.module_id = "memory:" + hex(id(self))
             self.uri = self.module_id
@@ -101,43 +103,14 @@ class Template(object):
                     u = u[1:]
                 path = os.path.abspath(
                         os.path.join(
-                            module_directory.replace('/', os.path.sep), 
-                            u + ".py"
+                            os.path.normpath(module_directory), 
+                            os.path.normpath(u) + ".py"
                             )
                         )
             else:
-                path = None    
-            if path is not None:
-                util.verify_directory(os.path.dirname(path))
-                filemtime = os.stat(filename)[stat.ST_MTIME]
-                if not os.path.exists(path) or \
-                            os.stat(path)[stat.ST_MTIME] < filemtime:
-                    _compile_module_file(
-                                self, 
-                                open(filename, 'rb').read(), 
-                                filename, 
-                                path)
-                module = imp.load_source(self.module_id, path, open(path, 'rb'))
-                del sys.modules[self.module_id]
-                if module._magic_number != codegen.MAGIC_NUMBER:
-                    _compile_module_file(
-                                self, 
-                                open(filename, 'rb').read(), 
-                                filename, 
-                                path)
-                    module = imp.load_source(self.module_id, path, open(path, 'rb'))
-                    del sys.modules[self.module_id]
-                ModuleInfo(module, path, self, filename, None, None)
-            else:
-                # template filename and no module directory, compile code
-                # in memory
-                (code, module) = _compile_text(
-                                    self, 
-                                    open(filename, 'rb').read(), 
-                                    filename)
-                self._source = None
-                self._code = code
-                ModuleInfo(module, None, self, filename, code, None)
+                path = None
+                
+            module = self._compile_from_file(path, filename)
         else:
             raise exceptions.RuntimeException(
                                 "Template requires text or filename")
@@ -153,6 +126,39 @@ class Template(object):
         self.cache_url = cache_url
         self.cache_enabled = cache_enabled
     
+    def _compile_from_file(self, path, filename):
+        if path is not None:
+            util.verify_directory(os.path.dirname(path))
+            filemtime = os.stat(filename)[stat.ST_MTIME]
+            if not os.path.exists(path) or \
+                        os.stat(path)[stat.ST_MTIME] < filemtime:
+                _compile_module_file(
+                            self, 
+                            open(filename, 'rb').read(), 
+                            filename, 
+                            path)
+            module = imp.load_source(self.module_id, path, open(path, 'rb'))
+            del sys.modules[self.module_id]
+            if module._magic_number != codegen.MAGIC_NUMBER:
+                _compile_module_file(
+                            self, 
+                            open(filename, 'rb').read(), 
+                            filename, 
+                            path)
+                module = imp.load_source(self.module_id, path, open(path, 'rb'))
+                del sys.modules[self.module_id]
+            ModuleInfo(module, path, self, filename, None, None)
+        else:
+            # template filename and no module directory, compile code
+            # in memory
+            code, module = _compile_text(
+                                self, 
+                                open(filename, 'rb').read(), 
+                                filename)
+            self._source = None
+            self._code = code
+            ModuleInfo(module, None, self, filename, code, None)
+        return module
     @property
     def source(self):
         """return the template source code for this Template."""
