@@ -38,6 +38,12 @@
   arguments are passed down through the inherits
   chain.  Undeclared arguments go into **pageargs
   as usual.  [ticket:116]
+
+- defs declared within a <%namespace> section, an
+  uncommon feature, have been improved.  The defs
+  no longer get doubly-rendered in the body() scope,
+  and now allow local variable assignment without
+  breakage.  [ticket:109]
   
 0.2.6
 

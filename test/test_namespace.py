@@ -1,25 +1,85 @@
 from mako.template import Template
 from mako import lookup
 from util import flatten_result, result_lines
-import unittest
+from test import TemplateTest
 
-class NamespaceTest(unittest.TestCase):
-    def test_inline(self):
-        t = Template("""
-        <%namespace name="x">
-            <%def name="a()">
-                this is x a
-            </%def>
-            <%def name="b()">
-                this is x b, and heres ${a()}
-            </%def>
-        </%namespace>
+class NamespaceTest(TemplateTest):
+    def test_inline_crossreference(self):
+        self._do_memory_test(
+            """
+            <%namespace name="x">
+                <%def name="a()">
+                    this is x a
+                </%def>
+                <%def name="b()">
+                    this is x b, and heres ${a()}
+                </%def>
+            </%namespace>
         
-        ${x.a()}
+            ${x.a()}
         
-        ${x.b()}
-""")
-        assert flatten_result(t.render()) == "this is x a this is x b, and heres this is x a"
+            ${x.b()}
+    """,
+            "this is x a this is x b, and heres this is x a",
+            filters=flatten_result
+        )
+
+    def test_inline_assignment(self):
+        self._do_memory_test(
+            """
+            <%namespace name="x">
+                <%def name="a()">
+                    <%
+                        x = 5
+                    %>
+                    this is x: ${x}
+                </%def>
+            </%namespace>
+
+            ${x.a()}
+
+    """,
+            "this is x: 5",
+            filters=flatten_result
+        )
+
+    def test_inline_arguments(self):
+        self._do_memory_test(
+            """
+            <%namespace name="x">
+                <%def name="a(x, y)">
+                    <%
+                        result = x * y
+                    %>
+                    result: ${result}
+                </%def>
+            </%namespace>
+
+            ${x.a(5, 10)}
+
+    """,
+            "result: 50",
+            filters=flatten_result
+        )
+
+    def test_inline_not_duped(self):
+        self._do_memory_test(
+            """
+            <%namespace name="x">
+                <%def name="a()">
+                    foo
+                </%def>
+            </%namespace>
+
+            <%
+                assert x.a is not UNDEFINED, "namespace x.a wasn't defined"
+                assert a is UNDEFINED, "name 'a' is in the body locals"
+            %>
+
+    """,
+            "",
+            filters=flatten_result
+        )
 
     def test_template(self):
         collection = lookup.TemplateLookup()

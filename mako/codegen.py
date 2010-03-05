@@ -287,6 +287,8 @@ class _GenerateRenderMethod(object):
             None,None
             )
         self.printer.writeline("def _mako_generate_namespaces(context):")
+
+        
         for node in namespaces.values():
             if node.attributes.has_key('import'):
                 self.compiler.has_ns_imports = True
@@ -295,6 +297,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("def make_namespace():")
                 export = []
                 identifiers = self.compiler.identifiers.branch(node)
+                self.in_def = True
                 class NSDefVisitor(object):
                     def visitDefTag(s, node):
                         self.write_inline_def(node, identifiers, nested=False)
@@ -304,6 +307,7 @@ class _GenerateRenderMethod(object):
                     n.accept_visitor(vis)
                 self.printer.writeline("return [%s]" % (','.join(export)))
                 self.printer.writeline(None)
+                self.in_def = False
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
@@ -766,23 +770,30 @@ class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
     
     def __init__(self, node=None, parent=None, nested=False):
+            
         if parent is not None:
-            # things that have already been declared 
-            # in an enclosing namespace (i.e. names we can just use)
-            self.declared = set(parent.declared).\
-                                    union([c.name for c in parent.closuredefs.values()]).\
-                                    union(parent.locally_declared).\
-                                    union(parent.argument_declared)
+            # if we are the branch created in write_namespaces(),
+            # we don't share any context from the main body().
+            if isinstance(node, parsetree.NamespaceTag):
+                self.declared = set()
+                self.topleveldefs = util.SetLikeDict()
+            else:
+                # things that have already been declared 
+                # in an enclosing namespace (i.e. names we can just use)
+                self.declared = set(parent.declared).\
+                                        union([c.name for c in parent.closuredefs.values()]).\
+                                        union(parent.locally_declared).\
+                                        union(parent.argument_declared)
             
-            # if these identifiers correspond to a "nested" 
-            # scope, it means whatever the parent identifiers 
-            # had as undeclared will have been declared by that parent, 
-            # and therefore we have them in our scope.
-            if nested:
-                self.declared = self.declared.union(parent.undeclared)
+                # if these identifiers correspond to a "nested" 
+                # scope, it means whatever the parent identifiers 
+                # had as undeclared will have been declared by that parent, 
+                # and therefore we have them in our scope.
+                if nested:
+                    self.declared = self.declared.union(parent.undeclared)
             
-            # top level defs that are available
-            self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
+                # top level defs that are available
+                self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
         else:
             self.declared = set()
             self.topleveldefs = util.SetLikeDict()
@@ -837,7 +848,7 @@ class _Identifiers(object):
     def check_declared(self, node):
         """update the state of this Identifiers with the undeclared 
             and declared identifiers of the given node."""
-            
+        
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
@@ -859,15 +870,25 @@ class _Identifiers(object):
         if not node.ismodule:
             self.check_declared(node)
             self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
+    
+    def visitNamespaceTag(self, node):
+        # only traverse into the sub-elements of a 
+        # <%namespace> tag if we are the branch created in 
+        # write_namespaces()
+        if self.node is node:
+            for n in node.nodes:
+                n.accept_visitor(self)
             
     def visitDefTag(self, node):
         if node.is_root():
             self.topleveldefs[node.name] = node
         elif node is not self.node:
             self.closuredefs[node.name] = node
+
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
+                
         # visit defs only one level deep
         if node is self.node:
             for ident in node.declared_identifiers():
