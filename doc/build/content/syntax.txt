@@ -46,7 +46,14 @@ The `%` can appear anywhere on the line as long as no text precedes it; indentat
         one
         %endif
     % endfor
+
+The `%` sign can also be "escaped", if you actually want to emit a percent sign as the first non whitespace character on a line, by escaping it as in `%%`:
+
+    %% some text
     
+        %% some more text
+
+
 ### Comments
 
 Comments come in two varieties.  The single line comment uses `##` as the first non-space characters on a line:
@@ -60,8 +67,6 @@ A multiline version exists using `<%doc>  ...text... </%doc>`:
         these are comments
         more comments
     </%doc>
-
-Note that this is **new behavior as of Mako 0.1.3**.  The syntax prior to this version was the single pound sign (`#`), which was agreed by the Mako userbase that it conflicted with CSS elements too often and also did not address multiline comments easily.
 
 ### Newline Filters
 

@@ -106,6 +106,21 @@ class LexerTest(TemplateTest):
         """
         
         self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+    
+    def test_percent_escape(self):
+        template = """
+        
+%% some whatever.
+
+    %% more some whatever
+    % if foo:
+    % endif
+        """
+        node = Lexer(template).parse()
+        self._compare(
+            node,
+            TemplateNode({}, [Text(u'\n        \n', (1, 1)), Text(u'', (3, 1)), Text(u'% some whatever.\n\n', (3, 2)), Text(u'', (5, 1)), Text(u'   %% more some whatever\n', (5, 2)), ControlLine(u'if', u'if foo:', False, (6, 1)), ControlLine(u'if', u'endif', True, (7, 1)), Text(u'        ', (8, 1))])
+        )
         
     def test_text_tag(self):
         template = """

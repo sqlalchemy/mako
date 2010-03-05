@@ -22,7 +22,7 @@ class MakoLexer(RegexLexer):
         'root': [
             (r'(\s*)(\%)(\s*end(?:\w+))(\n|\Z)',
              bygroups(Text, Comment.Preproc, Keyword, Other)),
-            (r'(\s*)(\%)([^\n]*)(\n|\Z)',
+            (r'(\s*)(\%(?!%))([^\n]*)(\n|\Z)',
              bygroups(Text, Comment.Preproc, using(PythonLexer), Other)),
              (r'(\s*)(##[^\n]*)(\n|\Z)',
               bygroups(Text, Comment.Preproc, Other)),
@@ -36,7 +36,7 @@ class MakoLexer(RegexLexer):
             (r'''(?sx)
                 (.+?)               # anything, followed by:
                 (?:
-                 (?<=\n)(?=%|\#\#) |  # an eval or comment line
+                 (?<=\n)(?=%(?!%)|\#\#) |  # an eval or comment line
                  (?=\#\*) |          # multiline comment
                  (?=</?%) |         # a python block
                                     # call start or end

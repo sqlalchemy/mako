@@ -25,6 +25,10 @@
   format_exceptions=True will now be as a Python
   unicode if it occurred during render_unicode(),
   or an encoded string if during render().
+
+- A percent sign can be emitted as the first
+  non-whitespace character on a line by escaping
+  it as in "%%". [ticket:112]
   
 0.2.6
 
