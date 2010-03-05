@@ -73,14 +73,18 @@ class RichTraceback(object):
     
     """
     def __init__(self, error=None, traceback=None):
-        (self.source, self.lineno) = ("", 0)
+        self.source, self.lineno = "", 0
 
         if error is None or traceback is None:
-            t, value, traceback = sys.exc_info()
-            self.error = value or t
-        else:
-            self.error = error
+            t, value, tback = sys.exc_info()
+        
+        if error is None:
+            error = value or t
             
+        if traceback is None:
+            traceback = tback
+            
+        self.error = error
         self.records = self._init(traceback)
             
         if isinstance(self.error, (CompileException, SyntaxException)):
@@ -88,11 +92,10 @@ class RichTraceback(object):
             self.source = self.error.source
             self.lineno = self.error.lineno
             self._has_source = True
-        self.reverse_records = [r for r in self.records]
-        self.reverse_records.reverse()
-        self.init_message()
+            
+        self._init_message()
 
-    def init_message(self):
+    def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
             self.message = unicode(self.error)
@@ -118,13 +121,17 @@ class RichTraceback(object):
         """return a list of 4-tuple traceback records (i.e. normal python format)
             with template-corresponding lines remapped to the originating template
         """
-        return self._get_reformatted_records(self.records)
+        return list(self._get_reformatted_records(self.records))
     
+    @property
+    def reverse_records(self):
+        return reversed(self.records)
+        
     @property
     def reverse_traceback(self):
         """return the same data as traceback, except in reverse order
         """
-        return self._get_reformatted_records(self.reverse_records)
+        return list(self._get_reformatted_records(self.reverse_records))
 
     def _init(self, trcback):
         """format a traceback from sys.exc_info() into 7-item tuples, containing

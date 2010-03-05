@@ -430,6 +430,9 @@ def _render_error(template, context, error):
         if context._outputting_as_unicode:
             context._buffer_stack[:] = [util.FastEncodingBuffer(unicode=True)]
         else:
-            context._buffer_stack[:] = [util.FastEncodingBuffer(error_template.output_encoding, error_template.encoding_errors)]
+            context._buffer_stack[:] = [util.FastEncodingBuffer(
+                                            error_template.output_encoding,
+                                            error_template.encoding_errors)]
+                                            
         context._with_template = error_template
         error_template.render_context(context, error=error)

@@ -86,7 +86,6 @@ ${u'привет'}
                 assert 'RuntimeError: test' in html_error
                 assert "foo = u'&#x65E5;&#x672C;'" in html_error
 
-
     def test_py_unicode_error_html_error_template(self):
         try:
             raise RuntimeError(u'日本')
@@ -106,10 +105,12 @@ ${foobar}
         ${self.body()}
         """)
 
-        assert '<div class="sourceline">${foobar}</div>' in result_lines(l.get_template("foo.html").render_unicode())
+        assert '<div class="sourceline">${foobar}</div>' in \
+                result_lines(l.get_template("foo.html").render_unicode())
     
     def test_utf8_format_exceptions(self):
-        """test that htmlentityreplace formatting is applied to exceptions reported with format_exceptions=True"""
+        """test that htmlentityreplace formatting is applied to 
+           exceptions reported with format_exceptions=True"""
         
         l = TemplateLookup(format_exceptions=True)
         if util.py3k:
@@ -121,6 +122,25 @@ ${foobar}
             assert u'<div class="sourceline">${\'привет\' + foobar}</div>'\
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
         else:
-            assert '<div class="highlight">2 ${u\'&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;\' + foobar}</div>' \
+            assert '<div class="highlight">2 ${u\'&#x43F;&#x440;'\
+                    '&#x438;&#x432;&#x435;&#x442;\' + foobar}</div>' \
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
+        
+    
+    def test_custom_tback(self):
+        try:
+            raise RuntimeError("error 1")
+            foo('bar')
+        except:
+            t, v, tback = sys.exc_info()
+        
+        try:
+            raise RuntimeError("error 2")
+        except:
+            html_error = exceptions.html_error_template().render(error=t, traceback=tback)
+        
+        # obfuscate the text so that this text
+        # isn't in the 'wrong' exception
+        assert "".join(reversed(")'rab'(oof")) in html_error
+        
         
