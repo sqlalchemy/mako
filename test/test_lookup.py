@@ -29,6 +29,13 @@ class LookupTest(unittest.TestCase):
             "this is include 2"
 
         ]
+    
+    def test_directory_lookup(self):
+        """test that hitting an existent directory still raises LookupError."""
+        
+        self.assertRaises(exceptions.TopLevelLookupException,
+            tl.get_template, "/subdir"
+        )
         
     def test_no_lookup(self):
         t = Template("hi <%include file='foo.html'/>")

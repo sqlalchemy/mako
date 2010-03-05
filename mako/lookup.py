@@ -107,7 +107,7 @@ class TemplateLookup(TemplateCollection):
             u = re.sub(r'^\/+', '', uri)
             for dir in self.directories:
                 srcfile = posixpath.normpath(posixpath.join(dir, u))
-                if os.path.exists(srcfile):
+                if os.path.isfile(srcfile):
                     return self._load(srcfile, uri)
             else:
                 raise exceptions.TopLevelLookupException(

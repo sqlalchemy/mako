@@ -50,6 +50,11 @@
   drive etc.)  and no URI - the URI is converted
   to a forward-slash path and module_directory
   is treated as a windows path.  [ticket:128]
+
+- TemplateLookup raises TopLevelLookupException for
+  a given path that is a directory, not a filename,
+  instead of passing through to the template to 
+  generate IOError.  [ticket:73]
   
 0.2.6
 
