@@ -32,6 +32,12 @@
  
 - Template accepts empty control structure, i.e.
   % if: %endif, etc. [ticket:94]
+
+- The <%page args> tag can now be used in a base 
+  inheriting template - the full set of render()
+  arguments are passed down through the inherits
+  chain.  Undeclared arguments go into **pageargs
+  as usual.  [ticket:116]
   
 0.2.6
 

@@ -314,6 +314,7 @@ def _decorate_inline(context, fn):
             
 def _include_file(context, uri, calling_uri, **kwargs):
     """locate the template from the given uri and include it in the current output."""
+    
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
     callable_(ctx, **_kwargs_for_callable(callable_, context._orig, **kwargs))
@@ -377,7 +378,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     context = Context(buf, **data)
     context._outputting_as_unicode = as_unicode
     context._with_template = template
-    _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
+    _render_context(template, callable_, context, *args, **data)
     return context._pop_buffer().getvalue()
 
 def _kwargs_for_callable(callable_, data, **kwargs):

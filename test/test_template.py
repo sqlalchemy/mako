@@ -369,7 +369,60 @@ class PageArgsTest(TemplateTest):
             assert False
         except TypeError, e:
             assert True
+    
+    def test_inherits(self):
+        lookup = TemplateLookup()
+        lookup.put_string("base.tmpl",
+        """
+        <%page args="bar" />
+        ${bar}
+        ${pageargs['foo']}
+        ${self.body(**pageargs)}
+        """
+        )
+        lookup.put_string("index.tmpl", """
+        <%inherit file="base.tmpl" />
+        <%page args="variable" />
+        ${variable}
+        """)
 
+        self._do_test(
+            lookup.get_template("index.tmpl"),
+            "bar foo var",
+            filters=flatten_result,
+            template_args={'variable':'var', 'bar':'bar', 'foo':'foo'}
+            
+        )
+
+    def test_includes(self):
+        lookup = TemplateLookup()
+        lookup.put_string("incl1.tmpl",
+        """
+        <%page args="bar" />
+        ${bar}
+        ${pageargs['foo']}
+        """
+        )
+        lookup.put_string("incl2.tmpl",
+        """
+        ${pageargs}
+        """
+        )
+        lookup.put_string("index.tmpl", """
+        <%include file="incl1.tmpl" args="**pageargs"/>
+        <%page args="variable" />
+        ${variable}
+        <%include file="incl2.tmpl" />
+        """)
+
+        self._do_test(
+            lookup.get_template("index.tmpl"),
+            "bar foo var {}",
+            filters=flatten_result,
+            template_args={'variable':'var', 'bar':'bar', 'foo':'foo'}
+
+        )
+        
     def test_with_context(self):
         template = Template("""
             <%page args="x, y, z=7"/>
