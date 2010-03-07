@@ -44,7 +44,7 @@ SVN version:
       author_email='mike@zzzcomputing.com',
       url='http://www.makotemplates.org/',
       license='MIT',
-      packages=find_packages('.', exclude=['examples', 'test']),
+      packages=find_packages('.', exclude=['examples*', 'test*']),
       scripts=['scripts/mako-render'],
       tests_require = ['nose >= 0.11'],
       test_suite = "nose.collector",
