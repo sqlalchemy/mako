@@ -1,3 +1,11 @@
+0.3.2
+- Calling a def from the top, via 
+  template.get_def(...).render() now checks the 
+  argument signature the same way as it did in 
+  0.2.5, so that TypeError is not raised.
+  reopen of [ticket:116]
+  
+  
 0.3.1
 - Fixed incorrect dir name in setup.py
   [ticket:129]

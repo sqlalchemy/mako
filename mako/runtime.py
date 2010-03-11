@@ -338,7 +338,7 @@ def _include_file(context, uri, calling_uri, **kwargs):
     
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(context._clean_inheritance_tokens(), template)
-    callable_(ctx, **_kwargs_for_callable(callable_, context._orig, **kwargs))
+    callable_(ctx, **_kwargs_for_include(callable_, context._orig, **kwargs))
         
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set up the inheritance chain at the start
@@ -399,10 +399,25 @@ def _render(template, callable_, args, data, as_unicode=False):
     context = Context(buf, **data)
     context._outputting_as_unicode = as_unicode
     context._with_template = template
-    _render_context(template, callable_, context, *args, **data)
+    
+    _render_context(template, callable_, context, *args, **_kwargs_for_callable(callable_, data))
     return context._pop_buffer().getvalue()
 
-def _kwargs_for_callable(callable_, data, **kwargs):
+def _kwargs_for_callable(callable_, data):
+    argspec = inspect.getargspec(callable_)
+    # for normal pages, **pageargs is usually present
+    if argspec[2]:
+        return data
+    
+    # for rendering defs from the top level, figure out the args
+    namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
+    kwargs = {}
+    for arg in namedargs:
+        if arg != 'context' and arg in data and arg not in kwargs:
+            kwargs[arg] = data[arg]
+    return kwargs
+
+def _kwargs_for_include(callable_, data, **kwargs):
     argspec = inspect.getargspec(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:

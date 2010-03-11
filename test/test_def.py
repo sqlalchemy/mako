@@ -82,6 +82,9 @@ class DefTest(TemplateTest):
                                                             filters=flatten_result)
         self._do_test(template.get_def("body"), "this is the body", filters=flatten_result)
         
+        # test that args outside of the dict can be used
+        self._do_test(template.get_def("a"), "this is a", 
+                        filters=flatten_result, template_args={'q':5,'zq':'test'})
         
 class ScopeTest(TemplateTest):
     """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
