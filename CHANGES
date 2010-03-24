@@ -1,3 +1,9 @@
+0.3.3
+- Fixed sometimes incorrect usage of 
+  exc.__class__.__name__
+  in html/text error templates when using 
+  Python 2.4 [ticket:131]
+  
 0.3.2
 - Calling a def from the top, via 
   template.get_def(...).render() now checks the 

@@ -59,15 +59,20 @@ class RichTraceback(object):
     
     error - the exception instance.  
     message - the exception error message as unicode
-    source - source code of the file where the error occured.  if the error occured within a compiled template,
-    this is the template source.
-    lineno - line number where the error occured.  if the error occured within a compiled template, the line number
-    is adjusted to that of the template source
-    records - a list of 8-tuples containing the original python traceback elements, plus the 
-    filename, line number, source line, and full template source for the traceline mapped back to its originating source
-    template, if any for that traceline (else the fields are None).
+    source - source code of the file where the error occured.  
+        if the error occured within a compiled template,
+        this is the template source.
+    lineno - line number where the error occured.  if the error 
+        occured within a compiled template, the line number
+        is adjusted to that of the template source
+    records - a list of 8-tuples containing the original 
+        python traceback elements, plus the 
+    filename, line number, source line, and full template source 
+        for the traceline mapped back to its originating source
+        template, if any for that traceline (else the fields are None).
     reverse_records - the list of records in reverse
-    traceback - a list of 4-tuples, in the same format as a regular python traceback, with template-corresponding 
+    traceback - a list of 4-tuples, in the same format as a regular 
+        python traceback, with template-corresponding 
     traceback records replacing the originals
     reverse_traceback - the traceback list in reverse
     
@@ -94,7 +99,11 @@ class RichTraceback(object):
             self._has_source = True
             
         self._init_message()
-
+    
+    @property
+    def errorname(self):
+        return util.exception_name(self.error)
+        
     def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
@@ -229,7 +238,7 @@ Traceback (most recent call last):
   File "${filename}", line ${lineno}, in ${function or '?'}
     ${line | unicode.strip}
 % endfor
-${str(tback.error.__class__.__name__)}: ${tback.message}
+${tback.errorname}: ${tback.message}
 """)
 
 def html_error_template():
@@ -280,7 +289,7 @@ def html_error_template():
     else:
         lines = None
 %>
-<h3>${str(tback.error.__class__.__name__)}: ${tback.message}</h3>
+<h3>${tback.errorname}: ${tback.message}</h3>
 
 % if lines:
     <div class="sample">

@@ -8,6 +8,7 @@ import sys
 
 
 py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
+py24 = sys.version_info >= (2, 4) and sys.version_info < (2, 5)
 jython = sys.platform.startswith('java')
 win32 = sys.platform.startswith('win')
 
@@ -42,7 +43,17 @@ def function_named(fn, name):
     """
     fn.__name__ = name
     return fn
-   
+ 
+if py24:
+    def exception_name(exc):
+        try:
+            return exc.__class__.__name__
+        except AttributeError:
+            return exc.__name__
+else:
+    def exception_name(exc):
+        return exc.__class__.__name__
+    
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""
     
