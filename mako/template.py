@@ -225,7 +225,6 @@ class Template(object):
     @property
     def last_modified(self): 
         return self.module._modified_time    
-    last_modified = property(last_modified)
     
 class ModuleTemplate(Template):
     """A Template which is constructed given an existing Python module.
