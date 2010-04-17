@@ -7,6 +7,11 @@
 
 - Fixed broken @property decorator on 
   template.last_modified
+
+- Fixed error formatting when a stacktrace
+  line contains no line number, as in when
+  inside an eval/exec-generated function.
+  [ticket:132]
   
 0.3.2
 - Calling a def from the top, via 

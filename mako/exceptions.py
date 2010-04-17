@@ -152,6 +152,8 @@ class RichTraceback(object):
         rawrecords = traceback.extract_tb(trcback)
         new_trcback = []
         for filename, lineno, function, line in rawrecords:
+            if not line:
+                line = ''
             try:
                 (line_map, template_lines) = mods[filename]
             except KeyError:

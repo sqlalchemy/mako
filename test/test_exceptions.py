@@ -73,6 +73,16 @@ ${u'привет'}
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
     
+    def test_format_closures(self):
+        try:
+            exec "def foo():"\
+                 "    raise RuntimeError('test')"\
+                 in locals()
+            foo()
+        except:
+            html_error = exceptions.html_error_template().render()
+            assert "RuntimeError: test" in html_error
+        
     def test_py_utf8_html_error_template(self):
         try:
             foo = u'日本'
