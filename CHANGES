@@ -12,6 +12,14 @@
   line contains no line number, as in when
   inside an eval/exec-generated function.
   [ticket:132]
+
+- When a .py is being created, the tempfile
+  where the source is stored temporarily is
+  now made in the same directory as that of
+  the .py file.  This ensures that the two
+  files share the same filesystem, thus 
+  avoiding cross-filesystem synchronization
+  issues.  Thanks to Charles Cazabon.
   
 0.3.2
 - Calling a def from the top, via 
