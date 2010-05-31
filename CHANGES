@@ -1,5 +1,12 @@
 
 0.3.3
+- Added conditional to RichTraceback
+  such that if no traceback is passed
+  and sys.exc_info() has been reset,
+  the formatter just returns blank
+  for the "traceback" portion.
+  [ticket:135]
+  
 - Fixed sometimes incorrect usage of 
   exc.__class__.__name__
   in html/text error templates when using 

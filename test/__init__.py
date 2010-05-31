@@ -12,7 +12,8 @@ class TemplateTest(unittest.TestCase):
     
     def _file_template(self, filename, **kw):
         filepath = self._file_path(filename)
-        return Template(uri=filename, filename=filepath, module_directory=module_base, **kw)
+        return Template(uri=filename, filename=filepath,
+                            module_directory=module_base, **kw)
     
     def _file_path(self, filename):
         name, ext = os.path.splitext(filename)

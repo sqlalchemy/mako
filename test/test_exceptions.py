@@ -6,8 +6,9 @@ from mako import exceptions, util
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from util import result_lines
+from test import template_base, module_base, TemplateTest
 
-class ExceptionsTest(unittest.TestCase):
+class ExceptionsTest(TemplateTest):
     def test_html_error_template(self):
         """test the html_error_template"""
         code = """
@@ -26,13 +27,15 @@ class ExceptionsTest(unittest.TestCase):
             assert html_error_stripped.startswith('<html>')
             assert html_error_stripped.endswith('</html>')
 
-            not_full = exceptions.html_error_template().render_unicode(full=False)
+            not_full = exceptions.html_error_template().\
+                                    render_unicode(full=False)
             assert '<html>' not in not_full
             assert '</html>' not in not_full
             assert '<style>' in not_full
             assert '</style>' in not_full
 
-            no_css = exceptions.html_error_template().render_unicode(css=False)
+            no_css = exceptions.html_error_template().\
+                                    render_unicode(css=False)
             assert '<style>' not in no_css
             assert '</style>' not in no_css
         else:
@@ -40,7 +43,8 @@ class ExceptionsTest(unittest.TestCase):
                            "but didn't")
 
     def test_utf8_html_error_template(self):
-        """test the html_error_template with a Template containing utf8 chars"""
+        """test the html_error_template with a Template containing utf8
+        chars"""
         
         if util.py3k:
             code = """# -*- coding: utf-8 -*-
@@ -61,7 +65,8 @@ ${u'привет'}
             html_error = exceptions.html_error_template().render()
             assert ("CompileException: Fragment 'if 2 == 2: /an "
                     "error' is not a partial control "
-                    "statement at line: 2 char: 1") in html_error.decode('utf-8')
+                    "statement at line: 2 char: 1") in \
+                    html_error.decode('utf-8')
                     
             if util.py3k:
                 assert u"3 ${'привет'}".encode(sys.getdefaultencoding(),
@@ -147,10 +152,25 @@ ${foobar}
         try:
             raise RuntimeError("error 2")
         except:
-            html_error = exceptions.html_error_template().render_unicode(error=v, traceback=tback)
+            html_error = exceptions.html_error_template().\
+                        render_unicode(error=v, traceback=tback)
         
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
         assert "".join(reversed(")'rab'(oof")) in html_error
+
+    def test_tback_no_trace(self):
+        try:
+            t = self._file_template("runtimeerr.html")
+            t.render()
+        except:
+            t, v, tback = sys.exc_info()
+
+        # blow away tracebaack info
+        sys.exc_clear()
         
+        # and don't even send what we have.
+        html_error = exceptions.html_error_template().\
+                    render_unicode(error=v, traceback=None)
         
+        assert "local variable 'y' referenced" in html_error
