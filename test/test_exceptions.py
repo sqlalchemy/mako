@@ -17,12 +17,12 @@ class ExceptionsTest(TemplateTest):
         try:
             template = Template(code)
             template.render_unicode()
+            assert False
         except exceptions.CompileException, ce:
             html_error = exceptions.html_error_template().render_unicode()
             assert ("CompileException: Fragment 'i = 0' is not a partial "
                     "control statement") in html_error
             assert '<style>' in html_error
-            assert '</style>' in html_error
             html_error_stripped = html_error.strip()
             assert html_error_stripped.startswith('<html>')
             assert html_error_stripped.endswith('</html>')
@@ -30,18 +30,30 @@ class ExceptionsTest(TemplateTest):
             not_full = exceptions.html_error_template().\
                                     render_unicode(full=False)
             assert '<html>' not in not_full
-            assert '</html>' not in not_full
             assert '<style>' in not_full
-            assert '</style>' in not_full
 
             no_css = exceptions.html_error_template().\
                                     render_unicode(css=False)
             assert '<style>' not in no_css
-            assert '</style>' not in no_css
         else:
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
 
+    def test_text_error_template(self):
+        code = """
+% i = 0
+"""
+        try:
+            template = Template(code)
+            template.render_unicode()
+            assert False
+        except exceptions.CompileException, ce:
+            text_error = exceptions.text_error_template().render_unicode()
+            assert 'Traceback (most recent call last):' in text_error
+            assert ("CompileException: Fragment 'i = 0' is not a partial "
+                    "control statement") in text_error
+
+        
     def test_utf8_html_error_template(self):
         """test the html_error_template with a Template containing utf8
         chars"""

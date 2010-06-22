@@ -1,4 +1,8 @@
-
+0.3.4
+- Fixed call to "unicode.strip" in 
+  exceptions.text_error_template which
+  is not Py3k compatible.  [ticket:137]
+  
 0.3.3
 - Added conditional to RichTraceback
   such that if no traceback is passed
