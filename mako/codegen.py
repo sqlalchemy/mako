@@ -20,7 +20,8 @@ def compile(node,
                 buffer_filters=None, 
                 imports=None, 
                 source_encoding=None, 
-                generate_magic_comment=True):
+                generate_magic_comment=True,
+                disable_unicode=False):
                 
     """Generate module source code given a parsetree node, 
       uri, and optional source filename"""
@@ -43,7 +44,8 @@ def compile(node,
                                             buffer_filters,
                                             imports, 
                                             source_encoding,
-                                            generate_magic_comment), 
+                                            generate_magic_comment,
+                                            disable_unicode), 
                                 node)
     return buf.getvalue()
 
@@ -55,7 +57,8 @@ class _CompileContext(object):
                     buffer_filters, 
                     imports, 
                     source_encoding, 
-                    generate_magic_comment):
+                    generate_magic_comment,
+                    disable_unicode):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
@@ -63,6 +66,7 @@ class _CompileContext(object):
         self.imports = imports
         self.source_encoding = source_encoding
         self.generate_magic_comment = generate_magic_comment
+        self.disable_unicode = disable_unicode
         
 class _GenerateRenderMethod(object):
     """A template visitor object which generates the 
@@ -586,6 +590,8 @@ class _GenerateRenderMethod(object):
         def locate_encode(name):
             if re.match(r'decode\..+', name):
                 return "filters." + name
+            elif self.compiler.disable_unicode:
+                return filters.NON_UNICODE_ESCAPES.get(name, name)
             else:
                 return filters.DEFAULT_ESCAPES.get(name, name)
         

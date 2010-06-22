@@ -5,9 +5,10 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 
-import re, cgi, urllib, htmlentitydefs, codecs
+import re, urllib, htmlentitydefs, codecs
 from StringIO import StringIO
 from mako import util
+import markupsafe
 
 xml_escapes = {
     '&' : '&amp;',
@@ -16,12 +17,18 @@ xml_escapes = {
     '"' : '&#34;',   # also &quot; in html-only
     "'" : '&#39;'    # also &apos; in html-only    
 }
+
 # XXX: &quot; is valid in HTML and XML
 #      &apos; is not valid HTML, but is valid XML
 
 def html_escape(string):
-    return cgi.escape(string, True)
+    return markupsafe.escape(string)
 
+def legacy_html_escape(string):
+    """legacy HTML escape for non-unicode mode."""
+
+    return re.sub(r'([&<"\'>])', lambda m: xml_escapes[m.group()], string)
+    
 def xml_escape(string):
     return re.sub(r'([&<"\'>])', lambda m: xml_escapes[m.group()], string)
 
@@ -172,4 +179,7 @@ if util.py3k:
     DEFAULT_ESCAPES.update({
         'unicode':'str'
     })
+
+NON_UNICODE_ESCAPES = DEFAULT_ESCAPES.copy()
+NON_UNICODE_ESCAPES['h'] = 'filters.legacy_html_escape'
 

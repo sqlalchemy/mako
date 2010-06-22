@@ -12,7 +12,7 @@ The above expression applies URL escaping to the expression, and produces `this+
 The built-in escape flags are:
 
 * `u` : URL escaping, provided by `urllib.quote_plus(string.encode('utf-8'))`
-* `h` : HTML escaping, provided by `cgi.escape(string, True)`
+* `h` : HTML escaping, provided by `markupsafe.escape(string)`  (new as of 0.3.4 - prior versions use `cgi.escape(string, True)`)
 * `x` : XML escaping
 * `trim` : whitespace trimming, provided by `string.strip()`
 * `entity` : produces HTML entity references for applicable strings, derived from `htmlentitydefs`

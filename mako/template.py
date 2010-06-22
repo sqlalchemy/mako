@@ -363,7 +363,8 @@ def _compile_text(template, text, filename):
                             buffer_filters=template.buffer_filters, 
                             imports=template.imports, 
                             source_encoding=lexer.encoding,
-                            generate_magic_comment=template.disable_unicode)
+                            generate_magic_comment=template.disable_unicode,
+                            disable_unicode=template.disable_unicode)
 
     cid = identifier
     if not util.py3k and isinstance(cid, unicode):
@@ -389,7 +390,8 @@ def _compile_module_file(template, text, filename, outputpath):
                                 buffer_filters=template.buffer_filters,
                                 imports=template.imports,
                                 source_encoding=lexer.encoding,
-                                generate_magic_comment=True)
+                                generate_magic_comment=True,
+                                disable_unicode=template.disable_unicode)
                                 
     # make tempfiles in the same location as the ultimate 
     # location.   this ensures they're on the same filesystem,

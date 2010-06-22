@@ -141,6 +141,8 @@ Where above that the string literal used within `context.write` is a regular byt
 
 When `disable_unicode=True` is turned on, the `default_filters` argument which normally defaults to `["unicode"]` now defaults to `["str"]` instead.  Setting default_filters to the empty list `[]` can remove the overhead of the `str` call.  Also, in this mode you **cannot** safely call `render_unicode()` - you'll get unicode/decode errors.
 
+The `h` filter (html escape) uses a less performant pure Python escape function in non-unicode mode (note that in versions prior to 0.3.4, it used cgi.escape(), which has been replaced with a function that also escapes single quotes).  This because MarkupSafe only supports Python unicode objects for non-ascii strings.
+
 **Rules for using disable_unicode=True**
 
  * don't use this mode unless you really, really want to and you absolutely understand what you're doing

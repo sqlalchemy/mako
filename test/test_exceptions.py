@@ -81,10 +81,10 @@ ${u'привет'}
                     html_error.decode('utf-8')
                     
             if util.py3k:
-                assert u"3 ${'привет'}".encode(sys.getdefaultencoding(),
+                assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
             else:
-                assert u"3 ${u'привет'}".encode(sys.getdefaultencoding(),
+                assert u"3 ${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
         else:
             assert False, ("This function should trigger a CompileException, "
@@ -108,10 +108,10 @@ ${u'привет'}
             html_error = exceptions.html_error_template().render()
             if util.py3k:
                 assert 'RuntimeError: test' in html_error.decode('utf-8')
-                assert u"foo = '日本'" in html_error.decode('utf-8')
+                assert u"foo = &#39;日本&#39;" in html_error.decode('utf-8')
             else:
                 assert 'RuntimeError: test' in html_error
-                assert "foo = u'&#x65E5;&#x672C;'" in html_error
+                assert "foo = u&#39;&#x65E5;&#x672C;&#39;" in html_error
 
     def test_py_unicode_error_html_error_template(self):
         try:
@@ -146,11 +146,11 @@ ${foobar}
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${u'привет' + foobar}""")
 
         if util.py3k:
-            assert u'<div class="sourceline">${\'привет\' + foobar}</div>'\
+            assert u'<div class="sourceline">${&#39;привет&#39; + foobar}</div>'\
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
         else:
-            assert '<div class="highlight">2 ${u\'&#x43F;&#x440;'\
-                    '&#x438;&#x432;&#x435;&#x442;\' + foobar}</div>' \
+            assert '<div class="highlight">2 ${u&#39;&#x43F;&#x440;'\
+                    '&#x438;&#x432;&#x435;&#x442;&#39; + foobar}</div>' \
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
         
     
@@ -169,7 +169,7 @@ ${foobar}
         
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
-        assert "".join(reversed(")'rab'(oof")) in html_error
+        assert "".join(reversed(");93#&rab;93#&(oof")) in html_error
 
     def test_tback_no_trace(self):
         try:

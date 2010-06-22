@@ -48,6 +48,7 @@ ties to Python calling and scoping semantics.
       zip_safe=False,
       install_requires=[
           'Beaker>=1.1',
+          'MarkupSafe>=0.9.2',
       ],
       entry_points="""
       [python.templating.engines]

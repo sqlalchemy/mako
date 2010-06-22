@@ -1,4 +1,19 @@
 0.3.4
+- Now using MarkupSafe for HTML escaping,
+  i.e. in place of cgi.escape().  Faster
+  C-based implementation and also escapes
+  single quotes for additional security.
+  Supports the __html__ attribute for
+  the given expression as well.
+  
+  When using "disable_unicode" mode,
+  a pure Python HTML escaper function
+  is used which also quotes single quotes.
+  
+  Note that Pylons by default doesn't 
+  use Mako's filter - check your 
+  environment.py file.
+  
 - Fixed call to "unicode.strip" in 
   exceptions.text_error_template which
   is not Py3k compatible.  [ticket:137]

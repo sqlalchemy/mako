@@ -2,9 +2,11 @@
 
 from mako.template import Template
 import unittest
+from mako import util
+from test import TemplateTest, eq_, skip_if
 from util import result_lines, flatten_result
 
-class FilterTest(unittest.TestCase):
+class FilterTest(TemplateTest):
     def test_basic(self):
         t = Template("""
         ${x | myfilter}
@@ -26,7 +28,29 @@ class FilterTest(unittest.TestCase):
             ${x | trim}
         """)
         assert flatten_result(t.render(x=5)) == "5"
+    
+    def test_quoting(self):
+        t = Template("""
+            foo ${bar | h}
+        """)
+        
+        eq_(
+            flatten_result(t.render(bar="<'some bar'>")),
+            "foo &lt;&#39;some bar&#39;&gt;"
+        )
+    
+    @skip_if(lambda: util.py3k)
+    def test_quoting_non_unicode(self):
+        t = Template("""
+            foo ${bar | h}
+        """, disable_unicode=True)
 
+        eq_(
+            flatten_result(t.render(bar="<'привет'>")),
+            "foo &lt;&#39;привет&#39;&gt;"
+        )
+        
+        
     def test_def(self):
         t = Template("""
             <%def name="foo()" filter="myfilter">
