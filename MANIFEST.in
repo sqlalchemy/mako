@@ -3,7 +3,7 @@
 
 recursive-include doc *.html *.css *.txt *.js *.jpg *.png *.py Makefile *.rst *.mako *.sty autohandler
 recursive-include examples *.py *.xml *.mako *.myt *.kid *.tmpl
-recursive-include test *.py *.dat *.html
+recursive-include test *.py *.dat *.html *.mako
 
 include README* LICENSE distribute_setup.py ez_setup.py CHANGES*
 
