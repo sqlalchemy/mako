@@ -98,7 +98,7 @@ ${u'привет'}
             foo()
         except:
             html_error = exceptions.html_error_template().render()
-            assert "RuntimeError: test" in html_error
+            assert "RuntimeError: test" in str(html_error)
         
     def test_py_utf8_html_error_template(self):
         try:
@@ -178,8 +178,9 @@ ${foobar}
         except:
             t, v, tback = sys.exc_info()
 
-        # blow away tracebaack info
-        sys.exc_clear()
+        if not util.py3k:
+            # blow away tracebaack info
+            sys.exc_clear()
         
         # and don't even send what we have.
         html_error = exceptions.html_error_template().\
