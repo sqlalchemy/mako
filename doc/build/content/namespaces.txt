@@ -42,6 +42,10 @@ The names imported by the `import` attribute take precedence over any names that
 
 **Note** - in current versions of Mako, usage of "import='*'" is known to decrease performance of the template.  This will be fixed in a future release.
 
+The `file` argument allows expressions - if looking for context variables, the `context` must be named explicitly:
+
+    <%namespace name="dyn" file="${context['namespace_name']}"/>
+    
 ### Ways to Call Namespaces {@name=howtocall}
 
 There are essentially four ways to call a function from a namespace.

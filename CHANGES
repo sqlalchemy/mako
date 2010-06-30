@@ -1,3 +1,16 @@
+0.3.5
+- The <%namespace> tag allows expressions
+  for the `file` argument, i.e. with ${}.
+  The `context` variable, if needed,
+  must be referenced explicitly.
+  [ticket:141]
+
+- Fixed previously non-covered regular 
+  expression, such that using a ${} expression 
+  inside of a tag element that doesn't allow 
+  them raises a CompileException instead of
+  silently failing.
+  
 0.3.4
 - Now using MarkupSafe for HTML escaping,
   i.e. in place of cgi.escape().  Faster

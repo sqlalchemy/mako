@@ -78,7 +78,13 @@ class LexerTest(TemplateTest):
             hi.
         """
         self.assertRaises(exceptions.SyntaxException, Lexer(template).parse)
-
+    
+    def test_noexpr_allowed(self):
+        template = """
+            <%namespace name="${foo}"/>
+        """
+        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        
     def test_unmatched_tag(self):
         template = """
         <%namespace name="bar">

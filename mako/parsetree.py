@@ -281,7 +281,7 @@ class Tag(Node):
                             expr.append(repr(x))
                 self.parsed_attributes[key] = " + ".join(expr) or repr('')
             elif key in nonexpressions:
-                if re.search(r'${.+?}', self.attributes[key]):
+                if re.search(r'\${.+?}', self.attributes[key]):
                     raise exceptions.CompileException(
                             "Attibute '%s' in tag '%s' does not allow embedded "
                             "expressions"  % (key, self.keyword), 
@@ -334,9 +334,9 @@ class NamespaceTag(Tag):
     def __init__(self, keyword, attributes, **kwargs):
         super(NamespaceTag, self).__init__(
                                         keyword, attributes, 
-                                        (), 
+                                        ('file',), 
                                         ('name','inheritable',
-                                        'file','import','module'), 
+                                        'import','module'), 
                                         (), **kwargs)
                                         
         self.name = attributes.get('name', '__anon_%s' % hex(abs(id(self))))

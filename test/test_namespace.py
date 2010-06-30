@@ -1,7 +1,7 @@
 from mako.template import Template
 from mako import lookup
 from util import flatten_result, result_lines
-from test import TemplateTest
+from test import TemplateTest, eq_
 
 class NamespaceTest(TemplateTest):
     def test_inline_crossreference(self):
@@ -81,6 +81,24 @@ class NamespaceTest(TemplateTest):
             filters=flatten_result
         )
 
+    def test_dynamic(self):
+        collection = lookup.TemplateLookup()
+
+        collection.put_string('a', """
+        <%namespace name="b" file="${context['b_def']}"/>
+
+        a.  b: ${b.body()}
+""")
+
+        collection.put_string('b', """
+        b.
+""")
+
+        eq_(
+            flatten_result(collection.get_template('a').render(b_def='b')),
+            "a. b: b."
+        )
+        
     def test_template(self):
         collection = lookup.TemplateLookup()
 
