@@ -13,35 +13,35 @@ from test import TemplateTest, eq_, template_base, module_base, skip_if
 class EncodingTest(TemplateTest):
     def test_unicode(self):
         self._do_memory_test(
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
 
     def test_encoding_doesnt_conflict(self):
         self._do_memory_test(
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             output_encoding='utf-8'
         )
         
     def test_unicode_arg(self):
-        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         self._do_memory_test(
             "${val}",
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             template_args={'val':val}
         )
 
     def test_unicode_file(self):
         self._do_file_test(
             "unicode.html",
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
 
     def test_unicode_file_code(self):
         self._do_file_test(
             'unicode_code.html',
-            u"""hi, drôle de petit voix m’a réveillé.""",
+            u"""hi, drôle de petite voix m’a réveillé.""",
             filters=flatten_result
         )
 
@@ -62,12 +62,12 @@ class EncodingTest(TemplateTest):
     def test_unicode_bom(self):
         self._do_file_test(
             'bom.html',
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
 
         self._do_file_test(
             'bommagic.html',
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
 
         self.assertRaises(
@@ -77,17 +77,17 @@ class EncodingTest(TemplateTest):
         )
 
     def test_unicode_memory(self):
-        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         self._do_memory_test(
             ("## -*- coding: utf-8 -*-\n" + val).encode('utf-8'),
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
     
     def test_unicode_text(self):
-        val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
+        val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
         self._do_memory_test(
             ("## -*- coding: utf-8 -*-\n" + val).encode('utf-8'),
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
 
     def test_unicode_text_ccall(self):
@@ -96,11 +96,11 @@ class EncodingTest(TemplateTest):
             ${capture(caller.body)}
         </%def>
         <%call expr="foo()">
-        <%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>
+        <%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>
         </%call>"""
         self._do_memory_test(
             ("## -*- coding: utf-8 -*-\n" + val).encode('utf-8'),
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             filters=flatten_result
         )
         
@@ -108,24 +108,24 @@ class EncodingTest(TemplateTest):
         if util.py3k:
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
-                ${"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
+                ${"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
                 """.encode('utf-8'),
-                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
                 filters = lambda s:s.strip()
             )
         else:
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
-                ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
+                ${u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"}
                 """.encode('utf-8'),
-                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
                 filters = lambda s:s.strip()
             )
 
     def test_unicode_literal_in_expr_file(self):
         self._do_file_test(
             'unicode_expr.html',
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             lambda t:t.strip()
         )
 
@@ -134,20 +134,20 @@ class EncodingTest(TemplateTest):
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
                 <%
-                    context.write("Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
+                    context.write("Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
                 %>
                 """.encode('utf-8'),
-                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
                 filters=lambda s:s.strip()
             )
         else:
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
                 <%
-                    context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
+                    context.write(u"Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »")
                 %>
                 """.encode('utf-8'),
-                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+                u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
                 filters=lambda s:s.strip()
             )
     
@@ -156,26 +156,26 @@ class EncodingTest(TemplateTest):
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
                 <%
-                    x = "drôle de petit voix m’a réveillé."
+                    x = "drôle de petite voix m’a réveillé."
                 %>
-                % if x=="drôle de petit voix m’a réveillé.":
+                % if x=="drôle de petite voix m’a réveillé.":
                     hi, ${x}
                 % endif
                 """.encode('utf-8'),
-                u"""hi, drôle de petit voix m’a réveillé.""",
+                u"""hi, drôle de petite voix m’a réveillé.""",
                 filters=lambda s:s.strip(),
             )
         else:
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
                 <%
-                    x = u"drôle de petit voix m’a réveillé."
+                    x = u"drôle de petite voix m’a réveillé."
                 %>
-                % if x==u"drôle de petit voix m’a réveillé.":
+                % if x==u"drôle de petite voix m’a réveillé.":
                     hi, ${x}
                 % endif
                 """.encode('utf-8'),
-                u"""hi, drôle de petit voix m’a réveillé.""",
+                u"""hi, drôle de petite voix m’a réveillé.""",
                 filters=lambda s:s.strip(),
             )
     
@@ -183,10 +183,10 @@ class EncodingTest(TemplateTest):
         self._do_file_test(
             "unicode_arguments.html",
             [
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
             ],
             filters=result_lines
         )
@@ -194,10 +194,10 @@ class EncodingTest(TemplateTest):
         self._do_memory_test(
             open(self._file_path("unicode_arguments.html"), 'rb').read(),
             [
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
-                u'x is: drôle de petit voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
+                u'x is: drôle de petite voix m’a réveillé',
             ],
             filters=result_lines
         )
@@ -301,8 +301,8 @@ class EncodingTest(TemplateTest):
         
     def test_encoding(self):
         self._do_memory_test(
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
-            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""".encode('utf-8'),
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
+            u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""".encode('utf-8'),
             output_encoding='utf-8',
             unicode_=False
         )
@@ -348,9 +348,9 @@ class EncodingTest(TemplateTest):
         template = self._file_template('chs_utf8.html', disable_unicode=True)
         self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
 
-        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')
-        assert template.render() == """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", input_encoding='utf8', output_encoding='utf8', disable_unicode=False, default_filters=[])
+        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')
+        assert template.render() == """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
+        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", input_encoding='utf8', output_encoding='utf8', disable_unicode=False, default_filters=[])
         self.assertRaises(UnicodeDecodeError, template.render)  # raises because expression contains an encoded bytestring which cannot be decoded
 
 

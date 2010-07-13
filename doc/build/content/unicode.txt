@@ -19,7 +19,7 @@ This is the most basic encoding-related setting, and it is equivalent to Python'
 
     ## -*- coding: utf-8 -*-
 
-    Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petit voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »
+    Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »
 
 For the picky, the regular expression used is derived from that of the abovementioned pep:
     
@@ -115,7 +115,7 @@ Some segements of Mako's userbase choose to make no usage of Unicode whatsoever,
     # -*- encoding:utf-8 -*-
     from mako.template import Template
     
-    t = Template("drôle de petit voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
+    t = Template("drôle de petite voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
     print t.code
 
 The `disable_unicode` mode is strictly a Python 2 thing.  It is not supported at all in Python 3.
@@ -132,7 +132,7 @@ The generated module source code will contain elements like these:
         try:
             __M_locals = dict(pageargs=pageargs)
             # SOURCE LINE 1
-            context.write('dr\xc3\xb4le de petit voix m\xe2\x80\x99a r\xc3\xa9veill\xc3\xa9.')
+            context.write('dr\xc3\xb4le de petite voix m\xe2\x80\x99a r\xc3\xa9veill\xc3\xa9.')
             return ''
         finally:
             context.caller_stack.pop_frame()
