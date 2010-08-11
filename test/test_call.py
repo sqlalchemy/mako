@@ -1,9 +1,9 @@
 from mako.template import Template
 from mako import util
-import unittest
 from util import result_lines, flatten_result
+from test import TemplateTest, eq_
 
-class CallTest(unittest.TestCase):
+class CallTest(TemplateTest):
     def test_call(self):
         t = Template("""
         <%def name="foo()">
@@ -44,6 +44,34 @@ class CallTest(unittest.TestCase):
 """)
         assert result_lines(t.render()) == ['foo calling comp1:', 'this is comp1, 5', 'foo calling body:', 'this is the body,', 'this is comp1, 6', 'this is bar']
 
+    def test_new_syntax(self):
+        """test foo:bar syntax, including multiline args and expression eval."""
+        
+        t = Template("""
+            <%def name="foo(x, y, q, z)">
+                ${x}
+                ${y}
+                ${q}
+                ${",".join("%s->%s" % (a, b) for a, b in z)}
+            </%def>
+            
+            <%self:foo x="this is x" y="${'some ' + 'y'}" q="
+                this
+                is
+                q"
+                
+                z="${[
+                (1, 2),
+                (3, 4),
+                (5, 6)
+            ]}"/>
+        """)
+        
+        eq_(
+            result_lines(t.render()),
+             ['this is x', 'some y', 'this', 'is', 'q', '1->2,3->4,5->6']
+        )
+        
     def test_ccall_caller(self):
         t = Template("""
         <%def name="outer_func()">
@@ -380,7 +408,7 @@ class CallTest(unittest.TestCase):
 """)
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call", 'the embedded "d" is:', 'this is d']
 
-class SelfCacheTest(unittest.TestCase):
+class SelfCacheTest(TemplateTest):
     """this test uses a now non-public API."""
     
     def test_basic(self):

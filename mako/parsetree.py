@@ -268,8 +268,8 @@ class Tag(Node):
         for key in self.attributes:
             if key in expressions:
                 expr = []
-                for x in re.split(r'(\${.+?})', self.attributes[key]):
-                    m = re.match(r'^\${(.+?)}$', x)
+                for x in re.compile(r'(\${.+?})', re.S).split(self.attributes[key]):
+                    m = re.compile(r'^\${(.+?)}$', re.S).match(x)
                     if m:
                         code = ast.PythonCode(m.group(1), **self.exception_kwargs)
                         undeclared_identifiers = undeclared_identifiers.union(

@@ -5,6 +5,10 @@
   must be referenced explicitly.
   [ticket:141]
 
+- ${} expressions embedded in tags, 
+  such as <%foo:bar x="${...}">, now 
+  allow multiline Python expressions.
+  
 - Fixed previously non-covered regular 
   expression, such that using a ${} expression 
   inside of a tag element that doesn't allow 
