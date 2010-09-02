@@ -268,14 +268,16 @@ class Tag(Node):
         for key in self.attributes:
             if key in expressions:
                 expr = []
-                for x in re.compile(r'(\${.+?})', re.S).split(self.attributes[key]):
+                for x in re.compile(r'(\${.+?})',
+                                    re.S).split(self.attributes[key]):
                     m = re.compile(r'^\${(.+?)}$', re.S).match(x)
                     if m:
-                        code = ast.PythonCode(m.group(1), **self.exception_kwargs)
-                        undeclared_identifiers = undeclared_identifiers.union(
-                                                        code.undeclared_identifiers
-                                                    )
-                        expr.append("(%s)" % m.group(1))
+                        code = ast.PythonCode(m.group(1).rstrip(),
+                                **self.exception_kwargs)
+                        undeclared_identifiers = \
+                            undeclared_identifiers.union(
+                                    code.undeclared_identifiers)
+                        expr.append('(%s)' % m.group(1))
                     else:
                         if x:
                             expr.append(repr(x))
@@ -391,7 +393,8 @@ class DefTag(Tag):
     def undeclared_identifiers(self):
         res = []
         for c in self.function_decl.defaults:
-            res += list(ast.PythonCode(c, **self.exception_kwargs).undeclared_identifiers)
+            res += list(ast.PythonCode(c, **self.exception_kwargs).
+                                    undeclared_identifiers)
         return res + list(self.filter_args.\
                             undeclared_identifiers.\
                             difference(filters.DEFAULT_ESCAPES.keys())

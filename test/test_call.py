@@ -47,6 +47,9 @@ class CallTest(TemplateTest):
     def test_new_syntax(self):
         """test foo:bar syntax, including multiline args and expression eval."""
         
+        # note the trailing whitespace in the bottom ${} expr, need to strip
+        # that off < python 2.7
+        
         t = Template("""
             <%def name="foo(x, y, q, z)">
                 ${x}
@@ -64,7 +67,9 @@ class CallTest(TemplateTest):
                 (1, 2),
                 (3, 4),
                 (5, 6)
-            ]}"/>
+            ]
+            
+            }"/>
         """)
         
         eq_(
