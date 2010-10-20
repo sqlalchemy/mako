@@ -14,6 +14,12 @@
   inside of a tag element that doesn't allow 
   them raises a CompileException instead of
   silently failing.
+
+- Added a try/except around "import markupsafe".
+  This to support GAE which can't run markupsafe.
+  [ticket:151] No idea whatsoever if the 
+  install_requires in setup.py also breaks GAE, 
+  couldn't get an answer on this.
   
 0.3.4
 - Now using MarkupSafe for HTML escaping,
