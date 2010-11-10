@@ -60,6 +60,7 @@ class TemplateLookup(TemplateCollection):
                         modulename_callable=None, 
                         default_filters=None, 
                         buffer_filters=(), 
+                        strict_undefined=False,
                         imports=None, 
                         input_encoding=None, 
                         preprocessor=None):
@@ -86,6 +87,7 @@ class TemplateLookup(TemplateCollection):
             'cache_enabled':cache_enabled, 
             'default_filters':default_filters, 
             'buffer_filters':buffer_filters,  
+            'strict_undefined':strict_undefined,
             'imports':imports, 
             'preprocessor':preprocessor}
 

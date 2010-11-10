@@ -33,6 +33,7 @@ class Template(object):
                     disable_unicode=False, 
                     default_filters=None, 
                     buffer_filters=(), 
+                    strict_undefined=False,
                     imports=None, 
                     preprocessor=None, 
                     cache_enabled=True):
@@ -68,6 +69,7 @@ class Template(object):
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
+        self.strict_undefined = strict_undefined
 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
@@ -125,7 +127,7 @@ class Template(object):
         self.cache_dir = cache_dir
         self.cache_url = cache_url
         self.cache_enabled = cache_enabled
-    
+        
     def _compile_from_file(self, path, filename):
         if path is not None:
             util.verify_directory(os.path.dirname(path))
@@ -364,7 +366,8 @@ def _compile_text(template, text, filename):
                             imports=template.imports, 
                             source_encoding=lexer.encoding,
                             generate_magic_comment=template.disable_unicode,
-                            disable_unicode=template.disable_unicode)
+                            disable_unicode=template.disable_unicode,
+                            strict_undefined=template.strict_undefined)
 
     cid = identifier
     if not util.py3k and isinstance(cid, unicode):
@@ -391,7 +394,8 @@ def _compile_module_file(template, text, filename, outputpath):
                                 imports=template.imports,
                                 source_encoding=lexer.encoding,
                                 generate_magic_comment=True,
-                                disable_unicode=template.disable_unicode)
+                                disable_unicode=template.disable_unicode,
+                                strict_undefined=template.strict_undefined)
                                 
     # make tempfiles in the same location as the ultimate 
     # location.   this ensures they're on the same filesystem,

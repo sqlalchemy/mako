@@ -57,6 +57,15 @@ def teardown():
     import shutil
     shutil.rmtree(module_base, True)
 
+def assert_raises(except_cls, callable_, *args, **kw):
+    try:
+        callable_(*args, **kw)
+        success = False
+    except except_cls, e:
+        success = True
+    
+    # assert outside the block so it works for AssertionError too !
+    assert success, "Callable did not raise an exception"
 
 def skip_if(predicate, reason=None):
     """Skip a test if predicate is true."""

@@ -7,8 +7,7 @@ from mako import exceptions, util
 import re, os
 from util import flatten_result, result_lines
 import codecs
-
-from test import TemplateTest, eq_, template_base, module_base, skip_if
+from test import TemplateTest, eq_, template_base, module_base, skip_if, assert_raises
 
 class EncodingTest(TemplateTest):
     def test_unicode(self):
@@ -544,7 +543,54 @@ class IncludeTest(TemplateTest):
         </%b:bar>
         """)
         assert flatten_result(lookup.get_template("c").render()) == "bar: calling bar this is a"
+
+class UndefinedVarsTest(TemplateTest):
+    def test_undefined(self):
+        t = Template("""
+            % if x is UNDEFINED:
+                undefined
+            % else:
+                x: ${x}
+            % endif
+        """)
         
+        assert result_lines(t.render(x=12)) == ["x: 12"]
+        assert result_lines(t.render(y=12)) == ["undefined"]
+
+    def test_strict(self):
+        t = Template("""
+            % if x is UNDEFINED:
+                undefined
+            % else:
+                x: ${x}
+            % endif
+        """, strict_undefined=True)
+        
+        assert result_lines(t.render(x=12)) == ['x: 12']
+        
+        assert_raises(
+            NameError,
+            t.render, y=12
+        )
+        
+        l = TemplateLookup(strict_undefined=True)
+        l.put_string("a", "some template")
+        l.put_string("b", """
+            <%namespace name='a' file='a' import='*'/>
+            % if x is UNDEFINED:
+                undefined
+            % else:
+                x: ${x}
+            % endif
+        """)
+
+        assert result_lines(t.render(x=12)) == ['x: 12']
+        
+        assert_raises(
+            NameError,
+            t.render, y=12
+        )
+    
 class ControlTest(TemplateTest):
     def test_control(self):
         t = Template("""

@@ -21,7 +21,8 @@ def compile(node,
                 imports=None, 
                 source_encoding=None, 
                 generate_magic_comment=True,
-                disable_unicode=False):
+                disable_unicode=False,
+                strict_undefined=False):
                 
     """Generate module source code given a parsetree node, 
       uri, and optional source filename"""
@@ -45,7 +46,8 @@ def compile(node,
                                             imports, 
                                             source_encoding,
                                             generate_magic_comment,
-                                            disable_unicode), 
+                                            disable_unicode,
+                                            strict_undefined), 
                                 node)
     return buf.getvalue()
 
@@ -58,7 +60,8 @@ class _CompileContext(object):
                     imports, 
                     source_encoding, 
                     generate_magic_comment,
-                    disable_unicode):
+                    disable_unicode,
+                    strict_undefined):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
@@ -67,6 +70,7 @@ class _CompileContext(object):
         self.source_encoding = source_encoding
         self.generate_magic_comment = generate_magic_comment
         self.disable_unicode = disable_unicode
+        self.strict_undefined = strict_undefined
         
 class _GenerateRenderMethod(object):
     """A template visitor object which generates the 
@@ -406,11 +410,36 @@ class _GenerateRenderMethod(object):
                             )
             else:
                 if getattr(self.compiler, 'has_ns_imports', False):
-                    self.printer.writeline(
-                            "%s = _import_ns.get(%r, context.get(%r, UNDEFINED))" % 
-                            (ident, ident, ident))
+                    if self.compiler.strict_undefined:
+                        self.printer.writelines(
+                        "%s = _import_ns.get(%r, UNDEFINED)" % 
+                        (ident, ident),
+                        "if %s is UNDEFINED:" % ident,
+                            "try:",
+                                "%s = context[%r]" % (ident, ident),
+                            "except KeyError:",
+                                "raise NameError(\"'%s' is not defined\")" % 
+                                    ident,
+                            None, None
+                        )
+                    else:
+                        self.printer.writeline(
+                        "%s = _import_ns.get(%r, context.get(%r, UNDEFINED))" % 
+                        (ident, ident, ident))
                 else:
-                    self.printer.writeline("%s = context.get(%r, UNDEFINED)" % (ident, ident))
+                    if self.compiler.strict_undefined:
+                        self.printer.writelines(
+                            "try:",
+                                "%s = context[%r]" % (ident, ident),
+                            "except KeyError:",
+                                "raise NameError(\"'%s' is not defined\")" % 
+                                    ident,
+                            None
+                        )
+                    else:
+                        self.printer.writeline(
+                            "%s = context.get(%r, UNDEFINED)" % (ident, ident)
+                        )
         
         self.printer.writeline("__M_writer = context.writer()")
         

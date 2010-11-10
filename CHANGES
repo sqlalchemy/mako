@@ -1,3 +1,10 @@
+0.3.6
+- New flag on Template, TemplateLookup - 
+  strict_undefined=True, will cause
+  variables not found in the context to 
+  raise a NameError immediately, instead of
+  defaulting to the UNDEFINED value.
+  
 0.3.5
 - The <%namespace> tag allows expressions
   for the `file` argument, i.e. with ${}.

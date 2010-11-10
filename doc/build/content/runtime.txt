@@ -19,11 +19,48 @@ The actual buffer may or may not be the original buffer sent to the `Context` ob
 
 #### Context Variables {@name=variables}
 
-When your template is compiled into a Python module, the body content is enclosed within a Python function called `render_body`.  Other top-level defs defined in the template are defined within their own function bodies which are named after the def's name with the prefix `render_` (i.e. `render_mydef`).  One of the first things that happens within these functions is that all variable names that are referenced within the function which are not defined in some other way (i.e. such as via assignment, module level imports, etc.) are pulled from the `Context` object's dictionary of variables.  This is how you're able to freely reference variable names in a template which automatically correspond to what was passed into the current `Context`.
+When your template is compiled into a Python module, the body
+content is enclosed within a Python function called
+`render_body`. Other top-level defs defined in the template are
+defined within their own function bodies which are named after
+the def's name with the prefix `render_` (i.e. `render_mydef`).
+One of the first things that happens within these functions is
+that all variable names that are referenced within the function
+which are not defined in some other way (i.e. such as via
+assignment, module level imports, etc.) are pulled from the
+`Context` object's dictionary of variables. This is how you're
+able to freely reference variable names in a template which
+automatically correspond to what was passed into the current
+`Context`.
 
-* **What happens if I reference a variable name that is not in the current context?** - the value you get back is a special value called `UNDEFINED`.  This is just a simple global variable with the class `mako.runtime.Undefined`.  The `UNDEFINED` object throws an error when you call `str()` on it, which is what happens if you try to use it in an expression.
-* **Why not just return None?**  Using `UNDEFINED` is more explicit and allows differentiation between a value of `None` that was explicitly passed to the `Context` and a value that wasn't present at all.
-* **Why raise an exception when you call str() on it ?  Why not just return a blank string?** - Mako tries to stick to the Python philosophy of "explicit is better than implicit".  In this case, its decided that the template author should be made to specifically handle a missing value rather than experiencing what may be a silent failure.  Since `UNDEFINED` is a singleton object just like Python's `True` or `False`, you can use the `is` operator to check for it:
+* **What happens if I reference a variable name that is not in
+  the current context?** - the value you get back is a special
+  value called `UNDEFINED`, or if the `strict_undefined=True` flag
+  is used a `NameError` is raised. `UNDEFINED` is just a simple global
+  variable with the class `mako.runtime.Undefined`. The
+  `UNDEFINED` object throws an error when you call `str()` on
+  it, which is what happens if you try to use it in an
+  expression.
+* **UNDEFINED makes it hard for me to find what name is missing** - An alternative 
+  introduced in version 0.3.6 is to specify the option
+  `strict_undefined=True`
+  to the `Template` or `TemplateLookup`.   This will cause
+  any non-present variables to raise an immediate `NameError`
+  which includes the name of the variable in its message
+  when `render()` is called - `UNDEFINED` is not used.
+* **Why not just return None?** Using `UNDEFINED`, or 
+  raising a `NameError` is more
+  explicit and allows differentiation between a value of `None`
+  that was explicitly passed to the `Context` and a value that
+  wasn't present at all.
+* **Why raise an exception when you call str() on it ? Why not
+  just return a blank string?** - Mako tries to stick to the
+  Python philosophy of "explicit is better than implicit". In
+  this case, its decided that the template author should be made
+  to specifically handle a missing value rather than
+  experiencing what may be a silent failure. Since `UNDEFINED`
+  is a singleton object just like Python's `True` or `False`,
+  you can use the `is` operator to check for it:
 
         % if someval is UNDEFINED:
             someval is: no value
