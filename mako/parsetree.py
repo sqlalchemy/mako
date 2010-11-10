@@ -176,7 +176,7 @@ class Expression(Node):
                 self.escapes_code.undeclared_identifiers.difference(
                     set(filters.DEFAULT_ESCAPES.keys())
                 )
-            )
+            ).difference(self.code.declared_identifiers)
 
     def __repr__(self):
         return "Expression(%r, %r, %r)" % (
@@ -274,6 +274,10 @@ class Tag(Node):
                     if m:
                         code = ast.PythonCode(m.group(1).rstrip(),
                                 **self.exception_kwargs)
+                        # we aren't discarding "declared_identifiers" here,
+                        # which we do so that list comprehension-declared variables
+                        # aren't counted.   As yet can't find a condition that
+                        # requires it here.
                         undeclared_identifiers = \
                             undeclared_identifiers.union(
                                     code.undeclared_identifiers)
@@ -327,7 +331,9 @@ class IncludeTag(Tag):
         return []
 
     def undeclared_identifiers(self):
-        identifiers = self.page_args.undeclared_identifiers.difference(set(["__DUMMY"]))
+        identifiers = self.page_args.undeclared_identifiers.\
+                            difference(set(["__DUMMY"])).\
+                            difference(self.page_args.declared_identifiers)
         return identifiers.union(super(IncludeTag, self).undeclared_identifiers())
     
 class NamespaceTag(Tag):
@@ -414,7 +420,8 @@ class CallTag(Tag):
         return self.code.declared_identifiers.union(self.body_decl.argnames)
 
     def undeclared_identifiers(self):
-        return self.code.undeclared_identifiers
+        return self.code.undeclared_identifiers.\
+                    difference(self.code.declared_identifiers)
 
 class CallNamespaceTag(Tag):
 
@@ -443,7 +450,8 @@ class CallNamespaceTag(Tag):
         return self.code.declared_identifiers.union(self.body_decl.argnames)
 
     def undeclared_identifiers(self):
-        return self.code.undeclared_identifiers
+        return self.code.undeclared_identifiers.\
+                    difference(self.code.declared_identifiers)
 
 class InheritTag(Tag):
     __keyword__ = 'inherit'

@@ -156,7 +156,39 @@ class Hi(object):
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['Hi'])
         assert parsed.undeclared_identifiers == set()
+    
+    def test_locate_identifiers_9(self):
+        code = """
+    ",".join([t for t in ("a", "b", "c")])
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        assert parsed.declared_identifiers == set(['t'])
+        assert parsed.undeclared_identifiers == set(['t'])
         
+        code = """
+    [(val, name) for val, name in x]
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        assert parsed.declared_identifiers == set(['val', 'name'])
+        assert parsed.undeclared_identifiers == set(['val', 'name', 'x'])
+        
+    def test_locate_identifiers_10(self):
+        code = """
+lambda q: q + 5
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set())
+        eq_(parsed.undeclared_identifiers, set())
+        
+    def test_locate_identifiers_11(self):
+        code = """
+def x(q):
+    return q + 5
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['x']))
+        eq_(parsed.undeclared_identifiers, set())
+
     def test_no_global_imports(self):
         code = """
 from foo import *

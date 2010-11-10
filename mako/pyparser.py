@@ -89,12 +89,19 @@ if _ast:
                 for statement in node.body:
                     self.visit(statement)
                 
+        def visit_Lambda(self, node, *args):
+            self._visit_function(node, True)
+
         def visit_FunctionDef(self, node):
             self._add_declared(node.name)
+            self._visit_function(node, False)
+            
+        def _visit_function(self, node, islambda):
             # push function state onto stack.  dont log any
             # more identifiers as "declared" until outside of the function,
             # but keep logging identifiers as "undeclared".
-            # track argument names in each function header so they arent counted as "undeclared"
+            # track argument names in each function header 
+            # so they arent counted as "undeclared"
             saved = {}
             inf = self.in_function
             self.in_function = True
@@ -104,13 +111,16 @@ if _ast:
                     saved[arg_id(arg)] = True
                 else:
                     self.local_ident_stack[arg_id(arg)] = True
-            for n in node.body:
-                self.visit(n)
+            if islambda:
+                self.visit(node.body)
+            else:
+                for n in node.body:
+                    self.visit(n)
             self.in_function = inf
             for arg in node.args.args:
                 if arg_id(arg) not in saved:
                     del self.local_ident_stack[arg_id(arg)]
-                    
+            
         def visit_For(self, node):
             # flip around visit
             self.visit(node.iter)
@@ -138,7 +148,13 @@ if _ast:
                     self._add_declared(name.asname)
                 else:
                     if name.name == '*':
-                        raise exceptions.CompileException("'import *' is not supported, since all identifier names must be explicitly declared.  Please use the form 'from <modulename> import <name1>, <name2>, ...' instead.", **self.exception_kwargs)
+                        raise exceptions.CompileException(
+                                "'import *' is not supported, since all "
+                                "identifier names must be explicitly "
+                                "declared.  Please use the form 'from "
+                                "<modulename> import <name1>, "
+                                "<name2>, ...' instead.", 
+                                **self.exception_kwargs)
                     self._add_declared(name.name)
 
     class FindTuple(_ast_util.NodeVisitor):
@@ -197,12 +213,17 @@ else:
             self.visit(node.expr, *args)
             for n in node.nodes:
                 self.visit(n, *args)
+        def visitLambda(self, node, *args):
+            self._visit_function(node, args)
         def visitFunction(self,node, *args):
             self._add_declared(node.name)
+            self._visit_function(node, args)
+        def _visit_function(self, node, args):
             # push function state onto stack.  dont log any
             # more identifiers as "declared" until outside of the function,
             # but keep logging identifiers as "undeclared".
-            # track argument names in each function header so they arent counted as "undeclared"
+            # track argument names in each function header so 
+            # they arent counted as "undeclared"
             saved = {}
             inf = self.in_function
             self.in_function = True
@@ -217,6 +238,7 @@ else:
             for arg in node.argnames:
                 if arg not in saved:
                     del self.local_ident_stack[arg]
+                    
         def visitFor(self, node, *args):
             # flip around visit
             self.visit(node.list, *args)
