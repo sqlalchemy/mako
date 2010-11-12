@@ -418,6 +418,9 @@ API Documentation
 .. autoclass:: mako.template.Template
     :members:
 
+.. autoclass:: mako.lookup.TemplateCollection
+    :members:
+
 .. autoclass:: mako.lookup.TemplateLookup
     :members:
 

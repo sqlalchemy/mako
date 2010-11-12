@@ -76,7 +76,8 @@ class Template(object):
     :param uri: string uri or other identifier for this template.  If not provided,
      the uri is generated from the filesystem path, or from the
      in-memory identity of a non-file-based template.   The primary usage of the
-     uri is to generate the file path of the generated Python module file,
+     uri is to provide a key within :class:`.TemplateLookup`, as well as to 
+     generate the file path of the generated Python module file,
      if ``module_directory`` is specified.
     
     
