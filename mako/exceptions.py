@@ -48,33 +48,10 @@ class TopLevelLookupException(TemplateLookupException):
     pass
     
 class RichTraceback(object):
-    """pulls the current exception from the sys traceback and extracts
+    """Pulls the current exception from the sys traceback and extracts
     Mako-specific template information.
     
-    Usage:
-    
-    RichTraceback()
-    
-    Properties:
-    
-    error - the exception instance.  
-    message - the exception error message as unicode
-    source - source code of the file where the error occured.  
-        if the error occured within a compiled template,
-        this is the template source.
-    lineno - line number where the error occured.  if the error 
-        occured within a compiled template, the line number
-        is adjusted to that of the template source
-    records - a list of 8-tuples containing the original 
-        python traceback elements, plus the 
-    filename, line number, source line, and full template source 
-        for the traceline mapped back to its originating source
-        template, if any for that traceline (else the fields are None).
-    reverse_records - the list of records in reverse
-    traceback - a list of 4-tuples, in the same format as a regular 
-        python traceback, with template-corresponding 
-    traceback records replacing the originals
-    reverse_traceback - the traceback list in reverse
+    See the usage examples in :ref:`handling_exceptions`.
     
     """
     def __init__(self, error=None, traceback=None):

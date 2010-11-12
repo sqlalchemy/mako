@@ -14,7 +14,74 @@ import imp, os, re, shutil, stat, sys, tempfile, time, types, weakref
 
     
 class Template(object):
-    """a compiled template"""
+    """Represents a compiled template.
+    
+    :class:`.Template` includes a reference to the original
+    template source (via the ``.source`` attribute) 
+    as well as the source code of the
+    generated Python module (i.e. the ``.code`` attribute), 
+    as well as a reference to an actual Python module.
+
+    :class:`.Template` is constructed using either a literal string
+    representing the template text, or a filename representing a filesystem
+    path to a source file.
+    
+    :param text: textual template source.  This argument is mutually exclusive
+     versus the "filename" parameter.
+
+    :param filename: filename of the source template.  This argument is 
+     mutually exclusive versus the "text" parameter.
+
+    :param buffer_filters:
+    
+    :param cache_dir:
+    
+    :param cache_enabled:
+    
+    :param cache_type:
+    
+    :param cache_url:
+
+    :param default_filters:
+
+    :param disable_unicode:
+
+    :param encoding_errors:
+    
+    :param error_handler:
+    
+    :param format_exceptions: if ``True``, exceptions which occur during
+     the render phase of this template will be caught and
+     formatted into an HTML error page, which then becomes the
+     rendered result of the :meth:`render` call. Otherwise,
+     runtime exceptions are propagated outwards.
+     
+    :param imports:
+
+    :param input_encoding:
+    
+    :param lookup:
+    
+    :param module_directory: Filesystem location where generated Python
+     module files will be placed.
+
+    :param module_filename:
+    
+    :param output_encoding:
+    
+    :param preprocessor:
+    
+    :param strict_undefined:
+    
+    :param uri: string uri or other identifier for this template.  If not provided,
+     the uri is generated from the filesystem path, or from the
+     in-memory identity of a non-file-based template.   The primary usage of the
+     uri is to generate the file path of the generated Python module file,
+     if ``module_directory`` is specified.
+    
+    
+    """
+    
     def __init__(self, 
                     text=None, 
                     filename=None, 
@@ -37,22 +104,6 @@ class Template(object):
                     imports=None, 
                     preprocessor=None, 
                     cache_enabled=True):
-        """Construct a new Template instance using either literal template
-        text, or a previously loaded template module
-        
-        :param text: textual template source, or None if a module is to be
-            provided
-        
-        :param uri: the uri of this template, or some identifying string.
-            defaults to the full filename given, or "memory:(hex id of this
-            Template)" if no filename
-        
-        :param filename: filename of the source template, if any
-        
-        :param format_exceptions: catch exceptions and format them into an
-            error display template
-        """
-        
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -161,6 +212,7 @@ class Template(object):
             self._code = code
             ModuleInfo(module, None, self, filename, code, None)
         return module
+        
     @property
     def source(self):
         """return the template source code for this Template."""
