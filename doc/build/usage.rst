@@ -415,7 +415,7 @@ for more information.
 .. _babel: http://babel.edgewall.org/
 
 
-API Documentation
+API Reference
 =================
 
 .. autoclass:: mako.template.Template
