@@ -10,7 +10,12 @@ from mako import exceptions, util
 import __builtin__, inspect, sys
 
 class Context(object):
-    """provides runtime namespace, output buffer, and various callstacks for templates."""
+    """Provides runtime namespace, output buffer, and various callstacks for templates.
+    
+    See :ref:`runtime_toplevel` for detail on the usage of :class:`.Context`.
+    
+    """
+    
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
         self._orig = data  # original data, minus the builtins
@@ -29,26 +34,40 @@ class Context(object):
         
     @property
     def lookup(self):
+        """Return the :class:`.TemplateLookup` associated 
+        with this :class:`.Context`.
+        
+        """
         return self._with_template.lookup
         
     @property
     def kwargs(self):
+        """Return the dictionary of keyword argments associated with this
+        :class:`.Context`.
+        
+        """
         return self._kwargs.copy()
     
     def push_caller(self, caller):
+        """Pushes a 'caller' callable onto the callstack for this :class:`.Context`."""
+        
+        
         self.caller_stack.append(caller)
         
     def pop_caller(self):
+        """Pops a 'caller' callable onto the callstack for this :class:`.Context`."""
+
         del self.caller_stack[-1]
         
     def keys(self):
+        """Return a list of all names established in this :class:`.Context`."""
         return self._data.keys()
         
     def __getitem__(self, key):
         return self._data[key]
 
     def _push_writer(self):
-        """push a capturing buffer onto this Context and return the new Writer function."""
+        """push a capturing buffer onto this Context and return the new writer function."""
         
         buf = util.FastEncodingBuffer()
         self._buffer_stack.append(buf)
@@ -74,15 +93,17 @@ class Context(object):
         return self._buffer_stack.pop()
         
     def get(self, key, default=None):
+        """Return a value from this :class:`.Context`."""
+        
         return self._data.get(key, default)
         
     def write(self, string):
-        """write a string to this Context's underlying output buffer."""
+        """Write a string to this :class:`.Context` object's underlying output buffer."""
         
         self._buffer_stack[-1].write(string)
         
     def writer(self):
-        """return the current writer function"""
+        """Return the current writer function"""
 
         return self._buffer_stack[-1].write
 
@@ -97,15 +118,19 @@ class Context(object):
         c.namespaces = self.namespaces
         c.caller_stack = self.caller_stack
         return c
+        
     def locals_(self, d):
-        """create a new Context with a copy of this Context's current state, updated with the given dictionary."""
+        """create a new :class:`.Context` with a copy of this 
+        :class:`Context`'s current state, updated with the given dictionary."""
+        
         if len(d) == 0:
             return self
         c = self._copy()
         c._data.update(d)
         return c
+        
     def _clean_inheritance_tokens(self):
-        """create a new copy of this Context with tokens related to inheritance state removed."""
+        """create a new copy of this :class:`.Context`. with tokens related to inheritance state removed."""
         c = self._copy()
         x = c._data
         x.pop('self', None)
@@ -130,7 +155,13 @@ class CallerStack(list):
         
         
 class Undefined(object):
-    """represents an undefined value in a template."""
+    """Represents an undefined value in a template.
+    
+    All template modules have a constant value 
+    ``UNDEFINED`` present which is an instance of this
+    object.
+    
+    """
     def __str__(self):
         raise NameError("Undefined")
     def __nonzero__(self):
@@ -151,8 +182,10 @@ class _NSAttr(object):
         raise AttributeError(key)    
     
 class Namespace(object):
-    """provides access to collections of rendering methods, which 
-      can be local, from other templates, or from imported modules"""
+    """Provides access to collections of rendering methods, which 
+      can be local, from other templates, or from imported modules.
+      
+      """
     
     def __init__(self, name, context, module=None, 
                             template=None, templateuri=None, 
@@ -204,9 +237,25 @@ class Namespace(object):
         return self._attr
 
     def get_namespace(self, uri):
-        """return a namespace corresponding to the given template uri.
+        """Return a :class:`.Namespace` corresponding to the given uri.
         
-        if a relative uri, it is adjusted to that of the template of this namespace"""
+        If the given uri is a relative uri (i.e. it does not
+        contain ia leading slash ``/``), the uri is adjusted to
+        be relative to the uri of the namespace itself. This
+        method is therefore mostly useful off of the built-in
+        ``local`` namespace, described in :ref:`namespace_local`
+
+        In
+        most cases, a template wouldn't need this function, and
+        should instead use the ``<%namespace>`` tag to load
+        namespaces. However, since all ``<%namespace>`` tags are
+        evaulated before the body of a template ever runs,
+        this method can be used to locate namespaces using
+        expressions that were generated within the body code of
+        the template, or to conditionally use a particular
+        namespace.
+        
+        """
         key = (self, uri)
         if self.context.namespaces.has_key(key):
             return self.context.namespaces[key]
@@ -286,7 +335,11 @@ class Namespace(object):
         raise AttributeError("Namespace '%s' has no member '%s'" % (self.name, key))
 
 def supports_caller(func):
-    """apply a caller_stack compatibility decorator to a plain Python function."""
+    """Apply a caller_stack compatibility decorator to a plain Python function.
+    
+    See the example in :ref:`namespaces_python_modules`.
+    
+    """
     
     def wrap_stackframe(context,  *args, **kwargs):
         context.caller_stack._push_frame()
@@ -297,7 +350,11 @@ def supports_caller(func):
     return wrap_stackframe
         
 def capture(context, callable_, *args, **kwargs):
-    """execute the given template def, capturing the output into a buffer."""
+    """Execute the given template def, capturing the output into a buffer.
+    
+    See the example in :ref:`namespaces_python_modules`.
+    
+    """
     
     if not callable(callable_):
         raise exceptions.RuntimeException(

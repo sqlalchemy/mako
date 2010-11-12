@@ -22,10 +22,10 @@ the :class:`.Template` class::
     
 Above, the text argument to :class:`.Template` is **compiled** into a
 Python module representation. This module contains a function
-called :meth:`~.Template.render_body()`, which produces the output of the
+called ``render_body()``, which produces the output of the
 template. When ``mytemplate.render()`` is called, Mako sets up a
 runtime environment for the template and calls the
-:meth:`~.Template.render_body()` function, capturing the output into a buffer and
+``render_body()`` function, capturing the output into a buffer and
 returning its string contents.
 
 
@@ -415,18 +415,23 @@ API Documentation
 =================
 
 .. autoclass:: mako.template.Template
+    :show-inheritance:
     :members:
 
 .. autoclass:: mako.template.DefTemplate
+    :show-inheritance:
     :members:
 
 .. autoclass:: mako.lookup.TemplateCollection
+    :show-inheritance:
     :members:
 
 .. autoclass:: mako.lookup.TemplateLookup
+    :show-inheritance:
     :members:
 
 .. autoclass:: mako.exceptions.RichTraceback
+    :show-inheritance:
 
     .. py:attribute:: error
     
@@ -466,7 +471,6 @@ API Documentation
     .. py:attribute:: reverse_traceback
     
        the traceback list in reverse
-    
 
 .. autofunction:: mako.exceptions.html_error_template
 

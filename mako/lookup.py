@@ -87,7 +87,7 @@ class TemplateLookup(TemplateCollection):
         some_template = lookup.get_template("/index.html")
         
     The :class:`.TemplateLookup` can also be given :class:`.Template` objects
-    programattically using :meth:`put_string` or :meth:`put_template`::
+    programatically using :meth:`.put_string` or :meth:`.put_template`::
     
         lookup = TemplateLookup()
         lookup.put_string("base.html", '''
@@ -111,7 +111,7 @@ class TemplateLookup(TemplateCollection):
      will maintain the size of the collection approximately to the number given.
      
     :param filesystem_checks: When at its default value of ``True``, each 
-     call to :meth:`get_template()` will compare the filesystem last modified
+     call to :meth:`TemplateLookup.get_template()` will compare the filesystem last modified
      time to the time in which an existing :class:`.Template` object was created.
      This allows the :class:`.TemplateLookup` to regenerate a new :class:`.Template`
      whenever the original source has been updated.  Set this to ``False`` for a

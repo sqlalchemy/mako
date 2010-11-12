@@ -1,1 +1,321 @@
+.. _inheritance_toplevel:
 
+===========
+Inheritance
+===========
+
+Using template inheritance, two or more templates can organize
+themselves into an **inheritance chain**, where content and
+functions from all involved templates can be intermixed. The
+general paradigm of template inheritance is this: if a template
+``A`` inherits from template ``B``, then template ``A`` agrees
+to send the executional control to template ``B`` at runtime
+(``A`` is called the **inheriting** template). Template ``B``,
+the **inherited** template, then makes decisions as to what
+resources from ``A`` shall be executed.
+
+In practice, it looks like this. Heres a hypothetical inheriting
+template, ``index.html``:
+
+.. sourcecode:: mako
+
+    ## index.html
+    <%inherit file="base.html"/>
+    
+    <%def name="header()">
+        this is some header content
+    </%def>
+    
+    this is the body content.
+    
+And ``base.html``, the inherited template:
+
+.. sourcecode:: mako
+
+    ## base.html
+    <html>
+        <body>
+            <div class="header">
+                ${self.header()}
+            </div>
+            
+            ${self.body()}
+            
+            <div class="footer">
+                ${self.footer()}
+            </div>
+        </body>
+    </html>
+
+    <%def name="footer()">
+        this is the footer
+    </%def>
+
+Here is a breakdown of the execution:
+    
+* When ``index.html`` is rendered, control immediately passes to
+  ``base.html``.
+* ``base.html`` then renders the top part of an HTML document,
+  then calls the method ``header()`` off of a built in namespace
+  called ``self`` (this namespace was first introduced in the
+  Namespaces chapter in
+  :ref:`namespace_self`). Since
+  ``index.html`` is the topmost template and also defines a def
+  called ``header()``, its this ``header()`` def that gets
+  executed.
+* Control comes back to ``base.html``. Some more HTML is
+  rendered.
+* ``base.html`` executes ``self.body()``. The ``body()``
+  function on all template-based namespaces refers to the main
+  body of the template, therefore the main body of
+  ``index.html`` is rendered.
+* Control comes back to ``base.html``. More HTML is rendered,
+  then the ``self.footer()`` expression is invoked.
+* The ``footer`` def is only defined in ``base.html``, so being
+  the topmost definition of ``footer``, its the one that
+  executes. If ``index.html`` also specified ``footer``, then
+  its version would **override** that of the base.
+* ``base.html`` finishes up rendering its HTML and the template
+  is complete, producing:
+
+.. sourcecode:: html
+
+        <html>
+            <body>
+                <div class="header">
+                    this is some header content
+                </div>
+        
+                this is the body content.
+            
+                <div class="footer">
+                    this is the footer
+                </div>
+            </body>
+        </html>
+
+...and that is template inheritance in a nutshell. The main idea
+is that the methods that you call upon ``self`` always
+correspond to the topmost definition of that method. Very much
+the way ``self`` works in a Python class, even though Mako is
+not actually using Python class inheritance to implement this
+functionality. (Mako doesn't take the "inheritance" metaphor too
+seriously; while useful to setup some commonly recognized
+semantics, a textual template is not very much like an
+object-oriented class construct in practice).
+
+Using the "next" namespace to produce content wrapping 
+=======================================================
+
+Sometimes you have an inheritance chain that spans more than two
+templates. Or maybe you don't, but youd like to build your
+system such that extra inherited templates can be inserted in
+the middle of a chain where they would be smoothly integrated.
+If each template wants to define its layout just within its main
+body, you can't just call ``self.body()`` to get at the
+inheriting template's body, since that is only the topmost body.
+To get at the body of the *next* template, you call upon the
+namespace ``next``, which is the namespace of the template
+**immediately following** the current template.
+
+Lets change the line in ``base.html`` which calls upon
+``self.body()`` to instead call upon ``next.body()``:
+
+.. sourcecode:: mako
+
+    ## base.html
+    <html>
+        <body>
+            <div class="header">
+                ${self.header()}
+            </div>
+        
+            ${next.body()}
+        
+            <div class="footer">
+                ${self.footer()}
+            </div>
+        </body>
+    </html>
+
+    <%def name="footer()">
+        this is the footer
+    </%def>
+
+Lets also add an intermediate template called ``layout.html``,
+which inherits from ``base.html``:
+
+.. sourcecode:: mako
+
+    ## layout.html
+    <%inherit file="base.html"/>
+    <ul>
+        ${self.toolbar()}
+    </ul>
+    <div class="mainlayout">
+        ${next.body()}
+    </div>
+    
+    <%def name="toolbar()">
+        <li>selection 1</li>
+        <li>selection 2</li>
+        <li>selection 3</li>
+    </%def>    
+
+And finally change ``index.html`` to inherit from
+``layout.html`` instead:
+
+.. sourcecode:: mako
+
+    ## index.html
+    <%inherit file="layout.html"/>
+    
+    ## .. rest of template
+    
+In this setup, each call to ``next.body()`` will render the body
+of the next template in the inheritance chain (which can be
+written as ``base.html -> layout.html -> index.html``). Control
+is still first passed to the bottommost template ``base.html``,
+and ``self`` still references the topmost definition of any
+particular def.
+
+The output we get would be:
+
+.. sourcecode:: html
+
+    <html>
+        <body>
+            <div class="header">
+                this is some header content
+            </div>
+
+            <ul>
+                <li>selection 1</li>
+                <li>selection 2</li>
+                <li>selection 3</li>
+            </ul>
+            
+            <div class="mainlayout">
+            this is the body content.
+            </div>
+            
+            <div class="footer">
+                this is the footer
+            </div>
+        </body>
+    </html>
+
+So above, we have the ``<html>``, ``<body>`` and
+``header``/``footer`` layout of ``base.html``, we have the
+``<ul>`` and ``mainlayout`` section of ``layout.html``, and the
+main body of ``index.html`` as well as its overridden ``header``
+def. The ``layout.html`` template is inserted into the middle of
+the chain without ``base.html`` having to change anything.
+Without the ``next`` namespace, only the main body of
+``index.html`` could be used; there would be no way to call
+``layout.html``'s body content.
+
+Using the "parent" namespace to augment defs 
+=============================================
+
+Lets now look at the other inheritance-specific namespace, the
+opposite of ``next`` called ``parent``. ``parent`` is the
+namespace of the template **immediately preceding** the current
+template. What is most useful about this namespace is the
+methods within it which can be accessed within overridden
+versions of those methods. This is not as hard as it sounds and
+is very much like using the ``super`` keyword in Python. Lets
+modify ``index.html`` to augment the list of selections provided
+by the ``toolbar`` function in ``layout.html``:
+
+.. sourcecode:: mako
+
+    ## index.html
+    <%inherit file="layout.html"/>
+
+    <%def name="header()">
+        this is some header content
+    </%def>
+
+    <%def name="toolbar()">
+        ## call the parent's toolbar first
+        ${parent.toolbar()}
+        <li>selection 4</li>
+        <li>selection 5</li>
+    </%def>
+        
+    this is the body content.
+
+Above, we implemented a ``toolbar()`` function, which is meant
+to override the definition of ``toolbar`` within the inherited
+template ``layout.html``. However, since we want the content
+from that of ``layout.html`` as well, we call it via the
+``parent`` namespace whenever we want it's content, in this case
+before we add our own selections. So the output for the whole
+thing is now:
+
+.. sourcecode:: html
+
+    <html>
+        <body>
+            <div class="header">
+                this is some header content
+            </div>
+
+            <ul>
+                <li>selection 1</li>
+                <li>selection 2</li>
+                <li>selection 3</li>
+                <li>selection 4</li>
+                <li>selection 5</li>
+            </ul>
+        
+            <div class="mainlayout">
+            this is the body content.
+            </div>
+        
+            <div class="footer">
+                this is the footer
+            </div>
+        </body>
+    </html>
+
+and you're now a template inheritance ninja !
+
+Inheritable Attributes
+======================
+
+The ``attr`` accessor of the :class:`.Namespace` object allows access
+to module level variables declared in a template. By accessing
+``self.attr``, you can access regular attributes from the
+inheritance chain as declared in ``<%! %>`` sections. Such as:
+
+.. sourcecode:: mako
+
+    <%!
+        class_ = "grey"
+    %>
+    
+    <div class="${self.attr.class_}">
+        ${self.body()}
+    </div>
+    
+If a an inheriting template overrides ``class_`` to be
+``white``, as in:
+
+.. sourcecode:: mako
+
+    <%!
+        class_ = "white"
+    %>
+    <%inherit file="parent.html"/>
+    
+    This is the body
+    
+You'll get output like:
+
+.. sourcecode:: html
+
+    <div class="white">
+        This is the body
+    </div>

@@ -193,8 +193,9 @@ pure-Python functions you might want to declare:
     %>
     
 Any number of ``<%! %>`` blocks can be declared anywhere in a
-template; they will be rendered in the resulting module in the
-order that they appear.
+template; they will be rendered in the resulting module 
+in a single contiguous block above all render callables,
+in the order in which they appear in the source template.
 
 Tags
 ====
