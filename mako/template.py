@@ -270,7 +270,7 @@ class Template(object):
         return hasattr(self.module, "render_%s" % name)
         
     def get_def(self, name):
-        """Return a def of this template as a DefTemplate."""
+        """Return a def of this template as a :class:`.DefTemplate`."""
         
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
 
