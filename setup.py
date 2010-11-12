@@ -64,4 +64,5 @@ ties to Python calling and scoping semantics.
       [babel.extractors]
       mako = mako.ext.babelplugin:extract
       """,
+      **extra
 )

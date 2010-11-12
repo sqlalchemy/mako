@@ -1,4 +1,9 @@
 0.3.6
+- Fixed missing **extra collection in 
+  setup.py which prevented setup.py
+  from running 2to3 on install.
+  [ticket:148]
+  
 - New flag on Template, TemplateLookup - 
   strict_undefined=True, will cause
   variables not found in the context to 
