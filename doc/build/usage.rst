@@ -83,6 +83,8 @@ source code for the module. The next time a :class:`.Template` with the
 same arguments is created, this module file will be
 automatically re-used.
 
+.. _usage_templatelookup:
+
 Using TemplateLookup
 ====================
 
@@ -170,6 +172,8 @@ will reload its contents and recompile the template. On a
 production system, setting ``filesystem_checks`` to ``False`` can
 afford a small to moderate performance increase (depending on
 the type of filesystem used).
+
+.. _usage_unicode:
 
 Using Unicode and Encoding
 ===========================

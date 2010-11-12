@@ -260,6 +260,8 @@ dumbed-down version of ``StringIO`` that gathers all strings into
 a list and uses ``u''.join(elements)`` to produce the final output
 - its markedly faster than ``StringIO``.
 
+.. _unicode_disabled:
+
 Saying to Heck with it: Disabling the usage of Unicode entirely
 ================================================================
 

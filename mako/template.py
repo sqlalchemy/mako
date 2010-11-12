@@ -32,23 +32,41 @@ class Template(object):
     :param filename: filename of the source template.  This argument is 
      mutually exclusive versus the "text" parameter.
 
-    :param buffer_filters:
+    :param buffer_filters: string list of filters to be applied
+     to the output of %defs which are buffered, cached, or otherwise
+     filtered, after all filters
+     defined with the %def itself have been applied. Allows the
+     creation of default expression filters that let the output
+     of return-valued %defs "opt out" of that filtering via
+     passing special attributes or objects.
     
-    :param cache_dir:
+    :param cache_dir: Filesystem directory where cache files will be
+     placed.  See :ref:`caching_toplevel`.
     
-    :param cache_enabled:
+    :param cache_enabled: Boolean flag which enables caching of this
+     template.  See :ref:`caching_toplevel`.
     
-    :param cache_type:
+    :param cache_type: Type of Beaker caching to be applied to the 
+     template. See :ref:`caching_toplevel`.
     
-    :param cache_url:
+    :param cache_url: URL of a memcached server with which to use
+     for caching.  See :ref:`caching_toplevel`.
 
-    :param default_filters:
+    :param default_filters: List of string filter names that will
+     be applied to all expressions.  See :ref:`filtering_default_filters`.
 
-    :param disable_unicode:
+    :param disable_unicode: Disables all awareness of Python Unicode
+     objects.  See :ref:`unicode_disabled`.
 
-    :param encoding_errors:
+    :param encoding_errors: Error parameter passed to ``encode()`` when
+     string encoding is performed. See :ref:`usage_unicode`.
     
-    :param error_handler:
+    :param error_handler: Python callable which is called whenever
+     compile or runtime exceptions occur.  The callable is passed the 
+     current context as well as the exception.  If the callable returns
+     ``True``, the exception is considered to be handled, else it
+     is re-raised after the function completes.  Is used to provide custom
+     error-rendering functions.
     
     :param format_exceptions: if ``True``, exceptions which occur during
      the render phase of this template will be caught and
@@ -56,22 +74,36 @@ class Template(object):
      rendered result of the :meth:`render` call. Otherwise,
      runtime exceptions are propagated outwards.
      
-    :param imports:
+    :param imports: String list of Python statements, typically individual
+     "import" lines, which will be placed into the module level preamble
+     of all generated Python modules.  See the example in :ref:`filtering_default_filters`.
 
-    :param input_encoding:
+    :param input_encoding: Encoding of the template's source code.  Can
+     be used in lieu of the coding comment.  
+     See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`
+     for details on source encoding.
     
-    :param lookup:
+    :param lookup: a :class:`.TemplateLookup` instance that will be used
+     for all file lookups via the ``<%namespace>``, ``<%include>``, 
+     and ``<%inherit>`` tags.  See :ref:`usage_templatelookup`.
     
     :param module_directory: Filesystem location where generated Python
      module files will be placed.
 
-    :param module_filename:
+    :param module_filename: Overrides the filename of the generated Python
+     module file.  For advanced usage only. 
     
-    :param output_encoding:
+    :param output_encoding: The encoding to use when :meth:`.render` is called.
+      See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`.
     
-    :param preprocessor:
-    
-    :param strict_undefined:
+    :param preprocessor: Python callable which will be passed the full template
+     source before it is parsed.  The return result of the callable will be used
+     as the template source code.
+     
+    :param strict_undefined: Replaces the automatic usage of ``UNDEFINED`` for
+     any undeclared variables not located in the :class:`.Context` with an immediate
+     raise of ``NameError``.  The advantage is immediate reporting of missing
+     variables which include the name.  New in 0.3.6.
     
     :param uri: string uri or other identifier for this template.  If not provided,
      the uri is generated from the filesystem path, or from the
@@ -79,7 +111,6 @@ class Template(object):
      uri is to provide a key within :class:`.TemplateLookup`, as well as to 
      generate the file path of the generated Python module file,
      if ``module_directory`` is specified.
-    
     
     """
     
