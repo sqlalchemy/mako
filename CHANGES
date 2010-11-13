@@ -1,4 +1,7 @@
 0.3.6
+- Documentation is on Sphinx.
+  [ticket:126]
+
 - Beaker is now part of "extras" in
   setup.py instead of "install_requires".
   This to produce a lighter weight install
