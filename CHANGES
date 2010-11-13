@@ -12,7 +12,11 @@
   from startup, particularly for 
   "single execution" environments
   such as shell scripts. [ticket:153]
-  
+
+- Patch to lexer to not generate an empty
+  '' write in the case of backslash-ended
+  lines.  [ticket:155]
+    
 - Fixed missing **extra collection in 
   setup.py which prevented setup.py
   from running 2to3 on install.

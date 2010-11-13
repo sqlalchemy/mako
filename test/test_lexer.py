@@ -125,7 +125,7 @@ class LexerTest(TemplateTest):
         node = Lexer(template).parse()
         self._compare(
             node,
-            TemplateNode({}, [Text(u'\n        \n', (1, 1)), Text(u'', (3, 1)), Text(u'% some whatever.\n\n', (3, 2)), Text(u'', (5, 1)), Text(u'   %% more some whatever\n', (5, 2)), ControlLine(u'if', u'if foo:', False, (6, 1)), ControlLine(u'if', u'endif', True, (7, 1)), Text(u'        ', (8, 1))])
+            TemplateNode({}, [Text(u'\n        \n', (1, 1)), Text(u'% some whatever.\n\n', (3, 2)), Text(u'   %% more some whatever\n', (5, 2)), ControlLine(u'if', u'if foo:', False, (6, 1)), ControlLine(u'if', u'endif', True, (7, 1)), Text(u'        ', (8, 1))])
         )
         
     def test_text_tag(self):
@@ -589,7 +589,7 @@ text text la la
         nodes = Lexer(template).parse()
         self._compare(
             nodes,
-            TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {u'args': u"a=['foo',\n                'bar']"}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (4, 26)), ControlLine(u'for', u'for x in [1,2,3]:', False, (8, 1)), Text(u'        ', (9, 1)), Expression(u'x', [], (9, 9)), Text(u'', (9, 13)), ControlLine(u'for', u'endfor', True, (10, 1)), Text(u'\r\n', (11, 1)), Expression(u"trumpeter == 'Miles' and trumpeter or \\\n      'Dizzy'", [], (12, 1)), Text(u'\r\n\r\n', (13, 15)), DefTag(u'def', {u'name': u'hi()'}, (15, 1), [Text(u'\r\n    hi!\r\n', (15, 19))]), Text(u'\r\n\r\n</html>\r\n', (17, 8))])
+            TemplateNode({}, [Text(u'<html>\r\n\r\n', (1, 1)), PageTag(u'page', {u'args': u"a=['foo',\n                'bar']"}, (3, 1), []), Text(u'\r\n\r\nlike the name says.\r\n\r\n', (4, 26)), ControlLine(u'for', u'for x in [1,2,3]:', False, (8, 1)), Text(u'        ', (9, 1)), Expression(u'x', [], (9, 9)), ControlLine(u'for', u'endfor', True, (10, 1)), Text(u'\r\n', (11, 1)), Expression(u"trumpeter == 'Miles' and trumpeter or \\\n      'Dizzy'", [], (12, 1)), Text(u'\r\n\r\n', (13, 15)), DefTag(u'def', {u'name': u'hi()'}, (15, 1), [Text(u'\r\n    hi!\r\n', (15, 19))]), Text(u'\r\n\r\n</html>\r\n', (17, 8))])
         )
         assert flatten_result(Template(template).render()) == """<html> like the name says. 1 2 3 Dizzy </html>"""
     

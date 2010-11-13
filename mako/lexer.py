@@ -331,7 +331,8 @@ class Lexer(object):
         
         if match:
             text = match.group(1)
-            self.append_node(parsetree.Text, text)
+            if text:
+                self.append_node(parsetree.Text, text)
             return True
         else:
             return False
