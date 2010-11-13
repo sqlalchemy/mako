@@ -53,9 +53,13 @@ class PythonPrinter(object):
             self.writeline(line)
                 
     def writeline(self, line):
-        """print a line of python, indenting it according to the current indent level.
+        """print a line of python, indenting it according to the current
+        indent level.
         
-        this also adjusts the indentation counter according to the content of the line."""
+        this also adjusts the indentation counter according to the
+        content of the line.
+
+        """
 
         if not self.in_indent_lines:
             self._flush_adjusted_lines()
@@ -85,7 +89,8 @@ class PythonPrinter(object):
                 # probably put extra closures - the resulting
                 # module wont compile.  
                 if len(self.indent_detail) == 0:  
-                    raise exceptions.SyntaxException("Too many whitespace closures")
+                    raise exceptions.SyntaxException(
+                                    "Too many whitespace closures")
                 self.indent_detail.pop()
         
         if line is None:
@@ -124,7 +129,10 @@ class PythonPrinter(object):
         self._flush_adjusted_lines()
     
     def _is_unindentor(self, line):
-        """return true if the given line is an 'unindentor', relative to the last 'indent' event received."""
+        """return true if the given line is an 'unindentor', 
+        relative to the last 'indent' event received.
+        
+        """
                 
         # no indentation detail has been pushed on; return False
         if len(self.indent_detail) == 0: 
@@ -158,27 +166,35 @@ class PythonPrinter(object):
         #   (r'try', r'except|finally|else'),
         #   (r'while|for', r'else'),
         #]:
-        #   if re.match(crit[0], indentor) and re.match(crit[1], keyword): return True
+        #   if re.match(crit[0], indentor) and re.match(crit[1], keyword): 
+        #        return True
         
         #return False
         
-    def _indent_line(self, line, stripspace = ''):
+    def _indent_line(self, line, stripspace=''):
         """indent the given line according to the current indent level.
         
-        stripspace is a string of space that will be truncated from the start of the line
-        before indenting."""
-        return re.sub(r"^%s" % stripspace, self.indentstring * self.indent, line)
+        stripspace is a string of space that will be truncated from the
+        start of the line before indenting."""
+
+        return re.sub(r"^%s" % stripspace, self.indentstring
+                      * self.indent, line)
 
     def _reset_multi_line_flags(self):
-        """reset the flags which would indicate we are in a backslashed or triple-quoted section."""
-        (self.backslashed, self.triplequoted) = (False, False) 
+        """reset the flags which would indicate we are in a backslashed
+        or triple-quoted section."""
+
+        self.backslashed, self.triplequoted = False, False
         
     def _in_multi_line(self, line):
-        """return true if the given line is part of a multi-line block, via backslash or triple-quote."""
-        # we are only looking for explicitly joined lines here,
-        # not implicit ones (i.e. brackets, braces etc.).  this is just
-        # to guard against the possibility of modifying the space inside 
-        # of a literal multiline string with unfortunately placed whitespace
+        """return true if the given line is part of a multi-line block,
+        via backslash or triple-quote."""
+
+        # we are only looking for explicitly joined lines here, not
+        # implicit ones (i.e. brackets, braces etc.).  this is just to
+        # guard against the possibility of modifying the space inside of
+        # a literal multiline string with unfortunately placed
+        # whitespace
          
         current_state = (self.backslashed or self.triplequoted) 
                         
@@ -212,6 +228,7 @@ class PythonPrinter(object):
 
 def adjust_whitespace(text):
     """remove the left-whitespace margin of a block of Python code."""
+    
     state = [False, False]
     (backslashed, triplequoted) = (0, 1)
 
