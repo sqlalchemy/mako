@@ -5,6 +5,13 @@
   for those who don't use the caching
   as well as to conform to Pyramid 
   deployment practices.  [ticket:154]
+
+- The Beaker import (or attempt thereof)
+  is delayed until actually needed; 
+  this to remove the performance penalty 
+  from startup, particularly for 
+  "single execution" environments
+  such as shell scripts. [ticket:153]
   
 - Fixed missing **extra collection in 
   setup.py which prevented setup.py

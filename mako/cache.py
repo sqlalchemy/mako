@@ -1,10 +1,10 @@
 from mako import exceptions
 
-try:
-    from beaker import cache
-    cache = cache.CacheManager()
-except ImportError:
-    cache = None
+cache = None
+
+class BeakerMissing(object):
+    def get_cache(self, name, **kwargs):
+        raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
 
 class Cache(object):
     def __init__(self, id, starttime):
@@ -43,8 +43,16 @@ class Cache(object):
         self.invalidate(name, defname=name)
     
     def _get_cache(self, defname, type=None, **kw):
+        global cache
         if not cache:
-            raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
+            try:
+                from beaker import cache as beaker_cache
+                cache = beaker_cache.CacheManager()
+            except ImportError:
+                # keep a fake cache around so subsequent 
+                # calls don't attempt to re-import
+                cache = BeakerMissing()
+
         if type == 'memcached':
             type = 'ext:memcached'
         if not type:
