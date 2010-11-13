@@ -119,3 +119,9 @@ sections programmatically:
     # invalidate an arbitrary key
     template.cache.invalidate('somekey')
     
+API Reference
+==============
+
+.. autoclass:: mako.cache.Cache
+    :members:
+    :show-inheritance:

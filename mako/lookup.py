@@ -31,8 +31,9 @@ class TemplateCollection(object):
      """
 
     def has_template(self, uri):
-        """Return ``True`` if this :class:`.TemplateLookup` is capable of
-        returning a :class:`.Template` object for the given URL.
+        """Return ``True`` if this :class:`.TemplateLookup` is
+        capable of returning a :class:`.Template` object for the
+        given URL.
 
         :param uri: String uri of the template to be resolved.
         
@@ -47,13 +48,14 @@ class TemplateCollection(object):
         """Return a :class:`.Template` object corresponding to the given 
         URL.
         
-        The default implementation raises :class:`.NotImplementedError`.
-        Implementations should raise :class:`.TemplateLookupException` if 
-        the given uri cannot be resolved.
+        The default implementation raises
+        :class:`.NotImplementedError`. Implementations should
+        raise :class:`.TemplateLookupException` if the given uri
+        cannot be resolved.
         
         :param uri: String uri of the template to be resolved.
-        :param relativeto: if present, the given URI is assumed to be relative
-         to this uri.
+        :param relativeto: if present, the given URI is assumed to 
+         be relative to this uri.
          
         """
         raise NotImplementedError()
@@ -67,11 +69,13 @@ class TemplateCollection(object):
     def adjust_uri(self, uri, filename):
         """Adjust the given uri based on the calling filename.
         
-        When this method is called from the runtime, the 'filename' parameter
-        is taken directly to the 'filename' attribute of the calling template.
-        Therefore a custom TemplateCollection subclass can place any string
-        identifier desired in the "filename" parameter of the Template objects
-        it constructs and have them come back here.
+        When this method is called from the runtime, the
+        'filename' parameter is taken directly to the 'filename'
+        attribute of the calling template. Therefore a custom
+        TemplateCollection subclass can place any string
+        identifier desired in the "filename" parameter of the
+        Template objects it constructs and have them come back
+        here.
         
         """
         return uri
@@ -100,33 +104,40 @@ class TemplateLookup(TemplateCollection):
         ''')
         
     
-    :param directories: A list of directory names which will be searched for
-     a particular template URI.  The URI is appended to each directory and
-     the filesystem checked.
+    :param directories: A list of directory names which will be 
+     searched for a particular template URI. The URI is appended
+     to each directory and the filesystem checked.
     
-    :param collection_size: Approximate size of the collection used to
-     store templates.  If left at its default of -1, the size is unbounded, 
-     and a plain Python dictionary is used to relate URI strings to :class:`.Template`
-     instances.   Otherwise, a least-recently-used cache object is used which
-     will maintain the size of the collection approximately to the number given.
+    :param collection_size: Approximate size of the collection used 
+     to store templates. If left at its default of -1, the size
+     is unbounded, and a plain Python dictionary is used to
+     relate URI strings to :class:`.Template` instances.
+     Otherwise, a least-recently-used cache object is used which
+     will maintain the size of the collection approximately to
+     the number given.
      
-    :param filesystem_checks: When at its default value of ``True``, each 
-     call to :meth:`TemplateLookup.get_template()` will compare the filesystem last modified
-     time to the time in which an existing :class:`.Template` object was created.
-     This allows the :class:`.TemplateLookup` to regenerate a new :class:`.Template`
-     whenever the original source has been updated.  Set this to ``False`` for a
-     very minor performance increase.
+    :param filesystem_checks: When at its default value of ``True``, 
+     each call to :meth:`TemplateLookup.get_template()` will
+     compare the filesystem last modified time to the time in
+     which an existing :class:`.Template` object was created.
+     This allows the :class:`.TemplateLookup` to regenerate a
+     new :class:`.Template` whenever the original source has
+     been updated. Set this to ``False`` for a very minor
+     performance increase.
     
-    :param modulename_callable: A callable which, when present, is passed the 
-     path of the source file as well as the requested URI, and then returns the
-     full path of the generated Python module file.  This is used to inject
-     alternate schemes for Pyhton module location.  If left at its default
-     of ``None``, the built in system of generation based on ``module_directory``
-     plus ``uri`` is used.
+    :param modulename_callable: A callable which, when present, 
+     is passed the path of the source file as well as the
+     requested URI, and then returns the full path of the
+     generated Python module file. This is used to inject
+     alternate schemes for Pyhton module location. If left at
+     its default of ``None``, the built in system of generation
+     based on ``module_directory`` plus ``uri`` is used.
      
-    All other keyword parameters available for :class:`.Template` are mirrored here.  
-    When new :class:`.Template` objects are created, the keywords established with
-    this :class:`.TemplateLookup` are passed on to each new :class:`.Template`.  
+    All other keyword parameters available for
+    :class:`.Template` are mirrored here. When new
+    :class:`.Template` objects are created, the keywords
+    established with this :class:`.TemplateLookup` are passed on
+    to each new :class:`.Template`.
     
     """
     
@@ -289,8 +300,9 @@ class TemplateLookup(TemplateCollection):
             return template
             
     def put_string(self, uri, text):
-        """Place a new :class:`.Template` object into this :class:`.TemplateLookup`,
-        based on the given string of text.
+        """Place a new :class:`.Template` object into this
+        :class:`.TemplateLookup`, based on the given string of
+        text.
         
         """
         self._collection[uri] = Template(
@@ -300,8 +312,9 @@ class TemplateLookup(TemplateCollection):
                                     **self.template_args)
         
     def put_template(self, uri, template):
-        """Place a new :class:`.Template` object into this :class:`.TemplateLookup`,
-        based on the given :class:`.Template` object.
+        """Place a new :class:`.Template` object into this
+        :class:`.TemplateLookup`, based on the given
+        :class:`.Template` object.
         
         """
         self._collection[uri] = template

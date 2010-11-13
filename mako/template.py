@@ -26,8 +26,8 @@ class Template(object):
     representing the template text, or a filename representing a filesystem
     path to a source file.
     
-    :param text: textual template source.  This argument is mutually exclusive
-     versus the "filename" parameter.
+    :param text: textual template source.  This argument is mutually
+     exclusive versus the "filename" parameter.
 
     :param filename: filename of the source template.  This argument is 
      mutually exclusive versus the "text" parameter.
@@ -62,11 +62,12 @@ class Template(object):
      string encoding is performed. See :ref:`usage_unicode`.
     
     :param error_handler: Python callable which is called whenever
-     compile or runtime exceptions occur.  The callable is passed the 
-     current context as well as the exception.  If the callable returns
-     ``True``, the exception is considered to be handled, else it
-     is re-raised after the function completes.  Is used to provide custom
-     error-rendering functions.
+     compile or runtime exceptions occur. The callable is passed
+     the current context as well as the exception. If the
+     callable returns ``True``, the exception is considered to
+     be handled, else it is re-raised after the function
+     completes. Is used to provide custom error-rendering
+     functions.
     
     :param format_exceptions: if ``True``, exceptions which occur during
      the render phase of this template will be caught and
@@ -75,42 +76,48 @@ class Template(object):
      runtime exceptions are propagated outwards.
      
     :param imports: String list of Python statements, typically individual
-     "import" lines, which will be placed into the module level preamble
-     of all generated Python modules.  See the example in :ref:`filtering_default_filters`.
+     "import" lines, which will be placed into the module level
+     preamble of all generated Python modules. See the example
+     in :ref:`filtering_default_filters`.
 
     :param input_encoding: Encoding of the template's source code.  Can
-     be used in lieu of the coding comment.  
-     See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`
-     for details on source encoding.
+     be used in lieu of the coding comment. See
+     :ref:`usage_unicode` as well as :ref:`unicode_toplevel` for
+     details on source encoding.
     
     :param lookup: a :class:`.TemplateLookup` instance that will be used
-     for all file lookups via the ``<%namespace>``, ``<%include>``, 
-     and ``<%inherit>`` tags.  See :ref:`usage_templatelookup`.
+     for all file lookups via the ``<%namespace>``,
+     ``<%include>``, and ``<%inherit>`` tags. See
+     :ref:`usage_templatelookup`.
     
-    :param module_directory: Filesystem location where generated Python
-     module files will be placed.
+    :param module_directory: Filesystem location where generated 
+     Python module files will be placed.
 
-    :param module_filename: Overrides the filename of the generated Python
-     module file.  For advanced usage only. 
+    :param module_filename: Overrides the filename of the generated 
+     Python module file. For advanced usage only.
     
-    :param output_encoding: The encoding to use when :meth:`.render` is called.
-      See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`.
+    :param output_encoding: The encoding to use when :meth:`.render` 
+     is called. See :ref:`usage_unicode` as well as
+     :ref:`unicode_toplevel`.
     
-    :param preprocessor: Python callable which will be passed the full template
-     source before it is parsed.  The return result of the callable will be used
-     as the template source code.
+    :param preprocessor: Python callable which will be passed 
+     the full template source before it is parsed. The return
+     result of the callable will be used as the template source
+     code.
      
-    :param strict_undefined: Replaces the automatic usage of ``UNDEFINED`` for
-     any undeclared variables not located in the :class:`.Context` with an immediate
-     raise of ``NameError``.  The advantage is immediate reporting of missing
-     variables which include the name.  New in 0.3.6.
+    :param strict_undefined: Replaces the automatic usage of 
+     ``UNDEFINED`` for any undeclared variables not located in
+     the :class:`.Context` with an immediate raise of
+     ``NameError``. The advantage is immediate reporting of
+     missing variables which include the name. New in 0.3.6.
     
-    :param uri: string uri or other identifier for this template.  If not provided,
-     the uri is generated from the filesystem path, or from the
-     in-memory identity of a non-file-based template.   The primary usage of the
-     uri is to provide a key within :class:`.TemplateLookup`, as well as to 
-     generate the file path of the generated Python module file,
-     if ``module_directory`` is specified.
+    :param uri: string uri or other identifier for this template.  
+     If not provided, the uri is generated from the filesystem
+     path, or from the in-memory identity of a non-file-based
+     template. The primary usage of the uri is to provide a key
+     within :class:`.TemplateLookup`, as well as to generate the
+     file path of the generated Python module file, if
+     ``module_directory`` is specified.
     
     """
     
@@ -264,12 +271,13 @@ class Template(object):
     def render(self, *args, **data):
         """Render the output of this template as a string.
         
-        if the template specifies an output encoding, the string will be
-        encoded accordingly, else the output is raw (raw output uses cStringIO
-        and can't handle multibyte characters). a Context object is created
-        corresponding to the given data. Arguments that are explictly declared
-        by this template's internal rendering method are also pulled from the
-        given \*args, \**data members.
+        if the template specifies an output encoding, the string
+        will be encoded accordingly, else the output is raw (raw
+        output uses cStringIO and can't handle multibyte
+        characters). a Context object is created corresponding
+        to the given data. Arguments that are explictly declared
+        by this template's internal rendering method are also
+        pulled from the given \*args, \**data members.
         
         """
         return runtime._render(self, self.callable_, args, data)
@@ -371,7 +379,8 @@ class ModuleTemplate(Template):
         self.cache_enabled = cache_enabled
         
 class DefTemplate(Template):
-    """a Template which represents a callable def in a parent template."""
+    """a Template which represents a callable def in a parent
+    template."""
     
     def __init__(self, parent, callable_):
         self.parent = parent
@@ -387,11 +396,11 @@ class DefTemplate(Template):
         return self.parent.get_def(name)
 
 class ModuleInfo(object):
-    """Stores information about a module currently loaded into memory,
-    provides reverse lookups of template source, module source code based on
-    a module's identifier.
+    """Stores information about a module currently loaded into
+    memory, provides reverse lookups of template source, module
+    source code based on a module's identifier.
     
-    """
+     """
     _modules = weakref.WeakValueDictionary()
 
     def __init__(self, 

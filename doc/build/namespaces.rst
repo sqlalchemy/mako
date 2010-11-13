@@ -334,48 +334,6 @@ API Reference
 .. autoclass:: mako.runtime.Namespace
     :show-inheritance:
     :members:
-
-    .. py:attribute:: attr
-    
-      allows access module level attributes by name. This
-      accessor allows templates to supply "scalar" attributes which
-      are particularly handy in inheritance relationships. See the
-      example in :ref:`inheritance_toplevel`.
-      
-    .. py:attribute:: module
-    
-      the Python module referenced by this Namespace.
-      If the namespace references a :class:`.Template`, then this module
-      is the equivalent of ``template.module``, i.e. the generated
-      module for the template.
-      
-    .. py:attribute:: filename
-    
-      the path of the filesystem file used for this
-      Namespace's module or template. If this is a pure module-based
-      Namespace, this evaluates to ``module.__file__``. If a
-      template-based namespace, it evaluates to the original
-      template file location.
-      
-    .. py:attribute:: template
-    
-      the :class:`.Template` object referenced by this
-      :class:`.Namespace`, if any.
-      
-    .. py:attribute:: uri
-    
-      the uri for this Namespace's template (i.e. whatever
-      was sent to :meth:`.TemplateLookup.get_template()`). This is the equivalent
-      of :attr:`Template.uri`.
-      
-    .. py:attribute:: context
-    
-      The :class:`.Context` object for this namespace.
-      Namespaces are often created with copies of contexts that
-      contain slightly different data, particularly in inheritance
-      scenarios. Using the :class:`.Context` off of a :class:`.Namespace` one
-      can traverse an entire chain of templates that inherit from
-      one-another.
     
 .. autofunction:: mako.runtime.supports_caller
 

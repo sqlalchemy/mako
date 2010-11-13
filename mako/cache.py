@@ -7,12 +7,33 @@ class BeakerMissing(object):
         raise exceptions.RuntimeException("the Beaker package is required to use cache functionality.")
 
 class Cache(object):
+    """Represents a data content cache made available to the module
+    space of a :class:`.Template` object.
+    
+    :class:`.Cache` is a wrapper on top of a Beaker CacheManager object.
+    This object in turn references any number of "containers", each of
+    which defines its own backend (i.e. file, memory, memcached, etc.) 
+    independently of the rest.
+    
+    """
+    
     def __init__(self, id, starttime):
         self.id = id
         self.starttime = starttime
         self.def_regions = {}
         
     def put(self, key, value, **kwargs):
+        """Place a value in the cache.
+        
+        :param key: the value's key.
+        :param value: the value
+        :param \**kwargs: cache configuration arguments.  The 
+         backend is configured using these arguments upon first request.
+         Subsequent requests that use the same series of configuration
+         values will use that same backend.
+        
+        """
+        
         defname = kwargs.pop('defname', None)
         expiretime = kwargs.pop('expiretime', None)
         createfunc = kwargs.pop('createfunc', None)
@@ -20,6 +41,16 @@ class Cache(object):
         self._get_cache(defname, **kwargs).put_value(key, starttime=self.starttime, expiretime=expiretime)
         
     def get(self, key, **kwargs):
+        """Retrieve a value from the cache.
+        
+        :param key: the value's key.
+        :param \**kwargs: cache configuration arguments.  The 
+         backend is configured using these arguments upon first request.
+         Subsequent requests that use the same series of configuration
+         values will use that same backend.
+        
+        """
+        
         defname = kwargs.pop('defname', None)
         expiretime = kwargs.pop('expiretime', None)
         createfunc = kwargs.pop('createfunc', None)
@@ -27,6 +58,15 @@ class Cache(object):
         return self._get_cache(defname, **kwargs).get_value(key, starttime=self.starttime, expiretime=expiretime, createfunc=createfunc)
         
     def invalidate(self, key, **kwargs):
+        """Invalidate a value in the cache.
+        
+        :param key: the value's key.
+        :param \**kwargs: cache configuration arguments.  The 
+         backend is configured using these arguments upon first request.
+         Subsequent requests that use the same series of configuration
+         values will use that same backend.
+        
+        """
         defname = kwargs.pop('defname', None)
         expiretime = kwargs.pop('expiretime', None)
         createfunc = kwargs.pop('createfunc', None)
@@ -34,12 +74,27 @@ class Cache(object):
         self._get_cache(defname, **kwargs).remove_value(key, starttime=self.starttime, expiretime=expiretime)
     
     def invalidate_body(self):
+        """Invalidate the cached content of the "body" method for this template.
+        
+        """
         self.invalidate('render_body', defname='render_body')
     
     def invalidate_def(self, name):
+        """Invalidate the cached content of a particular <%def> within this template."""
+        
         self.invalidate('render_%s' % name, defname='render_%s' % name)
         
     def invalidate_closure(self, name):
+        """Invalidate a nested <%def> within this template.
+        
+        Caching of nested defs is a blunt tool as there is no
+        management of scope - nested defs that use cache tags
+        need to have names unique of all other nested defs in the 
+        template, else their content will be overwritten by 
+        each other.
+        
+        """
+        
         self.invalidate(name, defname=name)
     
     def _get_cache(self, defname, type=None, **kw):

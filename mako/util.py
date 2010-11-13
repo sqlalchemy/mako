@@ -43,7 +43,17 @@ def function_named(fn, name):
     """
     fn.__name__ = name
     return fn
- 
+
+try:
+    from functools import partial
+except:
+    def partial(func, *args, **keywords):
+        def newfunc(*fargs, **fkeywords):
+            newkeywords = keywords.copy()
+            newkeywords.update(fkeywords)
+            return func(*(args + fargs), **newkeywords)
+        return newfunc
+
 if py24:
     def exception_name(exc):
         try:
