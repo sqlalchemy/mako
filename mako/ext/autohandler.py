@@ -5,7 +5,7 @@ requires that the TemplateLookup class is used with templates.
 usage:
 
 <%!
-	from mako.ext.autohandler import autohandler
+    from mako.ext.autohandler import autohandler
 %>
 <%inherit file="${autohandler(template, context)}"/>
 
@@ -13,7 +13,7 @@ usage:
 or with custom autohandler filename:
 
 <%!
-	from mako.ext.autohandler import autohandler
+    from mako.ext.autohandler import autohandler
 %>
 <%inherit file="${autohandler(template, context, name='somefilename')}"/>
 
@@ -35,7 +35,8 @@ def autohandler(template, context, name='autohandler'):
         path = '/' + '/'.join(tokens)
         if path != _template_uri and _file_exists(lookup, path):
             if not lookup.filesystem_checks:
-                return lookup._uri_cache.setdefault((autohandler, _template_uri, name), path)
+                return lookup._uri_cache.setdefault(
+                            (autohandler, _template_uri, name), path)
             else:
                 return path
         if len(tokens) == 1:
@@ -43,7 +44,8 @@ def autohandler(template, context, name='autohandler'):
         tokens[-2:] = [name]
         
     if not lookup.filesystem_checks:
-        return lookup._uri_cache.setdefault((autohandler, _template_uri, name), None)
+        return lookup._uri_cache.setdefault(
+                            (autohandler, _template_uri, name), None)
     else:
         return None
 

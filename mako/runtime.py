@@ -4,29 +4,37 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""provides runtime services for templates, including Context, Namespace, and various helper functions."""
+"""provides runtime services for templates, including Context,
+Namespace, and various helper functions."""
 
 from mako import exceptions, util
 import __builtin__, inspect, sys
 
 class Context(object):
-    """Provides runtime namespace, output buffer, and various callstacks for templates.
+    """Provides runtime namespace, output buffer, and various
+    callstacks for templates.
     
-    See :ref:`runtime_toplevel` for detail on the usage of :class:`.Context`.
+     See :ref:`runtime_toplevel` for detail on the usage of
+    :class:`.Context`.
     
-    """
+     """
     
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
-        self._orig = data  # original data, minus the builtins
-        self._data = __builtin__.__dict__.copy() # the context data which includes builtins
+        
+        # original data, minus the builtins
+        self._orig = data
+        
+        # the context data which includes builtins
+        self._data = __builtin__.__dict__.copy()
         self._data.update(data)
         self._kwargs = data.copy()
         self._with_template = None
         self._outputting_as_unicode = None
         self.namespaces = {}
         
-        # "capture" function which proxies to the generic "capture" function
+        # "capture" function which proxies to the 
+        # generic "capture" function
         self._data['capture'] = util.partial(capture, self)
         
         # "caller" stack used by def calls with content
@@ -49,25 +57,29 @@ class Context(object):
         return self._kwargs.copy()
     
     def push_caller(self, caller):
-        """Pushes a 'caller' callable onto the callstack for this :class:`.Context`."""
+        """Pushes a 'caller' callable onto the callstack for
+        this :class:`.Context`."""
         
         
         self.caller_stack.append(caller)
         
     def pop_caller(self):
-        """Pops a 'caller' callable onto the callstack for this :class:`.Context`."""
+        """Pops a 'caller' callable onto the callstack for this
+        :class:`.Context`."""
 
         del self.caller_stack[-1]
         
     def keys(self):
         """Return a list of all names established in this :class:`.Context`."""
+
         return self._data.keys()
         
     def __getitem__(self, key):
         return self._data[key]
 
     def _push_writer(self):
-        """push a capturing buffer onto this Context and return the new writer function."""
+        """push a capturing buffer onto this Context and return
+        the new writer function."""
         
         buf = util.FastEncodingBuffer()
         self._buffer_stack.append(buf)
@@ -98,7 +110,8 @@ class Context(object):
         return self._data.get(key, default)
         
     def write(self, string):
-        """Write a string to this :class:`.Context` object's underlying output buffer."""
+        """Write a string to this :class:`.Context` object's
+        underlying output buffer."""
         
         self._buffer_stack[-1].write(string)
         
@@ -130,7 +143,9 @@ class Context(object):
         return c
         
     def _clean_inheritance_tokens(self):
-        """create a new copy of this :class:`.Context`. with tokens related to inheritance state removed."""
+        """create a new copy of this :class:`.Context`. with
+        tokens related to inheritance state removed."""
+
         c = self._copy()
         x = c._data
         x.pop('self', None)
