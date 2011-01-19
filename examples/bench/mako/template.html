@@ -10,13 +10,13 @@
 <%def name="greeting(name)">
       <p>hello ${name}!</p>
 </%def>
-      
+ 
  <%include file="header.html"/>
 
     ${greeting(user)}
     ${greeting('me')}
     ${greeting('world')}
-    
+ 
     <h2>Loop</h2>
     % if list_items:
       <ul>

@@ -53,11 +53,11 @@ class ExceptionsTest(TemplateTest):
             assert ("CompileException: Fragment 'i = 0' is not a partial "
                     "control statement") in text_error
 
-        
+ 
     def test_utf8_html_error_template(self):
         """test the html_error_template with a Template containing utf8
         chars"""
-        
+ 
         if util.py3k:
             code = """# -*- coding: utf-8 -*-
 % if 2 == 2: /an error
@@ -79,7 +79,7 @@ ${u'привет'}
                     "error' is not a partial control "
                     "statement at line: 2 char: 1") in \
                     html_error.decode('utf-8')
-                    
+ 
             if util.py3k:
                 assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
@@ -89,7 +89,7 @@ ${u'привет'}
         else:
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
-    
+ 
     def test_format_closures(self):
         try:
             exec "def foo():"\
@@ -99,7 +99,7 @@ ${u'привет'}
         except:
             html_error = exceptions.html_error_template().render()
             assert "RuntimeError: test" in str(html_error)
-        
+ 
     def test_py_utf8_html_error_template(self):
         try:
             foo = u'日本'
@@ -134,11 +134,11 @@ ${foobar}
 
         assert '<div class="sourceline">${foobar}</div>' in \
                 result_lines(l.get_template("foo.html").render_unicode())
-    
+ 
     def test_utf8_format_exceptions(self):
         """test that htmlentityreplace formatting is applied to 
            exceptions reported with format_exceptions=True"""
-        
+ 
         l = TemplateLookup(format_exceptions=True)
         if util.py3k:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${'привет' + foobar}""")
@@ -152,21 +152,21 @@ ${foobar}
             assert '<div class="highlight">2 ${u&#39;&#x43F;&#x440;'\
                     '&#x438;&#x432;&#x435;&#x442;&#39; + foobar}</div>' \
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
-        
-    
+ 
+ 
     def test_custom_tback(self):
         try:
             raise RuntimeError("error 1")
             foo('bar')
         except:
             t, v, tback = sys.exc_info()
-        
+ 
         try:
             raise RuntimeError("error 2")
         except:
             html_error = exceptions.html_error_template().\
                         render_unicode(error=v, traceback=tback)
-        
+ 
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
         assert "".join(reversed(");93#&rab;93#&(oof")) in html_error
@@ -181,9 +181,9 @@ ${foobar}
         if not util.py3k:
             # blow away tracebaack info
             sys.exc_clear()
-        
+ 
         # and don't even send what we have.
         html_error = exceptions.html_error_template().\
                     render_unicode(error=v, traceback=None)
-        
+ 
         assert "local variable 'y' referenced" in html_error

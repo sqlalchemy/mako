@@ -32,12 +32,12 @@ variables ``username`` and ``accountdata`` inside the context:
 .. sourcecode:: mako
 
     Hello there ${username}, how are ya.  Lets see what your account says:
-    
+ 
     ${account()}
 
     <%def name="account()">
         Account for ${username}:<br/>
-    
+ 
         % for row in accountdata:
             Value: ${row}<br/>
         % endfor
@@ -53,7 +53,7 @@ arguments to them as well:
 .. sourcecode:: mako
 
     ${account(accountname='john')}
-    
+ 
     <%def name="account(accountname, type='regular')">
         account name: ${accountname}, type ${type}
     </%def>
@@ -120,20 +120,20 @@ object. This is a :class:`.Template` subclass which the parent
 .. sourcecode:: python
 
     from mako.template import Template
-    
+ 
     template = Template("""
         <%def name="hi(name)">
             hi ${name}!
         </%def>
-        
+ 
         <%def name="bye(name)">
             bye ${name}!
         </%def>
     """)
-    
+ 
     print template.get_def("hi").render(name="ed")
     print template.get_def("bye").render(name="ed")
-    
+ 
 
 Defs within Defs
 ================
@@ -148,7 +148,7 @@ within the parent's **enclosing scope**:
         <%def name="subdef()">
             a sub def
         </%def>
-        
+ 
         im the def, and the subcomponent is ${subdef()}
     </%def>
 
@@ -182,9 +182,9 @@ the following code will raise an error:
     %>
     <%def name="somedef()">
         ## error !
-        somedef, x is ${x}  
+        somedef, x is ${x} 
         <%
-            x = 27  
+            x = 27 
         %>
     </%def>
 
@@ -237,11 +237,11 @@ custom tag:
             </td></tr>
         </table>
     </%def>
-    
+ 
     <%self:buildtable>
         I am the table body.
     </%self:buildtable>
-    
+ 
 This produces the output (whitespace formatted):
 
 .. sourcecode:: html
@@ -279,13 +279,13 @@ conditionals, etc:
             ${caller.body()}
         % endfor
     </%def>
-    
+ 
     <%self:lister count="${3}">
         hi
     </%self:lister>
-    
+ 
 Produces:
-    
+ 
 .. sourcecode:: html
 
     hi
@@ -296,7 +296,7 @@ Notice above we pass ``3`` as a Python expression, so that it
 remains as an integer.
 
 A custom "conditional" tag:
-    
+ 
 .. sourcecode:: mako
 
     <%def name="conditional(expression)">
@@ -340,7 +340,7 @@ element of data from its argument:
     <%self:layoutdata somedata="${[[1,2,3],[4,5,6],[7,8,9]]}" args="col">\
     Body data: ${col}\
     </%self:layoutdata>
-    
+ 
 Produces:
 
 .. sourcecode:: html
@@ -362,7 +362,7 @@ Produces:
            <td>Body data: 9</td>
        </tr>
     </table>
-    
+ 
 You don't have to stick to calling just the ``body()`` function.
 The caller can define any number of callables, allowing the
 ``<%call>`` tag to produce whole layouts:
@@ -395,10 +395,10 @@ The caller can define any number of callables, allowing the
                 <li>sidebar 2</li>
             </ul>
         </%def>
-        
+ 
             this is the body
     </%self:layout>
-    
+ 
 The above layout would produce:
 
 .. sourcecode:: html

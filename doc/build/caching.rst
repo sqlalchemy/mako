@@ -10,9 +10,9 @@ argument to the ``<%page>`` or ``<%def>`` directives:
 .. sourcecode:: mako
 
     <%page cached="True"/>
-    
+ 
     template text
-    
+ 
 The above template, after being executed the first time, will
 store its content within a cache that by default is scoped
 within memory. Subsequent calls to the template's :meth:`~.Template.render`
@@ -64,7 +64,7 @@ The options available are:
   ``module_directory`` is used (i.e. the directory where compiled
   template modules are stored). If neither option is available
   an exception is thrown.
-  
+ 
   In the case of the ``memcached`` type, this attribute is required
   and it's used to store the lock files.
 * ``cache_key`` - the "key" used to uniquely identify this content
@@ -75,15 +75,15 @@ The options available are:
   the value of the key on the fly. For example, heres a page
   that caches any page which inherits from it, based on the
   filename of the calling template:
-    
+ 
 .. sourcecode:: mako
 
     <%page cached="True" cache_key="${self.filename}"/>
 
     ${next.body()}
-    
+ 
     ## rest of template
-    
+ 
 Accessing the Cache
 ===================
 
@@ -99,7 +99,7 @@ values:
     <%
         local.cache.put("somekey", type="memory", "somevalue")
     %>
-    
+ 
 Above, the cache associated with the ``local`` namespace is
 accessed and a key is placed within a memory cache.
 
@@ -109,16 +109,16 @@ sections programmatically:
 .. sourcecode:: python
 
     template = lookup.get_template('/sometemplate.html')
-    
+ 
     # invalidate the "body" of the template
     template.cache.invalidate_body()
-    
+ 
     # invalidate an individual def
     template.cache.invalidate_def('somedef')
-    
+ 
     # invalidate an arbitrary key
     template.cache.invalidate('somekey')
-    
+ 
 API Reference
 ==============
 

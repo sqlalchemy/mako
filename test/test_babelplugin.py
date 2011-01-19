@@ -6,13 +6,13 @@ try:
     from mako.ext.babelplugin import extract
 except:
     babel = None
-    
+ 
 import os
 
 
 class ExtractMakoTestCase(TemplateTest):
     @skip_if(lambda: not babel, 'babel not installed: skipping babelplugin test')
-    
+ 
     def test_extract(self):
         mako_tmpl = open(os.path.join(template_base, 'gettext.mako'))
         messages = list(extract(mako_tmpl, {'_': None, 'gettext': None,

@@ -51,16 +51,16 @@ Python function that accepts a single string argument, and
 returns the filtered result. The expressions after the ``|``
 operator draw upon the local namespace of the template in which
 they appear, meaning you can define escaping functions locally:
-    
+ 
 .. sourcecode:: mako
 
     <%!
         def myescape(text):
             return "<TAG>" + text + "</TAG>"
     %>
-    
+ 
     Heres some tagged text: ${"text" | myescape}
-    
+ 
 Or from any Python module:
 
 .. sourcecode:: mako
@@ -68,18 +68,18 @@ Or from any Python module:
     <%!
         import myfilters
     %>
-    
+ 
     Heres some tagged text: ${"text" | myfilters.tagfilter}
-    
+ 
 A page can apply a default set of filters to all expression tags
 using the ``expression_filter`` argument to the ``%page`` tag:
 
 .. sourcecode:: mako
 
     <%page expression_filter="h"/>
-    
+ 
     Escaped text:  ${"<html>some html</html>"}
-    
+ 
 Result:
 
 .. sourcecode:: html
@@ -117,7 +117,7 @@ list:
 .. sourcecode:: python
 
     t = TemplateLookup(directories=['/tmp'], default_filters=[])
-    
+ 
 Any string name can be added to ``default_filters`` where it
 will be added to all expressions as a filter. The filters are
 applied from left to right, meaning the leftmost filter is
@@ -126,7 +126,7 @@ applied first.
 .. sourcecode:: python
 
     t = Template(templatetext, default_filters=['unicode', 'myfilter'])
-    
+ 
 To ease the usage of ``default_filters`` with custom filters,
 you can also add imports (or other code) to all templates using
 the ``imports`` argument:
@@ -136,7 +136,7 @@ the ``imports`` argument:
     t = TemplateLookup(directories=['/tmp'], 
         default_filters=['unicode', 'myfilter'], 
         imports=['from mypackage import myfilter'])
-    
+ 
 The above will generate templates something like this:
 
 .. sourcecode:: python
@@ -163,8 +163,8 @@ Will render ``myexpression`` with no filtering of any kind, and
 .. sourcecode:: mako
 
     ${'myexpression' | n, trim}
-    
-will render ``myexpression`` using the ``trim`` filter only.  
+ 
+will render ``myexpression`` using the ``trim`` filter only. 
 
 Filtering Defs
 =================
@@ -177,7 +177,7 @@ given list of filter functions to the output of the ``%def``:
     <%def name="foo()" filter="h, trim">
         <b>this is bold</b>
     </%def>
-    
+ 
 When the filter attribute is applied to a def as above, the def
 is automatically **buffered** as well. This is described next.
 
@@ -204,14 +204,14 @@ something like this:
 .. sourcecode:: mako
 
     ${" results " + somedef() + " more results "}
-    
+ 
 If the ``somedef()`` function produced the content "``somedef's
 results``", the above template would produce this output:
 
 .. sourcecode:: html
 
     somedef's results results more results
-    
+ 
 This is because ``somedef()`` fully executes before the
 expression returns the results of its concatenation; the
 concatenation in turn receives just the empty string as its
@@ -225,7 +225,7 @@ buffering to the ``%def`` itself:
     <%def name="somedef()" buffered="True">
         somedef's results
     </%def>
-    
+ 
 The above definition will generate code similar to this:
 
 .. sourcecode:: python
@@ -237,7 +237,7 @@ The above definition will generate code similar to this:
         finally:
             buf = context.pop_buffer()
         return buf.getvalue()
-        
+ 
 So that the content of ``somedef()`` is sent to a second buffer,
 which is then popped off the stack and its value returned. The
 speed hit inherent in buffering the output of a def is also
@@ -259,7 +259,7 @@ except it is specified by the caller.
 .. sourcecode:: mako
 
     ${" results " + capture(somedef) + " more results "}
-    
+ 
 Note that the first argument to the ``capture`` function is
 **the function itself**, not the result of calling it. This is
 because the ``capture`` function takes over the job of actually
@@ -270,13 +270,13 @@ to ``capture`` instead:
 .. sourcecode:: mako
 
     ${capture(somedef, 17, 'hi', use_paging=True)}
-    
+ 
 The above call is equivalent to the unbuffered call:
 
 .. sourcecode:: mako
 
     ${somedef(17, 'hi', use_paging=True)}
-    
+ 
 Decorating
 ===========
 
@@ -304,13 +304,13 @@ simplicities' sake:
                 return ''
             return decorate
     %>
-    
+ 
     <%def name="foo()" decorator="bar">
         this is foo
     </%def>
-    
+ 
     ${foo()}
-    
+ 
 The above template will return, with more whitespace than this,
 ``"BAR this is foo BAR"``. The function is the render callable
 itself (or possibly a wrapper around it), and by default will

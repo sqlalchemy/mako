@@ -9,7 +9,7 @@ class CallTest(TemplateTest):
         <%def name="foo()">
             hi im foo ${caller.body(y=5)}
         </%def>
-        
+ 
         <%call expr="foo()" args="y, **kwargs">
             this is the body, y is ${y}
         </%call>
@@ -23,16 +23,16 @@ class CallTest(TemplateTest):
         <%def name="bar()">
             this is bar
         </%def>
-        
+ 
         <%def name="comp1()">
             this comp1 should not be called
         </%def>
-        
+ 
         <%def name="foo()">
             foo calling comp1: ${caller.comp1(x=5)}
             foo calling body: ${caller.body()}
         </%def>
-        
+ 
         <%call expr="foo()">
             <%def name="comp1(x)">
                 this is comp1, ${x}
@@ -46,10 +46,10 @@ class CallTest(TemplateTest):
 
     def test_new_syntax(self):
         """test foo:bar syntax, including multiline args and expression eval."""
-        
+ 
         # note the trailing whitespace in the bottom ${} expr, need to strip
         # that off < python 2.7
-        
+ 
         t = Template("""
             <%def name="foo(x, y, q, z)">
                 ${x}
@@ -57,26 +57,26 @@ class CallTest(TemplateTest):
                 ${q}
                 ${",".join("%s->%s" % (a, b) for a, b in z)}
             </%def>
-            
+ 
             <%self:foo x="this is x" y="${'some ' + 'y'}" q="
                 this
                 is
                 q"
-                
+ 
                 z="${[
                 (1, 2),
                 (3, 4),
                 (5, 6)
             ]
-            
+ 
             }"/>
         """)
-        
+ 
         eq_(
             result_lines(t.render()),
              ['this is x', 'some y', 'this', 'is', 'q', '1->2,3->4,5->6']
         )
-        
+ 
     def test_ccall_caller(self):
         t = Template("""
         <%def name="outer_func()">
@@ -104,7 +104,7 @@ class CallTest(TemplateTest):
             "INNER END",
             "OUTER END",
         ]
-    
+ 
     def test_stack_pop(self):
         t = Template("""
         <%def name="links()" buffered="True">
@@ -130,7 +130,7 @@ class CallTest(TemplateTest):
         "</h1>",
         "Some links"
         ]
-        
+ 
     def test_conditional_call(self):
         """test that 'caller' is non-None only if the immediate <%def> was called via <%call>"""
 
@@ -169,7 +169,7 @@ class CallTest(TemplateTest):
             "BBB",
             "CCC"
         ]
-        
+ 
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
         t = Template("""
@@ -184,11 +184,11 @@ class CallTest(TemplateTest):
                 whats in the body's caller's body ?
                 ${context.caller_stack[-2].body()}
             </%def>
-            
+ 
             <%call expr="a()">
                 heres the main templ call
             </%call>
-            
+ 
 """)
         assert result_lines(t.render()) == [
             'this is a.',
@@ -225,7 +225,7 @@ class CallTest(TemplateTest):
             "bar:",
             "this is bar body: 10"
         ]
-        
+ 
     def test_nested_call_2(self):
         t = Template("""
             x is ${x}
@@ -240,13 +240,13 @@ class CallTest(TemplateTest):
             <%call expr="foo()">
                 <%def name="foosub(x)">
                 this is foo body: ${x}
-                
+ 
                 <%call expr="bar()">
                     <%def name="barsub()">
                     this is bar body: ${x}
                     </%def>
                 </%call>
-                
+ 
                 </%def>
 
             </%call>
@@ -278,7 +278,7 @@ class CallTest(TemplateTest):
 
         ''')
         assert flatten_result(template.render()) == "foo"
-        
+ 
     def test_chained_call_in_nested(self):
         t = Template("""
             <%def name="embedded()">
@@ -309,7 +309,7 @@ class CallTest(TemplateTest):
             "whats in the body's caller's body ?",
             'heres the main templ call'
         ]
-        
+ 
     def test_call_in_nested(self):
         t = Template("""
             <%def name="a()">
@@ -339,7 +339,7 @@ class CallTest(TemplateTest):
                 context.write("a is done")
                 return ''
         %>
-        
+ 
         <%def name="b()">
             this is b
             our body: ${caller.body()}
@@ -362,7 +362,7 @@ class CallTest(TemplateTest):
         </%call>
 
 
-        """)    
+        """) 
         #print t.code
         assert result_lines(t.render()) == [
             "test 1",
@@ -384,7 +384,7 @@ class CallTest(TemplateTest):
             "this is aa is done",
             "this is aa is done"
         ]
-        
+ 
     def test_call_in_nested_2(self):
         t = Template("""
             <%def name="a()">
@@ -415,7 +415,7 @@ class CallTest(TemplateTest):
 
 class SelfCacheTest(TemplateTest):
     """this test uses a now non-public API."""
-    
+ 
     def test_basic(self):
         t = Template("""
         <%!
@@ -435,7 +435,7 @@ class SelfCacheTest(TemplateTest):
                 return cached
             %>
         </%def>
-        
+ 
         ${foo()}
         ${foo()}
 """)
@@ -444,4 +444,4 @@ class SelfCacheTest(TemplateTest):
             "cached:",
             "this is foo"
         ]
-        
+ 

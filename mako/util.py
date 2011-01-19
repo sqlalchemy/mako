@@ -33,7 +33,7 @@ if win32 or jython:
     time_func = time.clock
 else:
     time_func = time.time 
-   
+ 
 def function_named(fn, name):
     """Return a function with a given __name__.
 
@@ -63,12 +63,12 @@ if py24:
 else:
     def exception_name(exc):
         return exc.__class__.__name__
-    
+ 
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""
-    
+ 
     tries = 0
-    
+ 
     while not os.path.exists(dir):
         try:
             tries += 1
@@ -86,14 +86,14 @@ def to_list(x, default=None):
         return x
 
 
-    
+ 
 
 
 class SetLikeDict(dict):
     """a dictionary that has some setlike methods on it"""
     def union(self, other):
         """produce a 'union' of this dict and another (at the key level).
-        
+ 
         values in the second dict take precedence over that of the first"""
         x = SetLikeDict(**self)
         x.update(other)
@@ -102,7 +102,7 @@ class SetLikeDict(dict):
 class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, 
     but doesnt crash on unicode data like cStringIO."""
-    
+ 
     def __init__(self, encoding=None, errors='strict', unicode=False):
         self.data = []
         self.encoding = encoding
@@ -113,10 +113,10 @@ class FastEncodingBuffer(object):
         self.unicode = unicode
         self.errors = errors
         self.write = self.data.append
-    
+ 
     def truncate(self):
         self.data =[]
-        
+ 
     def getvalue(self):
         if self.encoding:
             return self.delim.join(self.data).encode(self.encoding, self.errors)
@@ -126,12 +126,12 @@ class FastEncodingBuffer(object):
 class LRUCache(dict):
     """A dictionary-like object that stores a limited number of items, discarding
     lesser used items periodically.
-    
+ 
     this is a rewrite of LRUCache from Myghty to use a periodic timestamp-based
     paradigm so that synchronization is not really needed.  the size management 
     is inexact.
     """
-    
+ 
     class _Item(object):
         def __init__(self, key, value):
             self.key = key
@@ -139,26 +139,26 @@ class LRUCache(dict):
             self.timestamp = time_func()
         def __repr__(self):
             return repr(self.value)
-    
+ 
     def __init__(self, capacity, threshold=.5):
         self.capacity = capacity
         self.threshold = threshold
-    
+ 
     def __getitem__(self, key):
         item = dict.__getitem__(self, key)
         item.timestamp = time_func()
         return item.value
-    
+ 
     def values(self):
         return [i.value for i in dict.values(self)]
-    
+ 
     def setdefault(self, key, value):
         if key in self:
             return self[key]
         else:
             self[key] = value
             return value
-    
+ 
     def __setitem__(self, key, value):
         item = dict.get(self, key)
         if item is None:
@@ -167,7 +167,7 @@ class LRUCache(dict):
         else:
             item.value = value
         self._manage_size()
-    
+ 
     def _manage_size(self):
         while len(self) > self.capacity + self.capacity * self.threshold:
             bytime = sorted(dict.values(self), 
@@ -232,14 +232,14 @@ def parse_encoding(fp):
 
 def sorted_dict_repr(d):
     """repr() a dictionary with the keys in order.
-    
+ 
     Used by the lexer unit test to compare parse trees based on strings.
-    
+ 
     """
     keys = d.keys()
     keys.sort()
     return "{" + ", ".join(["%r: %r" % (k, d[k]) for k in keys]) + "}"
-    
+ 
 def restore__ast(_ast):
     """Attempt to restore the required classes to the _ast module if it
     appears to be missing them

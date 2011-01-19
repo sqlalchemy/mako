@@ -6,13 +6,13 @@ from util import flatten_result, result_lines
 class DefTest(TemplateTest):
     def test_def_noargs(self):
         template = Template("""
-        
+ 
         ${mycomp()}
-        
+ 
         <%def name="mycomp()">
             hello mycomp ${variable}
         </%def>
-        
+ 
         """)
         assert template.render(variable='hi').strip() == """hello mycomp hi"""
 
@@ -55,7 +55,7 @@ class DefTest(TemplateTest):
         # check that "a" is declared in "b", but not in "c"
         assert "a" not in template.module.render_c.func_code.co_varnames
         assert "a" in template.module.render_b.func_code.co_varnames
-        
+ 
         # then test output
         assert flatten_result(template.render()) == "im b and heres a: im a"
 
@@ -63,9 +63,9 @@ class DefTest(TemplateTest):
         """test calling a def from the top level"""
 
         template = Template("""
-        
+ 
             this is the body
-        
+ 
             <%def name="a()">
                 this is a
             </%def>
@@ -73,22 +73,22 @@ class DefTest(TemplateTest):
             <%def name="b(x, y)">
                 this is b, ${x} ${y}
             </%def>
-                
+ 
         """)
-        
+ 
         self._do_test(template.get_def("a"), "this is a", filters=flatten_result)
         self._do_test(template.get_def("b"), "this is b, 10 15", 
                                                             template_args={'x':10, 'y':15}, 
                                                             filters=flatten_result)
         self._do_test(template.get_def("body"), "this is the body", filters=flatten_result)
-        
+ 
         # test that args outside of the dict can be used
         self._do_test(template.get_def("a"), "this is a", 
                         filters=flatten_result, template_args={'q':5,'zq':'test'})
-        
+ 
 class ScopeTest(TemplateTest):
     """test scoping rules.  The key is, enclosing scope always takes precedence over contextual scope."""
-    
+ 
     def test_scope_one(self):
         self._do_memory_test("""
         <%def name="a()">
@@ -134,7 +134,7 @@ class ScopeTest(TemplateTest):
             <%def name="a()">
                 this is a. x is ${x}.
             </%def>
-            
+ 
             <%def name="b()">
                 <%
                     x = 9
@@ -142,11 +142,11 @@ class ScopeTest(TemplateTest):
                 this is b. x is ${x}.
                 calling a. ${a()}
             </%def>
-        
+ 
             ${b()}
 """)
         assert flatten_result(t.render()) == "this is b. x is 9. calling a. this is a. x is 5."
-    
+ 
     def test_scope_five(self):
         """test that variables are pulled from 'enclosing' scope before context."""
         # same as test four, but adds a scope around it.
@@ -225,7 +225,7 @@ class ScopeTest(TemplateTest):
                 <%
                     x = 10
                 %>
-                
+ 
                 b. x is ${x}.  ${a()}
             </%def>
 
@@ -237,7 +237,7 @@ class ScopeTest(TemplateTest):
 
     def test_scope_nine(self):
         """test that 'enclosing scope' doesnt get exported to other templates"""
-        
+ 
         l = lookup.TemplateLookup()
         l.put_string('main', """
         <%
@@ -251,7 +251,7 @@ class ScopeTest(TemplateTest):
 """)
 
         assert flatten_result(l.get_template('main').render(x=2)) == "this is main. this is secondary. x is 2"
-        
+ 
     def test_scope_ten(self):
         t = Template("""
             <%def name="a()">
@@ -291,7 +291,7 @@ class ScopeTest(TemplateTest):
                     this is b, x is ${x}
                 </%def>
             </%def>
-            
+ 
             ${a(x=5)}
 """)
         assert result_lines(t.render(x=10)) == [
@@ -349,23 +349,23 @@ class ScopeTest(TemplateTest):
         """test that arguments passed to the body() function are accessible by top-level defs"""
         l = lookup.TemplateLookup()
         l.put_string("base", """
-        
+ 
         ${next.body(x=12)}
-        
+ 
         """)
-        
+ 
         l.put_string("main", """
             <%inherit file="base"/>
             <%page args="x"/>
             this is main.  x is ${x}
-            
+ 
             ${a()}
-            
+ 
             <%def name="a(**args)">
                 this is a, x is ${x}
             </%def>
         """)
-        
+ 
         # test via inheritance
         #print l.get_template("main").code
         assert result_lines(l.get_template("main").render()) == [
@@ -375,7 +375,7 @@ class ScopeTest(TemplateTest):
 
         l.put_string("another", """
             <%namespace name="ns" file="main"/>
-            
+ 
             ${ns.body(x=15)}
         """)
         # test via namespace
@@ -389,15 +389,15 @@ class NestedDefTest(TemplateTest):
         t = Template("""
 
         ${hi()}
-        
+ 
         <%def name="hi()">
             hey, im hi.
             and heres ${foo()}, ${bar()}
-            
+ 
             <%def name="foo()">
                 this is foo
             </%def>
-            
+ 
             <%def name="bar()">
                 this is bar
             </%def>
@@ -417,9 +417,9 @@ class NestedDefTest(TemplateTest):
             </%def>
             ${a()}
 """)
-        
+ 
         assert flatten_result(t.render(x=10)) == "x is 10 this is a, x is 10 this is b: 10"
-        
+ 
     def test_nested_with_args(self):
         t = Template("""
         ${a()}
@@ -431,7 +431,7 @@ class NestedDefTest(TemplateTest):
         </%def>
 """)
         assert flatten_result(t.render()) == "a b x is 5 y is 2"
-        
+ 
     def test_nested_def_2(self):
         template = Template("""
         ${a()}
@@ -449,7 +449,7 @@ class NestedDefTest(TemplateTest):
 
     def test_nested_nested_def(self):
         t = Template("""
-        
+ 
         ${a()}
         <%def name="a()">
             a
@@ -478,12 +478,12 @@ class NestedDefTest(TemplateTest):
                 </%def>
                 ${c2()}
             </%def>
-            
+ 
             ${b1()} ${b2()}  ${b3()}
         </%def>
 """)
         assert flatten_result(t.render(x=5, y=None)) == "a a_b1 a_b2 a_b2_c1 a_b3 a_b3_c1 heres x: 5 y is 7 a_b3_c2 y is None c1 is a_b3_c1 heres x: 5 y is 7"
-    
+ 
     def test_nested_nested_def_2(self):
         t = Template("""
         <%def name="a()">
@@ -492,7 +492,7 @@ class NestedDefTest(TemplateTest):
                 this is b
                 ${c()}
             </%def>
-            
+ 
             <%def name="c()">
                 this is c
             </%def>
@@ -514,16 +514,16 @@ class NestedDefTest(TemplateTest):
             %>
             c. x is ${x}.  ${a()}
             </%def>
-            
+ 
             b. ${c()}
         </%def>
 
         ${b()}
-        
+ 
         x is ${x}
 """)
         assert flatten_result(t.render(x=5)) == "b. c. x is 10. a: x is 5 x is 5"
-            
+ 
 class ExceptionTest(TemplateTest):
     def test_raise(self):
         template = Template("""
@@ -540,11 +540,11 @@ class ExceptionTest(TemplateTest):
         def handle(context, error):
             context.write("error message is " + str(error))
             return True
-            
+ 
         template = Template("""
             <%
                 raise Exception("this is a test")
             %>
     """, error_handler=handle)
         assert template.render().strip() == """error message is this is a test"""
-        
+ 

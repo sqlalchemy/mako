@@ -16,15 +16,15 @@ class Node(object):
         self.lineno = lineno
         self.pos = pos
         self.filename = filename
-        
+ 
     @property
     def exception_kwargs(self):
         return {'source':self.source, 'lineno':self.lineno, 
                 'pos':self.pos, 'filename':self.filename}
-    
+ 
     def get_children(self):
         return []
-        
+ 
     def accept_visitor(self, visitor):
         def traverse(node):
             for n in node.get_children():
@@ -34,29 +34,29 @@ class Node(object):
 
 class TemplateNode(Node):
     """a 'container' node that stores the overall collection of nodes."""
-    
+ 
     def __init__(self, filename):
         super(TemplateNode, self).__init__('', 0, 0, filename)
         self.nodes = []
         self.page_attributes = {}
-        
+ 
     def get_children(self):
         return self.nodes
-        
+ 
     def __repr__(self):
         return "TemplateNode(%s, %r)" % (
                     util.sorted_dict_repr(self.page_attributes), 
                     self.nodes)
-        
+ 
 class ControlLine(Node):
     """defines a control line, a line-oriented python line or end tag.
-    
+ 
     e.g.::
 
         % if foo:
             (markup)
         % endif
-    
+ 
     """
 
     def __init__(self, keyword, isend, text, **kwargs):
@@ -78,17 +78,17 @@ class ControlLine(Node):
 
     def undeclared_identifiers(self):
         return self._undeclared_identifiers
-        
+ 
     def is_ternary(self, keyword):
         """return true if the given keyword is a ternary keyword
         for this ControlLine"""
-        
+ 
         return keyword in {
             'if':set(['else', 'elif']),
             'try':set(['except', 'finally']),
             'for':set(['else'])
         }.get(self.keyword, [])
-        
+ 
     def __repr__(self):
         return "ControlLine(%r, %r, %r, %r)" % (
             self.keyword, 
@@ -99,29 +99,29 @@ class ControlLine(Node):
 
 class Text(Node):
     """defines plain text in the template."""
-    
+ 
     def __init__(self, content, **kwargs):
         super(Text, self).__init__(**kwargs)
         self.content = content
-        
+ 
     def __repr__(self):
         return "Text(%r, %r)" % (self.content, (self.lineno, self.pos))
-        
+ 
 class Code(Node):
     """defines a Python code block, either inline or module level.
-    
+ 
     e.g.::
 
         inline:
         <%
             x = 12
         %>
-    
+ 
         module level:
         <%!
             import logger
         %>
-    
+ 
     """
 
     def __init__(self, text, ismodule, **kwargs):
@@ -142,28 +142,28 @@ class Code(Node):
             self.ismodule, 
             (self.lineno, self.pos)
         )
-        
+ 
 class Comment(Node):
     """defines a comment line.
-    
+ 
     # this is a comment
-    
+ 
     """
-    
+ 
     def __init__(self, text, **kwargs):
         super(Comment, self).__init__(**kwargs)
         self.text = text
 
     def __repr__(self):
         return "Comment(%r, %r)" % (self.text, (self.lineno, self.pos))
-        
+ 
 class Expression(Node):
     """defines an inline expression.
-    
+ 
     ${x+y}
-    
+ 
     """
-    
+ 
     def __init__(self, text, escapes, **kwargs):
         super(Expression, self).__init__(**kwargs)
         self.text = text
@@ -188,18 +188,18 @@ class Expression(Node):
             self.escapes_code.args, 
             (self.lineno, self.pos)
         )
-        
+ 
 class _TagMeta(type):
     """metaclass to allow Tag to produce a subclass according to
     its keyword"""
-    
+ 
     _classmap = {}
-    
+ 
     def __init__(cls, clsname, bases, dict):
         if cls.__keyword__ is not None:
             cls._classmap[cls.__keyword__] = cls
             super(_TagMeta, cls).__init__(clsname, bases, dict)
-            
+ 
     def __call__(cls, keyword, attributes, **kwargs):
         if ":" in keyword:
             ns, defname = keyword.split(':')
@@ -217,41 +217,41 @@ class _TagMeta(type):
                 filename=kwargs['filename']
             )
         return type.__call__(cls, keyword, attributes, **kwargs)
-        
+ 
 class Tag(Node):
     """abstract base class for tags.
-    
+ 
     <%sometag/>
-    
+ 
     <%someothertag>
         stuff
     </%someothertag>
-    
+ 
     """
-    
+ 
     __metaclass__ = _TagMeta
     __keyword__ = None
-    
+ 
     def __init__(self, keyword, attributes, expressions, 
                         nonexpressions, required, **kwargs):
         """construct a new Tag instance.
-        
+ 
         this constructor not called directly, and is only called
         by subclasses.
-        
+ 
         :param keyword: the tag keyword
-        
+ 
         :param attributes: raw dictionary of attribute key/value pairs
-        
+ 
         :param expressions: a set of identifiers that are legal attributes, 
          which can also contain embedded expressions
-        
+ 
         :param nonexpressions: a set of identifiers that are legal 
          attributes, which cannot contain embedded expressions
-        
+ 
         :param \**kwargs:
          other arguments passed to the Node superclass (lineno, pos)
-        
+ 
         """
         super(Tag, self).__init__(**kwargs)
         self.keyword = keyword
@@ -265,13 +265,13 @@ class Tag(Node):
                 **self.exception_kwargs)
         self.parent = None
         self.nodes = []
-        
+ 
     def is_root(self):
         return self.parent is None
-        
+ 
     def get_children(self):
         return self.nodes
-        
+ 
     def _parse_attributes(self, expressions, nonexpressions):
         undeclared_identifiers = set()
         self.parsed_attributes = {}
@@ -323,7 +323,7 @@ class Tag(Node):
                                     (self.lineno, self.pos), 
                                     self.nodes
                                 )
-        
+ 
 class IncludeTag(Tag):
     __keyword__ = 'include'
 
@@ -346,7 +346,7 @@ class IncludeTag(Tag):
                             difference(self.page_args.declared_identifiers)
         return identifiers.union(super(IncludeTag, self).
                                     undeclared_identifiers())
-    
+ 
 class NamespaceTag(Tag):
     __keyword__ = 'namespace'
 
@@ -357,7 +357,7 @@ class NamespaceTag(Tag):
                                         ('name','inheritable',
                                         'import','module'), 
                                         (), **kwargs)
-                                        
+ 
         self.name = attributes.get('name', '__anon_%s' % hex(abs(id(self))))
         if not 'name' in attributes and not 'import' in attributes:
             raise exceptions.CompileException(
@@ -379,7 +379,7 @@ class TextTag(Tag):
         self.filter_args = ast.ArgumentList(
                                     attributes.get('filter', ''), 
                                     **self.exception_kwargs)
-        
+ 
 class DefTag(Tag):
     __keyword__ = 'def'
 
@@ -446,7 +446,7 @@ class CallNamespaceTag(Tag):
                     (), 
                     (), 
                     **kwargs)
-                    
+ 
         self.expression = "%s.%s(%s)" % (
                                 namespace, 
                                 defname, 
@@ -495,5 +495,5 @@ class PageTag(Tag):
 
     def declared_identifiers(self):
         return self.body_decl.argnames
-        
-    
+ 
+ 

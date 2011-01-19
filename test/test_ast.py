@@ -25,7 +25,7 @@ for lar in (1,2,3):
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['a','b','c', 'g', 'h', 'i', 'u', 'k', 'j', 'gh', 'lar', 'x'])
         assert parsed.undeclared_identifiers == set(['x', 'q', 'foo', 'gah', 'blah'])
-    
+ 
         parsed = ast.PythonCode("x + 5 * (y-z)", **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['x', 'y', 'z'])
         assert parsed.declared_identifiers == set()
@@ -55,7 +55,7 @@ for y in range(1, y):
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['x', 'y', 'z', 'q', 'range'])
-    
+ 
     def test_locate_identifiers_4(self):
         if util.py3k:
             code = """
@@ -63,18 +63,18 @@ x = 5
 (y, )
 def mydef(mydefarg):
     print("mda is", mydefarg)
-"""    
+""" 
         else:
             code = """
 x = 5
 (y, )
 def mydef(mydefarg):
     print "mda is", mydefarg
-"""    
+""" 
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['y'])
         assert parsed.declared_identifiers == set(['mydef', 'x'])
-    
+ 
     def test_locate_identifiers_5(self):
         if util.py3k:
             code = """
@@ -84,7 +84,7 @@ except:
     print(y)
 """
         else:
-            
+ 
             code = """
 try:
     print x
@@ -93,7 +93,7 @@ except:
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['x', 'y'])
-    
+ 
     def test_locate_identifiers_6(self):
         code = """
 def foo():
@@ -101,7 +101,7 @@ def foo():
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['bar'])
-        
+ 
         if util.py3k:
             code = """
 def lala(x, y):
@@ -117,7 +117,7 @@ print x
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['z', 'x'])
         assert parsed.declared_identifiers == set(['lala'])
-        
+ 
         if util.py3k:
             code = """
 def lala(x, y):
@@ -137,7 +137,7 @@ print z
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['z'])
         assert parsed.declared_identifiers == set(['lala'])
-    
+ 
     def test_locate_identifiers_7(self):
         code = """
 import foo.bar
@@ -156,7 +156,7 @@ class Hi(object):
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['Hi'])
         assert parsed.undeclared_identifiers == set()
-    
+ 
     def test_locate_identifiers_9(self):
         code = """
     ",".join([t for t in ("a", "b", "c")])
@@ -164,14 +164,14 @@ class Hi(object):
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['t'])
         assert parsed.undeclared_identifiers == set(['t'])
-        
+ 
         code = """
     [(val, name) for val, name in x]
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         assert parsed.declared_identifiers == set(['val', 'name'])
         assert parsed.undeclared_identifiers == set(['val', 'name', 'x'])
-        
+ 
     def test_locate_identifiers_10(self):
         code = """
 lambda q: q + 5
@@ -179,7 +179,7 @@ lambda q: q + 5
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.declared_identifiers, set())
         eq_(parsed.undeclared_identifiers, set())
-        
+ 
     def test_locate_identifiers_11(self):
         code = """
 def x(q):
@@ -195,12 +195,12 @@ from foo import *
 import x as bar
 """
         self.assertRaises(exceptions.CompileException, ast.PythonCode, code, **exception_kwargs)
-            
+ 
     def test_python_fragment(self):
         parsed = ast.PythonFragment("for x in foo:", **exception_kwargs)
         assert parsed.declared_identifiers == set(['x'])
         assert parsed.undeclared_identifiers == set(['foo'])
-        
+ 
         parsed = ast.PythonFragment("try:", **exception_kwargs)
 
         if util.py3k:
@@ -209,7 +209,7 @@ import x as bar
             parsed = ast.PythonFragment("except MyException, e:", **exception_kwargs)
         eq_(parsed.declared_identifiers, set(['e']))
         eq_(parsed.undeclared_identifiers, set(['MyException']))
-    
+ 
     def test_argument_list(self):
         parsed = ast.ArgumentList("3, 5, 'hi', x+5, context.get('lala')", **exception_kwargs)
         assert parsed.undeclared_identifiers == set(['x', 'context'])
@@ -231,7 +231,7 @@ import x as bar
         parsed = ast.FunctionDecl(code, **exception_kwargs)
         assert parsed.funcname=='foo'
         assert parsed.argnames==['a', 'b', 'c', 'args', 'kwargs']
-    
+ 
     def test_expr_generate(self):
         """test the round trip of expressions to AST back to python source"""
         x = 1
@@ -242,12 +242,12 @@ import x as bar
         def lala(arg):
             return "blah" + arg
         local_dict = dict(x=x, y=y, foo=F(), lala=lala)
-        
+ 
         code = "str((x+7*y) / foo.bar(5,6)) + lala('ho')"
         astnode = pyparser.parse(code)
         newcode = pyparser.ExpressionGenerator(astnode).value()
         assert (eval(code, local_dict) == eval(newcode, local_dict))
-        
+ 
         a = ["one", "two", "three"]
         hoho = {'somevalue':"asdf"}
         g = [1,2,3,4,5]
@@ -256,7 +256,7 @@ import x as bar
         astnode = pyparser.parse(code)
         newcode = pyparser.ExpressionGenerator(astnode).value()
         assert(eval(code, local_dict) == eval(newcode, local_dict))
-        
+ 
         local_dict={'f':lambda :9, 'x':7}
         code = "x+f()"
         astnode = pyparser.parse(code)
@@ -269,5 +269,5 @@ import x as bar
             newcode = pyparser.ExpressionGenerator(astnode).value()
             assert(eval(code, local_dict)) == eval(newcode, local_dict), "%s != %s" % (code, newcode)
 
-    
-    
+ 
+ 

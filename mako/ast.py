@@ -14,13 +14,13 @@ class PythonCode(object):
     """represents information about a string containing Python code"""
     def __init__(self, code, **exception_kwargs):
         self.code = code
-        
+ 
         # represents all identifiers which are assigned to at some point in the code
         self.declared_identifiers = set()
-        
+ 
         # represents all identifiers which are referenced before their assignment, if any
         self.undeclared_identifiers = set()
-        
+ 
         # note that an identifier can be in both the undeclared and declared lists.
 
         # using AST to parse instead of using code.co_varnames, 
@@ -56,10 +56,10 @@ class ArgumentList(object):
 
         f = pyparser.FindTuple(self, PythonCode, **exception_kwargs)
         f.visit(expr)
-        
+ 
 class PythonFragment(PythonCode):
     """extends PythonCode to provide identifier lookups in partial control statements
-    
+ 
     e.g. 
         for x in 5:
         elif y==9:
@@ -88,14 +88,14 @@ class PythonFragment(PythonCode):
                                 "Unsupported control keyword: '%s'" % 
                                 keyword, **exception_kwargs)
         super(PythonFragment, self).__init__(code, **exception_kwargs)
-        
-        
+ 
+ 
 class FunctionDecl(object):
     """function declaration"""
     def __init__(self, code, allow_kwargs=True, **exception_kwargs):
         self.code = code
         expr = pyparser.parse(code, "exec", **exception_kwargs)
-                
+ 
         f = pyparser.ParseFunc(self, **exception_kwargs)
         f.visit(expr)
         if not hasattr(self, 'funcname'):
@@ -106,10 +106,10 @@ class FunctionDecl(object):
             raise exceptions.CompileException(
                                 "'**%s' keyword argument not allowed here" % 
                                 self.argnames[-1], **exception_kwargs)
-            
+ 
     def get_argument_expressions(self, include_defaults=True):
         """return the argument declarations of this FunctionDecl as a printable list."""
-        
+ 
         namedecls = []
         defaults = [d for d in self.defaults]
         kwargs = self.kwargs
@@ -138,6 +138,6 @@ class FunctionDecl(object):
 
 class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
-    
+ 
     def __init__(self, code, **kwargs):
         super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, **kwargs)

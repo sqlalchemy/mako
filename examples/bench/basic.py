@@ -133,7 +133,7 @@ def run(engines, number=2000, verbose=False):
         t = timeit.Timer(setup='from __main__ import %s; render = %s(r"%s", %s)'
                                        % (engine, engine, dirname, verbose),
                                  stmt='render()')
-            
+ 
         time = t.timeit(number=number) / number
         if verbose:
             print '--------------------------------------------------------'

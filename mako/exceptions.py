@@ -20,8 +20,8 @@ def _format_filepos(lineno, pos, filename):
         return " at line: %d char: %d" % (lineno, pos)
     else:
         return " in file '%s' at line: %d char: %d" % (filename, lineno, pos)
-        
-        
+ 
+ 
 class CompileException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
@@ -29,7 +29,7 @@ class CompileException(MakoException):
         self.pos = pos
         self.filename = filename
         self.source = source
-                    
+ 
 class SyntaxException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
@@ -40,47 +40,47 @@ class SyntaxException(MakoException):
 
 class UnsupportedError(MakoException):
     """raised when a retired feature is used."""
-        
+ 
 class TemplateLookupException(MakoException):
     pass
 
 class TopLevelLookupException(TemplateLookupException):
     pass
-    
+ 
 class RichTraceback(object):
     """Pulls the current exception from the sys traceback and extracts
     Mako-specific template information.
-    
+ 
     See the usage examples in :ref:`handling_exceptions`.
-    
+ 
     """
     def __init__(self, error=None, traceback=None):
         self.source, self.lineno = "", 0
 
         if error is None or traceback is None:
             t, value, tback = sys.exc_info()
-        
+ 
         if error is None:
             error = value or t
-            
+ 
         if traceback is None:
             traceback = tback
-            
+ 
         self.error = error
         self.records = self._init(traceback)
-            
+ 
         if isinstance(self.error, (CompileException, SyntaxException)):
             import mako.template
             self.source = self.error.source
             self.lineno = self.error.lineno
             self._has_source = True
-            
+ 
         self._init_message()
-    
+ 
     @property
     def errorname(self):
         return util.exception_name(self.error)
-        
+ 
     def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
@@ -101,25 +101,25 @@ class RichTraceback(object):
                 yield (rec[4], rec[5], rec[2], rec[6])
             else:
                 yield tuple(rec[0:4])
-                
+ 
     @property
     def traceback(self):
         """return a list of 4-tuple traceback records (i.e. normal python
         format) with template-corresponding lines remapped to the originating
         template.
-        
+ 
         """
         return list(self._get_reformatted_records(self.records))
-    
+ 
     @property
     def reverse_records(self):
         return reversed(self.records)
-        
+ 
     @property
     def reverse_traceback(self):
         """return the same data as traceback, except in reverse order.
         """
-        
+ 
         return list(self._get_reformatted_records(self.reverse_records))
 
     def _init(self, trcback):
@@ -204,13 +204,13 @@ class RichTraceback(object):
                     self.lineno = new_trcback[-1][1]
         return new_trcback
 
-                
+ 
 def text_error_template(lookup=None):
     """Provides a template that renders a stack trace in a similar format to
     the Python interpreter, substituting source template filenames, line
     numbers and code for that of the originating source template, as
     applicable.
-    
+ 
     """
     import mako.template
     return mako.template.Template(r"""
@@ -239,7 +239,7 @@ def html_error_template():
     template has two options. With the full option disabled, only a section of
     an HTML document is returned. with the css option disabled, the default
     stylesheet won't be included.
-    
+ 
     """
     import mako.template
     return mako.template.Template(r"""

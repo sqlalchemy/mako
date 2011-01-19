@@ -100,7 +100,7 @@ automatically correspond to what was passed into the current
         % else:
             someval is: ${someval}
         % endif
-        
+ 
 Another facet of the :class:`.Context` is that its dictionary of
 variables is **immutable**. Whatever is set when
 :meth:`~.Template.render` is called is what stays. Of course, since
@@ -141,7 +141,7 @@ are all stored in unique :class:`.Context` instances).
           attributes['foo'] = 'bar'
       %>
       'foo' attribute is: ${attributes['foo']}
-        
+ 
 * **Why can't "attributes" be a built-in feature of the
   Context?** - This is an area where Mako is trying to make as
   few decisions about your application as it possibly can.
@@ -233,6 +233,6 @@ API Reference
 
 .. autoclass:: mako.runtime.Undefined
     :show-inheritance:
-    
+ 
 
 

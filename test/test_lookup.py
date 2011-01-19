@@ -22,7 +22,7 @@ class LookupTest(unittest.TestCase):
 
         assert tl.get_template('/subdir/index.html').module_id \
                             == '_subdir_index_html'
-    
+ 
     def test_updir(self):
         t = tl.get_template('/subdir/foo/../bar/../index.html')
         assert result_lines(t.render()) == [
@@ -30,15 +30,15 @@ class LookupTest(unittest.TestCase):
             "this is include 2"
 
         ]
-    
+ 
     def test_directory_lookup(self):
         """test that hitting an existent directory still raises
         LookupError."""
-        
+ 
         self.assertRaises(exceptions.TopLevelLookupException,
             tl.get_template, "/subdir"
         )
-        
+ 
     def test_no_lookup(self):
         t = Template("hi <%include file='foo.html'/>")
         try:
@@ -48,7 +48,7 @@ class LookupTest(unittest.TestCase):
             assert str(e) == \
                 "Template 'memory:%s' has no TemplateLookup associated" % \
                 hex(id(t))
-            
+ 
     def test_uri_adjust(self):
         tl = lookup.TemplateLookup(directories=['/foo/bar'])
         assert tl.filename_to_uri('/foo/bar/etc/lala/index.html') == \
@@ -57,9 +57,9 @@ class LookupTest(unittest.TestCase):
         tl = lookup.TemplateLookup(directories=['./foo/bar'])
         assert tl.filename_to_uri('./foo/bar/etc/index.html') == \
                         '/etc/index.html'
-    
+ 
     def test_uri_cache(self):
         """test that the _uri_cache dictionary is available"""
         tl._uri_cache[('foo', 'bar')] = '/some/path'
         assert tl._uri_cache[('foo', 'bar')] == '/some/path'
-        
+ 

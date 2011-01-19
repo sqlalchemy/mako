@@ -45,7 +45,7 @@ def serve(environ, start_response):
         filename = os.path.join(root, u)
         start_response("200 OK", [('Content-type',guess_type(uri))])
         return [file(filename).read()]
-        
+ 
 def getfield(f):
     """convert values from cgi.Field objects to plain values."""
     if isinstance(f, list):
@@ -68,7 +68,7 @@ def guess_type(path):
         return extensions_map[ext]
     else:
         return extensions_map['']
-        
+ 
 if __name__ == '__main__':
     import wsgiref.simple_server
     server = wsgiref.simple_server.make_server('', port, serve)

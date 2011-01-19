@@ -15,11 +15,11 @@ If the file ``components.html`` defines these two components:
     <%def name="comp1()">
         this is comp1
     </%def>
-    
+ 
     <%def name="comp2(x)">
         this is comp2, x is ${x}
     </%def>
-    
+ 
 You can make another file, for example ``index.html``, that
 pulls those two components into a namespace called ``comp``:
 
@@ -27,7 +27,7 @@ pulls those two components into a namespace called ``comp``:
 
     ## index.html
     <%namespace name="comp" file="components.html"/>
-    
+ 
     Heres comp1:  ${comp.comp1()}
     Heres comp2:  ${comp.comp2(x=5)}
 
@@ -44,10 +44,10 @@ need to call it via the ".". When ``import`` is used, the
 .. sourcecode:: mako
 
     <%namespace file="components.html" import="comp1, comp2"/>
-    
+ 
     Heres comp1:  ${comp1()}
     Heres comp2:  ${comp2(x=5)}
-    
+ 
 ``import`` also supports the "*" operator:
 
 .. sourcecode:: mako
@@ -70,7 +70,7 @@ context variables, the ``context`` must be named explicitly:
 .. sourcecode:: mako
 
     <%namespace name="dyn" file="${context['namespace_name']}"/>
-    
+ 
 Ways to Call Namespaces
 ========================
 
@@ -84,7 +84,7 @@ expressions like any other function:
 .. sourcecode:: mako
 
     ${mynamespace.somefunction('some arg1', 'some arg2', arg3='some arg3', arg4='some arg4')}
-    
+ 
 Synonymous with the "expression" format is the "custom tag"
 format, when a "closed" tag is used. This format, introduced in
 Mako 0.2.3, allows the usage of a "custom" Mako tag, with the
@@ -93,7 +93,7 @@ function arguments passed in using named attributes:
 .. sourcecode:: mako
 
     <%mynamespace:somefunction arg1="some arg1" arg2="some arg2" arg3="some arg3" arg4="some arg4"/>
-    
+ 
 When using tags, the values of the arguments are taken as
 literal strings by default. To embed Python expressions as
 arguments, use the embedded expression format:
@@ -140,13 +140,13 @@ modules. These callables need to take at least one argument,
         return ''
 
 A template can use this module via:
-    
+ 
 .. sourcecode:: mako
 
     <%namespace name="hw" module="some.module"/>
 
     ${hw.my_tag()}
-    
+ 
 Note that the ``context`` argument is not needed in the call;
 the :class:`.Namespace` tag creates a locally-scoped callable which
 takes care of it. The ``return ''`` is so that the def does not
@@ -163,14 +163,14 @@ def is called, supporting embedded content:
 .. sourcecode:: python
 
     from mako.runtime import supports_caller
-    
+ 
     @supports_caller
     def my_tag(context):
         context.write("<div>")
         context['caller'].body()
         context.write("</div>")
         return ''
-        
+ 
 Capturing of output is available as well, using the
 outside-of-templates version of the :func:`.capture` function,
 which accepts the "context" as its first argument:
@@ -191,7 +191,7 @@ The ``<%namespace>`` tag supports the definition of ``<%defs>``
 directly inside the tag. These defs become part of the namespace
 like any other function, and will override the definitions
 pulled in from a remote template or module:
-    
+ 
 .. sourcecode:: mako
 
     ## define a namespace
@@ -200,7 +200,7 @@ pulled in from a remote template or module:
             comp1
         </%def>
     </%namespace>
-    
+ 
     ## then call it
     ${stuff.comp1()}
 
@@ -228,7 +228,7 @@ own argument signature explicitly. You do this via using the
 .. sourcecode:: mako
 
     <%page args="x, y, someval=8, scope='foo', **kwargs"/>
-    
+ 
 A template which defines the above signature requires that the
 variables ``x`` and ``y`` are defined, defines default values
 for ``someval`` and ``scope``, and sets up ``**kwargs`` to
@@ -244,7 +244,7 @@ So above, the body might be called as:
 .. sourcecode:: mako
 
     ${self.body(5, y=10, someval=15, delta=7)}
-    
+ 
 The :class:`.Context` object also supplies a :attr:`~.Context.kwargs` accessor, for
 cases when youd like to pass along whatever is in the context to
 a ``body()`` callable:
@@ -306,17 +306,17 @@ attached to the ``self`` namespace. Since ``self`` is globally
 available throughout an inheritance chain (described in the next
 section), all the templates in an inheritance chain can get at
 the namespace imported in a super-template via ``self``.
-    
+ 
 .. sourcecode:: mako
 
     ## base.html
     <%namespace name="foo" file="foo.html" inheritable="True"/>
-    
+ 
     ${next.body()}
 
     ## somefile.html
     <%inherit file="base.html"/>
-    
+ 
     ${self.foo.bar()}
 
 This allows a super-template to load a whole bunch of namespaces
@@ -334,7 +334,7 @@ API Reference
 .. autoclass:: mako.runtime.Namespace
     :show-inheritance:
     :members:
-    
+ 
 .. autofunction:: mako.runtime.supports_caller
 
 .. autofunction:: mako.runtime.capture

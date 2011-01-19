@@ -19,7 +19,7 @@ class TGPlugin(object):
             elif k in ['directories', 'filesystem_checks', 'module_directory']:
                 lookup_options[k] = v
         self.lookup = TemplateLookup(**lookup_options)
-        
+ 
         self.tmpl_options = {}
         # transfer lookup args to template args, based on those available
         # in getargspec

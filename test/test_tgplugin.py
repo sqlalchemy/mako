@@ -36,7 +36,7 @@ class TestTGPlugin(TemplateTest):
         ]
 
         assert tl.load_template('subdir.index').module_id == '_subdir_index_html'
-    
+ 
     def test_string(self):
         t = tl.load_template('foo', "hello world")
         assert t.render() == "hello world"

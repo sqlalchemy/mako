@@ -12,11 +12,11 @@ class DecoratorTest(unittest.TestCase):
                         return "BAR" + runtime.capture(context, fn, *args, **kw) + "BAR"
                     return decorate
             %>
-            
+ 
             <%def name="foo(y, x)" decorator="bar">
                 this is foo ${y} ${x}
             </%def>
-            
+ 
             ${foo(1, x=5)}
         """)
 
@@ -56,7 +56,7 @@ class DecoratorTest(unittest.TestCase):
             %>
 
             <%def name="foo()">
-            
+ 
                 <%def name="bar()" decorator="bat">
                     this is bar
                 </%def>
@@ -67,7 +67,7 @@ class DecoratorTest(unittest.TestCase):
         """)
 
         assert flatten_result(template.render()) == "BAT this is bar BAT"
-        
+ 
     def test_toplevel_decorated_name(self):
         template = Template("""
             <%!
@@ -107,4 +107,4 @@ class DecoratorTest(unittest.TestCase):
         """)
 
         assert flatten_result(template.render()) == "function bar this is bar"
-        
+ 

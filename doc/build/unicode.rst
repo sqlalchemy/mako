@@ -105,7 +105,7 @@ use this encoding in order to convert the template source into a
 
 For the picky, the regular expression used is derived from that
 of the abovementioned pep:
-    
+ 
 .. sourcecode:: python
 
     #.*coding[:=]\s*([-\w.]+).*\n
@@ -122,7 +122,7 @@ the ``input_encoding`` parameter:
 .. sourcecode:: python
 
     t = TemplateLookup(directories=['./'], input_encoding='utf-8')
-    
+ 
 The above will assume all located templates specify ``utf-8``
 encoding, unless the template itself contains its own magic
 encoding comment, which takes precedence.
@@ -137,7 +137,7 @@ this:
 .. sourcecode:: mako
 
     ${"hello world"}
-    
+ 
 looks something like this:
 
 .. sourcecode:: python
@@ -149,7 +149,7 @@ In Python 3, its just:
 .. sourcecode:: python
 
     context.write(str("hello world"))
-    
+ 
 That is, **the output of all expressions is run through the
 ``unicode`` builtin**. This is the default setting, and can be
 modified to expect various encodings. The ``unicode`` step serves
@@ -179,7 +179,7 @@ explcitly decode to unicode first, such as:
 .. sourcecode:: mako
 
     ${call_my_object().decode('utf-8')}
-    
+ 
 Note that filehandles acquired by ``open()`` in Python 3 default
 to returning "text", that is the decoding is done for you. See
 Python 3's documentation for the ``open()`` builtin for details on
@@ -218,9 +218,9 @@ supported codec:
 
     from mako.template import Template
     from mako.lookup import TemplateLookup
-    
+ 
     mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8', encoding_errors='replace')
-    
+ 
     mytemplate = mylookup.get_template("foo.txt")
     print mytemplate.render()
 
@@ -234,14 +234,14 @@ returns a native string.
 .. sourcecode:: python
 
     print mytemplate.render_unicode()
-    
+ 
 The above method disgards the output encoding keyword argument;
 you can encode yourself by saying:
 
 .. sourcecode:: python
 
     print mytemplate.render_unicode().encode('utf-8', 'replace')
-    
+ 
 Buffer Selection
 -----------------
 
@@ -280,7 +280,7 @@ Python. For these users, assuming they're sticking with Python
 
     # -*- encoding:utf-8 -*-
     from mako.template import Template
-    
+ 
     t = Template("drôle de petite voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
     print t.code
 
@@ -332,6 +332,6 @@ strings.
   vast majority of users who stick to the Unicode program.
 * Python 3 is unicode by default, and the flag is not available
   when running on Python 3.
-    
+ 
 
 

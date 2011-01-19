@@ -27,29 +27,29 @@ class Lexer(object):
         self.control_line = []
         self.disable_unicode = disable_unicode
         self.encoding = input_encoding
-        
+ 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
                                     "Mako for Python 3 does not "
                                     "support disabling Unicode")
-        
+ 
         if preprocessor is None:
             self.preprocessor = []
         elif not hasattr(preprocessor, '__iter__'):
             self.preprocessor = [preprocessor]
         else:
             self.preprocessor = preprocessor
-    
+ 
     @property
     def exception_kwargs(self):
         return {'source':self.text, 
                 'lineno':self.matched_lineno, 
                 'pos':self.matched_charpos, 
                 'filename':self.filename}
-    
+ 
     def match(self, regexp, flags=None):
         """compile the given regexp, cache the reg, and call match_reg()."""
-        
+ 
         try:
             reg = _regexp_cache[(regexp, flags)]
         except KeyError:
@@ -58,14 +58,14 @@ class Lexer(object):
             else:
                 reg = re.compile(regexp)
             _regexp_cache[(regexp, flags)] = reg
-        
+ 
         return self.match_reg(reg)
-        
+ 
     def match_reg(self, reg):
         """match the given regular expression object to the current text position.
-        
+ 
         if a match occurs, update the current text and line position.
-        
+ 
         """
 
         mp = self.match_position
@@ -88,7 +88,7 @@ class Lexer(object):
             # self.matched_lineno, "LINE END:", self.lineno
         #print "MATCH:", regexp, "\n", self.text[mp : mp + 15], (match and "TRUE" or "FALSE")
         return match
-    
+ 
     def parse_until_text(self, *text):
         startpos = self.match_position
         while True:
@@ -116,7 +116,7 @@ class Lexer(object):
                                     "Expected: %s" % 
                                     ','.join(text), 
                                     **self.exception_kwargs)
-                
+ 
     def append_node(self, nodecls, *args, **kwargs):
         kwargs.setdefault('source', self.text)
         kwargs.setdefault('lineno', self.matched_lineno)
@@ -193,17 +193,17 @@ class Lexer(object):
 
         for preproc in self.preprocessor:
             self.text = preproc(self.text)
-        
+ 
         # push the match marker past the 
         # encoding comment.
         self.match_reg(self._coding_re)
-        
+ 
         self.textlength = len(self.text)
-            
+ 
         while (True):
             if self.match_position > self.textlength: 
                 break
-        
+ 
             if self.match_end():
                 break
             if self.match_expression():
@@ -220,11 +220,11 @@ class Lexer(object):
                 continue
             if self.match_text(): 
                 continue
-            
+ 
             if self.match_position > self.textlength: 
                 break
             raise exceptions.CompileException("assertion failed")
-            
+ 
         if len(self.tag):
             raise exceptions.SyntaxException("Unclosed tag: <%%%s>" % 
                                                 self.tag[-1].keyword, 
@@ -240,19 +240,19 @@ class Lexer(object):
     def match_tag_start(self):
         match = self.match(r'''
             \<%     # opening tag
-            
+ 
             ([\w\.\:]+)   # keyword
-            
+ 
             ((?:\s+\w+|\s*=\s*|".*?"|'.*?')*)  # attrname, = sign, string expression
-            
+ 
             \s*     # more whitespace
-            
+ 
             (/)?>   # closing
-            
+ 
             ''', 
-            
+ 
             re.I | re.S | re.X)
-            
+ 
         if match:
             keyword, attr, isend = match.group(1), match.group(2), match.group(3)
             self.keyword = keyword
@@ -279,7 +279,7 @@ class Lexer(object):
             return True
         else: 
             return False
-        
+ 
     def match_tag_end(self):
         match = self.match(r'\</%[\t ]*(.+?)[\t ]*>')
         if match:
@@ -297,7 +297,7 @@ class Lexer(object):
             return True
         else:
             return False
-            
+ 
     def match_end(self):
         match = self.match(r'\Z', re.S)
         if match:
@@ -308,7 +308,7 @@ class Lexer(object):
                 return True
         else:
             return False
-    
+ 
     def match_text(self):
         match = self.match(r"""
                 (.*?)         # anything, followed by:
@@ -328,7 +328,7 @@ class Lexer(object):
                  |
                  \Z           # end of string
                 )""", re.X | re.S)
-        
+ 
         if match:
             text = match.group(1)
             if text:
@@ -336,7 +336,7 @@ class Lexer(object):
             return True
         else:
             return False
-    
+ 
     def match_python_block(self):
         match = self.match(r"<%(!)?")
         if match:
@@ -344,7 +344,7 @@ class Lexer(object):
             text, end = self.parse_until_text(r'%>')
             # the trailing newline helps 
             # compiler.parse() not complain about indentation
-            text = adjust_whitespace(text) + "\n"   
+            text = adjust_whitespace(text) + "\n" 
             self.append_node(
                             parsetree.Code, 
                             text, 
@@ -352,7 +352,7 @@ class Lexer(object):
             return True
         else:
             return False
-            
+ 
     def match_expression(self):
         match = self.match(r"\${")
         if match:
@@ -385,7 +385,7 @@ class Lexer(object):
                                 **self.exception_kwargs)
                 isend, keyword = m2.group(1, 2)
                 isend = (isend is not None)
-                
+ 
                 if isend:
                     if not len(self.control_line):
                         raise exceptions.SyntaxException(
@@ -412,4 +412,4 @@ class Lexer(object):
             return True
         else:
             return False
-             
+ 

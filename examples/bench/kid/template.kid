@@ -12,7 +12,7 @@
     <div>${greeting(user)}</div>
     <div>${greeting('me')}</div>
     <div>${greeting('world')}</div>
-    
+ 
     <h2>Loop</h2>
     <ul py:if="items">
       <li py:for="idx, item in enumerate(items)" py:content="item"

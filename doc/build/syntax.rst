@@ -31,14 +31,14 @@ from, its usually from the ``Context`` supplied to the
 template's rendering function. If ``x`` was not supplied to the
 template and was not otherwise assigned locally, it evaluates to
 a special value ``UNDEFINED``. More on that later.
-    
+ 
 The contents within the ``${}`` tag are evaluated by Python
 directly, so full expressions are OK:
 
 .. sourcecode:: mako
 
     pythagorean theorem:  ${pow(x,2) + pow(y,2)}
-    
+ 
 The results of the expression are evaluated into a string result
 in all cases before being rendered to the output stream, such as
 the above example where the expression produces a numeric
@@ -81,7 +81,7 @@ using another ``%`` marker with the tag "``end<name>``", where
     % if x==5:
         this is some output
     % endif
-    
+ 
 The ``%`` can appear anywhere on the line as long as no text
 precedes it; indentation is not signficant. The full range of
 Python "colon" expressions are allowed here, including
@@ -107,7 +107,7 @@ line, by escaping it as in ``%%``:
 .. sourcecode:: mako
 
     %% some text
-    
+ 
         %% some more text
 
 Comments
@@ -141,11 +141,11 @@ the next line:
 
     here is a line that goes onto \
     another line.
-    
+ 
 The above text evaluates to::
 
     here is a line that goes onto another line.
-    
+ 
 Python Blocks
 =============
 
@@ -162,7 +162,7 @@ Any arbitrary block of python can be dropped in using the ``<%
     % for elem in y:
         element: ${elem}
     % endfor
-    
+ 
 Within ``<% %>``, you're writing a regular block of Python code.
 While the code can appear with an arbitrary level of preceding
 whitespace, it has to be consistently formatted with itself.
@@ -187,11 +187,11 @@ pure-Python functions you might want to declare:
     <%!
         import mylib
         import re
-        
+ 
         def filter(text):
             return re.sub(r'^@', '', text)
     %>
-    
+ 
 Any number of ``<%! %>`` blocks can be declared anywhere in a
 template; they will be rendered in the resulting module 
 in a single contiguous block above all render callables,
@@ -209,11 +209,11 @@ character, or an explicit closing tag:
 .. sourcecode:: mako
 
     <%include file="foo.txt"/>
-    
+ 
     <%def name="foo" buffered="True">
         this is a def
     </%def>
-    
+ 
 All tags have a set of attributes which are defined for each
 tag. Some of these attributes are required. Also, many
 attributes support **evaluation**, meaning you can embed an
@@ -222,7 +222,7 @@ expression (using ``${}``) inside the attribute text:
 .. sourcecode:: mako
 
     <%include file="/foo/bar/${myfile}.txt"/>
-    
+ 
 Whether or not an attribute accepts runtime evaluation depends
 on the type of tag and how that tag is compiled into the
 template. The best way to find out if you can stick an
@@ -241,9 +241,9 @@ which the template expects when invoked.
 .. sourcecode:: mako
 
     <%page args="x, y, z='default'"/>
-    
+ 
 Or a page tag that defines caching characteristics:
-    
+ 
 .. sourcecode:: mako
 
     <%page cached="True" cache_type="memory"/>
@@ -254,7 +254,7 @@ release, for now make sure you have only one ``<%page>`` tag
 defined in your template, else you may not get the results you
 want. The details of what ``<%page>`` is used for are described
 further in :ref:`namespaces_body` as well as :ref:`caching_toplevel`.
-    
+ 
 <%include>
 -----------
 
@@ -265,9 +265,9 @@ the rendered result of that file:
 .. sourcecode:: mako
 
     <%include file="header.html"/>
-    
+ 
         hello world
-        
+ 
     <%include file="footer.html"/>
 
 Include also accepts arguments which are available as ``<%page>`` arguments in the receiving template:
@@ -288,9 +288,9 @@ template. The basic idea is simple:
     <%def name="myfunc(x)">
         this is myfunc, x is ${x}
     </%def>
-    
+ 
     ${myfunc(7)}
-    
+ 
 The %def tag is a lot more powerful than a plain Python def, as
 the Mako compiler provides many extra services with %def that
 you wouldn't normally have, such as the ability to export defs

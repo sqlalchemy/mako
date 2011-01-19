@@ -179,8 +179,8 @@ print "hi"  # a comment
 # more comments
 
 print g
-"""        
-    
+"""
+
     def test_open_quotes_with_pound(self):
         text = '''
         print """  this is text
@@ -216,7 +216,7 @@ print '''
         there
         '''
 # someone else's comment
-"""        
+"""
 
 
     def test_quotes_with_pound(self):

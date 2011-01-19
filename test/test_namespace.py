@@ -15,9 +15,9 @@ class NamespaceTest(TemplateTest):
                     this is x b, and heres ${a()}
                 </%def>
             </%namespace>
-        
+ 
             ${x.a()}
-        
+ 
             ${x.b()}
     """,
             "this is x a this is x b, and heres this is x a",
@@ -98,13 +98,13 @@ class NamespaceTest(TemplateTest):
             flatten_result(collection.get_template('a').render(b_def='b')),
             "a. b: b."
         )
-        
+ 
     def test_template(self):
         collection = lookup.TemplateLookup()
 
         collection.put_string('main.html', """
         <%namespace name="comp" file="defs.html"/>
-        
+ 
         this is main.  ${comp.def1("hi")}
         ${comp.def2("there")}
 """)
@@ -113,14 +113,14 @@ class NamespaceTest(TemplateTest):
         <%def name="def1(s)">
             def1: ${s}
         </%def>
-        
+ 
         <%def name="def2(x)">
             def2: ${x}
         </%def>
 """)
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. def1: hi def2: there"
-    
+ 
     def test_module(self):
         collection = lookup.TemplateLookup()
 
@@ -168,7 +168,7 @@ class NamespaceTest(TemplateTest):
 """)
 
         assert flatten_result(collection.get_template('main.html').render()) == "this is main. this is foo1. this is foo2, x is hi"
-        
+ 
     def test_context(self):
         """test that namespace callables get access to the current context"""
         collection = lookup.TemplateLookup()
@@ -191,7 +191,7 @@ class NamespaceTest(TemplateTest):
 """)
 
         assert flatten_result(collection.get_template('main.html').render(x="context x")) == "this is main. def1: x is context x def2: x is there"
-        
+ 
     def test_overload(self):
         collection = lookup.TemplateLookup()
 
@@ -238,13 +238,13 @@ class NamespaceTest(TemplateTest):
         collection = lookup.TemplateLookup()
         collection.put_string("main.html", """
             <%namespace name="foo" file="ns.html"/>
-            
+ 
             this is main.  ${bar()}
             <%def name="bar()">
                 this is bar, foo is ${foo.bar()}
             </%def>
         """)
-        
+ 
         collection.put_string("ns.html", """
             <%def name="bar()">
                 this is ns.html->bar
@@ -274,24 +274,24 @@ class NamespaceTest(TemplateTest):
                 this is ns.html->bar
             </%def>
         """)
-        
+ 
         collection.put_string("index.html", """
             <%namespace name="main" file="main.html"/>
-            
+ 
             this is index
             ${main.bar()}
         """)
 
-        assert result_lines(collection.get_template("index.html").render()) == [  
+        assert result_lines(collection.get_template("index.html").render()) == [ 
             "this is index",
             "this is bar, foo is" ,
             "this is ns.html->bar"
         ]
-    
+ 
     def test_dont_pollute_self(self):
         # test that get_namespace() doesn't modify the original context
         # incompatibly
-        
+ 
         collection = lookup.TemplateLookup()
         collection.put_string("base.html", """
 
@@ -334,13 +334,13 @@ class NamespaceTest(TemplateTest):
             "name via bar:",
             "self:page.html"
         ]
-        
+ 
     def test_inheritance(self):
         """test namespace initialization in a base inherited template that doesnt otherwise access the namespace"""
         collection = lookup.TemplateLookup()
         collection.put_string("base.html", """
             <%namespace name="foo" file="ns.html" inheritable="True"/>
-            
+ 
             ${next.body()}
 """)
         collection.put_string("ns.html", """
@@ -351,11 +351,11 @@ class NamespaceTest(TemplateTest):
 
         collection.put_string("index.html", """
             <%inherit file="base.html"/>
-    
+ 
             this is index
             ${self.foo.bar()}
         """)
-        
+ 
         assert result_lines(collection.get_template("index.html").render()) == [
             "this is index",
             "this is ns.html->bar"
@@ -367,7 +367,7 @@ class NamespaceTest(TemplateTest):
             <%def name="foo()">
                 base.foo
             </%def>
-            
+ 
             <%def name="bat()">
                 base.bat
             </%def>
@@ -381,11 +381,11 @@ class NamespaceTest(TemplateTest):
                 ${parent.bat()}
                 ${self.bat()}
             </%def>
-            
+ 
             <%def name="foo()">
                 lib.foo
             </%def>
-                
+ 
         """)
 
         collection.put_string("front.html", """
@@ -424,7 +424,7 @@ class NamespaceTest(TemplateTest):
         <%
             self.attr.lala = "base lala"
         %>
-        
+ 
         ${self.attr.basefoo}
         ${self.attr.foofoo}
         ${self.attr.onlyfoo}
@@ -448,7 +448,7 @@ class NamespaceTest(TemplateTest):
             "base lala",
             "foo lala",
         ]
-    
+ 
     def test_attr_raise(self):
         l = lookup.TemplateLookup()
 
@@ -459,19 +459,19 @@ class NamespaceTest(TemplateTest):
 
         l.put_string("bar.html", """
         <%namespace name="foo" file="foo.html"/>
-        
+ 
         ${foo.notfoo()}
         """)
 
         self.assertRaises(AttributeError, l.get_template("bar.html").render)
-        
+ 
     def test_custom_tag_1(self):
         template = Template("""
-        
+ 
             <%def name="foo(x, y)">
                 foo: ${x} ${y}
             </%def>
-            
+ 
             <%self:foo x="5" y="${7+8}"/>
         """)
         assert result_lines(template.render()) == ['foo: 5 15']
@@ -482,32 +482,32 @@ class NamespaceTest(TemplateTest):
             <%def name="foo(x, y)">
                 foo: ${x} ${y}
             </%def>
-            
+ 
             <%def name="bat(g)"><%
                 return "the bat! %s" % g
             %></%def>
-            
+ 
             <%def name="bar(x)">
                 ${caller.body(z=x)}
             </%def>
         """)
-        
+ 
         collection.put_string("index.html", """
             <%namespace name="myns" file="base.html"/>
-            
+ 
             <%myns:foo x="${'some x'}" y="some y"/>
-            
+ 
             <%myns:bar x="${myns.bat(10)}" args="z">
                 record: ${z}
             </%myns:bar>
-        
+ 
         """)
-        
+ 
         assert result_lines(collection.get_template("index.html").render()) == [
             'foo: some x some y', 
             'record: the bat! 10'
         ]
-        
+ 
     def test_custom_tag_3(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base.html", """
@@ -530,14 +530,14 @@ class NamespaceTest(TemplateTest):
                 call body
             </%self.foo:bar>
         """)
-        
+ 
         assert result_lines(collection.get_template("index.html").render()) == [
             "this is index",
             "this is ns.html->bar",
             "caller body:",
             "call body"
         ]
-        
+ 
     def test_custom_tag_case_sensitive(self):
         t = Template("""
         <%def name="renderPanel()">
@@ -549,21 +549,21 @@ class NamespaceTest(TemplateTest):
                 hi
             </%self:renderPanel>
         </%def>
-        
+ 
         <%self:renderTablePanel/>
         """)
         assert result_lines(t.render()) == ['panel', 'hi']
-        
-        
+ 
+ 
     def test_expr_grouping(self):
         """test that parenthesis are placed around string-embedded expressions."""
-        
+ 
         template = Template("""
             <%def name="bar(x, y)">
                 ${x}
                 ${y}
             </%def>
-            
+ 
             <%self:bar x=" ${foo} " y="x${g and '1' or '2'}y"/>
         """, input_encoding='utf-8')
 
@@ -573,7 +573,7 @@ class NamespaceTest(TemplateTest):
             "x2y"
         ]
 
-        
+ 
     def test_ccall(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base.html", """
@@ -652,11 +652,11 @@ class NamespaceTest(TemplateTest):
             <%def name="foo()">
                 this is foo
             </%def>
-            
+ 
             <%def name="bar()">
                 this is bar
             </%def>
-            
+ 
             <%def name="lala()">
                 this is lala
             </%def>
@@ -689,7 +689,7 @@ class NamespaceTest(TemplateTest):
             "this is b",
             "this is x"
         ]
-    
+ 
     def test_import_calledfromdef(self):
         l = lookup.TemplateLookup()
         l.put_string("a", """
@@ -712,29 +712,29 @@ class NamespaceTest(TemplateTest):
 
         t = l.get_template("b")
         assert flatten_result(t.render()) == "im table"
-            
+ 
     def test_closure_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
             <%def name="foo()">
                 this is foo
             </%def>
-            
+ 
             <%def name="bar()">
                 this is bar
             </%def>
         """)
-        
+ 
         collection.put_string("index.html", """
             <%namespace file="functions.html" import="*"/>
             <%def name="cl1()">
                 ${foo()}
             </%def>
-            
+ 
             <%def name="cl2()">
                 ${bar()}
             </%def>
-            
+ 
             ${cl1()}
             ${cl2()}
         """)
@@ -750,26 +750,26 @@ class NamespaceTest(TemplateTest):
                     this is foo
                 </%def>
             </%namespace>
-            
+ 
             ${foo()}
-        
+ 
         """)
         assert flatten_result(t.render()) == "this is foo"
-        
+ 
     def test_ccall_import(self):
         collection = lookup.TemplateLookup()
         collection.put_string("functions.html","""
             <%def name="foo()">
                 this is foo
             </%def>
-            
+ 
             <%def name="bar()">
                 this is bar.
                 ${caller.body()}
                 ${caller.lala()}
             </%def>
         """)
-        
+ 
         collection.put_string("index.html", """
             <%namespace name="func" file="functions.html" import="*"/>
             <%call expr="bar()">

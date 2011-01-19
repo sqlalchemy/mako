@@ -52,7 +52,7 @@ main_body ${parent.d()}
 full stack from the top:
     ${self.name} ${parent.name} ${parent.context['parent'].name} ${parent.context['parent'].context['parent'].name}
 """)
-        
+ 
         collection.put_string('layout', """
 <%inherit file="general"/>
 <%def name="d()">layout_d</%def>
@@ -94,11 +94,11 @@ ${next.body()}
              'full stack from the top:',
              'self:main self:layout self:general self:base'
         ]
-        
+ 
     def test_includes(self):
         """test that an included template also has its full hierarchy invoked."""
         collection = lookup.TemplateLookup()
-        
+ 
         collection.put_string("base", """
         <%def name="a()">base_a</%def>
         This is the base.
@@ -134,7 +134,7 @@ ${next.body()}
         """test that templates used via <%namespace> have access to an inheriting 'self', and that
         the full 'self' is also exported."""
         collection = lookup.TemplateLookup()
-        
+ 
         collection.put_string("base", """
         <%def name="a()">base_a</%def>
         <%def name="b()">base_b</%def>
@@ -194,7 +194,7 @@ ${next.body()}
             <%def name="foo()">
                 ${next.body(**context.kwargs)}
             </%def>
-            
+ 
             ${foo()}
         """)
         collection.put_string("index", """
@@ -202,7 +202,7 @@ ${next.body()}
             <%page args="x, y, z=7"/>
             print ${x}, ${y}, ${z}
         """)
-        
+ 
         if util.py3k:
             assert result_lines(collection.get_template('index').render_unicode(x=5,y=10)) == [
                 "this is the base.",
@@ -215,14 +215,14 @@ ${next.body()}
                 "pageargs: (type: <type 'dict'>) [('x', 5), ('y', 10)]",
                 "print 5, 10, 7"
             ]
-        
+ 
     def test_pageargs_2(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """
             this is the base.
-            
+ 
             ${next.body(**context.kwargs)}
-            
+ 
             <%def name="foo(**kwargs)">
                 ${next.body(**kwargs)}
             </%def>
@@ -245,7 +245,7 @@ ${next.body()}
             "pageargs: 12, 15, 8",
             "pageargs: 5, 10, 16"
         ]
-    
+ 
     def test_pageargs_err(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """
@@ -262,7 +262,7 @@ ${next.body()}
             assert False
         except TypeError:
             assert True
-    
+ 
     def test_toplevel(self):
         collection = lookup.TemplateLookup()
         collection.put_string("base", """
@@ -305,7 +305,7 @@ ${next.body()}
             'this is the base.',
             'this is index.'
         ]
-        
+ 
     def test_in_call(self):
         collection = lookup.TemplateLookup()
         collection.put_string("/layout.html","""
@@ -332,7 +332,7 @@ ${next.body()}
         </%def>
         <%inherit file="/layout.html"/>
         """)
-        
+ 
         collection.put_string("/subdir/renderedtemplate.html","""
         Holy smokes!
         <%inherit file="/subdir/layout.html"/>

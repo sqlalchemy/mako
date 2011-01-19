@@ -25,7 +25,7 @@ else:
     # words that cannot be assigned to (notably 
     # smaller than the total keys in __builtins__)
     reserved = set(['True', 'False', 'None'])
-    
+ 
     # the "id" attribute on a function node
     arg_id = operator.attrgetter('id')
 
@@ -42,7 +42,7 @@ except ImportError:
 
 def parse(code, mode='exec', **exception_kwargs):
     """Parse an expression into AST"""
-    
+ 
 
     try:
         if _ast:

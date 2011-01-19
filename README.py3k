@@ -18,7 +18,7 @@ install Distribute:
 Installing Mako in Python 3
 ---------------------------------
 
-Once Distribute is installed, Mako can be installed directly.  
+Once Distribute is installed, Mako can be installed directly. 
 The 2to3 process will kick in which takes several minutes:
 
     python3 setup.py install
@@ -35,7 +35,7 @@ If using 3.1's 2to3 tool, the --no-diffs flag might help
 with unicode issues:
 
     2to3-3.1 -w --no-diffs mako test
-    
+ 
 The above will rewrite all files in-place in Python 3 format.
 
 Running Tests

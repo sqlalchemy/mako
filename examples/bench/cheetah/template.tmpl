@@ -10,13 +10,13 @@
       #def greeting(name)
       <p>hello ${name}!</p>
       #end def
-      
+ 
     #include "cheetah/header.tmpl"
 
     $greeting($user)
     $greeting('me')
     $greeting('world')
-    
+ 
     <h2>Loop</h2>
     #if $list_items
       <ul>

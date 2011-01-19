@@ -33,15 +33,15 @@ class %s(object):
             ", ".join(repr_arg(x) for x in self.args)
             )
 """ % clsname) in locals()
-    
+
 # NOTE: most assertion expressions were generated, then formatted
 # by PyTidy, hence the dense formatting.
 
 class LexerTest(TemplateTest):
-    
+
     def _compare(self, node, expected):
         eq_(repr(node), repr(expected))
-    
+
     def test_text_and_tag(self):
         template = """
 <b>Hello world</b>
@@ -85,7 +85,7 @@ class LexerTest(TemplateTest):
         """
         self.assertRaises(exceptions.SyntaxException,
                           Lexer(template).parse)
-    
+
     def test_noexpr_allowed(self):
         template = \
             """
@@ -125,7 +125,7 @@ class LexerTest(TemplateTest):
         """
         self.assertRaises(exceptions.CompileException,
                           Lexer(template).parse)
-    
+
     def test_percent_escape(self):
         template = \
             """
@@ -143,7 +143,7 @@ class LexerTest(TemplateTest):
                       ControlLine(u'if', u'if foo:', False, (6, 1)),
                       ControlLine(u'if', u'endif', True, (7, 1)),
                       Text(u'        ', (8, 1))]))
-        
+
     def test_text_tag(self):
         template = \
             """
@@ -201,7 +201,7 @@ class LexerTest(TemplateTest):
 """
         self.assertRaises(exceptions.CompileException,
                           Lexer(template).parse)
-    
+
     def test_def_syntax_2(self):
         template = \
             """
@@ -240,7 +240,7 @@ class LexerTest(TemplateTest):
                       CallNamespaceTag(u'self:go', {u'x': u'1', u'y'
                       : u'2', u'z': u"${'hi' + ' ' + 'there'}"}, (3,
                       13), []), Text(u'\n        ', (3, 64))]))
-    
+
     def test_ns_tag_empty(self):
         template = \
             """
@@ -271,7 +271,7 @@ class LexerTest(TemplateTest):
                 this is the body
             ''',
                       (3, 46))]), Text(u'\n        ', (5, 24))]))
-        
+
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
         
@@ -386,7 +386,7 @@ more text
                 Code(u'\nimport foo\n    \n', True, (8, 5)), 
                 Text(u'\n', (10, 7))])
             )
-    
+
     def test_code_and_tags(self):
         template = \
             """
@@ -447,7 +447,7 @@ more text
                       Text(u'\n        ', (4, 42))]), Text(u'\n        '
                       , (5, 16)), Expression(u'hi()', [], (6, 9)),
                       Text(u'\n', (6, 16))]))
-        
+
 
     def test_tricky_expression(self):
         template = """
@@ -556,7 +556,7 @@ print('''
                       """comment\n        \n""",
                       False, (1, 1)),
                       Text(u" '''and now some text '''", (10,11))]))
-        
+
     def test_control_lines(self):
         template = \
             """
@@ -660,7 +660,7 @@ text text la la
             "Keyword 'endlala' doesn't match keyword 'for' at line: 5 char: 1",
             Lexer(template).parse
         )
-    
+
     def test_ternary_control(self):
         template = \
             """
@@ -685,7 +685,7 @@ text text la la
                       ControlLine(u'else', u'else:', False, (8, 1)),
                       Text(u'            hi\n', (9, 1)),
                       ControlLine(u'if', u'endif', True, (10, 1))]))
-        
+
     def test_integration(self):
         template = \
             """<%namespace name="foo" file="somefile.html"/>
@@ -731,7 +731,7 @@ text text la la
                       (17, 1)), Text(u'    </tr>\n', (18, 1)),
                       ControlLine(u'for', u'endfor', True, (19, 1)),
                       Text(u'</table>\n', (20, 1))]))
-        
+
     def test_comment_after_statement(self):
         template = \
             """
@@ -776,7 +776,7 @@ text text la la
         )
         assert flatten_result(Template(template).render()) \
             == """<html> like the name says. 1 2 3 Dizzy </html>"""
-    
+
     def test_comments(self):
         template = \
             """
@@ -811,7 +811,7 @@ hi
 
 hi
 ''', (16, 8))]))
-    
+
     def test_docs(self):
         template = \
             """

@@ -53,7 +53,7 @@ ties to Python calling and scoping semantics.
       entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin
-      
+ 
       [pygments.lexers]
       mako = mako.ext.pygmentplugin:MakoLexer
       html+mako = mako.ext.pygmentplugin:MakoHtmlLexer

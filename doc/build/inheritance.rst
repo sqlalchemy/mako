@@ -21,13 +21,13 @@ template, ``index.html``:
 
     ## index.html
     <%inherit file="base.html"/>
-    
+ 
     <%def name="header()">
         this is some header content
     </%def>
-    
+ 
     this is the body content.
-    
+ 
 And ``base.html``, the inherited template:
 
 .. sourcecode:: mako
@@ -38,9 +38,9 @@ And ``base.html``, the inherited template:
             <div class="header">
                 ${self.header()}
             </div>
-            
+ 
             ${self.body()}
-            
+ 
             <div class="footer">
                 ${self.footer()}
             </div>
@@ -52,7 +52,7 @@ And ``base.html``, the inherited template:
     </%def>
 
 Here is a breakdown of the execution:
-    
+ 
 * When ``index.html`` is rendered, control immediately passes to
   ``base.html``.
 * ``base.html`` then renders the top part of an HTML document,
@@ -85,9 +85,9 @@ Here is a breakdown of the execution:
                 <div class="header">
                     this is some header content
                 </div>
-        
+ 
                 this is the body content.
-            
+ 
                 <div class="footer">
                     this is the footer
                 </div>
@@ -129,9 +129,9 @@ Lets change the line in ``base.html`` which calls upon
             <div class="header">
                 ${self.header()}
             </div>
-        
+ 
             ${next.body()}
-        
+ 
             <div class="footer">
                 ${self.footer()}
             </div>
@@ -155,12 +155,12 @@ which inherits from ``base.html``:
     <div class="mainlayout">
         ${next.body()}
     </div>
-    
+ 
     <%def name="toolbar()">
         <li>selection 1</li>
         <li>selection 2</li>
         <li>selection 3</li>
-    </%def>    
+    </%def> 
 
 And finally change ``index.html`` to inherit from
 ``layout.html`` instead:
@@ -169,9 +169,9 @@ And finally change ``index.html`` to inherit from
 
     ## index.html
     <%inherit file="layout.html"/>
-    
+ 
     ## .. rest of template
-    
+ 
 In this setup, each call to ``next.body()`` will render the body
 of the next template in the inheritance chain (which can be
 written as ``base.html -> layout.html -> index.html``). Control
@@ -194,11 +194,11 @@ The output we get would be:
                 <li>selection 2</li>
                 <li>selection 3</li>
             </ul>
-            
+ 
             <div class="mainlayout">
             this is the body content.
             </div>
-            
+ 
             <div class="footer">
                 this is the footer
             </div>
@@ -243,7 +243,7 @@ by the ``toolbar`` function in ``layout.html``:
         <li>selection 4</li>
         <li>selection 5</li>
     </%def>
-        
+ 
     this is the body content.
 
 Above, we implemented a ``toolbar()`` function, which is meant
@@ -269,11 +269,11 @@ thing is now:
                 <li>selection 4</li>
                 <li>selection 5</li>
             </ul>
-        
+ 
             <div class="mainlayout">
             this is the body content.
             </div>
-        
+ 
             <div class="footer">
                 this is the footer
             </div>
@@ -295,11 +295,11 @@ inheritance chain as declared in ``<%! %>`` sections. Such as:
     <%!
         class_ = "grey"
     %>
-    
+ 
     <div class="${self.attr.class_}">
         ${self.body()}
     </div>
-    
+ 
 If a an inheriting template overrides ``class_`` to be
 ``white``, as in:
 
@@ -309,9 +309,9 @@ If a an inheriting template overrides ``class_`` to be
         class_ = "white"
     %>
     <%inherit file="parent.html"/>
-    
+ 
     This is the body
-    
+ 
 You'll get output like:
 
 .. sourcecode:: html
