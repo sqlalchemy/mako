@@ -367,7 +367,9 @@ class ScopeTest(TemplateTest):
         """)
  
         # test via inheritance
-        #print l.get_template("main").code
+        print l.get_template("main").code
+        import pdb
+        pdb.set_trace()
         assert result_lines(l.get_template("main").render()) == [
             "this is main. x is 12",
             "this is a, x is 12"

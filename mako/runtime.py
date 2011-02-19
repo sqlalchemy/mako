@@ -219,9 +219,16 @@ class Namespace(object):
         if callables is not None:
             self.callables = dict([(c.func_name, c) for c in callables])
 
-    callables = None
+    callables = ()
 
-    _module = None
+    module = None
+    """The Python module referenced by this Namespace.
+
+    If the namespace references a :class:`.Template`, then
+    this module is the equivalent of ``template.module``,
+    i.e. the generated module for the template.
+
+    """
 
     template = None
     """The :class:`.Template` object referenced by this
@@ -240,46 +247,29 @@ class Namespace(object):
 
     """
  
- 
-    @property
-    def module(self):
-        """The Python module referenced by this Namespace.
- 
-        If the namespace references a :class:`.Template`, then
-        this module is the equivalent of ``template.module``,
-        i.e. the generated module for the template.
+    filename = None
+    """The path of the filesystem file used for this
+    Namespace's module or template.
 
-        """
-        return self._module or self.template.module
- 
-    @property
-    def filename(self):
-        """The path of the filesystem file used for this
-        Namespace's module or template.
- 
-        If this is a pure module-based
-        Namespace, this evaluates to ``module.__file__``. If a
-        template-based namespace, it evaluates to the original
-        template file location.
- 
-        """
-        if self._module:
-            return self._module.__file__
-        else:
-            return self.template.filename
- 
-    @property
-    def uri(self):
-        """The uri for this Namespace's template.
- 
-        I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
- 
-        This is the equivalent of :attr:`Template.uri`.
+    If this is a pure module-based
+    Namespace, this evaluates to ``module.__file__``. If a
+    template-based namespace, it evaluates to the original
+    template file location.
 
-        """
-        return self.template.uri
+    """
+ 
+    uri = None
+    """The uri for this Namespace's template.
 
-    @property
+    I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
+
+    This is the equivalent of :attr:`Template.uri`.
+
+    """
+
+    _templateuri = None
+
+    @util.memoized_property
     def attr(self):
         """Access module level attributes by name. 
  
@@ -289,9 +279,7 @@ class Namespace(object):
         :ref:`inheritance_toplevel`.
 
         """
-        if not hasattr(self, '_attr'):
-            self._attr = _NSAttr(self)
-        return self._attr
+        return _NSAttr(self)
 
     def get_namespace(self, uri):
         """Return a :class:`.Namespace` corresponding to the given uri.
@@ -314,7 +302,7 @@ class Namespace(object):
  
         """
         key = (self, uri)
-        if self.context.namespaces.has_key(key):
+        if key in self.context.namepaces:
             return self.context.namespaces[key]
         else:
             ns = TemplateNamespace(uri, self.context._copy(), 
@@ -362,7 +350,8 @@ class Namespace(object):
  
     @property
     def cache(self):
-        """Return the :class:`.Cache` object referenced by this :class:`.Namespace` object's
+        """Return the :class:`.Cache` object referenced 
+           by this :class:`.Namespace` object's
         :class:`.Template`.
  
         """
@@ -385,39 +374,32 @@ class Namespace(object):
         if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
-        if self.template:
-            def get(key):
-                callable_ = self.template._get_def_callable(key)
-                return util.partial(callable_, self.context)
-            for k in self.template.module._exports:
-                yield (k, get(k))
-        if self._module:
-            def get(key):
-                callable_ = getattr(self._module, key)
-                return util.partial(callable_, self.context)
-            for k in dir(self._module):
-                if k[0] != '_':
-                    yield (k, get(k))
  
     def __getattr__(self, key):
-        if self.callables and key in self.callables:
-            return self.callables[key]
+        if key in self.callables:
+            val = self.callables[key]
 
-        if self.template and self.template.has_def(key):
+        elif self.inherits:
+            val = getattr(self.inherits, key)
+
+        elif self.template and self.template.has_def(key):
             callable_ = self.template._get_def_callable(key)
-            return util.partial(callable_, self.context)
+            val = util.partial(callable_, self.context)
 
-        if self._module and hasattr(self._module, key):
+        elif self.module and hasattr(self.module, key):
             callable_ = getattr(self._module, key)
-            return util.partial(callable_, self.context)
+            val = util.partial(callable_, self.context)
 
-        if self.inherits is not None:
-            return getattr(self.inherits, key)
-        raise AttributeError(
+        else:
+            raise AttributeError(
                     "Namespace '%s' has no member '%s'" % 
                     (self.name, key))
+        setattr(self, key, val)
+        return val
 
 class TemplateNamespace(Namespace):
+    """A :class:`.Namespace` specific to a :class:`.Template` instance."""
+
     def __init__(self, name, context, template=None, templateuri=None, 
                             callables=None, inherits=None, 
                             populate_self=True, calling_uri=None):
@@ -442,7 +424,49 @@ class TemplateNamespace(Namespace):
                         _populate_self_namespace(context, self.template, 
                                                     self_ns=self)
 
+    @property
+    def module(self):
+        """The Python module referenced by this Namespace.
+ 
+        If the namespace references a :class:`.Template`, then
+        this module is the equivalent of ``template.module``,
+        i.e. the generated module for the template.
+
+        """
+        return self.template.module
+
+    @property
+    def filename(self):
+        """The path of the filesystem file used for this
+        Namespace's module or template.
+        """
+        return self.template.filename
+
+    @property
+    def uri(self):
+        """The uri for this Namespace's template.
+ 
+        I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
+ 
+        This is the equivalent of :attr:`Template.uri`.
+
+        """
+        return self.template.uri
+
+    def _get_star(self):
+        if self.callables:
+            for key in self.callables:
+                yield (key, self.callables[key])
+        def get(key):
+            callable_ = self.template._get_def_callable(key)
+            return util.partial(callable_, self.context)
+        for k in self.template.module._exports:
+            yield (k, get(k))
+
+
 class ModuleNamespace(Namespace):
+    """A :class:`.Namespace` specific to a Python module instance."""
+
     def __init__(self, name, context, module, 
                             callables=None, inherits=None, 
                             populate_self=True, calling_uri=None):
@@ -455,8 +479,25 @@ class ModuleNamespace(Namespace):
         mod = __import__(module)
         for token in module.split('.')[1:]:
             mod = getattr(mod, token)
-        self._module = mod
+        self.module = mod
 
+    @property
+    def filename(self):
+        """The path of the filesystem file used for this
+        Namespace's module or template.
+        """
+        return self.module.__file__
+
+    def _get_star(self):
+        if self.callables:
+            for key in self.callables:
+                yield (key, self.callables[key])
+        def get(key):
+            callable_ = getattr(self.module, key)
+            return util.partial(callable_, self.context)
+        for k in dir(self.module):
+            if k[0] != '_':
+                yield (k, get(k))
 
 def supports_caller(func):
     """Apply a caller_stack compatibility decorator to a plain
