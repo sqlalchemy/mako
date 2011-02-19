@@ -210,35 +210,19 @@ class Namespace(object):
  
       """
  
-    def __init__(self, name, context, module=None, 
-                            template=None, templateuri=None, 
+    def __init__(self, name, context, 
                             callables=None, inherits=None, 
                             populate_self=True, calling_uri=None):
         self.name = name
-        if module is not None:
-            mod = __import__(module)
-            for token in module.split('.')[1:]:
-                mod = getattr(mod, token)
-            self._module = mod
-        else:
-            self._module = None
-        if templateuri is not None:
-            self.template = _lookup_template(context, templateuri, calling_uri)
-            self._templateuri = self.template.module._template_uri
-        else:
-            self.template = template
-            if self.template is not None:
-                self._templateuri = self.template.module._template_uri
         self.context = context
         self.inherits = inherits
         if callables is not None:
             self.callables = dict([(c.func_name, c) for c in callables])
-        else:
-            self.callables = None
-        if populate_self and self.template is not None:
-            lclcallable, lclcontext = \
-                        _populate_self_namespace(context, self.template, self_ns=self)
- 
+
+    callables = None
+
+    _module = None
+
     template = None
     """The :class:`.Template` object referenced by this
         :class:`.Namespace`, if any.
@@ -333,7 +317,7 @@ class Namespace(object):
         if self.context.namespaces.has_key(key):
             return self.context.namespaces[key]
         else:
-            ns = Namespace(uri, self.context._copy(), 
+            ns = TemplateNamespace(uri, self.context._copy(), 
                                 templateuri=uri, 
                                 calling_uri=self._templateuri) 
             self.context.namespaces[key] = ns
@@ -433,6 +417,47 @@ class Namespace(object):
                     "Namespace '%s' has no member '%s'" % 
                     (self.name, key))
 
+class TemplateNamespace(Namespace):
+    def __init__(self, name, context, template=None, templateuri=None, 
+                            callables=None, inherits=None, 
+                            populate_self=True, calling_uri=None):
+        self.name = name
+        self.context = context
+        self.inherits = inherits
+        if callables is not None:
+            self.callables = dict([(c.func_name, c) for c in callables])
+
+        if templateuri is not None:
+            self.template = _lookup_template(context, templateuri, 
+                                                calling_uri)
+            self._templateuri = self.template.module._template_uri
+        elif template is not None:
+            self.template = template
+            self._templateuri = template.module._template_uri
+        else:
+            raise TypeError("'template' argument is required.")
+
+        if populate_self:
+            lclcallable, lclcontext = \
+                        _populate_self_namespace(context, self.template, 
+                                                    self_ns=self)
+
+class ModuleNamespace(Namespace):
+    def __init__(self, name, context, module, 
+                            callables=None, inherits=None, 
+                            populate_self=True, calling_uri=None):
+        self.name = name
+        self.context = context
+        self.inherits = inherits
+        if callables is not None:
+            self.callables = dict([(c.func_name, c) for c in callables])
+
+        mod = __import__(module)
+        for token in module.split('.')[1:]:
+            mod = getattr(mod, token)
+        self._module = mod
+
+
 def supports_caller(func):
     """Apply a caller_stack compatibility decorator to a plain
     Python function.
@@ -514,7 +539,7 @@ def _inherit_from(context, uri, calling_uri):
     while ih.inherits is not None:
         ih = ih.inherits
     lclcontext = context.locals_({'next':ih})
-    ih.inherits = Namespace("self:%s" % template.uri, 
+    ih.inherits = TemplateNamespace("self:%s" % template.uri, 
                                 lclcontext, 
                                 template = template, 
                                 populate_self=False)
@@ -544,7 +569,7 @@ def _lookup_template(context, uri, relativeto):
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
-        self_ns = Namespace('self:%s' % template.uri, 
+        self_ns = TemplateNamespace('self:%s' % template.uri, 
                                 context, template=template, 
                                 populate_self=False)
     context._data['self'] = context._data['local'] = self_ns

@@ -11,7 +11,7 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters
 
-MAGIC_NUMBER = 5
+MAGIC_NUMBER = 6
 
 def compile(node, 
                 uri, 
@@ -319,14 +319,35 @@ class _GenerateRenderMethod(object):
                 callable_name = "make_namespace()"
             else:
                 callable_name = "None"
-            self.printer.writeline(
-                            "ns = runtime.Namespace(%r, context._clean_inheritance_tokens(),"
-                            " templateuri=%s, callables=%s, calling_uri=_template_uri, module=%s)" %
-                            (
-                                node.name,
-                                node.parsed_attributes.get('file', 'None'), 
-                                callable_name, 
-                                node.parsed_attributes.get('module', 'None'))
+
+            if 'file' in node.parsed_attributes:
+                self.printer.writeline(
+                                "ns = runtime.TemplateNamespace(%r, context._clean_inheritance_tokens(),"
+                                " templateuri=%s, callables=%s, calling_uri=_template_uri)" %
+                                (
+                                    node.name,
+                                    node.parsed_attributes.get('file', 'None'), 
+                                    callable_name, 
+                                )
+                            )
+            elif 'module' in node.parsed_attributes:
+                self.printer.writeline(
+                                "ns = runtime.ModuleNamespace(%r, context._clean_inheritance_tokens(),"
+                                " callables=%s, calling_uri=_template_uri, module=%s)" %
+                                (
+                                    node.name,
+                                    callable_name, 
+                                    node.parsed_attributes.get('module', 'None')
+                                )
+                            )
+            else:
+                self.printer.writeline(
+                                "ns = runtime.Namespace(%r, context._clean_inheritance_tokens(),"
+                                " callables=%s, calling_uri=_template_uri)" %
+                                (
+                                    node.name,
+                                    callable_name, 
+                                )
                             )
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
