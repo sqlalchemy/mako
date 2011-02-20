@@ -361,9 +361,14 @@ class NamespaceTag(Tag):
         self.name = attributes.get('name', '__anon_%s' % hex(abs(id(self))))
         if not 'name' in attributes and not 'import' in attributes:
             raise exceptions.CompileException(
-                            "'name' and/or 'import' attributes are required "
-                            "for <%namespace>", 
-                                **self.exception_kwargs)
+                "'name' and/or 'import' attributes are required "
+                "for <%namespace>",
+                **self.exception_kwargs)
+        if 'file' in attributes and 'module' in attributes:
+            raise exceptions.CompileException(
+                "<%namespace> may only have one of 'file' or 'module'",
+                **self.exception_kwargs
+            )
 
     def declared_identifiers(self):
         return []

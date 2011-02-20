@@ -302,7 +302,7 @@ class Namespace(object):
  
         """
         key = (self, uri)
-        if key in self.context.namepaces:
+        if key in self.context.namespaces:
             return self.context.namespaces[key]
         else:
             ns = TemplateNamespace(uri, self.context._copy(), 
@@ -374,22 +374,12 @@ class Namespace(object):
         if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
- 
+
     def __getattr__(self, key):
         if key in self.callables:
             val = self.callables[key]
-
         elif self.inherits:
             val = getattr(self.inherits, key)
-
-        elif self.template and self.template.has_def(key):
-            callable_ = self.template._get_def_callable(key)
-            val = util.partial(callable_, self.context)
-
-        elif self.module and hasattr(self.module, key):
-            callable_ = getattr(self._module, key)
-            val = util.partial(callable_, self.context)
-
         else:
             raise AttributeError(
                     "Namespace '%s' has no member '%s'" % 
@@ -463,6 +453,21 @@ class TemplateNamespace(Namespace):
         for k in self.template.module._exports:
             yield (k, get(k))
 
+    def __getattr__(self, key):
+        if key in self.callables:
+            val = self.callables[key]
+        elif self.template.has_def(key):
+            callable_ = self.template._get_def_callable(key)
+            val = util.partial(callable_, self.context)
+        elif self.inherits:
+            val = getattr(self.inherits, key)
+
+        else:
+            raise AttributeError(
+                    "Namespace '%s' has no member '%s'" % 
+                    (self.name, key))
+        setattr(self, key, val)
+        return val
 
 class ModuleNamespace(Namespace):
     """A :class:`.Namespace` specific to a Python module instance."""
@@ -498,6 +503,21 @@ class ModuleNamespace(Namespace):
         for k in dir(self.module):
             if k[0] != '_':
                 yield (k, get(k))
+
+    def __getattr__(self, key):
+        if key in self.callables:
+            val = self.callables[key]
+        elif hasattr(self.module, key):
+            callable_ = getattr(self.module, key)
+            val = util.partial(callable_, self.context)
+        elif self.inherits:
+            val = getattr(self.inherits, key)
+        else:
+            raise AttributeError(
+                    "Namespace '%s' has no member '%s'" % 
+                    (self.name, key))
+        setattr(self, key, val)
+        return val
 
 def supports_caller(func):
     """Apply a caller_stack compatibility decorator to a plain
