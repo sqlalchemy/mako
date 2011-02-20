@@ -334,6 +334,14 @@ API Reference
 .. autoclass:: mako.runtime.Namespace
     :show-inheritance:
     :members:
+
+.. autoclass:: mako.runtime.TemplateNamespace
+    :show-inheritance:
+    :members:
+
+.. autoclass:: mako.runtime.ModuleNamespace
+    :show-inheritance:
+    :members:
  
 .. autofunction:: mako.runtime.supports_caller
 
