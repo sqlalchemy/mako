@@ -112,7 +112,7 @@ class SetLikeDict(dict):
 
 class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, 
-    but doesnt crash on unicode data like cStringIO."""
+    but doesn't crash on unicode data like cStringIO."""
  
     def __init__(self, encoding=None, errors='strict', unicode=False):
         self.data = collections.deque()
@@ -126,7 +126,8 @@ class FastEncodingBuffer(object):
         self.write = self.data.append
  
     def truncate(self):
-        self.data =collections.deque()
+        self.data = collections.deque()
+        self.write = self.data.append
  
     def getvalue(self):
         if self.encoding:

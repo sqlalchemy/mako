@@ -96,8 +96,8 @@ class Template(object):
      Python module file. For advanced usage only.
  
     :param output_encoding: The encoding to use when :meth:`.render` 
-     is called. See :ref:`usage_unicode` as well as
-     :ref:`unicode_toplevel`.
+     is called.  Defaults to ``ascii`` as of Mako 0.4.0.  
+     See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`.
  
     :param preprocessor: Python callable which will be passed 
      the full template source before it is parsed. The return
