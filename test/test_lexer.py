@@ -342,7 +342,7 @@ class LexerTest(TemplateTest):
     <%
         print("hi")
         for x in range(1,5):
-            print x
+            print(x)
     %>
 more text
     <%!
@@ -354,7 +354,7 @@ more text
             TemplateNode({}, [
                 Text(u'text\n    ', (1, 1)), 
                 Code(u'\nprint("hi")\nfor x in range(1,5):\n    '
-                            'print x\n    \n', False, (2, 5)), 
+                            'print(x)\n    \n', False, (2, 5)), 
                 Text(u'\nmore text\n    ', (6, 7)), 
                 Code(u'\nimport foo\n    \n', True, (8, 5)), 
                 Text(u'\n', (10, 7))])

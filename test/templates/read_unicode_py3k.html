@@ -1,6 +1,6 @@
 <% 
 try:
-    file_content = open(path)
+    file_content = open(path, encoding='utf-8', errors='ignore')
 except:
     raise "Should never execute here"
 doc_content = ''.join(file_content.readlines())

@@ -328,6 +328,10 @@ class EncodingTest(TemplateTest):
             template = lookup.get_template('/read_unicode_py3k.html')
         else:
             template = lookup.get_template('/read_unicode.html')
+        # TODO: I've no idea what encoding this file is, Python 3.1.2 
+        # won't read the file even with open(...encoding='utf-8') unless
+        # errors is specified.   or if there's some quirk in 3.1.2
+        # since I'm pretty sure this test worked with py3k when I wrote it.
         data = template.render(path=self._file_path('internationalization.html'))
 
     @skip_if(lambda: util.py3k)
