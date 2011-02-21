@@ -221,13 +221,18 @@ class TemplateLookup(TemplateCollection):
     def adjust_uri(self, uri, relativeto):
         """adjust the given uri based on the given relative uri."""
  
+        key = (uri, relativeto)
+        if key in self._uri_cache:
+            return self._uri_cache[key]
+
         if uri[0] != '/':
             if relativeto is not None:
-                return posixpath.join(posixpath.dirname(relativeto), uri)
+                v = self._uri_cache[key] = posixpath.join(posixpath.dirname(relativeto), uri)
             else:
-                return '/' + uri
+                v = self._uri_cache[key] = '/' + uri
         else:
-            return uri
+            v = self._uri_cache[key] = uri
+        return v
  
  
     def filename_to_uri(self, filename):
