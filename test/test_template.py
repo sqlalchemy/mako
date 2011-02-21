@@ -3,11 +3,13 @@
 from mako.template import Template, ModuleTemplate
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
-from mako import exceptions, util
-import re, os
+from mako import exceptions, util, runtime
+import re
+import os
 from util import flatten_result, result_lines
 import codecs
-from test import TemplateTest, eq_, template_base, module_base, skip_if, assert_raises
+from test import TemplateTest, eq_, template_base, module_base, \
+    skip_if, assert_raises
 
 class EncodingTest(TemplateTest):
     def test_unicode(self):
@@ -442,7 +444,11 @@ class PageArgsTest(TemplateTest):
             template_args={'variable':'var', 'bar':'bar', 'foo':'foo'}
 
         )
- 
+
+    def test_context_small(self):
+        ctx = runtime.Context([].append, x=5, y=4)
+        eq_(sorted(ctx.keys()), ['caller', 'capture', 'x', 'y'])
+
     def test_with_context(self):
         template = Template("""
             <%page args="x, y, z=7"/>

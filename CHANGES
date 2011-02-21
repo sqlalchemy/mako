@@ -16,6 +16,13 @@
   if the 'template' and 'module' attributes
   are specified at the same time.
 
+- the keys() in the Context, as well as 
+  it's internal _data dictionary, now
+  include just what was specified to 
+  render() as well as Mako builtins
+  'caller', 'capture'.  The contents
+  of __builtin__ are no longer copied.
+
 0.3.6
 - Documentation is on Sphinx.
   [ticket:126]

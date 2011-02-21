@@ -22,12 +22,7 @@ class Context(object):
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
  
-        # original data, minus the builtins
-        self._orig = data
- 
-        # the context data which includes builtins
-        self._data = __builtin__.__dict__.copy()
-        self._data.update(data)
+        self._data = data
         self._kwargs = data.copy()
         self._with_template = None
         self._outputting_as_unicode = None
@@ -75,7 +70,10 @@ class Context(object):
         return self._data.keys()
  
     def __getitem__(self, key):
-        return self._data[key]
+        if key in self._data:
+            return self._data[key]
+        else:
+            return __builtin__.__dict__[key]
 
     def _push_writer(self):
         """push a capturing buffer onto this Context and return
@@ -107,7 +105,9 @@ class Context(object):
     def get(self, key, default=None):
         """Return a value from this :class:`.Context`."""
  
-        return self._data.get(key, default)
+        return self._data.get(key, 
+                __builtin__.__dict__.get(key, default)
+                )
  
     def write(self, string):
         """Write a string to this :class:`.Context` object's
@@ -124,7 +124,6 @@ class Context(object):
         c = Context.__new__(Context)
         c._buffer_stack = self._buffer_stack
         c._data = self._data.copy()
-        c._orig = self._orig
         c._kwargs = self._kwargs
         c._with_template = self._with_template
         c._outputting_as_unicode = self._outputting_as_unicode
@@ -585,7 +584,7 @@ def _include_file(context, uri, calling_uri, **kwargs):
     (callable_, ctx) = _populate_self_namespace(
                                 context._clean_inheritance_tokens(), 
                                 template)
-    callable_(ctx, **_kwargs_for_include(callable_, context._orig, **kwargs))
+    callable_(ctx, **_kwargs_for_include(callable_, context._data, **kwargs))
  
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set
