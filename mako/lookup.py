@@ -287,16 +287,20 @@ class TemplateLookup(TemplateCollection):
     def _check(self, uri, template):
         if template.filename is None:
             return template
-        if not os.path.exists(template.filename):
+
+        try:
+            template_stat = os.stat(template.filename)
+            if template.module._modified_time < \
+                        template_stat[stat.ST_MTIME]:
+                self._collection.pop(uri, None)
+                return self._load(template.filename, uri)
+            else:
+                return template
+        except OSError:
             self._collection.pop(uri, None)
             raise exceptions.TemplateLookupException(
                                 "Cant locate template for uri %r" % uri)
-        elif template.module._modified_time < \
-                        os.stat(template.filename)[stat.ST_MTIME]:
-            self._collection.pop(uri, None)
-            return self._load(template.filename, uri)
-        else:
-            return template
+
  
     def put_string(self, uri, text):
         """Place a new :class:`.Template` object into this

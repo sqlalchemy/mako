@@ -63,3 +63,14 @@ class LookupTest(unittest.TestCase):
         tl._uri_cache[('foo', 'bar')] = '/some/path'
         assert tl._uri_cache[('foo', 'bar')] == '/some/path'
  
+    def test_check_not_found(self):
+        tl = lookup.TemplateLookup()
+        tl.put_string("foo", "this is a template")
+        f = tl.get_template("foo")
+        assert f.uri in tl._collection
+        f.filename = "nonexistent"
+        self.assertRaises(exceptions.TemplateLookupException,
+            tl.get_template, "foo"
+        )
+        assert f.uri not in tl._collection
+

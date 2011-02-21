@@ -21,6 +21,7 @@ else:
         from StringIO import StringIO
 
 import codecs, re, weakref, os, time, operator
+import collections
 
 try:
     import threading
@@ -114,7 +115,7 @@ class FastEncodingBuffer(object):
     but doesnt crash on unicode data like cStringIO."""
  
     def __init__(self, encoding=None, errors='strict', unicode=False):
-        self.data = []
+        self.data = collections.deque()
         self.encoding = encoding
         if unicode:
             self.delim = u''
@@ -125,7 +126,7 @@ class FastEncodingBuffer(object):
         self.write = self.data.append
  
     def truncate(self):
-        self.data =[]
+        self.data =collections.deque()
  
     def getvalue(self):
         if self.encoding:
