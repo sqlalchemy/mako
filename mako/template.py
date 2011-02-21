@@ -38,13 +38,22 @@ class Template(object):
      creation of default expression filters that let the output
      of return-valued %defs "opt out" of that filtering via
      passing special attributes or objects.
- 
+
+    :param bytestring_passthrough: When True, and output_encoding is 
+     set to None, and :meth:`.Template.render` is used to render,
+     the StringIO or cStringIO buffer will be used instead of the
+     default "fast" buffer.   This allows raw bytestrings in the
+     output stream, such as in expressions, to pass straight
+     through to the buffer.   New in 0.4 to provide the same
+     behavior as that of the previous series.  This flag is forced
+     to True if disable_unicode is also configured.
+
     :param cache_dir: Filesystem directory where cache files will be
      placed.  See :ref:`caching_toplevel`.
- 
+
     :param cache_enabled: Boolean flag which enables caching of this
      template.  See :ref:`caching_toplevel`.
- 
+
     :param cache_type: Type of Beaker caching to be applied to the 
      template. See :ref:`caching_toplevel`.
  
@@ -96,7 +105,7 @@ class Template(object):
      Python module file. For advanced usage only.
  
     :param output_encoding: The encoding to use when :meth:`.render` 
-     is called.  Defaults to ``ascii`` as of Mako 0.4.0.  
+     is called.  
      See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`.
  
     :param preprocessor: Python callable which will be passed 
@@ -127,7 +136,7 @@ class Template(object):
                     format_exceptions=False, 
                     error_handler=None, 
                     lookup=None, 
-                    output_encoding='ascii', 
+                    output_encoding=None, 
                     encoding_errors='strict', 
                     module_directory=None, 
                     cache_type=None, 
@@ -135,7 +144,8 @@ class Template(object):
                     cache_url=None, 
                     module_filename=None, 
                     input_encoding=None, 
-                    disable_unicode=False, 
+                    disable_unicode=False,
+                    bytestring_passthrough=False, 
                     default_filters=None, 
                     buffer_filters=(), 
                     strict_undefined=False,
@@ -158,6 +168,7 @@ class Template(object):
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
+        self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.strict_undefined = strict_undefined
 
         if util.py3k and disable_unicode:
@@ -348,6 +359,7 @@ class ModuleTemplate(Template):
                         output_encoding=None, 
                         encoding_errors='strict',
                         disable_unicode=False, 
+                        bytestring_passthrough=False,
                         format_exceptions=False,
                         error_handler=None, 
                         lookup=None, 
@@ -362,6 +374,17 @@ class ModuleTemplate(Template):
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
+        self.bytestring_passthrough = bytestring_passthrough or disable_unicode
+
+        if util.py3k and disable_unicode:
+            raise exceptions.UnsupportedError(
+                                    "Mako for Python 3 does not "
+                                    "support disabling Unicode")
+        elif output_encoding and disable_unicode:
+            raise exceptions.UnsupportedError(
+                                    "output_encoding must be set to "
+                                    "None when disable_unicode is used.")
+
         self.module = module
         self.filename = template_filename
         ModuleInfo(module, 
@@ -393,6 +416,7 @@ class DefTemplate(Template):
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
         self.lookup = parent.lookup
+        self.bytestring_passthrough = parent.bytestring_passthrough
 
     def get_def(self, name):
         return self.parent.get_def(name)

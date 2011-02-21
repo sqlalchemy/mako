@@ -1,20 +1,37 @@
 0.4.0
-- The "output encoding" now defaults
-  to "ascii", whereas previously
-  it was set to None.  This has the effect
-  of FastEncodingBuffer being used internally
-  by default when render() is called, instead 
-  of cStringIO or StringIO, which are 
-  slower, but allow bytestrings with 
-  unknown encoding to pass right through.  
-  It is of course not recommended to use 
-  bytestrings of unknown encoding. Usage of
-  the "disable_unicode" mode also requires
-  that output_encoding be set to None.
+- A 20% speedup for a basic two-page 
+  inheritance setup rendering
+  a table of escaped data
+  (see http://techspot.zzzeek.org/2010/11/19/quick-mako-vs.-jinja-speed-test/).
+  A few configurational changes which
+  affect those in the I-don't-do-unicode 
+  camp should be noted below.
+
+- The FastEncodingBuffer is now used
+  by default instead of cStringIO or StringIO,
+  regardless of whether output_encoding
+  is set to None or not.  FEB is faster than
+  both.  Only StringIO allows bytestrings
+  of unknown encoding to pass right 
+  through, however - while it is of course 
+  not recommended to send bytestrings of unknown 
+  encoding to the output stream, this
+  mode of usage can be re-enabled by
+  setting the flag bytestring_passthrough
+  to True.
+
+- disable_unicode mode requires that 
+  output_encoding be set to None - it also
+  forces the bytestring_passthrough flag
+  to True.
 
 - the <%namespace> tag raises an error
   if the 'template' and 'module' attributes
-  are specified at the same time.
+  are specified at the same time in 
+  one tag.  A different class is used 
+  for each case which allows a reduction in 
+  runtime conditional logic and function
+  call overhead. [ticket:156]
 
 - the keys() in the Context, as well as 
   it's internal _data dictionary, now
@@ -22,6 +39,8 @@
   render() as well as Mako builtins
   'caller', 'capture'.  The contents
   of __builtin__ are no longer copied.
+  Thanks to Daniel Lopez for pointing
+  this out. [ticket:159]
 
 0.3.6
 - Documentation is on Sphinx.

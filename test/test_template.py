@@ -283,7 +283,10 @@ class EncodingTest(TemplateTest):
             )
 
     def test_raw_strings(self):
-        """test that raw strings go straight thru with default_filters turned off"""
+        """test that raw strings go straight thru with default_filters turned off,
+        bytestring_passthrough enabled.
+        
+        """
 
         self._do_memory_test(
             u"## -*- coding: utf-8 -*-\nhello ${x}",
@@ -291,6 +294,7 @@ class EncodingTest(TemplateTest):
             default_filters=[],
             template_args={'x':'śląsk'},
             unicode_=False,
+            bytestring_passthrough=True,
             output_encoding=None #'ascii'
         )
 
