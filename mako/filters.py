@@ -27,8 +27,7 @@ def legacy_html_escape(string):
 
 try:
     import markupsafe
-    def html_escape(string):
-        return markupsafe.escape(string)
+    html_escape = markupsafe.escape
 except ImportError:
     html_escape = legacy_html_escape
 

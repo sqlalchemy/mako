@@ -324,3 +324,27 @@ mako in baz not in mako""", '<unknown>', 'exec', _ast.PyCF_ONLY_AST)
 
     _ast.In = type(m.body[12].value.ops[0])
     _ast.NotIn = type(m.body[12].value.ops[1])
+
+
+try:
+    from inspect import CO_VARKEYWORDS, CO_VARARGS
+    def inspect_func_args(fn):
+        co = fn.func_code
+
+        nargs = co.co_argcount
+        names = co.co_varnames
+        args = list(names[:nargs])
+
+        varargs = None
+        if co.co_flags & CO_VARARGS:
+            varargs = co.co_varnames[nargs]
+            nargs = nargs + 1
+        varkw = None
+        if co.co_flags & CO_VARKEYWORDS:
+            varkw = co.co_varnames[nargs]
+
+        return args, varargs, varkw, fn.func_defaults
+except ImportError:
+    import inspect
+    def inspect_func_args(fn):
+        return inspect.getargspec(fn)

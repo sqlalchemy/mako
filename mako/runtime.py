@@ -662,7 +662,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     return context._pop_buffer().getvalue()
 
 def _kwargs_for_callable(callable_, data):
-    argspec = inspect.getargspec(callable_)
+    argspec = util.inspect_func_args(callable_)
     # for normal pages, **pageargs is usually present
     if argspec[2]:
         return data
@@ -676,7 +676,7 @@ def _kwargs_for_callable(callable_, data):
     return kwargs
 
 def _kwargs_for_include(callable_, data, **kwargs):
-    argspec = inspect.getargspec(callable_)
+    argspec = util.inspect_func_args(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
         if arg != 'context' and arg in data and arg not in kwargs:

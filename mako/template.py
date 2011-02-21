@@ -127,7 +127,7 @@ class Template(object):
                     format_exceptions=False, 
                     error_handler=None, 
                     lookup=None, 
-                    output_encoding=None, 
+                    output_encoding='ascii', 
                     encoding_errors='strict', 
                     module_directory=None, 
                     cache_type=None, 
@@ -164,7 +164,10 @@ class Template(object):
             raise exceptions.UnsupportedError(
                                     "Mako for Python 3 does not "
                                     "support disabling Unicode")
- 
+        elif output_encoding and disable_unicode:
+            raise exceptions.UnsupportedError(
+                                    "output_encoding must be set to "
+                                    "None when disable_unicode is used.")
         if default_filters is None:
             if util.py3k or self.disable_unicode:
                 self.default_filters = ['str']

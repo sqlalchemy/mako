@@ -148,7 +148,7 @@ class TemplateLookup(TemplateCollection):
                         format_exceptions=False, 
                         error_handler=None, 
                         disable_unicode=False, 
-                        output_encoding=None, 
+                        output_encoding='ascii', 
                         encoding_errors='strict', 
                         cache_type=None, 
                         cache_dir=None, cache_url=None,

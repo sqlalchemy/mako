@@ -1,3 +1,21 @@
+0.4.0
+- The "output encoding" now defaults
+  to "ascii", whereas previously
+  it was set to None.  This has the effect
+  of FastEncodingBuffer being used internally
+  by default when render() is called, instead 
+  of cStringIO or StringIO, which are 
+  slower, but allow bytestrings with 
+  unknown encoding to pass right through.  
+  It is of course not recommended to use 
+  bytestrings of unknown encoding. Usage of
+  the "disable_unicode" mode also requires
+  that output_encoding be set to None.
+
+- the <%namespace> tag raises an error
+  if the 'template' and 'module' attributes
+  are specified at the same time.
+
 0.3.6
 - Documentation is on Sphinx.
   [ticket:126]

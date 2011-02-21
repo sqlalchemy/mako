@@ -43,7 +43,8 @@ class FilterTest(TemplateTest):
     def test_quoting_non_unicode(self):
         t = Template("""
             foo ${bar | h}
-        """, disable_unicode=True)
+        """, disable_unicode=True,
+        output_encoding=None)
 
         eq_(
             flatten_result(t.render(bar="<'привет'>")),

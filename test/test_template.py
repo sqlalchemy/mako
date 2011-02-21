@@ -288,7 +288,8 @@ class EncodingTest(TemplateTest):
             "hello śląsk",
             default_filters=[],
             template_args={'x':'śląsk'},
-            unicode_=False
+            unicode_=False,
+            output_encoding=None #'ascii'
         )
 
         # now, the way you *should* be doing it....
@@ -330,6 +331,7 @@ class EncodingTest(TemplateTest):
             '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.',
             default_filters=[],
             disable_unicode=True,
+            output_encoding=None,
             template_args={'name':'毛泽东'},
             filters=flatten_result, 
             unicode_=False
@@ -339,18 +341,37 @@ class EncodingTest(TemplateTest):
             'chs_utf8.html',
             '毛泽东 是 新中国的主席<br/> Welcome 你 to 北京. Welcome 你 to 北京.',
             disable_unicode=True,
+            output_encoding=None,
             template_args={'name':'毛泽东'},
             filters=flatten_result,
             unicode_=False
         )
 
-        template = self._file_template('chs_utf8.html', disable_unicode=True)
+        template = self._file_template('chs_utf8.html', 
+                    output_encoding=None,
+                    disable_unicode=True)
         self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
 
-        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", disable_unicode=True, input_encoding='utf-8')
-        assert template.render() == """Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
-        template = Template("""${'Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »'}""", input_encoding='utf8', output_encoding='utf8', disable_unicode=False, default_filters=[])
-        self.assertRaises(UnicodeDecodeError, template.render)  # raises because expression contains an encoded bytestring which cannot be decoded
+        template = Template(
+            "${'Alors vous imaginez ma surprise, au lever"
+            " du jour, quand une drôle de petite voix m’a "
+            "réveillé. Elle disait: « S’il vous plaît… "
+            "dessine-moi un mouton! »'}", 
+            output_encoding=None,
+            disable_unicode=True, input_encoding='utf-8')
+        assert template.render() == "Alors vous imaginez ma surprise, "\
+                "au lever du jour, quand une drôle de petite "\
+                "voix m’a réveillé. Elle disait: « S’il vous "\
+                "plaît… dessine-moi un mouton! »"
+        template = Template(
+                "${'Alors vous imaginez ma surprise, au "
+                "lever du jour, quand une drôle de petite "
+                "voix m’a réveillé. Elle disait: « S’il "
+                "vous plaît… dessine-moi un mouton! »'}", 
+                input_encoding='utf8', output_encoding='utf8', 
+                disable_unicode=False, default_filters=[])
+        # raises because expression contains an encoded bytestring which cannot be decoded
+        self.assertRaises(UnicodeDecodeError, template.render)
 
 
 class PageArgsTest(TemplateTest):
