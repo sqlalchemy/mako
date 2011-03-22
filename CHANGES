@@ -1,3 +1,9 @@
+0.4.1
+- a slight adjustment to the "highlight" logic
+  for generating template bound stacktraces.
+  Will stick to known template source lines
+  without any extra guessing. [ticket:165]
+
 0.4.0
 - A 20% speedup for a basic two-page 
   inheritance setup rendering

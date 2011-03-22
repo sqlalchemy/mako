@@ -166,8 +166,6 @@ class RichTraceback(object):
                     match = re.match(r'\s*# SOURCE LINE (\d+)', line)
                     if match:
                         template_ln = int(match.group(1))
-                    else:
-                        template_ln += 1
                     module_ln += 1
                     line_map[module_ln] = template_ln
                 template_lines = [line for line in
