@@ -24,7 +24,8 @@ ${'</%text>'}
     <link href="/css/site_docs.css" rel="stylesheet" type="text/css"></link>
 <%text></%def></%text>
 
-<%text><%def name="title()"></%text><%block name="show_title"/> &mdash; ${docstitle|h}<%text></%def></%text>
+<%text><%def name="title()"></%text>${self.show_title()} &mdash; ${docstitle|h}<%text></%def></%text>
+
 
 <%!
     local_script_files = []

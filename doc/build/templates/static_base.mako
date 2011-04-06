@@ -5,7 +5,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ${metatags and metatags or ''}
-        <title><%block name="show_title"/> &mdash; ${docstitle|h}</title>
+        <title>${self.show_title()} &mdash; ${docstitle|h}</title>
         <%block name="headers"/>
     </head>
     <body>
