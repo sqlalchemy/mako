@@ -166,10 +166,10 @@ Will render ``myexpression`` with no filtering of any kind, and
  
 will render ``myexpression`` using the ``trim`` filter only. 
 
-Filtering Defs
-=================
+Filtering Defs and Blocks
+==========================
 
-The ``%def`` tag has a filter argument which will apply the
+The ``%def`` and ``%block`` tags have an argument called ``filter`` which will apply the
 given list of filter functions to the output of the ``%def``:
 
 .. sourcecode:: mako
@@ -334,7 +334,7 @@ as just ``runtime``):
     ${foo()}
 
 The decorator can be used with top-level defs as well as nested
-defs. Note that when calling a top-level def from the
+defs, and blocks too. Note that when calling a top-level def from the
 ``Template`` api, i.e. ``template.get_def('somedef').render()``,
 the decorator has to write the output to the ``context``, i.e.
 as in the first example. The return value gets discarded.

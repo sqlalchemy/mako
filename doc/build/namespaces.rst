@@ -4,10 +4,10 @@
 Namespaces
 ==========
 
-Namespaces are used to organize groups of components into
-categories, and also to "import" components from other files.
+Namespaces are used to organize groups of defs into
+categories, and also to "import" defs from other files.
 
-If the file ``components.html`` defines these two components:
+If the file ``components.html`` defines these two defs:
 
 .. sourcecode:: mako
 
@@ -21,7 +21,7 @@ If the file ``components.html`` defines these two components:
     </%def>
  
 You can make another file, for example ``index.html``, that
-pulls those two components into a namespace called ``comp``:
+pulls those two defs into a namespace called ``comp``:
 
 .. sourcecode:: mako
 

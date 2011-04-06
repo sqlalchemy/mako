@@ -1,7 +1,7 @@
 ## coding: utf-8
 <%inherit file="${context['mako_layout']}"/>
 
-<%def name="headers()">
+<%block name="headers">
     <link rel="stylesheet" href="${pathto('_static/pygments.css', 1)}" type="text/css" />
     <link rel="stylesheet" href="${pathto('_static/docs.css', 1)}" type="text/css" />
 
@@ -35,9 +35,10 @@
     % if prevtopic:
         <link rel="prev" title="${prevtopic['title']|util.striptags}" href="${prevtopic['link']|h}" />
     % endif
-    ${self.extrahead()}
-</%def>
-<%def name="extrahead()"></%def>
+
+    <%block name="extrahead">
+    </%block>
+</%block>
 
         <h1>${docstitle|h}</h1>
 
@@ -74,10 +75,14 @@
                 % if current_page_name != master_doc:
                 » ${self.show_title()} 
                 % endif
- 
+
                 ${prevnext()}
                 <h2>
-                    ${self.show_title()} 
+                    <%block name="show_title" filter="util.striptags">
+                    % if title:
+                        ${title}
+                    % endif
+                    </%block>
                 </h2>
             </div>
             % if display_toc and not current_page_name.startswith('index'):
@@ -92,7 +97,7 @@
             </div>
         </div>
 
-        <%def name="footer()">
+        <%block name="footer">
             <div class="bottomnav">
                 ${prevnext()}
                 <div class="doc_copyright">
@@ -106,8 +111,7 @@
                 % endif
                 </div>
             </div>
-        </%def>
-        ${self.footer()}
+        </%block>
 
 <%def name="prevnext()">
 <div class="prevnext">
@@ -122,9 +126,4 @@
 </div>
 </%def>
 
-<%def name="show_title()">
-% if title:
-    ${title}
-% endif
-</%def>
 

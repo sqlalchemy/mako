@@ -1,6 +1,8 @@
 <%inherit file="layout.mako"/>
 
-<%def name="show_title()">${_('Index')}</%def>
+<%block name="show_title" filter="util.striptags">
+    ${_('Index')}
+</%block>
 
    <h1 id="index">${_('Index')}</h1>
 

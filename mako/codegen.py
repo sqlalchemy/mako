@@ -9,7 +9,7 @@
 import time
 import re
 from mako.pygen import PythonPrinter
-from mako import util, ast, parsetree, filters
+from mako import util, ast, parsetree, filters, exceptions
 
 MAGIC_NUMBER = 6
 
@@ -84,16 +84,18 @@ class _GenerateRenderMethod(object):
         self.node = node
         self.identifier_stack = [None]
  
-        self.in_def = isinstance(node, parsetree.DefTag)
+        self.in_def = isinstance(node, (parsetree.DefTag, parsetree.BlockTag))
 
         if self.in_def:
-            name = "render_" + node.name
-            args = node.function_decl.get_argument_expressions()
+            name = "render_%s" % node.funcname
+            args = node.get_argument_expressions()
             filtered = len(node.filter_args.args) > 0 
             buffered = eval(node.attributes.get('buffered', 'False'))
             cached = eval(node.attributes.get('cached', 'False'))
             defs = None
             pagetag = None
+            if node.is_block and not node.is_anonymous:
+                args += ['**pageargs']
         else:
             defs = self.write_toplevel()
             pagetag = self.compiler.pagetag
@@ -238,7 +240,7 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("context._push_buffer()")
  
         self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
-        if not self.in_def and '**pageargs' in args:
+        if (not self.in_def or self.node.is_block) and '**pageargs' in args:
             self.identifier_stack[-1].argument_declared.add('pageargs')
 
         if not self.in_def and (
@@ -308,8 +310,19 @@ class _GenerateRenderMethod(object):
                 self.in_def = True
                 class NSDefVisitor(object):
                     def visitDefTag(s, node):
+                        s.visitDefOrBase(node)
+
+                    def visitBlockTag(s, node):
+                        s.visitDefOrBase(node)
+
+                    def visitDefOrBase(s, node):
+                        if node.is_anonymous:
+                            raise exceptions.CompileException(
+                                "Can't put anonymous blocks inside <%namespace>", 
+                                **node.exception_kwargs
+                            )
                         self.write_inline_def(node, identifiers, nested=False)
-                        export.append(node.name)
+                        export.append(node.funcname)
                 vis = NSDefVisitor()
                 for n in node.nodes:
                     n.accept_visitor(vis)
@@ -376,9 +389,8 @@ class _GenerateRenderMethod(object):
         top-level, it is fully rendered as a local closure.
  
         """
- 
         # collection of all defs available to us in this scope
-        comp_idents = dict([(c.name, c) for c in identifiers.defs])
+        comp_idents = dict([(c.funcname, c) for c in identifiers.defs])
         to_write = set()
  
         # write "context.get()" for all variables we are going to 
@@ -387,7 +399,7 @@ class _GenerateRenderMethod(object):
  
         # write closure functions for closures that we define 
         # right here
-        to_write = to_write.union([c.name for c in identifiers.closuredefs.values()])
+        to_write = to_write.union([c.funcname for c in identifiers.closuredefs.values()])
 
         # remove identifiers that are declared in the argument 
         # signature of the callable
@@ -420,10 +432,17 @@ class _GenerateRenderMethod(object):
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
-                if comp.is_root():
-                    self.write_def_decl(comp, identifiers)
+                if comp.is_block:
+                    if not comp.is_anonymous:
+                        self.write_def_decl(comp, identifiers)
+                    else:
+                        self.write_inline_def(comp, identifiers, nested=True)
                 else:
-                    self.write_inline_def(comp, identifiers, nested=True)
+                    if comp.is_root():
+                        self.write_def_decl(comp, identifiers)
+                    else:
+                        self.write_inline_def(comp, identifiers, nested=True)
+
             elif ident in self.compiler.namespaces:
                 self.printer.writeline(
                             "%s = _mako_get_namespace(context, %r)" % 
@@ -472,9 +491,9 @@ class _GenerateRenderMethod(object):
 
     def write_def_decl(self, node, identifiers):
         """write a locally-available callable referencing a top-level def"""
-        funcname = node.function_decl.funcname
-        namedecls = node.function_decl.get_argument_expressions()
-        nameargs = node.function_decl.get_argument_expressions(include_defaults=False)
+        funcname = node.funcname
+        namedecls = node.get_argument_expressions()
+        nameargs = node.get_argument_expressions(include_defaults=False)
  
         if not self.in_def and (
                                 len(self.identifiers.locally_assigned) > 0 or
@@ -488,13 +507,13 @@ class _GenerateRenderMethod(object):
  
     def write_inline_def(self, node, identifiers, nested):
         """write a locally-available def callable inside an enclosing def."""
- 
-        namedecls = node.function_decl.get_argument_expressions()
+
+        namedecls = node.get_argument_expressions()
  
         decorator = node.decorator
         if decorator:
             self.printer.writeline("@runtime._decorate_inline(context, %s)" % decorator)
-        self.printer.writeline("def %s(%s):" % (node.name, ",".join(namedecls)))
+        self.printer.writeline("def %s(%s):" % (node.funcname, ",".join(namedecls)))
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
@@ -519,7 +538,7 @@ class _GenerateRenderMethod(object):
         self.write_def_finish(node, buffered, filtered, cached)
         self.printer.writeline(None)
         if cached:
-            self.write_cache_decorator(node, node.name, 
+            self.write_cache_decorator(node, node.funcname, 
                                         namedecls, False, identifiers, 
                                         inline=True, toplevel=False)
  
@@ -750,6 +769,18 @@ class _GenerateRenderMethod(object):
     def visitDefTag(self, node):
         pass
 
+    def visitBlockTag(self, node):
+        if node.is_anonymous:
+            self.printer.writeline("%s()" % node.funcname)
+        else:
+            nameargs = node.get_argument_expressions(include_defaults=False)
+            nameargs += ['**pageargs']
+            self.printer.writeline("if 'parent' not in context._data or "
+                                    "not hasattr(context._data['parent'], '%s'):" 
+                                    % node.funcname)
+            self.printer.writeline("context['self'].%s(%s)" % (node.funcname, ",".join(nameargs)))
+            self.printer.writeline("\n")
+
     def visitCallNamespaceTag(self, node):
         # TODO: we can put namespace-specific checks here, such
         # as ensure the given namespace will be imported,
@@ -770,12 +801,19 @@ class _GenerateRenderMethod(object):
         self.identifier_stack.append(body_identifiers)
         class DefVisitor(object):
             def visitDefTag(s, node):
+                s.visitDefOrBase(node)
+
+            def visitBlockTag(s, node):
+                s.visitDefOrBase(node)
+
+            def visitDefOrBase(s, node):
                 self.write_inline_def(node, callable_identifiers, nested=False)
-                export.append(node.name)
+                if not node.is_anonymous:
+                    export.append(node.funcname)
                 # remove defs that are within the <%call> from the "closuredefs" defined
                 # in the body, so they dont render twice
-                if node.name in body_identifiers.closuredefs:
-                    del body_identifiers.closuredefs[node.name]
+                if node.funcname in body_identifiers.closuredefs:
+                    del body_identifiers.closuredefs[node.funcname]
 
         vis = DefVisitor()
         for n in node.nodes:
@@ -934,12 +972,23 @@ class _Identifiers(object):
         if self.node is node:
             for n in node.nodes:
                 n.accept_visitor(self)
- 
+
+    def _check_name_exists(self, collection, node):
+        existing = collection.get(node.funcname)
+        collection[node.funcname] = node
+        if existing is not None and \
+            existing is not node and \
+            (node.is_block or existing.is_block):
+            raise exceptions.CompileException(
+                    "%%def or %%block named '%s' already "
+                    "exists in this template." % 
+                    node.funcname, **node.exception_kwargs)
+
     def visitDefTag(self, node):
-        if node.is_root():
-            self.topleveldefs[node.name] = node
+        if node.is_root() and not node.is_anonymous:
+            self._check_name_exists(self.topleveldefs, node)
         elif node is not self.node:
-            self.closuredefs[node.name] = node
+            self._check_name_exists(self.closuredefs, node)
 
         for ident in node.undeclared_identifiers():
             if ident != 'context' and ident not in self.declared.union(self.locally_declared):
@@ -951,7 +1000,30 @@ class _Identifiers(object):
                 self.argument_declared.add(ident)
             for n in node.nodes:
                 n.accept_visitor(self)
- 
+
+    def visitBlockTag(self, node):
+        if node is not self.node and \
+            not node.is_anonymous:
+
+            if isinstance(self.node, parsetree.DefTag):
+                raise exceptions.CompileException(
+                        "Named block '%s' not allowed inside of def '%s'" 
+                        % (node.name, self.node.name), **node.exception_kwargs)
+            elif isinstance(self.node, (parsetree.CallTag, parsetree.CallNamespaceTag)):
+                raise exceptions.CompileException(
+                        "Named block '%s' not allowed inside of <%%call> tag" 
+                        % (node.name, ), **node.exception_kwargs)
+
+        if not node.is_anonymous:
+            self._check_name_exists(self.topleveldefs, node)
+            self.undeclared.add(node.funcname)
+        elif node is not self.node:
+            self._check_name_exists(self.closuredefs, node)
+        for ident in node.declared_identifiers():
+            self.argument_declared.add(ident)
+        for n in node.nodes:
+            n.accept_visitor(self)
+
     def visitIncludeTag(self, node):
         self.check_declared(node)
  

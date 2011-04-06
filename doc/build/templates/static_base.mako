@@ -5,8 +5,8 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ${metatags and metatags or ''}
-        <title>${capture(self.show_title)|util.striptags} &mdash; ${docstitle|h}</title>
-        ${self.headers()}
+        <title><%block name="show_title"/> &mdash; ${docstitle|h}</title>
+        <%block name="headers"/>
     </head>
     <body>
         ${next.body()}

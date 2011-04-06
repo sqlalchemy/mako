@@ -5,7 +5,7 @@ Caching
 ========
 
 Any template or component can be cached using the ``cache``
-argument to the ``<%page>`` or ``<%def>`` directives:
+argument to the ``<%page>``, ``<%def>`` or ``<%block>`` directives:
 
 .. sourcecode:: mako
 
@@ -31,6 +31,14 @@ The caching flag and all its options can be used with the
     <%def name="mycomp" cached="True" cache_timeout="30" cache_type="memory">
         other text
     </%def>
+
+... and equivalently with the ``<%block>`` tag, anonymous or named:
+
+.. sourcecode:: mako
+
+    <%block cached="True" cache_timeout="30" cache_type="memory">
+        other text
+    </%block>
 
 Cache arguments
 ================

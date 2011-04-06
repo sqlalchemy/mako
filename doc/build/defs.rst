@@ -1,12 +1,20 @@
 .. _defs_toplevel:
 
-====
-Defs
-====
+===============
+Defs and Blocks
+===============
 
-``<%def>`` is the single tag used to demarcate any block of text
-and/or code. It exists within generated Python as a callable
-function:
+``<%def>`` and ``<%block>`` are two tags that both demarcate any block of text
+and/or code.   They both exist within generated Python as a callable function, 
+i.e., a Python ``def``.   They differ in their scope and calling semantics.
+Whereas ``<%def>`` provides a construct that is very much like a named Python
+``def``, the ``<%block>`` is more layout oriented.
+
+Using Defs
+==========
+
+The ``<%def>`` tag requires a ``name`` attribute, where the ``name`` references
+a Python function signature:
 
 .. sourcecode:: mako
 
@@ -14,7 +22,7 @@ function:
         hello world
     </%def>
 
-They are normally called as expressions:
+To invoke the ``<%def>``, it is normally called as an expression:
 
 .. sourcecode:: mako
 
@@ -66,7 +74,7 @@ which evaluate to ``UNDEFINED`` if you reference a name that
 does not exist.
 
 Calling defs from Other Files 
-==============================
+-----------------------------
 
 Top level ``<%defs>`` are **exported** by your template's
 module, and can be called from the outside; including from other
@@ -110,7 +118,7 @@ these docs. For more detail and examples, see
 :ref:`namespaces_toplevel`.
 
 Calling defs programmatically
-==============================
+-----------------------------
 
 You can call def's programmatically from any :class:`.Template` object
 using the :meth:`~.Template.get_def()` method, which returns a :class:`.DefTemplate`
@@ -136,7 +144,7 @@ object. This is a :class:`.Template` subclass which the parent
  
 
 Defs within Defs
-================
+----------------
 
 The def model follows regular Python rules for closures.
 Declaring ``<%def>`` inside another ``<%def>`` declares it
@@ -195,7 +203,7 @@ in the expression that tries to render it.
 .. _defs_with_content:
 
 Calling a def with embedded content and/or other defs
-=====================================================
+-----------------------------------------------------
 
 A flip-side to def within def is a def call with content. This
 is where you call a def, and at the same time declare a block of
@@ -432,5 +440,181 @@ with a "custom tag" or tag library in some other system, Mako
 provides via ``<%def>`` tags and plain Python callables which are
 invoked via ``<%namespacename:defname>`` or ``<%call>``.
 
+.. _blocks:
+
+Using Blocks
+============
+
+The ``<%block>`` tag is new as of Mako 0.4.1, and introduces some new twists on the
+``<%def>`` tag which make it more closely tailored towards layout.
+
+An example of a block:
+
+.. sourcecode:: mako
+
+    <html>
+        <body>
+            <%block>
+                this is a block.
+            </%block>
+        </body>
+    </html>
+
+In the above example, we define a simple block.  The block renders its content in the place
+that it's defined.  Since the block is called for us, it doesn't need a name and the above
+is referred to as an **anonymous block**.  So the output of the above template will be:
+
+.. sourcecode:: html
+
+    <html>
+        <body>
+                this is a block.
+        </body>
+    </html>
+
+So in fact the above block has absolutely no effect.   Its usefulness comes when we start
+using modifiers.  Such as, we can apply a filter to our block:
+
+.. sourcecode:: mako
+
+    <html>
+        <body>
+            <%block filter="h">
+                <html>this is some escaped html.</html>
+            </%block>
+        </body>
+    </html>
+
+or perhaps a caching directive:
+
+.. sourcecode:: mako
+
+    <html>
+        <body>
+            <%block cached="True" cache_timeout="60">
+                This content will be cached for 60 seconds.
+            </%block>
+        </body>
+    </html>
+
+Blocks also work in iterations, conditionals, just like defs:
+
+.. sourcecode:: mako
+
+    % if some_condition:
+        <%block>condition is met</%block>
+    % endif
+
+While the block renders at the point it is defined in the template,
+the underlying function is present in the generated Python code only
+once, so there's no issue with placing a block inside of a loop or
+similar. Anonymous blocks are defined as closures in the local
+rendering body, so have access to local variable scope:
+
+.. sourcecode:: mako
+
+    % for i in range(1, 4):
+        <%block>i is ${i}</%block>
+    % endfor
 
 
+Using Named Blocks
+------------------
+
+Possibly the more important area where blocks are useful is when we
+do actually give them names. Named blocks are tailored to behave
+somewhat closely to Jinja2's block tag, in that they define an area
+of a layout which can be overridden by an inheriting template. In
+sharp contrast to the ``<%def>`` tag, the name given to a block is
+global for the entire template regardless of how deeply it's nested:
+
+.. sourcecode:: mako
+
+    <html>
+    <%block name="header">
+        <head>
+            <title>
+                <%block name="title">Title</%block>
+            </title>
+        </head>
+    </%block>
+    <body>
+        ${next.body()}
+    </body>
+    </html>
+
+The above example has two named blocks "``header``" and "``title``", both of which can be referred to 
+by an inheriting template.  A detailed walkthrough of this usage can be found at :ref:`inheritance_toplevel`.
+
+Note above that named blocks don't have any argument declaration the way defs do.   They still implement themselves
+as Python functions, however, so they can be invoked additional times beyond their initial definition:
+
+.. sourcecode:: mako
+
+    <div name="page">
+        <%block name="pagecontrol">
+            <a href="">previous page</a> |
+            <a href="">next page</a>
+        </%block>
+
+        <table>
+            ## some content
+        </table>
+
+        ${pagecontrol()}
+    </div>
+
+The content referenced by ``pagecontrol`` above will be rendered both above and below the ``<table>`` tags.
+
+To keep things sane, named blocks have restrictions that defs do not:
+
+* The ``<%block>`` declaration cannot have any argument signature.
+* The name of a ``<%block>`` can only be defined once in a template - an error is raised if two blocks of the same
+  name occur anywhere in a single template, regardless of nesting.  A similar error is raised if a top level def 
+  shares the same name as that of a block.
+* A named ``<%block>`` cannot be defined within a ``<%def>``, or inside the body of a "call", i.e.
+  ``<%call>`` or ``<%namespacename:defname>`` tag.   Anonymous blocks can, however.
+
+Using page arguments in named blocks
+-------------------------------------
+
+A named block is very much like a top level def. It has a similar
+restriction to these types of defs in that arguments passed to the
+template via the ``<%page>`` tag aren't automatically available.
+Using arguments with the ``<%page>`` tag is described in the section
+:ref:`namespaces_body`, and refers to scenarios such as when the
+``body()`` method of a template is called from an inherited template passing
+arguments, or the template is invoked from an ``<%include>`` tag
+with arguments. To allow a named block to share the same arguments
+passed to the page, the ``args`` attribute can be used:
+
+.. sourcecode:: mako
+
+    <%page args="post"/>
+
+    <a name="${post.title}" />
+
+    <span class="post_prose">
+        <%block name="post_prose" args="post">
+            ${post.content}
+        </%block>
+    </span>
+
+Where above, if the template is called via a directive like
+``<%include file="post.mako" args="post=post" />``, the ``post``
+variable is available both in the main body as well as the
+``post_prose`` block.
+
+Similarly, the ``**pageargs`` variable is present, in named blocks only, 
+for those arguments not explicit in the ``<%page>`` tag:
+
+.. sourcecode:: mako
+
+    <%block name="post_prose">
+        ${pageargs['post'].content}
+    </%block>
+
+The ``args`` attribute is only allowed with named blocks. With
+anonymous blocks, the Python function is always rendered in the same
+scope as the call itself, so anything available directly outside the
+anonymous block is available inside as well.

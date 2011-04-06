@@ -47,7 +47,6 @@ result.
 Expression Escaping
 ===================
 
-
 Mako includes a number of built-in escaping mechanisms,
 including HTML, URI and XML escaping, as well as a "trim"
 function. These escapes can be added to an expression
@@ -300,6 +299,35 @@ with content, which enable packages of defs to be sent as
 arguments to other def calls (not as hard as it sounds). Get the
 full deal on what %def can do in :ref:`defs_toplevel`.
 
+<%block>
+---------
+
+``%block`` is a tag that's new as of Mako 0.4.1.   It's close to 
+a ``%def``, except executes itself immediately in its base-most scope,
+and can also be anonymous (i.e. with no name):
+
+.. sourcecode:: mako
+
+    <%block filter="h">
+        some <html> stuff.
+    </%block>
+
+Inspired by Jinja2 blocks, named blocks offer a syntactically pleasing way 
+to do inheritance:
+
+.. sourcecode:: mako
+
+    <html>
+        <body>
+        <%block name="header">
+            <h2><%block name="title"/></h2>
+        </%block>
+        ${self.body()}
+        </body>
+    </html>
+
+Blocks are introduced in :ref:`blocks` and further described in :ref:`inheritance_toplevel`.
+
 <%namespace>
 -------------
 
@@ -360,7 +388,7 @@ To create custom tags which accept a body, see
 
 The call tag is the "classic" form of a user-defined tag, and is
 roughly equiavlent to the ``<%namespacename:defname>`` syntax
-described above. This tag is also described in `defs_with_content`.
+described above. This tag is also described in :ref:`defs_with_content`.
 
 <%doc>
 ------

@@ -1,4 +1,19 @@
 0.4.1
+- New tag: <%block>.  A variant on <%def> that
+  evaluates its contents in-place.  
+  Can be named or anonymous,
+  the named version is intended for inheritance
+  layouts where any given section can be 
+  surrounded by the <%block> tag in order for
+  it to become overrideable by inheriting
+  templates, without the need to specify a
+  top-level <%def> plus explicit call.
+  Modified scoping and argument rules as well as a 
+  more strictly enforced usage scheme make it ideal 
+  for this purpose without at all replacing most 
+  other things that defs are still good for.  
+  Lots of new docs. [ticket:164]
+
 - a slight adjustment to the "highlight" logic
   for generating template bound stacktraces.
   Will stick to known template source lines
