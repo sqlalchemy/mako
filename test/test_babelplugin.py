@@ -31,12 +31,14 @@ class ExtractMakoTestCase(TemplateTest):
              (41, '_', u'Goodbye', [u'TRANSLATOR: Good bye']),
              (44, '_', u'Babel', []),
              (45, 'ungettext', (u'hella', u'hellas', None), []),
-             (62, '_', u'Goodbye, really!', [u'TRANSLATOR: HTML comment']),
-             (65, '_', u'P.S. byebye', []),
-             (71, '_', u'Top', []), 
-             (77, '_', u'foo', []),
-             (77, '_', u'baz', []),
-             (79, '_', u'bar', [])
+            (62, '_', u'The', [u'TRANSLATOR: Ensure so and', u'so, thanks']),
+            (62, 'ungettext', (u'bunny', u'bunnies', None), []),
+            (68, '_', u'Goodbye, really!', [u'TRANSLATOR: HTML comment']),
+            (71, '_', u'P.S. byebye', []),
+            (77, '_', u'Top', []),
+            (83, '_', u'foo', []),
+            (83, '_', u'baz', []),
+            (85, '_', u'bar', [])
              ]
         self.assertEqual(expected, messages)
 

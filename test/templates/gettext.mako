@@ -56,6 +56,12 @@ top = gettext('Begin')
   <!-- ${caller.body()} -->
 </%def>
 
+<%block name="foo">
+    ## TRANSLATOR: Ensure so and
+    ## so, thanks
+      ${_('The')} fuzzy ${ungettext('bunny', 'bunnies', random.randint(1, 2))}
+</%block>
+
 <%call expr="comment">
   P.S.
   ## TRANSLATOR: HTML comment

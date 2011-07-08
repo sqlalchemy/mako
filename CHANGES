@@ -1,3 +1,7 @@
+0.4.2
+- Fixed the babel plugin to accommodate <%block>
+  [ticket:169]
+
 0.4.1
 - New tag: <%block>.  A variant on <%def> that
   evaluates its contents in-place.  

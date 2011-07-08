@@ -68,6 +68,9 @@ def extract_nodes(nodes, keywords, comment_tags, options):
         if isinstance(node, parsetree.DefTag):
             code = node.function_decl.code
             child_nodes = node.nodes
+        elif isinstance(node, parsetree.BlockTag):
+            code = node.body_decl.code
+            child_nodes = node.nodes
         elif isinstance(node, parsetree.CallTag):
             code = node.code.code
             child_nodes = node.nodes
