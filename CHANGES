@@ -1,4 +1,10 @@
 0.4.2
+- Fixed bug regarding <%call>/def calls w/ content
+  whereby the identity of the "caller" callable
+  inside the <%def> would be corrupted by the 
+  presence of another <%call> in the same block.  
+  [ticket:170]
+
 - Fixed the babel plugin to accommodate <%block>
   [ticket:169]
 

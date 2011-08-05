@@ -847,10 +847,10 @@ class _GenerateRenderMethod(object):
 
         self.printer.writelines(
             # get local reference to current caller, if any
-            "caller = context.caller_stack._get_caller()",
+            "__M_caller = context.caller_stack._get_caller()",
             # push on caller for nested call
             "context.caller_stack.nextcaller = "
-                "runtime.Namespace('caller', context, callables=ccall(caller))",
+                "runtime.Namespace('caller', context, callables=ccall(__M_caller))",
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(

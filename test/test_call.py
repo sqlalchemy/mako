@@ -279,6 +279,63 @@ class CallTest(TemplateTest):
         ''')
         assert flatten_result(template.render()) == "foo"
  
+    def test_nested_call_4(self):
+        base = """
+        <%def name="A()">
+        A_def
+        ${caller.body()}
+        </%def>
+
+        <%def name="B()">
+        B_def
+        ${caller.body()}
+        </%def>
+        """
+
+        template = Template(base + """
+        <%def name="C()">
+         C_def
+         <%self:B>
+           <%self:A>
+              A_body
+           </%self:A>
+            B_body
+           ${caller.body()}
+         </%self:B>
+        </%def>
+
+        <%self:C>
+        C_body
+        </%self:C>
+        """)
+
+        eq_(
+            flatten_result(template.render()),
+            "C_def B_def A_def A_body B_body C_body"
+        )
+
+        template = Template(base + """
+        <%def name="C()">
+         C_def
+         <%self:B>
+            B_body
+           ${caller.body()}
+           <%self:A>
+              A_body
+           </%self:A>
+         </%self:B>
+        </%def>
+
+        <%self:C>
+        C_body
+        </%self:C>
+        """)
+
+        eq_(
+            flatten_result(template.render()),
+            "C_def B_def B_body C_body A_def A_body"
+        )
+
     def test_chained_call_in_nested(self):
         t = Template("""
             <%def name="embedded()">
