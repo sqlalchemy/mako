@@ -186,6 +186,12 @@ div.admonition .admonition-title {
     padding:10px 0px 10px 0px;
 }
 
+/* take out sphinx/pygments putting some kind
+of green background here... */
+.highlight {
+  background:none;
+}
+
 pre {
 	background-color: #f0f0f0;	
 	border: solid 1px #ccc;
