@@ -9,7 +9,7 @@ import os
 from util import flatten_result, result_lines
 import codecs
 from test import TemplateTest, eq_, template_base, module_base, \
-    skip_if, assert_raises
+    skip_if, assert_raises, assert_raises_message
 
 class EncodingTest(TemplateTest):
     def test_unicode(self):
@@ -918,8 +918,25 @@ class FilenameToURITest(TemplateTest):
         finally:
             os.path = current_path
  
- 
- 
+    def test_dont_accept_relative_outside_of_root(self):
+        assert_raises_message(
+            exceptions.TemplateLookupException,
+            "Template uri \"../../foo.html\" is invalid - it "
+            "cannot be relative outside of the root path",
+            Template, "test", uri="../../foo.html", 
+        )
+
+        assert_raises_message(
+            exceptions.TemplateLookupException,
+            "Template uri \"/../../foo.html\" is invalid - it "
+            "cannot be relative outside of the root path",
+            Template, "test", uri="/../../foo.html", 
+        )
+
+        # normalizes in the root is OK
+        t = Template("test", uri="foo/bar/../../foo.html")
+        eq_(t.uri, "foo/bar/../../foo.html")
+
 class ModuleTemplateTest(TemplateTest):
     def test_module_roundtrip(self):
         lookup = TemplateLookup()

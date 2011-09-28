@@ -1,3 +1,22 @@
+0.5
+- A Template is explicitly disallowed
+  from having a url that normalizes to relative outside
+  of the root.   That is, if the Lookup is based 
+  at /home/mytemplates, an include that would place
+  the ultimate template at 
+  /home/mytemplates/../some_other_directory,
+  i.e. outside of /home/mytemplates,
+  is disallowed.   This usage was never intended
+  despite the lack of an explicit check.
+  The main issue this causes
+  is that module files can be written outside 
+  of the module root (or raise an error, if file perms aren't
+  set up), and can also lead to the same template being 
+  cached in the lookup under multiple, relative roots. 
+  TemplateLookup instead has always supported multiple 
+  file roots for this purpose.
+  [ticket:174]
+
 0.4.2
 - Fixed bug regarding <%call>/def calls w/ content
   whereby the identity of the "caller" callable

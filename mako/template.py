@@ -163,7 +163,17 @@ class Template(object):
         else:
             self.module_id = "memory:" + hex(id(self))
             self.uri = self.module_id
- 
+
+        u_norm = self.uri
+        if u_norm.startswith("/"):
+            u_norm = u_norm[1:]
+        u_norm = os.path.normpath(u_norm)
+        if u_norm.startswith(".."):
+            raise exceptions.TemplateLookupException(
+                    "Template uri \"%s\" is invalid - "
+                    "it cannot be relative outside "
+                    "of the root path." % self.uri)
+
         self.input_encoding = input_encoding
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
@@ -203,18 +213,14 @@ class Template(object):
             if module_filename is not None:
                 path = module_filename
             elif module_directory is not None:
-                u = self.uri
-                if u[0] == '/':
-                    u = u[1:]
                 path = os.path.abspath(
                         os.path.join(
                             os.path.normpath(module_directory), 
-                            os.path.normpath(u) + ".py"
+                            u_norm + ".py"
                             )
                         )
             else:
                 path = None
- 
             module = self._compile_from_file(path, filename)
         else:
             raise exceptions.RuntimeException(

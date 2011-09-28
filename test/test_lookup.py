@@ -1,9 +1,11 @@
 from mako.template import Template
-from mako import lookup, exceptions
+from mako import lookup, exceptions, runtime
+from mako.util import FastEncodingBuffer
 from util import flatten_result, result_lines
 import unittest
+import os
 
-from test import TemplateTest, template_base, module_base
+from test import TemplateTest, template_base, module_base, assert_raises_message
 
 tl = lookup.TemplateLookup(directories=[template_base])
 class LookupTest(unittest.TestCase):
@@ -73,4 +75,30 @@ class LookupTest(unittest.TestCase):
             tl.get_template, "foo"
         )
         assert f.uri not in tl._collection
+
+    def test_dont_accept_relative_outside_of_root(self):
+        """test the mechanics of an include where 
+        the include goes outside of the path"""
+        tl = lookup.TemplateLookup(directories=[os.path.join(template_base, "subdir")])
+        index = tl.get_template("index.html")
+
+        ctx = runtime.Context(FastEncodingBuffer())
+        ctx._with_template=index
+
+        assert_raises_message(
+            exceptions.TemplateLookupException,
+           "Template uri \"../index.html\" is invalid - it "
+            "cannot be relative outside of the root path",
+            runtime._lookup_template, ctx, "../index.html", index.uri
+        )
+
+        assert_raises_message(
+            exceptions.TemplateLookupException,
+           "Template uri \"../othersubdir/foo.html\" is invalid - it "
+            "cannot be relative outside of the root path",
+            runtime._lookup_template, ctx, "../othersubdir/foo.html", index.uri
+        )
+
+        # this is OK since the .. cancels out
+        t = runtime._lookup_template(ctx, "foo/../index.html", index.uri)
 

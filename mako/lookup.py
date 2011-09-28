@@ -204,7 +204,7 @@ class TemplateLookup(TemplateCollection):
         Note the "relativeto" argument is not supported here at the moment.
  
         """
- 
+
         try:
             if self.filesystem_checks:
                 return self._check(uri, self._collection[uri])
