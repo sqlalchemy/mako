@@ -11,7 +11,7 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters, exceptions
 
-MAGIC_NUMBER = 6
+MAGIC_NUMBER = 7
 
 def compile(node, 
                 uri, 
@@ -176,12 +176,10 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("_magic_number = %r" % MAGIC_NUMBER)
         self.printer.writeline("_modified_time = %r" % time.time())
         self.printer.writeline(
-                            "_template_filename=%r" % self.compiler.filename)
-        self.printer.writeline("_template_uri=%r" % self.compiler.uri)
+                            "_template_filename = %r" % self.compiler.filename)
+        self.printer.writeline("_template_uri = %r" % self.compiler.uri)
         self.printer.writeline(
-                    "_template_cache=cache.Cache(__name__, _modified_time)")
-        self.printer.writeline(
-                    "_source_encoding=%r" % self.compiler.source_encoding)
+                    "_source_encoding = %r" % self.compiler.source_encoding)
         if self.compiler.imports:
             buf = ''
             for imp in self.compiler.imports:
@@ -599,24 +597,26 @@ class _GenerateRenderMethod(object):
  
         self.printer.writeline("__M_%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
-        cacheargs = {}
-        for arg in (
-                        ('cache_type', 'type'), ('cache_dir', 'data_dir'), 
-                        ('cache_timeout', 'expiretime'), ('cache_url', 'url')):
-            val = node_or_pagetag.parsed_attributes.get(arg[0], None)
-            if val is not None:
-                if arg[1] == 'expiretime':
-                    cacheargs[arg[1]] = int(eval(val))
-                else:
-                    cacheargs[arg[1]] = val
-            else:
-                if self.compiler.pagetag is not None:
-                    val = self.compiler.pagetag.parsed_attributes.get(arg[0], None)
-                    if val is not None:
-                        if arg[1] == 'expiretime':
-                            cacheargs[arg[1]] == int(eval(val))
-                        else:
-                            cacheargs[arg[1]] = val
+
+        cache_args = {}
+        if self.compiler.pagetag is not None:
+            cache_args.update(
+                (
+                    pa[6:], 
+                    self.compiler.pagetag.parsed_attributes[pa]
+                ) 
+                for pa in self.compiler.pagetag.parsed_attributes 
+                if pa.startswith('cache_') and pa != 'cache_key'
+            )
+        cache_args.update(
+            (
+                pa[6:], 
+                node_or_pagetag.parsed_attributes[pa]
+            ) for pa in node_or_pagetag.parsed_attributes 
+            if pa.startswith('cache_') and pa != 'cache_key'
+        )
+        if 'timeout' in cache_args:
+            cache_args['timeout'] = int(eval(cache_args['timeout']))
  
         self.printer.writeline("def %s(%s):" % (name, ','.join(args)))
  
@@ -633,20 +633,22 @@ class _GenerateRenderMethod(object):
                         )
         if buffered:
             s = "context.get('local')."\
-                "get_cached(%s, defname=%r, %screatefunc=lambda:__M_%s(%s))" % \
-                            (cachekey, name, 
-                            ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), 
-                            name, ','.join(pass_args))
+                "cache.get_and_replace(%s, lambda:__M_%s(%s),  %s__M_defname=%r)" % \
+                            (cachekey, name, ','.join(pass_args), 
+                            ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
+                            name
+                            )
             # apply buffer_filters
             s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
             self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
                     "__M_writer(context.get('local')."
-                    "get_cached(%s, defname=%r, %screatefunc=lambda:__M_%s(%s)))" % 
-                    (cachekey, name, 
-                    ''.join(["%s=%s, " % (k,v) for k, v in cacheargs.iteritems()]), 
-                    name, ','.join(pass_args)),
+                    "cache.get_and_replace(%s, lambda:__M_%s(%s), %s__M_defname=%r))" % 
+                    (cachekey, name, ','.join(pass_args), 
+                    ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
+                    name, 
+                    ),
                     "return ''",
                 None
             )

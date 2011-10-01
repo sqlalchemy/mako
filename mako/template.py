@@ -8,7 +8,7 @@
 template strings, as well as template runtime operations."""
 
 from mako.lexer import Lexer
-from mako import runtime, util, exceptions, codegen
+from mako import runtime, util, exceptions, codegen, cache
 import imp, os, re, shutil, stat, sys, tempfile, time, types, weakref
 
  
@@ -47,18 +47,24 @@ class Template(object):
      through to the buffer.   New in 0.4 to provide the same
      behavior as that of the previous series.  This flag is forced
      to True if disable_unicode is also configured.
-
-    :param cache_dir: Filesystem directory where cache files will be
-     placed.  See :ref:`caching_toplevel`.
+    
+    :param cache_args: Dictionary of cache configuration arguments that 
+     will be passed to the :class:`.CacheImpl`.   See :ref:`caching_toplevel`.
+     
+    :param cache_dir: Deprecated; use the 'dir' argument in the
+     cache_args dictionary.  See :ref:`caching_toplevel`.
 
     :param cache_enabled: Boolean flag which enables caching of this
      template.  See :ref:`caching_toplevel`.
 
-    :param cache_type: Type of Beaker caching to be applied to the 
-     template. See :ref:`caching_toplevel`.
+    :param cache_impl: String name of a :class:`.CacheImpl` caching
+     implementation to use.   Defaults to 'beaker'.
+
+    :param cache_type: Deprecated; use the 'type' argument in the 
+     cache_args dictionary.  See :ref:`caching_toplevel`.
  
-    :param cache_url: URL of a memcached server with which to use
-     for caching.  See :ref:`caching_toplevel`.
+    :param cache_url: Deprecated; use the 'URL' argument in the
+     cache_args dictionary.  See :ref:`caching_toplevel`.
 
     :param default_filters: List of string filter names that will
      be applied to all expressions.  See :ref:`filtering_default_filters`.
@@ -139,6 +145,9 @@ class Template(object):
                     output_encoding=None, 
                     encoding_errors='strict', 
                     module_directory=None, 
+                    cache_args=None,
+                    cache_impl='beaker',
+                    cache_enabled=True,
                     cache_type=None, 
                     cache_dir=None, 
                     cache_url=None, 
@@ -150,8 +159,7 @@ class Template(object):
                     buffer_filters=(), 
                     strict_undefined=False,
                     imports=None, 
-                    preprocessor=None, 
-                    cache_enabled=True):
+                    preprocessor=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -232,11 +240,32 @@ class Template(object):
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
         self.lookup = lookup
-        self.cache_type = cache_type
-        self.cache_dir = cache_dir
-        self.cache_url = cache_url
+
+        self.module_directory = module_directory
+
+        self._setup_cache_args(
+            cache_impl, cache_enabled, cache_args,
+            cache_type, cache_dir, cache_url
+        )
+
+    def _setup_cache_args(self, 
+                cache_impl, cache_enabled, cache_args,
+                cache_type, cache_dir, cache_url):
+        self.cache_impl = cache_impl
         self.cache_enabled = cache_enabled
- 
+        if cache_args:
+            self.cache_args = cache_args
+        else:
+            self.cache_args = {}
+
+        # transfer deprecated cache_* args
+        if cache_type:
+            self.cache_args['type'] = cache_type
+        if cache_dir:
+            self.cache_args['dir'] = cache_dir
+        if cache_url:
+            self.cache_args['url'] = cache_url
+
     def _compile_from_file(self, path, filename):
         if path is not None:
             util.verify_directory(os.path.dirname(path))
@@ -283,9 +312,19 @@ class Template(object):
  
         return _get_module_info_from_callable(self.callable_).code
  
-    @property
+    @util.memoized_property
     def cache(self):
-        return self.module._template_cache
+        return cache.Cache(self)
+
+    @property
+    def cache_dir(self):
+        return self.cache_args['dir']
+    @property
+    def cache_url(self):
+        return self.cache_args['url']
+    @property
+    def cache_type(self):
+        return self.cache_args['type']
  
     def render(self, *args, **data):
         """Render the output of this template as a string.
@@ -369,10 +408,12 @@ class ModuleTemplate(Template):
                         format_exceptions=False,
                         error_handler=None, 
                         lookup=None, 
-                        cache_type=None,
+                        cache_args=None,
+                        cache_impl='beaker',
+                        cache_enabled=True,
+                        cache_type=None, 
                         cache_dir=None, 
                         cache_url=None, 
-                        cache_enabled=True
     ):
         self.module_id = re.sub(r'\W', "_", module._template_uri)
         self.uri = module._template_uri
@@ -404,10 +445,10 @@ class ModuleTemplate(Template):
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
         self.lookup = lookup
-        self.cache_type = cache_type
-        self.cache_dir = cache_dir
-        self.cache_url = cache_url
-        self.cache_enabled = cache_enabled
+        self._setup_cache_args(
+            cache_impl, cache_enabled, cache_args,
+            cache_type, cache_dir, cache_url
+        )
  
 class DefTemplate(Template):
     """a Template which represents a callable def in a parent

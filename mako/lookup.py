@@ -151,9 +151,14 @@ class TemplateLookup(TemplateCollection):
                         bytestring_passthrough=False,
                         output_encoding=None, 
                         encoding_errors='strict', 
+
+                        cache_args=None,
+                        cache_impl='beaker',
+                        cache_enabled=True,
                         cache_type=None, 
-                        cache_dir=None, cache_url=None,
-                        cache_enabled=True, 
+                        cache_dir=None, 
+                        cache_url=None, 
+
                         modulename_callable=None, 
                         default_filters=None, 
                         buffer_filters=(), 
@@ -170,6 +175,16 @@ class TemplateLookup(TemplateCollection):
         self.filesystem_checks = filesystem_checks
         self.collection_size = collection_size
 
+        if cache_args is None:
+            cache_args = {}
+        # transfer deprecated cache_* args
+        if cache_dir:
+            cache_args.setdefault('dir', cache_dir)
+        if cache_url:
+            cache_args.setdefault('url', cache_url)
+        if cache_type:
+            cache_args.setdefault('type', cache_type)
+
         self.template_args = {
             'format_exceptions':format_exceptions, 
             'error_handler':error_handler, 
@@ -179,9 +194,7 @@ class TemplateLookup(TemplateCollection):
             'encoding_errors':encoding_errors, 
             'input_encoding':input_encoding, 
             'module_directory':module_directory, 
-            'cache_type':cache_type, 
-            'cache_dir':cache_dir or module_directory, 
-            'cache_url':cache_url, 
+            'cache_args':cache_args,
             'cache_enabled':cache_enabled, 
             'default_filters':default_filters, 
             'buffer_filters':buffer_filters, 

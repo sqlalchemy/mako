@@ -389,11 +389,14 @@ class DefTag(Tag):
     __keyword__ = 'def'
 
     def __init__(self, keyword, attributes, **kwargs):
+        expressions = ['buffered', 'cached'] + [
+                c for c in attributes if c.startswith('cache_')]
+
+
         super(DefTag, self).__init__(
                 keyword, 
                 attributes, 
-                ('buffered', 'cached', 'cache_key', 'cache_timeout', 
-                    'cache_type', 'cache_dir', 'cache_url'), 
+                expressions, 
                 ('name','filter', 'decorator'), 
                 ('name',), 
                 **kwargs)
@@ -437,11 +440,13 @@ class BlockTag(Tag):
     __keyword__ = 'block'
 
     def __init__(self, keyword, attributes, **kwargs):
+        expressions = ['buffered', 'cached', 'args'] + [
+                 c for c in attributes if c.startswith('cache_')]
+
         super(BlockTag, self).__init__(
                 keyword, 
                 attributes, 
-                ('buffered', 'cached', 'cache_key', 'cache_timeout', 
-                    'cache_type', 'cache_dir', 'cache_url', 'args'), 
+                expressions,
                 ('name','filter', 'decorator'), 
                 (), 
                 **kwargs)
@@ -544,12 +549,13 @@ class PageTag(Tag):
     __keyword__ = 'page'
 
     def __init__(self, keyword, attributes, **kwargs):
+        expressions =   ['cached', 'args', 'expression_filter'] + [
+                    c for c in attributes if c.startswith('cache_')]
+
         super(PageTag, self).__init__(
                 keyword, 
                 attributes, 
-                ('cached', 'cache_key', 'cache_timeout', 
-                'cache_type', 'cache_dir', 'cache_url', 
-                'args', 'expression_filter'), 
+                expressions,
                 (), 
                 (), 
                 **kwargs)
