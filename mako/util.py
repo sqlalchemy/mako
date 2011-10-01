@@ -64,7 +64,27 @@ if py24:
 else:
     def exception_name(exc):
         return exc.__class__.__name__
- 
+
+def get_pkg_resources_distribution():
+    """Return a pkg_resources.Distribution for Mako.
+    
+    Pulls all kinds of strings to ensure one is 
+    available even if Mako is not installed.
+    
+    """
+    import pkg_resources
+    try:
+        dist = pkg_resources.get_distribution("mako")
+    except:
+        import mako
+        dist = pkg_resources.Distribution(
+                    project_name="mako", location="mako", version=mako.__version__
+                )
+        dist.activate()
+        pkg_resources.working_set.add(dist)
+        dist = pkg_resources.get_distribution("mako")
+    return dist
+
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""
  

@@ -4,7 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from mako import exceptions
+from mako import exceptions, util
 
 
 def register_plugin(name, modulename, attrname):
@@ -15,7 +15,7 @@ def register_plugin(name, modulename, attrname):
 
     """
     import pkg_resources
-    dist = pkg_resources.get_distribution("mako")
+    dist = util.get_pkg_resources_distribution()
     entry_map = dist.get_entry_map()
     if 'mako.cache' not in entry_map:
         entry_map['mako.cache'] = cache_map = {}
@@ -24,7 +24,12 @@ def register_plugin(name, modulename, attrname):
     cache_map[name] = \
             pkg_resources.EntryPoint.parse('%s = %s:%s' % (name, modulename, attrname), dist=dist)
 
-register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
+try:
+    register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
+except ImportError:
+    # in case pkg_resources totally not installed
+    pass
+
 
 class Cache(object):
     """Represents a data content cache made available to the module
@@ -82,7 +87,16 @@ class Cache(object):
         self._def_regions = {}
 
     def _load_impl(self, name):
-        import pkg_resources
+        try:
+            import pkg_resources
+        except ImportError:
+            # hardcode down to Beaker if the environment
+            # doesn't have pkg_resources installed
+            if name == 'beaker':
+                from mako.ext.beaker_cache import BeakerCacheImpl
+                return BeakerCacheImpl(self)
+            else:
+                raise
         for impl in pkg_resources.iter_entry_points(
                                 "mako.cache", 
                                 name):
