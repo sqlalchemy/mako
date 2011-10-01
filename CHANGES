@@ -1,3 +1,29 @@
+0.5.1
+- Template caching has been converted into a plugin
+  system, whereby the usage of Beaker is just the
+  default plugin.   Template and TemplateLookup
+  now accept a string "cache_impl" parameter which
+  refers to the name of a cache plugin, defaulting
+  to the name 'beaker'.  New plugins can be 
+  registered as pkg_resources entrypoints under
+  the group "mako.cache", or registered directly
+  using mako.cache.register_plugin().  The
+  core plugin is the mako.cache.CacheImpl
+  class.
+
+- The <%def>, <%block> and <%page> tags now accept
+  any argument named "cache_*", and the key
+  minus the "cache_" prefix will be passed as keyword
+  arguments to the CacheImpl methods.
+
+- Template and TemplateLookup now accept an argument 
+  cache_args, which refers to a dictionary containing
+  cache parameters.  The cache_dir, cache_url, cache_type, 
+  cache_timeout arguments are deprecated (will probably 
+  never be removed, however) and can be passed
+  now as cache_args={'url':<some url>, 'type':'memcached',
+  'timeout':50, 'dir':'/path/to/some/directory'}
+
 0.5
 - A Template is explicitly disallowed
   from having a url that normalizes to relative outside

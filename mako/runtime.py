@@ -330,27 +330,13 @@ class Namespace(object):
         by ``<%page>``.
  
         """
- 
-        if self.template:
-            if not self.template.cache_enabled:
-                createfunc = kwargs.get('createfunc', None)
-                if createfunc:
-                    return createfunc()
-                else:
-                    return None
- 
-            if self.template.cache_dir:
-                kwargs.setdefault('data_dir', self.template.cache_dir)
-            if self.template.cache_type:
-                kwargs.setdefault('type', self.template.cache_type)
-            if self.template.cache_url:
-                kwargs.setdefault('url', self.template.cache_url)
+
         return self.cache.get(key, **kwargs)
  
     @property
     def cache(self):
         """Return the :class:`.Cache` object referenced 
-           by this :class:`.Namespace` object's
+        by this :class:`.Namespace` object's
         :class:`.Template`.
  
         """
