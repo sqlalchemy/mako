@@ -11,7 +11,9 @@ def register_plugin(name, modulename, attrname):
     """Register the given :class:`.CacheImpl` under the given 
     name.
 
-    This is an alternative to using a setuptools-installed entrypoint.
+    This is an alternative to using a setuptools-installed entrypoint,
+    and will work even if Mako isn't installed.  ``pkg_resources`` is
+    required, however.
 
     """
     import pkg_resources
@@ -22,7 +24,9 @@ def register_plugin(name, modulename, attrname):
     else:
         cache_map = entry_map['mako.cache']
     cache_map[name] = \
-            pkg_resources.EntryPoint.parse('%s = %s:%s' % (name, modulename, attrname), dist=dist)
+            pkg_resources.EntryPoint.parse(
+                            '%s = %s:%s' % 
+                            (name, modulename, attrname), dist=dist)
 
 try:
     register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
