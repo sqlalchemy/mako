@@ -6,33 +6,10 @@
 
 from mako import exceptions, util
 
+_cache_plugins = util.PluginLoader("mako.cache")
 
-def register_plugin(name, modulename, attrname):
-    """Register the given :class:`.CacheImpl` under the given 
-    name.
-
-    This is an alternative to using a setuptools-installed entrypoint,
-    and will work even if Mako isn't installed.  ``pkg_resources`` is
-    required, however.
-
-    """
-    import pkg_resources
-    dist = util.get_pkg_resources_distribution()
-    entry_map = dist.get_entry_map()
-    if 'mako.cache' not in entry_map:
-        entry_map['mako.cache'] = cache_map = {}
-    else:
-        cache_map = entry_map['mako.cache']
-    cache_map[name] = \
-            pkg_resources.EntryPoint.parse(
-                            '%s = %s:%s' % 
-                            (name, modulename, attrname), dist=dist)
-
-try:
-    register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
-except ImportError:
-    # in case pkg_resources totally not installed
-    pass
+register_plugin = _cache_plugins.register
+register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
 
 
 class Cache(object):
@@ -91,24 +68,7 @@ class Cache(object):
         self._def_regions = {}
 
     def _load_impl(self, name):
-        try:
-            import pkg_resources
-        except ImportError:
-            # hardcode down to Beaker if the environment
-            # doesn't have pkg_resources installed
-            if name == 'beaker':
-                from mako.ext.beaker_cache import BeakerCacheImpl
-                return BeakerCacheImpl(self)
-            else:
-                raise
-        for impl in pkg_resources.iter_entry_points(
-                                "mako.cache", 
-                                name):
-            return impl.load()(self)
-        else:
-            raise exceptions.RuntimeException(
-                    "Cache implementation '%s' not present" % 
-                    name)
+        return _cache_plugins.load(name)(self)
 
     def get_and_replace(self, key, creation_function, **kw):
         """Retrieve a value from the cache, using the given creation function 
@@ -117,7 +77,9 @@ class Cache(object):
         if not self.template.cache_enabled:
             return creation_function()
 
-        return self.impl.get_and_replace(key, creation_function, **self._get_cache_kw(kw))
+        return self.impl.get_and_replace(key, 
+                        creation_function, 
+                        **self._get_cache_kw(kw))
 
     def put(self, key, value, **kw):
         """Place a value in the cache.

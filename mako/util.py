@@ -65,37 +65,33 @@ else:
     def exception_name(exc):
         return exc.__class__.__name__
 
-def get_pkg_resources_distribution():
-    """Return a pkg_resources.Distribution for Mako.
-    
-    Creates a fake distribution if Mako is not installed,
-    so that tests/apps/etc. can use register_plugin.
-    
-    """
-    import pkg_resources
-    try:
-        # would like to make this >= 0.5.1, but
-        # pkg_resources won't install us if another 
-        # mako already present as no, no, you're now 
-        # a "hidden distro" (not documented,
-        # just in their source code, no warning/exception,
-        # sure seems like silent failure to me...)
-        return pkg_resources.get_distribution("Mako")
-    except:
-        # make a "fake" Distribution, which we very much 
-        # hope makes it so something global is returned
-        # when we say get_distribution() so we can hang
-        # our plugins in the same way as when we're 
-        # installed.
-        import mako
-        dist = pkg_resources.Distribution(
-                    pkg_resources.normalize_path(
-                        os.path.dirname(os.path.dirname(mako.__file__))),
-                    project_name="Mako", 
-                    version=mako.__version__,
-                )
-        pkg_resources.working_set.add(dist)
-        return pkg_resources.get_distribution("Mako")
+class PluginLoader(object):
+    def __init__(self, group):
+        self.group = group
+        self.impls = {}
+
+    def load(self, name):
+        if name in self.impls:
+             return self.impls[name]()
+        else:
+            import pkg_resources
+            for impl in pkg_resources.iter_entry_points(
+                                self.group, 
+                                name):
+                self.impls[name] = impl.load
+                return impl.load()
+            else:
+                raise exceptions.RuntimeException(
+                        "Can't load plugin %s %s" % 
+                        (self.group, name))
+
+    def register(self, name, modulepath, objname):
+        def load():
+            mod = __import__(modulepath)
+            for token in modulepath.split(".")[1:]:
+                mod = getattr(mod, token)
+            return getattr(mod, objname)
+        self.impls[name] = load
 
 def verify_directory(dir):
     """create and/or verify a filesystem directory."""
