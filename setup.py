@@ -34,6 +34,8 @@ ties to Python calling and scoping semantics.
       'Intended Audience :: Developers',
       'Programming Language :: Python',
       'Programming Language :: Python :: 3',
+      "Programming Language :: Python :: Implementation :: CPython",
+      "Programming Language :: Python :: Implementation :: PyPy",
       'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
       ],
       keywords='wsgi myghty mako',
