@@ -7,12 +7,16 @@ The Mako Runtime Environment
 This section describes a little bit about the objects and
 built-in functions that are available in templates.
 
+.. _context:
+
 Context
 =======
 
 The :class:`.Context` is the central object that is created when
 a template is first executed, and is responsible for handling
-all communication with the outside world. This includes two
+all communication with the outside world.  Within the template
+environment, it is available via the name ``context``.  The :class:`.Context`
+includes two
 major components, one of which is the output buffer, which is a
 file-like object such as Python's ``StringIO`` or similar, and
 the other a dictionary of variables that can be freely
@@ -24,8 +28,9 @@ The Buffer
 ----------
 
 The buffer is stored within the :class:`.Context`, and writing
-to it is achieved by calling :meth:`.Context.write`. You usually
-don't need to care about this as all text within a template, as
+to it is achieved by calling the :meth:`~.Context.write` method -
+in a template this looks like ``context.write('some string')``.
+You usually don't need to care about this, as all text within a template, as
 well as all expressions provided by ``${}``, automatically send
 everything to this method. The cases you might want to be aware
 of its existence are if you are dealing with various
@@ -44,7 +49,7 @@ The actual buffer may or may not be the original buffer sent to
 the :class:`.Context` object, as various filtering/caching
 scenarios may "push" a new buffer onto the context's underlying
 buffer stack. For this reason, just stick with
-:meth:`.Context.write` and content will always go to the topmost
+``context.write()`` and content will always go to the topmost
 buffer.
 
 Context Variables
@@ -192,6 +197,8 @@ in the next section, :ref:`namespaces_toplevel`. Also, most of
 these names other than :class:`.Context` and ``UNDEFINED`` are
 also present *within* the :class:`.Context` itself.
 
+* ``context`` - this is the :class:`.Context` object, introduced
+  at :ref:`context`.
 * ``local`` - the namespace of the current template, described
   in :ref:`namespaces_builtin`.
 * ``self`` - the namespace of the topmost template in an

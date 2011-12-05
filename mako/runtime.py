@@ -14,7 +14,7 @@ class Context(object):
     """Provides runtime namespace, output buffer, and various
     callstacks for templates.
  
-     See :ref:`runtime_toplevel` for detail on the usage of
+    See :ref:`runtime_toplevel` for detail on the usage of
     :class:`.Context`.
  
      """
