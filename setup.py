@@ -13,21 +13,13 @@ v = open(os.path.join(os.path.dirname(__file__), 'mako', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
 
+readme = os.path.join(os.path.dirname(__file__), 'README.rst')
+
 setup(name='Mako',
       version=VERSION,
       description="A super-fast templating language that borrows the \
  best ideas from the existing templating languages.",
-      long_description="""\
-Mako is a template library written in Python. It provides a familiar, non-XML 
-syntax which compiles into Python modules for maximum performance. Mako's 
-syntax and API borrows from the best ideas of many others, including Django
-templates, Cheetah, Myghty, and Genshi. Conceptually, Mako is an embedded 
-Python (i.e. Python Server Page) language, which refines the familiar ideas
-of componentized layout and inheritance to produce one of the most 
-straightforward and flexible models available, while also maintaining close 
-ties to Python calling and scoping semantics.
-
-""",
+      long_description=readme,
       classifiers=[
       'Development Status :: 5 - Production/Stable',
       'Environment :: Web Environment',
