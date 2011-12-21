@@ -365,7 +365,7 @@ offers a lot of flexbility in this area, including dynamic
 inheritance, content wrapping, and polymorphic method calls.
 Check it out in :ref:`inheritance_toplevel`.
 
-<%namespacename:defname>
+<%nsname:defname>
 -------------------------
 
 As of Mako 0.2.3, any user-defined "tag" can be created against
