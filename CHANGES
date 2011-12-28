@@ -24,6 +24,10 @@
   now as cache_args={'url':<some url>, 'type':'memcached',
   'timeout':50, 'dir':'/path/to/some/directory'}
 
+- Added "--var name=value" option to the mako-render 
+  script, allows passing of kw to the template from 
+  the command line. [ticket:178]
+
 0.5
 - A Template is explicitly disallowed
   from having a url that normalizes to relative outside
