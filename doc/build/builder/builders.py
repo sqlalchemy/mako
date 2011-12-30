@@ -1,6 +1,7 @@
 from sphinx.application import TemplateBridge
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.highlighting import PygmentsBridge
+from sphinx.jinja2glue import BuiltinTemplateLoader
 from pygments import highlight
 from pygments.lexer import RegexLexer, bygroups, using
 from pygments.token import *
@@ -14,14 +15,17 @@ from mako.ext.pygmentplugin import MakoLexer
 
 class MakoBridge(TemplateBridge):
     def init(self, builder, *args, **kw):
+        self.jinja2_fallback = BuiltinTemplateLoader()
+        self.jinja2_fallback.init(builder, *args, **kw)
+
         self.layout = builder.config.html_context.get('mako_layout', 'html')
- 
+
         self.lookup = TemplateLookup(directories=builder.config.templates_path,
             imports=[
                 "from builder import util"
             ]
         )
- 
+
     def render(self, template, context):
         template = template.replace(".html", ".mako")
         context['prevtopic'] = context.pop('prev', None)
@@ -30,21 +34,12 @@ class MakoBridge(TemplateBridge):
         # sphinx 1.0b2 doesn't seem to be providing _ for some reason...
         context.setdefault('_', lambda x:x)
         return self.lookup.get_template(template).render_unicode(**context)
- 
- 
+
     def render_string(self, template, context):
-        context['prevtopic'] = context.pop('prev', None)
-        context['nexttopic'] = context.pop('next', None)
-        context['mako_layout'] = self.layout == 'html' and 'static_base.mako' or 'site_base.mako'
-        # sphinx 1.0b2 doesn't seem to be providing _ for some reason...
-        context.setdefault('_', lambda x:x)
-        return Template(template, lookup=self.lookup,
-            format_exceptions=True, 
-            imports=[
-                "from builder import util"
-            ]
-        ).render_unicode(**context)
- 
+        # this is used for  .js, .css etc. and we don't have
+        # local copies of that stuff here so use the jinja render.
+        return self.jinja2_fallback.render_string(template, context)
+
 class StripDocTestFilter(Filter):
     def filter(self, lexer, stream):
         for ttype, value in stream:
