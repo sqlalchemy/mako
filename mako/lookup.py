@@ -191,6 +191,7 @@ class TemplateLookup(TemplateCollection):
             'disable_unicode':disable_unicode, 
             'bytestring_passthrough':bytestring_passthrough,
             'output_encoding':output_encoding, 
+            'cache_impl':cache_impl,
             'encoding_errors':encoding_errors, 
             'input_encoding':input_encoding, 
             'module_directory':module_directory, 

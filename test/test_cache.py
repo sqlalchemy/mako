@@ -392,7 +392,18 @@ class CacheTest(TemplateTest):
             %>
         """)
         assert result_lines(t.render()) == ['foo: 1', 'foo: 1', 'foo: 3', 'foo: 3']
- 
+
+    def test_lookup(self):
+        l = TemplateLookup(cache_impl='mock')
+        l.put_string("x", """
+            <%page cached="True" />
+            ${y}
+        """)
+        t = l.get_template("x")
+        assert result_lines(t.render(y=5)) == ["5"]
+        assert result_lines(t.render(y=7)) == ["5"]
+        assert isinstance(t.cache.impl, MockCacheImpl)
+
     def test_invalidate(self):
         t = Template("""
             <%%def name="foo()" cached="True">
