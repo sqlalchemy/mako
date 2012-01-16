@@ -40,6 +40,10 @@
 - [bug] The exception message in the html_error_template
   is now escaped with the HTML filter. [ticket:142]
 
+- [bug] Added "white-space:pre" style to html_error_template()
+  for code blocks so that indentation is preserved
+  [ticket:173]
+
 0.5
 - A Template is explicitly disallowed
   from having a url that normalizes to relative outside

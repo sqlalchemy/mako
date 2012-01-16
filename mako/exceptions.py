@@ -260,6 +260,8 @@ def html_error_template():
         .sampleline { padding:0px 10px 0px 10px; }
         .sourceline { margin:5px 5px 10px 5px; font-family:monospace;}
         .location { font-size:80%; }
+        .highlight { white-space:pre; }
+        .sampleline { white-space:pre; }
     </style>
 % endif
 % if full:
