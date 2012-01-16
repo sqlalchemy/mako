@@ -38,6 +38,8 @@ templates_path = ['templates']
 
 nitpicky = True
 
+site_base = "http://www.makotemplates.org"
+
 # The suffix of source filenames.
 source_suffix = '.rst'
 

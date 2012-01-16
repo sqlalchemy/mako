@@ -1,5 +1,7 @@
 ## coding: utf-8
-
+<%!
+    local_script_files = []
+%>
 <%doc>
     Structural elements are all prefixed with "docs-"
     to prevent conflicts when the structure is integrated into the 
@@ -166,28 +168,26 @@ withsidebar = bool(toc) and current_page_name != 'index'
 
 </div>
 
-<%block name="footer">
-    <div id="docs-bottom-navigation" class="docs-navigation-links">
-        % if prevtopic:
-            Previous:
-            <a href="${prevtopic['link']|h}" title="${_('previous chapter')}">${prevtopic['title']}</a>
-        % endif
-        % if nexttopic:
-            Next:
-            <a href="${nexttopic['link']|h}" title="${_('next chapter')}">${nexttopic['title']}</a>
-        % endif
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+    % if prevtopic:
+        Previous:
+        <a href="${prevtopic['link']|h}" title="${_('previous chapter')}">${prevtopic['title']}</a>
+    % endif
+    % if nexttopic:
+        Next:
+        <a href="${nexttopic['link']|h}" title="${_('next chapter')}">${nexttopic['title']}</a>
+    % endif
 
-        <div id="docs-copyright">
-        % if hasdoc('copyright'):
-            &copy; <a href="${pathto('copyright')}">Copyright</a> ${copyright|h}.
-        % else:
-            &copy; Copyright ${copyright|h}.
-        % endif
-        % if show_sphinx:
-            Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> ${sphinx_version|h}.
-        % endif
-        </div>
+    <div id="docs-copyright">
+    % if hasdoc('copyright'):
+        &copy; <a href="${pathto('copyright')}">Copyright</a> ${copyright|h}.
+    % else:
+        &copy; Copyright ${copyright|h}.
+    % endif
+    % if show_sphinx:
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> ${sphinx_version|h}.
+    % endif
     </div>
-</%block>
+</div>
 
 </div>

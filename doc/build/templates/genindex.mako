@@ -1,4 +1,4 @@
-<%inherit file="layout.mako"/>
+<%inherit file="pre_layout.mako"/>
 
 <%block name="show_title" filter="util.striptags">
     ${_('Index')}
