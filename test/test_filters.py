@@ -3,7 +3,7 @@
 from mako.template import Template
 import unittest
 from mako import util
-from test import TemplateTest, eq_, skip_if
+from test import TemplateTest, eq_, skip_if, assert_raises
 from util import result_lines, flatten_result
 
 class FilterTest(TemplateTest):
@@ -60,7 +60,11 @@ class FilterTest(TemplateTest):
             ${foo()}
 """)
 
-        assert flatten_result(t.render(x="this is x", myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)) == "MYFILTER-> this is foo <-MYFILTER"
+        eq_(
+            flatten_result(t.render(x="this is x", 
+                        myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)),
+            "MYFILTER-> this is foo <-MYFILTER"
+        )
 
     def test_import(self):
         t = Template("""
@@ -104,6 +108,33 @@ class FilterTest(TemplateTest):
         """)
         assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
 
+    def test_block_via_context(self):
+        t = Template("""
+            <%block name="foo" filter="myfilter">
+                some text
+            </%block>
+        """)
+        def myfilter(text):
+            return "MYTEXT" + text
+        eq_(
+            result_lines(t.render(myfilter=myfilter)),
+            ["MYTEXT", "some text"]
+        )
+
+    def test_def_via_context(self):
+        t = Template("""
+            <%def name="foo()" filter="myfilter">
+                some text
+            </%def>
+            ${foo()}
+        """)
+        def myfilter(text):
+            return "MYTEXT" + text
+        eq_(
+            result_lines(t.render(myfilter=myfilter)),
+            ["MYTEXT", "some text"]
+        )
+
     def test_nflag(self):
         t = Template("""
             ${"<tag>this is html</tag>" | n}
@@ -122,7 +153,7 @@ class FilterTest(TemplateTest):
         """)
         assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
  
-    def testnonexpression(self):
+    def test_non_expression(self):
         t = Template("""
         <%!
             def a(text):

@@ -1,4 +1,12 @@
-0.5.1
+0.6.0
+- [feature/bug] Can now refer to context variables
+  within extra arguments to <%block>, <%def>, i.e.
+  <%block name="foo" cache_key="${somekey}">.
+  Filters can also be used in this way, i.e.
+  <%def name="foo()" filter="myfilter">
+  then template.render(myfilter=some_callable)
+  [ticket:180]
+
 - Template caching has been converted into a plugin
   system, whereby the usage of Beaker is just the
   default plugin.   Template and TemplateLookup

@@ -139,6 +139,37 @@ class CacheTest(TemplateTest):
         ]
         assert m.kwargs == {}
 
+    def test_dynamic_key_with_context(self):
+        t = Template("""
+            <%block name="foo" cached="True" cache_key="${mykey}">
+                some block
+            </%block>
+        """)
+        m = self._install_mock_cache(t)
+        t.render(mykey="thekey")
+        t.render(mykey="thekey")
+        eq_(
+            result_lines(t.render(mykey="thekey")),
+            ["some block"]
+        )
+        eq_(m.key, "thekey")
+
+        t = Template("""
+            <%def name="foo()" cached="True" cache_key="${mykey}">
+                some def
+            </%def>
+            ${foo()}
+        """)
+        m = self._install_mock_cache(t)
+        t.render(mykey="thekey")
+        t.render(mykey="thekey")
+        eq_(
+            result_lines(t.render(mykey="thekey")),
+            ["some def"]
+        )
+        eq_(m.key, "thekey")
+
+
     def test_dynamic_key_with_funcargs(self):
         t = Template("""
             <%def name="foo(num=5)" cached="True" cache_key="foo_${str(num)}">

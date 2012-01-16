@@ -414,7 +414,7 @@ class _GenerateRenderMethod(object):
         # (this is used for the caching decorator)
         if limit is not None:
             to_write = to_write.intersection(limit)
- 
+
         if toplevel and getattr(self.compiler, 'has_ns_imports', False):
             self.printer.writeline("_import_ns = {}")
             self.compiler.has_imports = True
@@ -866,7 +866,6 @@ class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
  
     def __init__(self, node=None, parent=None, nested=False):
- 
         if parent is not None:
             # if we are the branch created in write_namespaces(),
             # we don't share any context from the main body().
@@ -1000,6 +999,7 @@ class _Identifiers(object):
         if node is self.node:
             for ident in node.declared_identifiers():
                 self.argument_declared.add(ident)
+
             for n in node.nodes:
                 n.accept_visitor(self)
 
@@ -1016,6 +1016,10 @@ class _Identifiers(object):
                         "Named block '%s' not allowed inside of <%%call> tag" 
                         % (node.name, ), **node.exception_kwargs)
 
+        for ident in node.undeclared_identifiers():
+            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                self.undeclared.add(ident)
+ 
         if not node.is_anonymous:
             self._check_name_exists(self.topleveldefs, node)
             self.undeclared.add(node.funcname)

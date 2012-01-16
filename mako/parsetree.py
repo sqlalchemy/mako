@@ -431,10 +431,13 @@ class DefTag(Tag):
         for c in self.function_decl.defaults:
             res += list(ast.PythonCode(c, **self.exception_kwargs).
                                     undeclared_identifiers)
-        return res + list(self.filter_args.\
+        return set(res).union(
+            self.filter_args.\
                             undeclared_identifiers.\
                             difference(filters.DEFAULT_ESCAPES.keys())
-                        )
+        ).union(
+            self.expression_undeclared_identifiers
+        )
 
 class BlockTag(Tag):
     __keyword__ = 'block'
@@ -487,7 +490,12 @@ class BlockTag(Tag):
         return self.body_decl.argnames
 
     def undeclared_identifiers(self):
-        return []
+        return (self.filter_args.\
+                            undeclared_identifiers.\
+                            difference(filters.DEFAULT_ESCAPES.keys())
+                ).union(self.expression_undeclared_identifiers)
+
+
 
 class CallTag(Tag):
     __keyword__ = 'call'
