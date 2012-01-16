@@ -1,4 +1,4 @@
-<%inherit file="layout.mako"/>
+<%inherit file="pre_layout.mako"/>
 
 <%block name="show_title" filter="util.striptags">
     ${_('Index')}
@@ -25,19 +25,19 @@
 
 <dt>
     % if links:
-        <a href="${links[0]}">${entryname|h}</a>
-        % for link in links[1:]:
+        <a href="${links[0][1]}">${entryname|h}</a>
+        % for unknown, link in links[1:]:
             , <a href="${link}">[${i}]</a>
         % endfor
     % else:
         ${entryname|h}
     % endif
- 
+
     % if subitems:
   <dd><dl>
     % for subentryname, subentrylinks in subitems:
-    <dt><a href="${subentrylinks[0]}">${subentryname|h}</a>
-            % for j, link in enumerate(subentrylinks[1:]):
+    <dt><a href="${subentrylinks[0][1]}">${subentryname|h}</a>
+            % for j, (unknown, link) in enumerate(subentrylinks[1:]):
                 <a href="${link}">[${j}]</a>
             % endfor
     </dt>
