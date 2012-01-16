@@ -277,7 +277,7 @@ def html_error_template():
     else:
         lines = None
 %>
-<h3>${tback.errorname}: ${tback.message}</h3>
+<h3>${tback.errorname}: ${tback.message|h}</h3>
 
 % if lines:
     <div class="sample">

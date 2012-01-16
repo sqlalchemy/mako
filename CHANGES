@@ -1,13 +1,6 @@
 0.6.0
-- [feature/bug] Can now refer to context variables
-  within extra arguments to <%block>, <%def>, i.e.
-  <%block name="foo" cache_key="${somekey}">.
-  Filters can also be used in this way, i.e.
-  <%def name="foo()" filter="myfilter">
-  then template.render(myfilter=some_callable)
-  [ticket:180]
 
-- Template caching has been converted into a plugin
+- [feature] Template caching has been converted into a plugin
   system, whereby the usage of Beaker is just the
   default plugin.   Template and TemplateLookup
   now accept a string "cache_impl" parameter which
@@ -19,12 +12,12 @@
   core plugin is the mako.cache.CacheImpl
   class.
 
-- The <%def>, <%block> and <%page> tags now accept
+- [feature] The <%def>, <%block> and <%page> tags now accept
   any argument named "cache_*", and the key
   minus the "cache_" prefix will be passed as keyword
   arguments to the CacheImpl methods.
 
-- Template and TemplateLookup now accept an argument 
+- [feature] Template and TemplateLookup now accept an argument 
   cache_args, which refers to a dictionary containing
   cache parameters.  The cache_dir, cache_url, cache_type, 
   cache_timeout arguments are deprecated (will probably 
@@ -32,9 +25,20 @@
   now as cache_args={'url':<some url>, 'type':'memcached',
   'timeout':50, 'dir':'/path/to/some/directory'}
 
-- Added "--var name=value" option to the mako-render 
+- [feature/bug] Can now refer to context variables
+  within extra arguments to <%block>, <%def>, i.e.
+  <%block name="foo" cache_key="${somekey}">.
+  Filters can also be used in this way, i.e.
+  <%def name="foo()" filter="myfilter">
+  then template.render(myfilter=some_callable)
+  [ticket:180]
+
+- [feature] Added "--var name=value" option to the mako-render 
   script, allows passing of kw to the template from 
   the command line. [ticket:178]
+
+- [bug] The exception message in the html_error_template
+  is now escaped with the HTML filter. [ticket:142]
 
 0.5
 - A Template is explicitly disallowed

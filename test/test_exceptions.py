@@ -20,8 +20,8 @@ class ExceptionsTest(TemplateTest):
             assert False
         except exceptions.CompileException, ce:
             html_error = exceptions.html_error_template().render_unicode()
-            assert ("CompileException: Fragment 'i = 0' is not a partial "
-                    "control statement") in html_error
+            assert ("CompileException: Fragment &#39;i = 0&#39; is not "
+                    "a partial control statement at line: 2 char: 1") in html_error
             assert '<style>' in html_error
             html_error_stripped = html_error.strip()
             assert html_error_stripped.startswith('<html>')
@@ -75,10 +75,10 @@ ${u'привет'}
             template.render_unicode()
         except exceptions.CompileException, ce:
             html_error = exceptions.html_error_template().render()
-            assert ("CompileException: Fragment 'if 2 == 2: /an "
-                    "error' is not a partial control "
-                    "statement at line: 2 char: 1") in \
-                    html_error.decode('utf-8')
+            assert ("CompileException: Fragment &#39;if 2 == 2: /an "
+                    "error&#39; is not a partial control statement "
+                    "at line: 2 char: 1") in \
+                    html_error
  
             if util.py3k:
                 assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
@@ -185,5 +185,4 @@ ${foobar}
         # and don't even send what we have.
         html_error = exceptions.html_error_template().\
                     render_unicode(error=v, traceback=None)
- 
-        assert "local variable 'y' referenced" in html_error
+        assert "local variable &#39;y&#39; referenced before assignment" in html_error

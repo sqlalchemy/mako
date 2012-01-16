@@ -12,6 +12,23 @@ from test import TemplateTest, eq_, template_base, module_base, \
     skip_if, assert_raises, assert_raises_message
 
 class EncodingTest(TemplateTest):
+    def test_escapes_html_tags(self):
+        from mako.exceptions import html_error_template
+
+        x = Template("""
+        X:
+        <% raise Exception('<span style="color:red">Foobar</span>') %>
+        """)
+
+        try:
+            x.render()
+        except:
+            # <h3>Exception: <span style="color:red">Foobar</span></h3>
+            markup = html_error_template().render(full=False, css=False)
+            print markup
+            assert '<span style="color:red">Foobar</span></h3>' not in markup
+            assert '&lt;span style=&#34;color:red&#34;&gt;Foobar&lt;/span&gt;' in markup
+    
     def test_unicode(self):
         self._do_memory_test(
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
