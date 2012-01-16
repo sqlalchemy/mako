@@ -841,6 +841,10 @@ for utf8 in (True, False):
             del _do_test
 
 class ModuleDirTest(TemplateTest):
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(module_base, True)
+
     def test_basic(self):
         t = self._file_template("modtest.html")
         t2 = self._file_template('subdir/modtest.html')
@@ -872,6 +876,22 @@ class ModuleDirTest(TemplateTest):
         eq_(
             t2.module.__file__, 
             os.path.join(module_base, 'subdir', 'foo', 'modtest.html.py')
+        )
+
+    def test_custom_writer(self):
+        canary = []
+        def write_module(source, outputpath):
+            with open(outputpath, 'wb') as f:
+                canary.append(outputpath)
+                f.write(source)
+        lookup = TemplateLookup(template_base, module_writer=write_module, 
+                                            module_directory=module_base)
+        t = lookup.get_template('/modtest.html')
+        t2 = lookup.get_template('/subdir/modtest.html')
+        eq_(
+            canary,
+            [os.path.join(module_base, "modtest.html.py"),
+            os.path.join(module_base, "subdir/modtest.html.py")]
         )
 
 class FilenameToURITest(TemplateTest):
@@ -953,6 +973,7 @@ class FilenameToURITest(TemplateTest):
         # normalizes in the root is OK
         t = Template("test", uri="foo/bar/../../foo.html")
         eq_(t.uri, "foo/bar/../../foo.html")
+
 
 class ModuleTemplateTest(TemplateTest):
     def test_module_roundtrip(self):

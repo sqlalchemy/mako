@@ -37,6 +37,12 @@
   script, allows passing of kw to the template from 
   the command line. [ticket:178]
 
+- [feature] Added module_writer argument to Template, 
+  TemplateLookup, allows a callable to be passed which
+  takes over the writing of the template's module source
+  file, so that special environment-specific steps
+  can be taken.  [ticket:181]
+
 - [bug] The exception message in the html_error_template
   is now escaped with the HTML filter. [ticket:142]
 

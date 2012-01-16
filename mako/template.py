@@ -110,6 +110,39 @@ class Template(object):
     :param module_filename: Overrides the filename of the generated 
      Python module file. For advanced usage only.
  
+    :param module_writer: A callable which overrides how the Python
+     module is written entirely.  The callable is passed the 
+     encoded source content of the module and the destination
+     path to be written to.   The default behavior of module writing
+     uses a tempfile in conjunction with a file move in order
+     to make the operation atomic.   So a user-defined module
+     writing function that mimics the default behavior would be::
+
+        import tempfile
+        import os
+        import shutil
+
+        def module_writer(source, outputpath):
+            (dest, name) = \\
+                tempfile.mkstemp(
+                    dir=os.path.dirname(outputpath)
+                )
+ 
+            os.write(dest, source)
+            os.close(dest)
+            shutil.move(name, outputpath)
+
+        from mako.template import Template
+        mytemplate = Template(
+                        file="index.html", 
+                        module_directory="/path/to/modules", 
+                        module_writer=module_writer
+                    )
+
+     The function is provided for unusual configurations where
+     certain platform-specific permissions or other special
+     steps are needed.
+
     :param output_encoding: The encoding to use when :meth:`.render` 
      is called.  
      See :ref:`usage_unicode` as well as :ref:`unicode_toplevel`.
@@ -154,6 +187,7 @@ class Template(object):
                     module_filename=None, 
                     input_encoding=None, 
                     disable_unicode=False,
+                    module_writer=None,
                     bytestring_passthrough=False, 
                     default_filters=None, 
                     buffer_filters=(), 
@@ -188,6 +222,7 @@ class Template(object):
         self.disable_unicode = disable_unicode
         self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.strict_undefined = strict_undefined
+        self.module_writer = module_writer
 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
@@ -276,7 +311,8 @@ class Template(object):
                             self, 
                             open(filename, 'rb').read(), 
                             filename, 
-                            path)
+                            path,
+                            self.module_writer)
             module = imp.load_source(self.module_id, path, open(path, 'rb'))
             del sys.modules[self.module_id]
             if module._magic_number != codegen.MAGIC_NUMBER:
@@ -284,7 +320,8 @@ class Template(object):
                             self, 
                             open(filename, 'rb').read(), 
                             filename, 
-                            path)
+                            path,
+                            self.module_writer)
                 module = imp.load_source(self.module_id, path, open(path, 'rb'))
                 del sys.modules[self.module_id]
             ModuleInfo(module, path, self, filename, None, None)
@@ -543,7 +580,7 @@ def _compile_text(template, text, filename):
     exec code in module.__dict__, module.__dict__
     return (source, module)
 
-def _compile_module_file(template, text, filename, outputpath):
+def _compile_module_file(template, text, filename, outputpath, module_writer):
     identifier = template.module_id
     lexer = Lexer(text, 
                     filename, 
@@ -563,17 +600,20 @@ def _compile_module_file(template, text, filename, outputpath):
                                 disable_unicode=template.disable_unicode,
                                 strict_undefined=template.strict_undefined)
  
-    # make tempfiles in the same location as the ultimate 
-    # location.   this ensures they're on the same filesystem,
-    # avoiding synchronization issues.
-    (dest, name) = tempfile.mkstemp(dir=os.path.dirname(outputpath))
- 
     if isinstance(source, unicode):
         source = source.encode(lexer.encoding or 'ascii')
+
+    if module_writer:
+        module_writer(source, outputpath)
+    else:
+        # make tempfiles in the same location as the ultimate 
+        # location.   this ensures they're on the same filesystem,
+        # avoiding synchronization issues.
+        (dest, name) = tempfile.mkstemp(dir=os.path.dirname(outputpath))
  
-    os.write(dest, source)
-    os.close(dest)
-    shutil.move(name, outputpath)
+        os.write(dest, source)
+        os.close(dest)
+        shutil.move(name, outputpath)
 
 def _get_module_info_from_callable(callable_):
     return _get_module_info(callable_.func_globals['__name__'])

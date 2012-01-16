@@ -160,6 +160,7 @@ class TemplateLookup(TemplateCollection):
                         cache_url=None, 
 
                         modulename_callable=None, 
+                        module_writer=None,
                         default_filters=None, 
                         buffer_filters=(), 
                         strict_undefined=False,
@@ -195,6 +196,7 @@ class TemplateLookup(TemplateCollection):
             'encoding_errors':encoding_errors, 
             'input_encoding':input_encoding, 
             'module_directory':module_directory, 
+            'module_writer':module_writer,
             'cache_args':cache_args,
             'cache_enabled':cache_enabled, 
             'default_filters':default_filters, 
