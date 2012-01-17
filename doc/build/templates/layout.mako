@@ -44,7 +44,6 @@ withsidebar = bool(toc) and current_page_name != 'index'
     % for scriptfile in script_files + self.attr.local_script_files:
         <script type="text/javascript" src="${pathto(scriptfile, 1)}"></script>
     % endfor
-    <script type="text/javascript" src="${pathto('_static/init.js', 1)}"></script>
     % if hasdoc('about'):
         <link rel="author" title="${_('About these documents')}" href="${pathto('about')}" />
     % endif

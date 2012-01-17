@@ -39,7 +39,7 @@ Mako Templates for Python
 
     </div>
 
-    <a href="/"><img src="${pathto('_static/makoLogo.png', 1)}" /></a>
+    <a href="${site_base}/"><img src="${pathto('_static/makoLogo.png', 1)}" /></a>
 
     <hr/>
 
