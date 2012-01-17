@@ -21,11 +21,19 @@
             docs-copyright
 </%doc>
 
-<%inherit file="${context['mako_layout']}"/>
+<%inherit file="base.mako"/>
 
 <%
 withsidebar = bool(toc) and current_page_name != 'index'
 %>
+
+<%block name="head_title">
+    % if current_page_name != 'index':
+    ${capture(self.show_title) | util.striptags} &mdash; 
+    % endif
+    ${docstitle|h}
+</%block>
+
 
 <div id="docs-container">
 
@@ -120,9 +128,7 @@ withsidebar = bool(toc) and current_page_name != 'index'
 
         <h2>
             <%block name="show_title">
-            % if title:
                 ${title}
-            % endif
             </%block>
         </h2>
     </div>
