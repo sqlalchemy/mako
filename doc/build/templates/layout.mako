@@ -184,7 +184,8 @@ withsidebar = bool(toc) and current_page_name != 'index'
         &copy; Copyright ${copyright|h}.
     % endif
     % if show_sphinx:
-        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> ${sphinx_version|h}.
+        Documentation generated using <a href="http://sphinx.pocoo.org/">Sphinx</a> ${sphinx_version|h} 
+        with Mako templates.
     % endif
     </div>
 </div>
