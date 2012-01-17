@@ -1,15 +1,8 @@
-<%
-in_docs = getattr(next.module, 'in_docs', False)
-%>
-
 <html>
-<%def name="title()">
-Mako Templates for Python
-</%def>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <head>
-<title>${self.title()} </title>
+<title><%block name="head_title">Mako Templates for Python</%block></title>
 <%block name="headers">
 </%block>
 <link rel="stylesheet" href="${pathto('_static/site.css', 1)}"></link>

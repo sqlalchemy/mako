@@ -1,4 +1,4 @@
-<%inherit file="pre_layout.mako"/>
+<%inherit file="${context['layout']}"/>
 
 <%!
     local_script_files = ['_static/searchtools.js']

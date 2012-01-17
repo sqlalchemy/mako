@@ -21,7 +21,6 @@ class MakoBridge(TemplateBridge):
         self.jinja2_fallback = BuiltinTemplateLoader()
         self.jinja2_fallback.init(builder, *args, **kw)
 
-        self.layout = builder.config.html_context.get('mako_layout', 'html')
         builder.config.html_context['site_base'] = builder.config['site_base']
 
         self.lookup = TemplateLookup(
@@ -36,45 +35,35 @@ class MakoBridge(TemplateBridge):
         context['prevtopic'] = context.pop('prev', None)
         context['nexttopic'] = context.pop('next', None)
 
-        # site layout
-        if self.layout == 'site':
-            context['mako_layout'] = 'site_base.mako'
-            context['mako_pre_layout'] = "layout.mako"
-            # overrides site_base from conf.py
-            context['site_base'] = "/"
-            context['docs_base'] = "/"
+        # RTD layout
+        if rtd:
+            # add variables if not present, such 
+            # as if local test of READTHEDOCS variable
+            if 'MEDIA_URL' not in context:
+                context['MEDIA_URL'] = "http://media.readthedocs.org/"
+            if 'slug' not in context:
+                context['slug'] = "mako-test-slug"
+            if 'url' not in context:
+                context['url'] = "/some/test/url"
+            if 'current_version' not in context:
+                context['current_version'] = "some_version"
+            if 'versions' not in context:
+                context['versions'] = [('default', '/default/')]
+
+            context['docs_base'] = "http://readthedocs.org"
+            context['toolbar'] = True
+            context['layout'] = "rtd_layout.mako"
+            context['pdf_url'] = "%spdf/%s/%s/%s.pdf" % (
+                    context['MEDIA_URL'],
+                    context['slug'],
+                    context['current_version'],
+                    context['slug']
+            )
+        # local docs layout
         else:
-            # RTD layout
-            if rtd:
-                # add variables if not present, such 
-                # as if local test of READTHEDOCS variable
-                if 'MEDIA_URL' not in context:
-                    context['MEDIA_URL'] = "http://media.readthedocs.org/"
-                if 'slug' not in context:
-                    context['slug'] = "mako-test-slug"
-                if 'url' not in context:
-                    context['url'] = "/some/test/url"
-                if 'current_version' not in context:
-                    context['current_version'] = "some_version"
-                if 'versions' not in context:
-                    context['versions'] = [('default', '/default/')]
-
-                context['docs_base'] = "http://readthedocs.org"
-                context['toolbar'] = True
-                context['mako_pre_layout'] = "rtd_layout.mako"
-                context['pdf_url'] = "%spdf/%s/%s/%s.pdf" % (
-                        context['MEDIA_URL'],
-                        context['slug'],
-                        context['current_version'],
-                        context['slug']
-                )
-            # local docs layout
-            else:
-                context['toolbar'] = False
-                context['docs_base'] = "/"
-                context['mako_pre_layout'] = "layout.mako"
-
-            context['mako_layout'] = 'makoorg/root.mako'
+            context['toolbar'] = False
+            context['docs_base'] = "/"
+            context['layout'] = "layout.mako"
 
         context.setdefault('_', lambda x:x)
         return self.lookup.get_template(template).render_unicode(**context)
