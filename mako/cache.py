@@ -62,10 +62,10 @@ class Cache(object):
 
     def __init__(self, template):
         self.template = template
-        self.impl = self._load_impl(self.template.cache_impl)
         self.id = template.module.__name__
         self.starttime = template.module._modified_time
         self._def_regions = {}
+        self.impl = self._load_impl(self.template.cache_impl)
 
     def _load_impl(self, name):
         return _cache_plugins.load(name)(self)
