@@ -19,10 +19,10 @@ class MockCacheImpl(CacheImpl):
         self.cache = cache
         self.realcacheimpl = cache._load_impl("beaker")
 
-    def get_and_replace(self, key, creation_function, **kw):
+    def get_or_create(self, key, creation_function, **kw):
         self.key = key
         self.kwargs = kw.copy()
-        return self.realcacheimpl.get_and_replace(key, creation_function, **kw)
+        return self.realcacheimpl.get_or_create(key, creation_function, **kw)
 
     def put(self, key, value, **kw):
         self.key = key

@@ -40,7 +40,7 @@ class BeakerCacheImpl(CacheImpl):
         return _beaker_cache.get_cache(self.cache.id, **kw), \
                     {'expiretime':expiretime, 'starttime':self.cache.starttime}
 
-    def get_and_replace(self, key, creation_function, **kw):
+    def get_or_create(self, key, creation_function, **kw):
         cache, kw = self._get_cache(**kw)
         return cache.get(key, createfunc=creation_function, **kw)
 

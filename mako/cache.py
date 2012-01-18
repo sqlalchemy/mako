@@ -70,14 +70,14 @@ class Cache(object):
     def _load_impl(self, name):
         return _cache_plugins.load(name)(self)
 
-    def get_and_replace(self, key, creation_function, **kw):
+    def get_or_create(self, key, creation_function, **kw):
         """Retrieve a value from the cache, using the given creation function 
         to generate a new value."""
 
         if not self.template.cache_enabled:
             return creation_function()
 
-        return self.impl.get_and_replace(key, 
+        return self.impl.get_or_create(key, 
                         creation_function, 
                         **self._get_cache_kw(kw))
 
@@ -160,7 +160,7 @@ class CacheImpl(object):
     def __init__(self, cache):
         self.cache = cache
 
-    def get_and_replace(self, key, creation_function, **kw):
+    def get_or_create(self, key, creation_function, **kw):
         """Retrieve a value from the cache, using the given creation function 
         to generate a new value.
 
