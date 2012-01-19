@@ -81,7 +81,7 @@ class Cache(object):
                         creation_function, 
                         **self._get_cache_kw(kw))
 
-    def put(self, key, value, **kw):
+    def set(self, key, value, **kw):
         """Place a value in the cache.
  
         :param key: the value's key.
@@ -90,7 +90,14 @@ class Cache(object):
  
         """
 
-        self.impl.put(key, value, **self._get_cache_kw(kw))
+        self.impl.set(key, value, **self._get_cache_kw(kw))
+
+    put = set
+    """A synonym for :meth:`.Cache.set`.
+    
+    This is here for backwards compatibility.
+
+    """
 
     def get(self, key, **kw):
         """Retrieve a value from the cache.
@@ -178,7 +185,7 @@ class CacheImpl(object):
         """
         raise NotImplementedError()
 
-    def put(self, key, value, **kw):
+    def set(self, key, value, **kw):
         """Place a value in the cache.
  
         :param key: the value's key.

@@ -12,6 +12,9 @@
   core plugin is the mako.cache.CacheImpl
   class.
 
+- [feature] The 'put' method on Cache is now
+  'set'.  'put' is there for backwards compatibility.
+
 - [feature] The <%def>, <%block> and <%page> tags now accept
   any argument named "cache_*", and the key
   minus the "cache_" prefix will be passed as keyword
