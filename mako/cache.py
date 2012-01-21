@@ -16,7 +16,7 @@ class Cache(object):
     """Represents a data content cache made available to the module
     space of a specific :class:`.Template` object.
  
-    As of Mako 0.5.1, :class:`.Cache` by itself is mostly a 
+    As of Mako 0.6, :class:`.Cache` by itself is mostly a 
     container for a :class:`.CacheImpl` object, which implements
     a fixed API to provide caching services; specific subclasses exist to 
     implement different
