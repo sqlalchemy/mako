@@ -30,9 +30,18 @@
 
 from cgi import escape
 import os
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import sys
 import timeit
+
+def u(stringlit):
+    if sys.version_info >= (3,):
+        return stringlit
+    else:
+        return stringlit.decode('latin1')
 
 __all__ = ['mako', 'mako_inheritance', 'cheetah', 'django', 'myghty', 'genshi', 'kid']
 
@@ -46,7 +55,7 @@ def genshi(dirname, verbose=False):
         return template.generate(**data).render('xhtml')
 
     if verbose:
-        print render()
+        print(render())
     return render
 
 def myghty(dirname, verbose=False):
@@ -59,18 +68,19 @@ def myghty(dirname, verbose=False):
         interpreter.execute("template.myt", request_args=data, out_buffer=buffer)
         return buffer.getvalue()
     if verbose:
-        print render()
+        print(render())
     return render
 
 def mako(dirname, verbose=False):
     from mako.template import Template
     from mako.lookup import TemplateLookup
-    lookup = TemplateLookup(directories=[dirname], filesystem_checks=False, disable_unicode=True)
+    disable_unicode = (sys.version_info < (3,))
+    lookup = TemplateLookup(directories=[dirname], filesystem_checks=False, disable_unicode=disable_unicode)
     template = lookup.get_template('template.html')
     def render():
-        return template.render(title="Just a test", user="joe", list_items=[u'Number %d' % num for num in range(1,15)])
+        return template.render(title="Just a test", user="joe", list_items=[u('Number %d') % num for num in range(1,15)])
     if verbose:
-        print template.code, render()
+        print(template.code + " " + render())
     return render
 mako_inheritance = mako
 
@@ -80,13 +90,13 @@ def cheetah(dirname, verbose=False):
     template = Template(file=filename)
     def render():
         template.__dict__.update({'title': 'Just a test', 'user': 'joe',
-                                  'list_items': [u'Number %d' % num for num in range(1, 15)]})
+                                  'list_items': [u('Number %d') % num for num in range(1, 15)]})
         return template.respond()
 
     if verbose:
-        print dir(template)
-        print template.generatedModuleCode()
-        print render()
+        print(dir(template))
+        print(template.generatedModuleCode())
+        print(render())
     return render
 
 def django(dirname, verbose=False):
@@ -103,7 +113,7 @@ def django(dirname, verbose=False):
         return tmpl.render(template.Context(data))
 
     if verbose:
-        print render()
+        print(render())
     return render
 
 def kid(dirname, verbose=False):
@@ -117,7 +127,7 @@ def kid(dirname, verbose=False):
         return template.serialize(output='xhtml')
 
     if verbose:
-        print render()
+        print(render())
     return render
 
 
@@ -126,20 +136,20 @@ def run(engines, number=2000, verbose=False):
     for engine in engines:
         dirname = os.path.join(basepath, engine)
         if verbose:
-            print '%s:' % engine.capitalize()
-            print '--------------------------------------------------------'
+            print('%s:' % engine.capitalize())
+            print('--------------------------------------------------------')
         else:
-            print '%s:' % engine.capitalize(),
+            sys.stdout.write('%s:' % engine.capitalize())
         t = timeit.Timer(setup='from __main__ import %s; render = %s(r"%s", %s)'
                                        % (engine, engine, dirname, verbose),
                                  stmt='render()')
  
         time = t.timeit(number=number) / number
         if verbose:
-            print '--------------------------------------------------------'
-        print '%.2f ms' % (1000 * time)
+            print('--------------------------------------------------------')
+        print('%.2f ms' % (1000 * time))
         if verbose:
-            print '--------------------------------------------------------'
+            print('--------------------------------------------------------')
 
 
 if __name__ == '__main__':
@@ -150,10 +160,16 @@ if __name__ == '__main__':
     verbose = '-v' in sys.argv
 
     if '-p' in sys.argv:
-        import hotshot, hotshot.stats
-        prof = hotshot.Profile("template.prof")
-        benchtime = prof.runcall(run, engines, number=100, verbose=verbose)
-        stats = hotshot.stats.load("template.prof")
+        try:
+            import hotshot, hotshot.stats
+            prof = hotshot.Profile("template.prof")
+            benchtime = prof.runcall(run, engines, number=100, verbose=verbose)
+            stats = hotshot.stats.load("template.prof")
+        except ImportError:
+            import cProfile, pstats
+            stmt = "run(%r, number=%r, verbose=%r)" % (engines, 1000, verbose)
+            cProfile.runctx(stmt, globals(), {}, "template.prof")
+            stats = pstats.Stats("template.prof")
         stats.strip_dirs()
         stats.sort_stats('time', 'calls')
         stats.print_stats()

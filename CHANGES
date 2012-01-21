@@ -58,6 +58,10 @@
   for code blocks so that indentation is preserved
   [ticket:173]
 
+- [bug] The "benchmark" example is now Python 3 compatible
+  (even though several of those old template libs aren't 
+  available on Py3K, so YMMV) [ticket:175]
+
 0.5
 - A Template is explicitly disallowed
   from having a url that normalizes to relative outside
