@@ -1,13 +1,14 @@
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import lookup
-import shutil, unittest, os
+import shutil, unittest, os, time
 from util import result_lines
 from test import TemplateTest, template_base, module_base
 from test import eq_
 
 try:
     import beaker
+    import beaker.cache
 except:
     from nose import SkipTest
     raise SkipTest("Beaker is required for these tests.")
@@ -15,32 +16,77 @@ except:
 from mako.cache import register_plugin, CacheImpl
 
 class MockCacheImpl(CacheImpl):
+    realcacheimpl = None
     def __init__(self, cache):
         self.cache = cache
-        self.realcacheimpl = cache._load_impl("beaker")
+        use_beaker= self.cache.template.cache_args.get('use_beaker', True)
+        if use_beaker:
+            self.realcacheimpl = cache._load_impl("beaker")
 
     def get_or_create(self, key, creation_function, **kw):
         self.key = key
         self.kwargs = kw.copy()
-        return self.realcacheimpl.get_or_create(key, creation_function, **kw)
+        if self.realcacheimpl:
+            return self.realcacheimpl.get_or_create(key, creation_function, **kw)
+        else:
+            return creation_function()
 
     def put(self, key, value, **kw):
         self.key = key
         self.kwargs = kw.copy()
-        self.realcacheimpl.put(key, value, **kw)
+        if self.realcacheimpl:
+            self.realcacheimpl.put(key, value, **kw)
  
     def get(self, key, **kw):
         self.key = key
         self.kwargs = kw.copy()
-        return self.realcacheimpl.get(key, **kw)
+        if self.realcacheimpl:
+            return self.realcacheimpl.get(key, **kw)
  
     def invalidate(self, key, **kw):
         self.key = key
         self.kwargs = kw.copy()
-        self.realcacheimpl.invalidate(key, **kw)
+        if self.realcacheimpl:
+            self.realcacheimpl.invalidate(key, **kw)
 
 
 register_plugin("mock", __name__, "MockCacheImpl")
+
+class BeakerCacheTest(TemplateTest):
+    def _regions(self):
+        return beaker.cache.CacheManager(
+            cache_regions = {
+                'short':{
+                    'expire':1,
+                    'type':'memory'
+                },
+                'long':{
+                    'expire':60,
+                    'type':'memory'
+                }
+            }
+        )
+
+    def test_region(self):
+        t = Template("""
+            <%block name="foo" cached="True" cache_region="short">
+                short term ${x}
+            </%block>
+            <%block name="bar" cached="True" cache_region="long">
+                long term ${x}
+            </%block>
+            <%block name="lala">
+                none ${x}
+            </%block>
+        """, cache_args={"manager":self._regions()})
+
+        r1 = result_lines(t.render(x=5))
+        time.sleep(2)
+        r2 = result_lines(t.render(x=6))
+        r3 = result_lines(t.render(x=7))
+        eq_(r1, ["short term 5", "long term 5", "none 5"])
+        eq_(r2, ["short term 6", "long term 5", "none 6"])
+        eq_(r3, ["short term 6", "long term 5", "none 7"])
 
 class CacheTest(TemplateTest):
     def _install_mock_cache(self, template):
@@ -387,7 +433,6 @@ class CacheTest(TemplateTest):
         </%def>
         """)
  
-        import time
         x1 = t.render()
         time.sleep(3)
         x2 = t.render()
@@ -401,7 +446,6 @@ class CacheTest(TemplateTest):
         </%def>
         """)
  
-        import time
         x1 = t.render(x=1)
         time.sleep(3)
         x2 = t.render(x=2)
@@ -470,26 +514,26 @@ class CacheTest(TemplateTest):
                     cache_timeout="50" cache_foo="foob">
             </%def>
             ${foo()}
-        """)
+        """, cache_args={'use_beaker':False})
         m = self._install_mock_cache(t)
         t.render()
-        eq_(m.kwargs, {'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(m.kwargs, {'use_beaker':False,'region':'myregion', 'timeout':50, 'foo':'foob'})
 
     def test_custom_args_block(self):
         t = Template("""
             <%block name="foo" cached="True" cache_region="myregion" 
                     cache_timeout="50" cache_foo="foob">
             </%block>
-        """)
+        """, cache_args={'use_beaker':False})
         m = self._install_mock_cache(t)
         t.render()
-        eq_(m.kwargs, {'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(m.kwargs, {'use_beaker':False, 'region':'myregion', 'timeout':50, 'foo':'foob'})
 
     def test_custom_args_page(self):
         t = Template("""
             <%page cached="True" cache_region="myregion" 
                     cache_timeout="50" cache_foo="foob"/>
-        """)
+        """, cache_args={'use_beaker':False})
         m = self._install_mock_cache(t)
         t.render()
-        eq_(m.kwargs, {'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(m.kwargs, {'use_beaker':False, 'region':'myregion', 'timeout':50, 'foo':'foob'})

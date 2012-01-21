@@ -12,6 +12,11 @@
   core plugin is the mako.cache.CacheImpl
   class.
 
+- [feature] Added support for Beaker cache regions
+  in templates.   Usage of regions should be considered
+  as superseding the very obsolete idea of passing in 
+  backend options, timeouts, etc. within templates.
+
 - [feature] The 'put' method on Cache is now
   'set'.  'put' is there for backwards compatibility.
 

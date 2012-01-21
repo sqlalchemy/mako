@@ -24,7 +24,10 @@ class BeakerCacheImpl(CacheImpl):
                             "the Beaker package is required to use cache "
                             "functionality.")
 
-            _beaker_cache = beaker_cache.CacheManager()
+            if 'manager' in cache.template.cache_args:
+                _beaker_cache = cache.template.cache_args['manager']
+            else:
+                _beaker_cache = beaker_cache.CacheManager()
         super(BeakerCacheImpl, self).__init__(cache)
 
     def _get_cache(self, **kw):
@@ -34,11 +37,21 @@ class BeakerCacheImpl(CacheImpl):
         elif self.cache.template.module_directory:
             kw['data_dir'] = self.cache.template.module_directory
 
+        if 'manager' in kw:
+            kw.pop('manager')
+
         if kw.get('type') == 'memcached':
             kw['type'] = 'ext:memcached'
 
-        return _beaker_cache.get_cache(self.cache.id, **kw), \
-                    {'expiretime':expiretime, 'starttime':self.cache.starttime}
+        if 'region' in kw:
+            region = kw.pop('region')
+            cache = _beaker_cache.get_cache_region(self.cache.id, region, **kw)
+        else:
+            cache = _beaker_cache.get_cache(self.cache.id, **kw)
+        cache_args = {'starttime':self.cache.starttime}
+        if expiretime:
+            cache_args['expiretime'] = expiretime
+        return cache, cache_args
 
     def get_or_create(self, key, creation_function, **kw):
         cache, kw = self._get_cache(**kw)

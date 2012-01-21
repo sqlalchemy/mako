@@ -20,7 +20,7 @@ method will return content directly from the cache. When the
 :class:`.Template` object itself falls out of scope, its corresponding
 cache is garbage collected along with the template.
 
-By default, caching requires that the ``beaker`` package be installed on the
+By default, caching requires that the `Beaker <http://beaker.readthedocs.org/>`_ package be installed on the
 system, however the mechanism of caching can be customized to use 
 any third party or user defined system - see :ref:`cache_plugins`.
 
@@ -29,7 +29,7 @@ its options can be used with the ``<%def>`` tag as well:
 
 .. sourcecode:: mako
 
-    <%def name="mycomp" cached="True" cache_timeout="30" cache_type="memory">
+    <%def name="mycomp" cached="True" cache_timeout="60">
         other text
     </%def>
 
@@ -37,94 +37,169 @@ its options can be used with the ``<%def>`` tag as well:
 
 .. sourcecode:: mako
 
-    <%block cached="True" cache_timeout="30" cache_type="memory">
+    <%block cached="True" cache_timeout="60">
         other text
     </%block>
 
 Cache arguments
 ================
 
-The various cache arguments are cascaded from their default
-values, to the arguments specified programmatically to the
-:class:`.Template` or its originating :class:`.TemplateLookup`, then to those
-defined in the ``<%page>`` tag of an individual template, and
-finally to an individual ``<%def>`` or ``<%block>`` tag within the template. This
-means you can define, for example, a cache type of ``dbm`` on your
-:class:`.TemplateLookup`, a cache timeout of 60 seconds in a particular
-template's ``<%page>`` tag, and within one of that template's
-``<%def>`` tags ``cache=True``, and that one particular def will
-then cache its data using a ``dbm`` cache and a data timeout of 60
-seconds.
+Mako has two cache arguments available on tags that are 
+available in all cases.   The rest of the arguments 
+available are specific to a backend.
 
-The caching options always available include:
+The two generic tags are:
 
-* ``cached="False|True"`` - turn caching on
+* ``cached="True"`` - enable caching for this ``<%page>``, 
+  ``<%def>``, or ``<%block>``.
 * ``cache_key`` - the "key" used to uniquely identify this content
-  in the cache.  The total namespace of keys within the cache is
-  local to the current template, and the default value of "key"
-  is the name of the def which is storing its data. It is an
-  evaluable tag, so you can put a Python expression to calculate
-  the value of the key on the fly. For example, heres a page
+  in the cache.   Usually, this key is chosen automatically
+  based on the name of the rendering callable (i.e. ``body``
+  when used in ``<%page>``, the name of the def when using ``<%def>``,
+  the explicit or internally-generated name when using ``<%block>``).
+  Using the ``cache_key`` parameter, the key can be overridden
+  using a fixed or programmatically generated value.
+
+  For example, here's a page
   that caches any page which inherits from it, based on the
   filename of the calling template:
  
-.. sourcecode:: mako
+  .. sourcecode:: mako
 
-    <%page cached="True" cache_key="${self.filename}"/>
+     <%page cached="True" cache_key="${self.filename}"/>
 
-    ${next.body()}
+     ${next.body()}
  
-    ## rest of template
+     ## rest of template
 
-As of 0.5.1, the ``<%page>``, ``<%def>``, and ``<%block>`` tags 
+On a :class:`.Template` or :class:`.TemplateLookup`, the 
+caching can be configured using these arguments:
+
+* ``cache_enabled`` - Setting this
+  to ``False`` will disable all caching functionality
+  when the template renders.  Defaults to ``True``.
+  e.g.::
+
+    lookup = TemplateLookup(
+                    directories='/path/to/templates', 
+                    cache_enabled = False
+                    )
+
+* ``cache_impl`` - The string name of the cache backend
+  to use.   This defaults to ``beaker``, which has historically
+  been the only cache backend supported by Mako.  
+  New in 0.6.0.
+
+  For example, here's how to use the upcoming
+  `dogpile.cache <http://dogpilecache.readthedocs.org>`_
+  backend::
+
+    lookup = TemplateLookup(
+                    directories='/path/to/templates', 
+                    cache_impl = 'dogpile.cache',
+                    cache_args = {'regions':my_dogpile_regions}
+                    )
+
+* ``cache_args`` - A dictionary of cache parameters that
+  will be consumed by the cache backend.   See 
+  :ref:`beaker_backend` for examples.  New in 0.6.0.
+
+Backend-Specific Cache Arguments
+--------------------------------
+
+The ``<%page>``, ``<%def>``, and ``<%block>`` tags 
 accept any named argument that starts with the prefix ``"cache_"``.
 Those arguments are then packaged up and passed along to the
 underlying caching implementation, minus the ``"cache_"`` prefix.
 
-On :class:`.Template` and :class:`.TemplateLookup`, these additional
-arguments are accepted:
+The actual arguments understood are determined by the backend.
 
-* ``cache_impl`` - Name of the caching implementation to use, defaults
-  to ``beaker``.  New in 0.5.1.
-* ``cache_args`` - dictionary of default arguments to send to the 
-  caching system.  The arguments specified on the ``<%page>``, ``<%def>``,
-  and ``<%block>`` tags will supersede what is specified in this dictionary.
-  The names in the dictionary should not have the ``cache_`` prefix.
-  New in 0.5.1.
+* :ref:`beaker_backend` - Includes arguments understood by
+  Beaker
+* :ref:`mako_plugin` - Includes arguments understood by 
+  dogpile.cache.
 
-Prior to version 0.5.1, the following arguments were instead used.  Note
-these arguments remain available and are copied into the newer ``cache_args``
-dictionary when present on :class:`.Template` or :class:`.TemplateLookup`:
+.. _beaker_backend:
 
-* ``cache_dir`` - Equivalent to the ``dir`` argument in the ``cache_args``
-  dictionary.  See the section on Beaker cache options for a description
-  of this argument.
-* ``cache_url`` - Equivalent to the ``url`` argument in the ``cache_args``
-  dictionary.  See the section on Beaker cache options for a description
-  of this argument.
-* ``cache_type`` - Equivalent to the ``type`` argument in the ``cache_args``
-  dictionary.  See the section on Beaker cache options for a description
-  of this argument.
-* ``cache_timeout`` - Equivalent to the ``timeout`` argument in the ``cache_args``
-  dictionary.  See the section on Beaker cache options for a description
-  of this argument.
+Using the Beaker Cache Backend
+-------------------------------
 
-Beaker Cache Options
----------------------
+When using Beaker, new implementations will want to make usage
+of **cache regions** so that cache configurations can be maintained
+externally to templates.  These configurations live under 
+named "regions" that can be referred to within templates themselves.  
+Support for Beaker cache regions is new in Mako 0.6.0.
 
-When using the default caching implementation based on Beaker,
-the following options are also available
-on the ``<%page>``, ``<%def>``, and ``<%block>`` tags, as well
-as within the ``cache_args`` dictionary of :class:`.Template` and
-:class:`.TemplateLookup` without the ``"cache_"`` prefix:
+For example, suppose we would like two regions.  One is a "short term"
+region that will store content in a memory-based dictionary,
+expiring after 60 seconds.   The other is a Memcached region,
+where values should expire in five minutes.   To configure
+our :class:`.TemplateLookup`, first we get a handle to a 
+:class:`beaker.cache.CacheManager`::
+
+    from beaker.cache import CacheManager
+
+    manager = CacheManager(cache_regions={
+        'short_term':{
+            'type': 'memory',
+            'expire': 60
+        },
+        'long_term':{
+            'type': 'ext:memcached',
+            'url': '127.0.0.1:11211',
+            'expire': 300
+        }
+    })
+
+    lookup = TemplateLookup(
+                    directories=['/path/to/templates'],
+                    module_directory='/path/to/modules',
+                    cache_impl = 'beaker',
+                    cache_args = {
+                        'manager':manager
+                    }
+            )
+
+Our templates can then opt to cache data in one of either region,
+using the ``cache_region`` argument.   Such as using ``short_term``
+at the ``<%page>`` level:
+
+.. sourcecode:: mako
+
+    <%page cached="True" cache_region="short_term">
+
+    ## ...
+
+Or, ``long_term`` at the ``<%block>`` level:
+
+.. sourcecode:: mako
+
+    <%block name="header" cached="True" cache_region="long_term">
+        other text
+    </%block>
+
+The Beaker backend also works without regions.   There are a
+variety of arguments that can be passed to the ``cache_args``
+dictionary, which are also allowable in templates via the 
+``<%page>``, ``<%block>``,
+and ``<%def>`` tags specific to those sections.   The values
+given override those specified at the  :class:`.TemplateLookup` 
+or :class:`.Template` level.  
+
+With the possible exception 
+of ``cache_timeout``, these arguments are probably better off
+staying at the template configuration level.  Each argument
+specified as ``cache_XYZ`` in a template tag is specified
+without the ``cache_`` prefix in the ``cache_args`` dictionary:
 
 * ``cache_timeout`` - number of seconds in which to invalidate the
   cached data.  After this timeout, the content is re-generated
   on the next call.  Available as ``timeout`` in the ``cache_args``
   dictionary.
 * ``cache_type`` - type of caching. ``memory``, ``file``, ``dbm``, or
-  ``memcached``.  Available as ``type`` in the ``cache_args`` 
-  dictionary.
+  ``ext:memcached`` (note that  the string ``memcached`` is
+  also accepted by the Mako plugin, though not by Beaker itself).  
+  Available as ``type`` in the ``cache_args`` dictionary.
 * ``cache_url`` - (only used for ``memcached`` but required) a single
   IP address or a semi-colon separated list of IP address of
   memcache servers to use.  Available as ``url`` in the ``cache_args``
@@ -136,9 +211,18 @@ as within the ``cache_args`` dictionary of :class:`.Template` and
   template modules are stored). If neither option is available
   an exception is thrown.  Available as ``dir`` in the
   ``cache_args`` dictionary.
- 
-Accessing the Cache
-===================
+
+Using the dogpile.cache Backend
+--------------------------------
+
+`dogpile.cache`_ is a new replacement for Beaker.   It provides
+a modernized, slimmed down interface and is generally easier to use
+than Beaker.   As of this writing it has not yet been released.  dogpile.cache
+includes its own Mako cache plugin - see :ref:`mako_plugin` in the
+dogpile.cache documentation.
+
+Programmatic Cache Access
+=========================
 
 The :class:`.Template`, as well as any template-derived :class:`.Namespace`, has
 an accessor called ``cache`` which returns the ``Cache`` object
@@ -150,13 +234,13 @@ values:
 .. sourcecode:: mako
 
     <%
-        local.cache.put("somekey", type="memory", "somevalue")
+        local.cache.set("somekey", type="memory", "somevalue")
     %>
  
 Above, the cache associated with the ``local`` namespace is
 accessed and a key is placed within a memory cache.
 
-More commonly the ``cache`` object is used to invalidate cached
+More commonly, the ``cache`` object is used to invalidate cached
 sections programmatically:
 
 .. sourcecode:: python
@@ -177,7 +261,7 @@ itself using the ``impl`` attribute::
 
     template.cache.impl.do_something_special()
 
-But note using implementation-specific methods will mean you can't 
+Note that using implementation-specific methods will mean you can't 
 swap in a different kind of :class:`.CacheImpl` implementation at a 
 later time.
 
@@ -186,7 +270,7 @@ later time.
 Cache Plugins
 ==============
 
-As of 0.5.1, the mechanism used by caching can be plugged in
+The mechanism used by caching can be plugged in
 using a :class:`.CacheImpl` subclass.    This class implements
 the rudimental methods Mako needs to implement the caching
 API.   Mako includes the :class:`.BeakerCacheImpl` class to 
@@ -208,14 +292,14 @@ An example plugin that implements a local dictionary cache::
             super(SimpleCacheImpl, self).__init__(cache)
             self._cache = {}
 
-        def get_and_replace(self, key, creation_function, **kw):
+        def get_or_create(self, key, creation_function, **kw):
             if key in self._cache:
                 return self._cache[key]
             else:
                 self._cache[key] = value = creation_function()
                 return value
 
-        def put(self, key, value, **kwargs):
+        def set(self, key, value, **kwargs):
             self._cache[key] = value
  
         def get(self, key, **kwargs):
@@ -243,19 +327,19 @@ Guidelines for writing cache plugins
   attribute, which is essentially the unique modulename of the template, is 
   a good value to use in order to represent a unique namespace of keys specific
   to the template.
-* Templates only use the :meth:`.CacheImpl.get_and_replace()` method.  
-  The :meth:`.CacheImpl.put`,
+* Templates only use the :meth:`.CacheImpl.get_or_create()` method 
+  in an implicit fashion.  The :meth:`.CacheImpl.set`,
   :meth:`.CacheImpl.get`, and :meth:`.CacheImpl.invalidate` methods are 
-  only used in response to end-user programmatic access to the corresponding
+  only used in response to direct programmatic access to the corresponding
   methods on the :class:`.Cache` object.
 * :class:`.CacheImpl` will be accessed in a multithreaded fashion if the
   :class:`.Template` itself is used multithreaded.  Care should be taken
   to ensure caching implementations are threadsafe.
 * A library like `Dogpile <http://pypi.python.org/pypi/Dogpile>`_, which
   is a minimal locking system derived from Beaker, can be used to help
-  implement the :meth:`.CacheImpl.get_and_replace` method in a threadsafe
+  implement the :meth:`.CacheImpl.get_or_create` method in a threadsafe
   way that can maximize effectiveness across multiple threads as well
-  as processes. :meth:`.CacheImpl.get_and_replace` is the
+  as processes. :meth:`.CacheImpl.get_or_create` is the
   key method used by templates.
 * All arguments passed to ``**kw`` come directly from the parameters
   inside the ``<%def>``, ``<%block>``, or ``<%page>`` tags directly,
@@ -268,7 +352,7 @@ Guidelines for writing cache plugins
 * The directory where :class:`.Template` places module files can
   be acquired using the accessor ``self.cache.template.module_directory``.
   This directory can be a good place to throw cache-related work
-  files, underneath a prefix like "_my_cache_work" so that name
+  files, underneath a prefix like ``_my_cache_work`` so that name
   conflicts with generated modules don't occur.
 
 API Reference
