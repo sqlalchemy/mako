@@ -60,7 +60,11 @@ class Cache(object):
 
     """
 
-    def __init__(self, template):
+    def __init__(self, template, *args):
+        # check for a stale template calling the
+        # constructor
+        if isinstance(template, basestring) and args:
+            return
         self.template = template
         self.id = template.module.__name__
         self.starttime = template.module._modified_time

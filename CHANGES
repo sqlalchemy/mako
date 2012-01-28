@@ -1,3 +1,9 @@
+0.6.1
+- [bug] Added special compatibility for the 0.5.0
+  Cache() constructor, which was preventing file
+  version checks and not allowing Mako 0.6 to 
+  recompile the module files.
+
 0.6.0
 
 - [feature] Template caching has been converted into a plugin
