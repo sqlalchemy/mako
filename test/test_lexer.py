@@ -557,6 +557,23 @@ print('''
                       False, (1, 1)),
                       Text(u" '''and now some text '''", (10,11))]))
 
+    def test_tricky_code_4(self):
+        template = \
+            """<% foo = "\\"\\\\" %>"""
+        nodes = Lexer(template).parse()
+        self._compare(nodes, TemplateNode({},
+                      [Code(u"""foo = "\\"\\\\" \n""",
+                      False, (1, 1))]))
+
+    def test_tricky_code_5(self):
+        template = \
+            """before ${ {'key': 'value'} } after"""
+        nodes = Lexer(template).parse()
+        self._compare(nodes, TemplateNode({},
+                      [Text(u'before ', (1, 1)),
+                      Expression(u" {'key': 'value'} ", [], (1, 8)),
+                      Text(u' after', (1, 29))]))
+
     def test_control_lines(self):
         template = \
             """

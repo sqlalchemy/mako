@@ -1,3 +1,9 @@
+0.6.2
+- [bug] The ${{"foo":"bar"}} parsing issue is fixed!!
+  The legendary Eevee has slain the dragon!
+  [ticket:20].  Also fixes quoting issue
+  at [ticket:86].
+
 0.6.1
 - [bug] Added special compatibility for the 0.5.0
   Cache() constructor, which was preventing file

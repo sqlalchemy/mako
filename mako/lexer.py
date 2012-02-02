@@ -91,31 +91,32 @@ class Lexer(object):
  
     def parse_until_text(self, *text):
         startpos = self.match_position
+        text_re = r'|'.join(text)
+        brace_level = 0
         while True:
             match = self.match(r'#.*\n')
             if match:
                 continue
-            match = self.match(r'(\"\"\"|\'\'\'|\"|\')')
+            match = self.match(r'(\"\"\"|\'\'\'|\"|\')((?<!\\)\\\1|.)*?\1', re.S)
             if match:
-                m = self.match(r'.*?%s' % match.group(1), re.S)
-                if not m:
-                    raise exceptions.SyntaxException(
-                                "Unmatched '%s'" % 
-                                match.group(1), 
-                                **self.exception_kwargs)
-            else:
-                match = self.match(r'(%s)' % r'|'.join(text))
-                if match:
-                    return \
-                        self.text[startpos:self.match_position-len(match.group(1))],\
-                        match.group(1)
-                else:
-                    match = self.match(r".*?(?=\"|\'|#|%s)" % r'|'.join(text), re.S)
-                    if not match:
-                        raise exceptions.SyntaxException(
-                                    "Expected: %s" % 
-                                    ','.join(text), 
-                                    **self.exception_kwargs)
+                continue
+            match = self.match(r'(%s)' % text_re)
+            if match:
+                if match.group(1) == '}' and brace_level > 0:
+                    brace_level -= 1
+                    continue
+                return \
+                    self.text[startpos:self.match_position-len(match.group(1))],\
+                    match.group(1)
+            match = self.match(r"(.*?)(?=\"|\'|#|%s)" % text_re, re.S)
+            if match:
+                brace_level += match.group(1).count('{')
+                brace_level -= match.group(1).count('}')
+                continue
+            raise exceptions.SyntaxException(
+                        "Expected: %s" % 
+                        ','.join(text), 
+                        **self.exception_kwargs)
  
     def append_node(self, nodecls, *args, **kwargs):
         kwargs.setdefault('source', self.text)
