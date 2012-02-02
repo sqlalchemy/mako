@@ -75,10 +75,16 @@ ${u'привет'}
             template.render_unicode()
         except exceptions.CompileException, ce:
             html_error = exceptions.html_error_template().render()
-            assert ("CompileException: Fragment &#39;if 2 == 2: /an "
+            if util.py3k:
+                assert ("CompileException: Fragment &#39;if 2 == 2: /an "
                     "error&#39; is not a partial control statement "
-                    "at line: 2 char: 1") in \
+                    "at line: 2 char: 1").encode(sys.getdefaultencoding(), 'htmlentityreplace') in \
                     html_error
+            else:
+                assert ("CompileException: Fragment &#39;if 2 == 2: /an "
+                        "error&#39; is not a partial control statement "
+                        "at line: 2 char: 1") in \
+                        html_error
  
             if util.py3k:
                 assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),

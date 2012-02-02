@@ -25,10 +25,18 @@ class EncodingTest(TemplateTest):
         except:
             # <h3>Exception: <span style="color:red">Foobar</span></h3>
             markup = html_error_template().render(full=False, css=False)
-            print markup
-            assert '<span style="color:red">Foobar</span></h3>' not in markup
-            assert '&lt;span style=&#34;color:red&#34;&gt;Foobar&lt;/span&gt;' in markup
-    
+            if util.py3k:
+                assert '<span style="color:red">Foobar</span></h3>'\
+                            .encode('ascii') not in markup
+                assert '&lt;span style=&#34;color:red&#34;'\
+                            '&gt;Foobar&lt;/span&gt;'\
+                            .encode('ascii') in markup
+            else:
+                assert '<span style="color:red">Foobar</span></h3>' \
+                            not in markup
+                assert '&lt;span style=&#34;color:red&#34;'\
+                            '&gt;Foobar&lt;/span&gt;' in markup
+
     def test_unicode(self):
         self._do_memory_test(
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
