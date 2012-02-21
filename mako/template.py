@@ -9,7 +9,7 @@ template strings, as well as template runtime operations."""
 
 from mako.lexer import Lexer
 from mako import runtime, util, exceptions, codegen, cache
-import imp, os, re, shutil, stat, sys, tempfile, time, types, weakref
+import os, re, shutil, stat, sys, tempfile, types, weakref
 
  
 class Template(object):
@@ -307,30 +307,33 @@ class Template(object):
             filemtime = os.stat(filename)[stat.ST_MTIME]
             if not os.path.exists(path) or \
                         os.stat(path)[stat.ST_MTIME] < filemtime:
+                data = util.read_file(filename)
                 _compile_module_file(
                             self, 
-                            open(filename, 'rb').read(), 
+                            data,
                             filename, 
                             path,
                             self.module_writer)
-            module = imp.load_source(self.module_id, path, open(path, 'rb'))
+            module = util.load_module(self.module_id, path)
             del sys.modules[self.module_id]
             if module._magic_number != codegen.MAGIC_NUMBER:
+                data = util.read_file(filename)
                 _compile_module_file(
                             self, 
-                            open(filename, 'rb').read(), 
+                            data, 
                             filename, 
                             path,
                             self.module_writer)
-                module = imp.load_source(self.module_id, path, open(path, 'rb'))
+                module = util.load_module(self.module_id, path)
                 del sys.modules[self.module_id]
             ModuleInfo(module, path, self, filename, None, None)
         else:
             # template filename and no module directory, compile code
             # in memory
+            data = util.read_file(filename)
             code, module = _compile_text(
                                 self, 
-                                open(filename, 'rb').read(), 
+                                data, 
                                 filename)
             self._source = None
             self._code = code
@@ -534,7 +537,7 @@ class ModuleInfo(object):
         if self.module_source is not None:
             return self.module_source
         else:
-            return open(self.module_filename).read()
+            return util.read_file(self.module_filename)
  
     @property
     def source(self):
@@ -546,11 +549,11 @@ class ModuleInfo(object):
             else:
                 return self.template_source
         else:
+            data = util.read_file(self.template_filename)
             if self.module._source_encoding:
-                return open(self.template_filename, 'rb').read().\
-                                decode(self.module._source_encoding)
+                return data.decode(self.module._source_encoding)
             else:
-                return open(self.template_filename).read()
+                return data
  
 def _compile_text(template, text, filename):
     identifier = template.module_id

@@ -1,3 +1,8 @@
+0.6.3
+- [bug] Fixed some Py3K resource warnings due
+  to filehandles being implicitly closed.
+  [ticket:182]
+
 0.6.2
 - [bug] The ${{"foo":"bar"}} parsing issue is fixed!!
   The legendary Eevee has slain the dragon!

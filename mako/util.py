@@ -4,6 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import imp
 import sys
 
 
@@ -378,3 +379,18 @@ except ImportError:
     import inspect
     def inspect_func_args(fn):
         return inspect.getargspec(fn)
+
+def read_file(path, mode='rb'):
+    fp = open(path, mode)
+    try:
+        data = fp.read()
+        return data
+    finally:
+        fp.close()
+
+def load_module(module_id, path):
+    fp = open(path, 'rb')
+    try:
+        return imp.load_source(module_id, path, fp)
+    finally:
+        fp.close()
