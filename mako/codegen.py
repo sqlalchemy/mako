@@ -231,7 +231,8 @@ class _GenerateRenderMethod(object):
  
         self.printer.writelines(
             "def %s(%s):" % (name, ','.join(args)),
-                "context.caller_stack._push_frame()",
+                # push new frame, assign current frame to __M_caller
+                "__M_caller = context.caller_stack._push_frame()",
                 "try:"
         )
         if buffered or filtered or cached:
@@ -516,7 +517,8 @@ class _GenerateRenderMethod(object):
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
         self.printer.writelines(
-            "context.caller_stack._push_frame()",
+            # push new frame, assign current frame to __M_caller
+            "__M_caller = context.caller_stack._push_frame()",
             "try:"
             )
         if buffered or filtered or cached:
@@ -848,8 +850,6 @@ class _GenerateRenderMethod(object):
         )
 
         self.printer.writelines(
-            # get local reference to current caller, if any
-            "__M_caller = context.caller_stack._get_caller()",
             # push on caller for nested call
             "context.caller_stack.nextcaller = "
                 "runtime.Namespace('caller', context, callables=ccall(__M_caller))",

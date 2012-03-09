@@ -3,6 +3,10 @@
   to filehandles being implicitly closed.
   [ticket:182]
 
+- [bug] Fixed endless recursion bug when 
+  nesting multiple def-calls with content.
+  Thanks to Jeff Dairiki. [ticket:186]
+
 0.6.2
 - [bug] The ${{"foo":"bar"}} parsing issue is fixed!!
   The legendary Eevee has slain the dragon!

@@ -385,6 +385,17 @@ class CallTest(TemplateTest):
 """)
         assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call"]
 
+    def test_composed_def(self):
+        t = Template("""
+            <%def name="f()"><f>${caller.body()}</f></%def>
+            <%def name="g()"><g>${caller.body()}</g></%def>
+            <%def name="fg()">
+                <%self:f><%self:g>${caller.body()}</%self:g></%self:f>
+            </%def>
+            <%self:fg>fgbody</%self:fg>
+            """)
+        assert result_lines(t.render()) == ['<f><g>fgbody</g></f>']
+
     def test_regular_defs(self):
         t = Template("""
         <%!

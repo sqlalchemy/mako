@@ -158,12 +158,16 @@ class CallerStack(list):
     def __nonzero__(self):
         return self._get_caller() and True or False
     def _get_caller(self):
+        # this method can be removed once
+        # codegen MAGIC_NUMBER moves past 7
         return self[-1]
     def __getattr__(self, key):
         return getattr(self._get_caller(), key)
     def _push_frame(self):
-        self.append(self.nextcaller or None)
+        frame = self.nextcaller or None
+        self.append(frame)
         self.nextcaller = None
+        return frame
     def _pop_frame(self):
         self.nextcaller = self.pop()
  
