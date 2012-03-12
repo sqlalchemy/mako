@@ -1,4 +1,10 @@
 0.6.3
+- [feature] The html_error_template() will now
+  apply Pygments highlighting to the source
+  code displayed in the traceback, if Pygments 
+  if available.  Courtesy Ben Trofatter 
+  [ticket:95]
+
 - [feature] Added support for context managers,
   i.e. "% with x as e:/ % endwith" support.
   Courtesy Ben Trofatter [ticket:147]

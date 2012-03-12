@@ -227,6 +227,15 @@ Traceback (most recent call last):
 ${tback.errorname}: ${tback.message}
 """)
 
+
+try:
+    from mako.ext.pygmentplugin import syntax_highlight, pygments_html_formatter
+except ImportError:
+    from mako.filters import html_escape
+    pygments_html_formatter = None
+    def syntax_highlight(filename='', language=None):
+        return html_escape
+
 def html_error_template():
     """Provides a template that renders a stack trace in an HTML format,
     providing an excerpt of code as well as substituting source template
@@ -242,7 +251,7 @@ def html_error_template():
     import mako.template
     return mako.template.Template(r"""
 <%!
-    from mako.exceptions import RichTraceback
+    from mako.exceptions import RichTraceback, syntax_highlight, pygments_html_formatter
 %>
 <%page args="full=True, css=True, error=None, traceback=None"/>
 % if full:
@@ -262,6 +271,21 @@ def html_error_template():
         .location { font-size:80%; }
         .highlight { white-space:pre; }
         .sampleline { white-space:pre; }
+
+    % if pygments_html_formatter:
+        ${pygments_html_formatter.get_style_defs()}
+        .linenos { min-width: 2.5em; text-align: right; }
+        pre { margin: 0; }
+        .syntax-highlighted { padding: 0 10px; }
+        .syntax-highlightedtable { border-spacing: 1px; }
+        .nonhighlight { border-top: 1px solid #DFDFDF; border-bottom: 1px solid #DFDFDF; }
+        .stacktrace .nonhighlight { margin: 5px 15px 10px; }
+        .sourceline { margin: 0 0; font-family:monospace; }
+        .code { background-color: #F8F8F8; width: 100%; }
+        .error .code { background-color: #FFBDBD; }
+        .error .syntax-highlighted { background-color: #FFBDBD; }
+    % endif
+
     </style>
 % endif
 % if full:
@@ -285,10 +309,23 @@ def html_error_template():
     <div class="sample">
     <div class="nonhighlight">
 % for index in range(max(0, line-4),min(len(lines), line+5)):
+    <%
+       if pygments_html_formatter:
+           pygments_html_formatter.linenostart = index + 1
+    %>
     % if index + 1 == line:
-<div class="highlight">${index + 1} ${lines[index] | h}</div>
+    <%
+       if pygments_html_formatter:
+           old_cssclass = pygments_html_formatter.cssclass
+           pygments_html_formatter.cssclass = 'error ' + old_cssclass
+    %>
+        ${lines[index] | syntax_highlight(language='mako')}
+    <%
+       if pygments_html_formatter:
+           pygments_html_formatter.cssclass = old_cssclass
+    %>
     % else:
-<div class="sampleline">${index + 1} ${lines[index] | h}</div>
+        ${lines[index] | syntax_highlight(language='mako')}
     % endif
 % endfor
     </div>
@@ -298,7 +335,13 @@ def html_error_template():
 <div class="stacktrace">
 % for (filename, lineno, function, line) in tback.reverse_traceback:
     <div class="location">${filename}, line ${lineno}:</div>
-    <div class="sourceline">${line | h}</div>
+    <div class="nonhighlight">
+    <%
+       if pygments_html_formatter:
+           pygments_html_formatter.linenostart = lineno
+    %>
+      <div class="sourceline">${line | syntax_highlight(filename)}</div>
+    </div>
 % endfor
 </div>
 

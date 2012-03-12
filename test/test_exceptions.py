@@ -87,10 +87,25 @@ ${u'привет'}
                         html_error
  
             if util.py3k:
-                assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+                try:
+                    import pygments
+                    assert u"".encode(sys.getdefaultencoding(),
+                                            'htmlentityreplace') in html_error
+                except ImportError:
+                    assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
             else:
-                assert u"3 ${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+                try:
+                    import pygments
+                    assert u'<pre>3</pre></div></td><td class="code">'\
+                            '<div class="syntax-highlighted"><pre><span '\
+                            'class="cp">${</span><span class="s">u&#39;'\
+                            '&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;'\
+                            '&#39;</span><span class="cp">}</span>'.encode(
+                                    sys.getdefaultencoding(),
+                                    'htmlentityreplace') in html_error
+                except ImportError:
+                    assert u"3 ${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
         else:
             assert False, ("This function should trigger a CompileException, "
@@ -138,7 +153,16 @@ ${foobar}
         ${self.body()}
         """)
 
-        assert '<div class="sourceline">${foobar}</div>' in \
+        try:
+            import pygments
+            assert '<div class="sourceline"><table class="syntax-highlightedtable">'\
+                    '<tr><td class="linenos"><div class="linenodiv"><pre>3</pre>'\
+                    '</div></td><td class="code"><div class="syntax-highlighted">'\
+                    '<pre><span class="err">$</span><span class="p">{</span>'\
+                    '<span class="n">foobar</span><span class="p">}</span>' in \
+                result_lines(l.get_template("foo.html").render_unicode())
+        except ImportError:
+            assert '<div class="sourceline">${foobar}</div>' in \
                 result_lines(l.get_template("foo.html").render_unicode())
  
     def test_utf8_format_exceptions(self):
@@ -152,12 +176,37 @@ ${foobar}
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${u'привет' + foobar}""")
 
         if util.py3k:
-            assert u'<div class="sourceline">${&#39;привет&#39; + foobar}</div>'\
-                in result_lines(l.get_template("foo.html").render().decode('utf-8'))
+            try:
+                import pygments
+                assert '<table class="error syntax-highlightedtable"><tr><td '\
+                        'class="linenos"><div class="linenodiv"><pre>2</pre>'\
+                        '</div></td><td class="code"><div class="error '\
+                        'syntax-highlighted"><pre><span class="cp">${</span>'\
+                        '<span class="s">&#39;привет&#39;</span> <span class="o">+</span> '\
+                        '<span class="n">foobar</span><span class="cp">}</span>'\
+                        '<span class="x"></span>' in \
+                    result_lines(l.get_template("foo.html").render().decode('utf-8'))
+            except ImportError:
+                assert u'<div class="sourceline">${&#39;привет&#39; + foobar}</div>'\
+                    in result_lines(l.get_template("foo.html").render().decode('utf-8'))
         else:
-            assert '<div class="highlight">2 ${u&#39;&#x43F;&#x440;'\
-                    '&#x438;&#x432;&#x435;&#x442;&#39; + foobar}</div>' \
-                in result_lines(l.get_template("foo.html").render().decode('utf-8'))
+            try:
+                import pygments
+
+                assert '<table class="error syntax-highlightedtable"><tr><td '\
+                        'class="linenos"><div class="linenodiv"><pre>2</pre>'\
+                        '</div></td><td class="code"><div class="error '\
+                        'syntax-highlighted"><pre><span class="cp">${</span>'\
+                        '<span class="s">u&#39;&#x43F;&#x440;&#x438;&#x432;'\
+                        '&#x435;&#x442;&#39;</span> <span class="o">+</span> '\
+                        '<span class="n">foobar</span><span class="cp">}</span>'\
+                        '<span class="x"></span>' in \
+                    result_lines(l.get_template("foo.html").render().decode('utf-8'))
+
+            except ImportError:
+                assert '<div class="highlight">2 ${u&#39;&#x43F;&#x440;'\
+                        '&#x438;&#x432;&#x435;&#x442;&#39; + foobar}</div>' \
+                    in result_lines(l.get_template("foo.html").render().decode('utf-8'))
  
  
     def test_custom_tback(self):
