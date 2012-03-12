@@ -83,6 +83,8 @@ class PythonFragment(PythonCode):
             code = "if False:pass\n" + code + "pass"
         elif keyword == 'except':
             code = "try:pass\n" + code + "pass"
+        elif keyword == 'with':
+            code = code + "pass"
         else:
             raise exceptions.CompileException(
                                 "Unsupported control keyword: '%s'" % 

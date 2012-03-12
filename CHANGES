@@ -1,4 +1,8 @@
 0.6.3
+- [feature] Added support for context managers,
+  i.e. "% with x as e:/ % endwith" support.
+  Courtesy Ben Trofatter [ticket:147]
+
 - [bug] Fixed some Py3K resource warnings due
   to filehandles being implicitly closed.
   [ticket:182]

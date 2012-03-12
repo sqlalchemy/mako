@@ -108,7 +108,7 @@ class PythonPrinter(object):
             # keep track of what the keyword was that indented us,
             # if it is a python compound statement keyword
             # where we might have to look for an "unindent" keyword
-            match = re.match(r"^\s*(if|try|elif|while|for)", line)
+            match = re.match(r"^\s*(if|try|elif|while|for|with)", line)
             if match:
                 # its a "compound" keyword, so we will check for "unindentors"
                 indentor = match.group(1)

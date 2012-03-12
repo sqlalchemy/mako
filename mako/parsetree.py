@@ -64,7 +64,7 @@ class ControlLine(Node):
         self.text = text
         self.keyword = keyword
         self.isend = isend
-        self.is_primary = keyword in ['for','if', 'while', 'try']
+        self.is_primary = keyword in ['for','if', 'while', 'try', 'with']
         if self.isend:
             self._declared_identifiers = []
             self._undeclared_identifiers = []
