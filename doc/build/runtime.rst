@@ -15,8 +15,8 @@ Context
 The :class:`.Context` is the central object that is created when
 a template is first executed, and is responsible for handling
 all communication with the outside world.  Within the template
-environment, it is available via the name ``context``.  The :class:`.Context`
-includes two
+environment, it is available via the :ref:`reserved name <reserved-names>`
+``context``.  The :class:`.Context` includes two
 major components, one of which is the output buffer, which is a
 file-like object such as Python's ``StringIO`` or similar, and
 the other a dictionary of variables that can be freely
@@ -159,7 +159,7 @@ are all stored in unique :class:`.Context` instances).
 Context Methods and Accessors
 ------------------------------
 
-Significant members off of :class:`.Context` include:
+Significant members of :class:`.Context` include:
 
 * ``context[key]`` / ``context.get(key, default=None)`` -
   dictionary-like accessors for the context. Normally, any
@@ -188,6 +188,149 @@ Significant members off of :class:`.Context` include:
   :class:`.TemplateLookup` of the originally-called :class:`.Template` gets
   used in a particular execution).
 
+.. loop-context
+
+Loop Context
+============
+
+Within ``% for`` blocks, the :ref:`reserved name<reserved-names>` ``loop``
+is available.  A new feature of Mako 0.7.0, ``loop`` tracks the progress of
+the ``for`` loop and makes it easy to use the iteration state to control
+template behavior.
+
+Iterations
+----------
+
+Regardless of the type of iterable you're looping over, ``loop`` always tracks
+the 0-indexed iteration count (available at ``loop.index``), its parity
+(through the ``loop.even`` and ``loop.odd`` bools), and ``loop.first``, a bool
+indicating whether the loop is on its first iteration.  If your iterable
+provides a ``__len__`` method, ``loop`` also provides access to
+a count of iterations remaining at ``loop.reverse_index`` and ``loop.last``,
+a bool indicating whether the loop is on its last iteration; accessing these
+without ``__len__`` will raise a ``TypeError``.
+
+Cycling
+-------
+
+Cycling is available regardless of whether the iterable you're using provides
+a ``__len__`` method.  Prior to Mako 0.7.0, you might have generated a simple
+zebra striped list with either::
+
+.. sourcecode:: mako
+
+        <ul>
+        % for i, item in enumerate(('spam', 'ham', 'eggs')):
+          <li class="${'odd' if i%2 else 'even'}">${item}</li>
+        % endfor
+        </ul>
+
+or::
+
+.. sourcecode:: mako
+
+        <%! from itertools import cycle %>
+        <% parity = cycle(('even', 'odd')) %>
+        <ul>
+        % for item in ('spam', 'ham', 'eggs'):
+          <li class="${next(parity)}">${item}</li>
+        % endfor
+        </ul>
+
+both of which give you::
+
+.. sourcecode:: html
+
+        <ul>
+          <li class="even">spam</li>
+          <li class="odd">ham</li>
+          <li class="even">eggs</li>
+        </ul>
+
+With ``loop``, you get the same results with cleaner code and less prep work.::
+
+.. sourcecode:: mako
+
+        <ul>
+        % for item in ('spam', 'ham', 'eggs'):
+          <li class="${loop.cycle('even', 'odd')}">${item}</li>
+        % endfor
+        </ul>
+
+Parent loops
+------------
+
+Loop contexts can also be transparently nested, and the Mako runtime will do
+the right thing and manage the scope for you.  You can access the parent loop
+context through ``loop.parent``.
+
+This
+also allows you to easily reach all the way back up through the loop stack by
+chaining ``parent`` attribute accesses, i.e. ``loop.parent.parent....`` as
+long as the stack depth isn't exceeded.  For example, you can use the parent
+loop to make a checkered table::
+
+.. sourcecode:: mako
+
+        <table>
+        % for consonant in 'pbj':
+          <tr>
+         % for vowel in 'iou':
+           <td class="${'black' if (loop.parent.even == loop.even) else 'red'}">
+             ${consonant + vowel}t
+           </td>
+         % endfor 
+          </tr>
+        % endfor 
+        </table>
+
+.. sourcecode:: html
+
+        <table>
+          <tr>
+            <td class="black">
+              pit
+            </td>
+            <td class="red">
+              pot
+            </td>
+            <td class="black">
+              put
+            </td>
+          </tr>
+          <tr>
+            <td class="red">
+              bit
+            </td>
+            <td class="black">
+              bot
+            </td>
+            <td class="red">
+              but
+            </td>
+          </tr>
+          <tr>
+            <td class="black">
+              jit
+            </td>
+            <td class="red">
+              jot
+            </td>
+            <td class="black">
+              jut
+            </td>
+          </tr>
+        </table>
+
+.. reserved-names
+
+Reserved names
+==============
+
+As of Mako 0.7.0, there are two reserved identifiers within the Mako runtime:
+* :ref:`context <context>`
+* :ref:`loop <loop-context>`
+
 All the built-in names
 ======================
 
@@ -213,6 +356,8 @@ also present *within* the :class:`.Context` itself.
 * ``caller`` - a "mini" namespace created when using the
   ``<%call>`` tag to define a "def call with content"; described
   in :ref:`defs_with_content`.
+* ``loop`` - this provides access to :class:`.LoopContext`\ s when
+  they are requested within ``% for`` loops, introduced at :ref:`loop`.
 * ``capture`` - a function that calls a given def and captures
   its resulting content into a string, which is returned. Usage
   is described in :ref:`filtering_toplevel`.
@@ -235,6 +380,10 @@ API Reference
 ==============
 
 .. autoclass:: mako.runtime.Context
+    :show-inheritance:
+    :members:
+
+.. autoclass:: mako.runtime.LoopContext
     :show-inheritance:
     :members:
 
