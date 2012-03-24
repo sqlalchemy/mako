@@ -537,3 +537,17 @@ class CacheTest(TemplateTest):
         m = self._install_mock_cache(t)
         t.render()
         eq_(m.kwargs, {'use_beaker':False, 'region':'myregion', 'timeout':50, 'foo':'foob'})
+
+    def test_pass_context(self):
+        t = Template("""
+            <%page cached="True"/>
+        """)
+        m = self._install_mock_cache(t)
+        t.render()
+        assert 'context' not in m.kwargs
+
+        m.pass_context = True
+        t.render(x="bar")
+        assert 'context' in m.kwargs
+        assert m.kwargs['context'].get('x') == 'bar'
+

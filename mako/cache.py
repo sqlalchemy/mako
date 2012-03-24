@@ -78,12 +78,18 @@ class Cache(object):
         """Retrieve a value from the cache, using the given creation function 
         to generate a new value."""
 
+        return self._ctx_get_or_create(key, creation_function, None, **kw)
+
+    def _ctx_get_or_create(self, key, creation_function, context, **kw):
+        """Retrieve a value from the cache, using the given creation function 
+        to generate a new value."""
+
         if not self.template.cache_enabled:
             return creation_function()
 
         return self.impl.get_or_create(key, 
                         creation_function, 
-                        **self._get_cache_kw(kw))
+                        **self._get_cache_kw(kw, context))
 
     def set(self, key, value, **kw):
         """Place a value in the cache.
@@ -94,7 +100,7 @@ class Cache(object):
  
         """
 
-        self.impl.set(key, value, **self._get_cache_kw(kw))
+        self.impl.set(key, value, **self._get_cache_kw(kw, None))
 
     put = set
     """A synonym for :meth:`.Cache.set`.
@@ -113,7 +119,7 @@ class Cache(object):
          values will use that same backend.
  
         """
-        return self.impl.get(key, **self._get_cache_kw(kw))
+        return self.impl.get(key, **self._get_cache_kw(kw, None))
  
     def invalidate(self, key, **kw):
         """Invalidate a value in the cache.
@@ -125,7 +131,7 @@ class Cache(object):
          values will use that same backend.
  
         """
-        self.impl.invalidate(key, **self._get_cache_kw(kw))
+        self.impl.invalidate(key, **self._get_cache_kw(kw, None))
  
     def invalidate_body(self):
         """Invalidate the cached content of the "body" method for this template.
@@ -151,25 +157,31 @@ class Cache(object):
  
         self.invalidate(name, __M_defname=name)
  
-    def _get_cache_kw(self, kw):
+    def _get_cache_kw(self, kw, context):
         defname = kw.pop('__M_defname', None)
         if not defname:
             tmpl_kw = self.template.cache_args.copy()
             tmpl_kw.update(kw)
-            return tmpl_kw
         elif defname in self._def_regions:
-            return self._def_regions[defname]
+            tmpl_kw = self._def_regions[defname]
         else:
             tmpl_kw = self.template.cache_args.copy()
             tmpl_kw.update(kw)
             self._def_regions[defname] = tmpl_kw
-            return tmpl_kw
+        if context and self.impl.pass_context:
+            tmpl_kw = tmpl_kw.copy()
+            tmpl_kw.setdefault('context', context)
+        return tmpl_kw
 
 class CacheImpl(object):
     """Provide a cache implementation for use by :class:`.Cache`."""
 
     def __init__(self, cache):
         self.cache = cache
+
+    pass_context = False
+    """If True, the Context will be passed to get_or_create
+    as the name 'context'."""
 
     def get_or_create(self, key, creation_function, **kw):
         """Retrieve a value from the cache, using the given creation function 

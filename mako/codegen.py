@@ -635,7 +635,7 @@ class _GenerateRenderMethod(object):
                         )
         if buffered:
             s = "context.get('local')."\
-                "cache.get_or_create(%s, lambda:__M_%s(%s),  %s__M_defname=%r)" % \
+                "cache._ctx_get_or_create(%s, lambda:__M_%s(%s),  context, %s__M_defname=%r)" % \
                             (cachekey, name, ','.join(pass_args), 
                             ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
                             name
@@ -646,7 +646,7 @@ class _GenerateRenderMethod(object):
         else:
             self.printer.writelines(
                     "__M_writer(context.get('local')."
-                    "cache.get_or_create(%s, lambda:__M_%s(%s), %s__M_defname=%r))" % 
+                    "cache._ctx_get_or_create(%s, lambda:__M_%s(%s), context, %s__M_defname=%r))" % 
                     (cachekey, name, ','.join(pass_args), 
                     ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
                     name, 

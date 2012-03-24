@@ -9,6 +9,12 @@
   i.e. "% with x as e:/ % endwith" support.
   Courtesy Ben Trofatter [ticket:147]
 
+- [feature] Added class-level flag to CacheImpl 
+  "pass_context"; when True, the keyword argument
+  'context' will be passed to get_or_create()
+  containing the Mako Context object.
+  [ticket:185]
+
 - [bug] Fixed some Py3K resource warnings due
   to filehandles being implicitly closed.
   [ticket:182]
