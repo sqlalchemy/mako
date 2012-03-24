@@ -18,7 +18,7 @@
   Thanks to Jeff Dairiki. [ticket:186]
 
 - [feature] Added Jinja2 to the example
-  benchmark suite, courtesy fero14041
+  benchmark suite, courtesy Vincent Férotin
 
 0.6.2
 - [bug] The ${{"foo":"bar"}} parsing issue is fixed!!
