@@ -128,13 +128,17 @@ class Cache(object):
         self.impl.invalidate(key, **self._get_cache_kw(kw))
  
     def invalidate_body(self):
-        """Invalidate the cached content of the "body" method for this template.
+        """Invalidate the cached content of the "body" method for this
+        template.
  
         """
         self.invalidate('render_body', __M_defname='render_body')
  
     def invalidate_def(self, name):
-        """Invalidate the cached content of a particular <%def> within this template."""
+        """Invalidate the cached content of a particular <%def> within this
+        template.
+        
+        """
  
         self.invalidate('render_%s' % name, __M_defname='render_%s' % name)
  

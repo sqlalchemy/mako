@@ -116,7 +116,8 @@ class PythonPrinter(object):
                 # its not a "compound" keyword.  but lets also
                 # test for valid Python keywords that might be indenting us,
                 # else assume its a non-indenting line
-                m2 = re.match(r"^\s*(def|class|else|elif|except|finally)", line)
+                m2 = re.match(r"^\s*(def|class|else|elif|except|finally)",
+                              line)
                 if m2:
                     self.indent += 1
                     self.indent_detail.append(indentor)

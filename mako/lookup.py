@@ -245,7 +245,8 @@ class TemplateLookup(TemplateCollection):
 
         if uri[0] != '/':
             if relativeto is not None:
-                v = self._uri_cache[key] = posixpath.join(posixpath.dirname(relativeto), uri)
+                v = self._uri_cache[key] = posixpath.join(
+                                            posixpath.dirname(relativeto), uri)
             else:
                 v = self._uri_cache[key] = '/' + uri
         else:

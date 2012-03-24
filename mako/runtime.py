@@ -645,8 +645,8 @@ def capture(context, callable_, *args, **kwargs):
  
     if not callable(callable_):
         raise exceptions.RuntimeException(
-                            "capture() function expects a callable as "
-                            "its argument (i.e. capture(func, *args, **kwargs))"
+                           "capture() function expects a callable as "
+                           "its argument (i.e. capture(func, *args, **kwargs))"
                         )
     context._push_buffer()
     try:

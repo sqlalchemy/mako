@@ -187,16 +187,17 @@ class FastEncodingBuffer(object):
  
     def getvalue(self):
         if self.encoding:
-            return self.delim.join(self.data).encode(self.encoding, self.errors)
+            return self.delim.join(self.data).encode(self.encoding,
+                                                     self.errors)
         else:
             return self.delim.join(self.data)
 
 class LRUCache(dict):
-    """A dictionary-like object that stores a limited number of items, discarding
-    lesser used items periodically.
+    """A dictionary-like object that stores a limited number of items,
+    discarding lesser used items periodically.
  
     this is a rewrite of LRUCache from Myghty to use a periodic timestamp-based
-    paradigm so that synchronization is not really needed.  the size management 
+    paradigm so that synchronization is not really needed.  the size management
     is inexact.
     """
  
@@ -244,8 +245,8 @@ class LRUCache(dict):
                 try:
                     del self[item.key]
                 except KeyError:
-                    # if we couldnt find a key, most likely some other thread broke in 
-                    # on us. loop around and try again
+                    # if we couldn't find a key, most likely some other thread
+                    # broke in on us. loop around and try again
                     break
 
 # Regexp to match python magic encoding line
@@ -254,7 +255,8 @@ _PYTHON_MAGIC_COMMENT_re = re.compile(
     re.VERBOSE)
 
 def parse_encoding(fp):
-    """Deduce the encoding of a Python source file (binary mode) from magic comment.
+    """Deduce the encoding of a Python source file (binary mode) from magic
+    comment.
 
     It does this in the same way as the `Python interpreter`__
 
@@ -283,7 +285,8 @@ def parse_encoding(fp):
                 pass
             else:
                 line2 = fp.readline()
-                m = _PYTHON_MAGIC_COMMENT_re.match(line2.decode('ascii', 'ignore'))
+                m = _PYTHON_MAGIC_COMMENT_re.match(
+                                               line2.decode('ascii', 'ignore'))
 
         if has_bom:
             if m:

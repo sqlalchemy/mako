@@ -26,13 +26,16 @@ class MakoLexer(RegexLexer):
              bygroups(Text, Comment.Preproc, Keyword, Other)),
             (r'(\s*)(\%(?!%))([^\n]*)(\n|\Z)',
              bygroups(Text, Comment.Preproc, using(PythonLexer), Other)),
-             (r'(\s*)(##[^\n]*)(\n|\Z)',
+            (r'(\s*)(##[^\n]*)(\n|\Z)',
               bygroups(Text, Comment.Preproc, Other)),
-              (r'''(?s)<%doc>.*?</%doc>''', Comment.Preproc),
-            (r'(<%)([\w\.\:]+)', bygroups(Comment.Preproc, Name.Builtin), 'tag'),
-            (r'(</%)([\w\.\:]+)(>)', bygroups(Comment.Preproc, Name.Builtin, Comment.Preproc)),
+            (r'''(?s)<%doc>.*?</%doc>''', Comment.Preproc),
+            (r'(<%)([\w\.\:]+)',
+              bygroups(Comment.Preproc, Name.Builtin), 'tag'),
+            (r'(</%)([\w\.\:]+)(>)',
+              bygroups(Comment.Preproc, Name.Builtin, Comment.Preproc)),
             (r'<%(?=([\w\.\:]+))', Comment.Preproc, 'ondeftags'),
-            (r'(<%(?:!?))(.*?)(%>)(?s)', bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
+            (r'(<%(?:!?))(.*?)(%>)(?s)',
+              bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'(\$\{)(.*?)(\})',
              bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc)),
             (r'''(?sx)
@@ -103,7 +106,8 @@ class MakoCssLexer(DelegatingLexer):
                                              **options)
 
 
-pygments_html_formatter = HtmlFormatter(cssclass='syntax-highlighted', linenos=True)
+pygments_html_formatter = HtmlFormatter(cssclass='syntax-highlighted',
+                                        linenos=True)
 def syntax_highlight(filename='', language=None):
     mako_lexer = MakoLexer()
     if util.py3k:
@@ -111,6 +115,8 @@ def syntax_highlight(filename='', language=None):
     else:
         python_lexer = PythonLexer()
     if filename.startswith('memory:') or language == 'mako':
-        return lambda string: highlight(string, mako_lexer, pygments_html_formatter)
-    return lambda string: highlight(string, python_lexer, pygments_html_formatter)
+        return lambda string: highlight(string, mako_lexer,
+                                        pygments_html_formatter)
+    return lambda string: highlight(string, python_lexer,
+                                    pygments_html_formatter)
 

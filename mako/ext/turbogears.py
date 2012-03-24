@@ -39,7 +39,8 @@ class TGPlugin(object):
             return Template(template_string, **self.tmpl_options)
         # Translate TG dot notation to normal / template path
         if '/' not in templatename:
-            templatename = '/' + templatename.replace('.', '/') + '.' + self.extension
+            templatename = '/' + templatename.replace('.', '/') + '.' +\
+                    self.extension
 
         # Lookup template
         return self.lookup.get_template(templatename)

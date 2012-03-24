@@ -24,7 +24,8 @@ def _format_filepos(lineno, pos, filename):
  
 class CompileException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
-        MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
+        MakoException.__init__(self,
+                              message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
         self.filename = filename
@@ -32,7 +33,8 @@ class CompileException(MakoException):
  
 class SyntaxException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
-        MakoException.__init__(self, message + _format_filepos(lineno, pos, filename))
+        MakoException.__init__(self,
+                              message + _format_filepos(lineno, pos, filename))
         self.lineno =lineno
         self.pos = pos
         self.filename = filename
@@ -232,7 +234,8 @@ ${tback.errorname}: ${tback.message}
 
 
 try:
-    from mako.ext.pygmentplugin import syntax_highlight, pygments_html_formatter
+    from mako.ext.pygmentplugin import syntax_highlight,\
+            pygments_html_formatter
 except ImportError:
     from mako.filters import html_escape
     pygments_html_formatter = None
@@ -254,7 +257,8 @@ def html_error_template():
     import mako.template
     return mako.template.Template(r"""
 <%!
-    from mako.exceptions import RichTraceback, syntax_highlight, pygments_html_formatter
+    from mako.exceptions import RichTraceback, syntax_highlight,\
+            pygments_html_formatter
 %>
 <%page args="full=True, css=True, error=None, traceback=None"/>
 % if full:
@@ -268,7 +272,8 @@ def html_error_template():
         .stacktrace { margin:5px 5px 5px 5px; }
         .highlight { padding:0px 10px 0px 10px; background-color:#9F9FDF; }
         .nonhighlight { padding:0px; background-color:#DFDFDF; }
-        .sample { padding:10px; margin:10px 10px 10px 10px; font-family:monospace; }
+        .sample { padding:10px; margin:10px 10px 10px 10px;
+                  font-family:monospace; }
         .sampleline { padding:0px 10px 0px 10px; }
         .sourceline { margin:5px 5px 10px 5px; font-family:monospace;}
         .location { font-size:80%; }
@@ -281,7 +286,8 @@ def html_error_template():
         pre { margin: 0; }
         .syntax-highlighted { padding: 0 10px; }
         .syntax-highlightedtable { border-spacing: 1px; }
-        .nonhighlight { border-top: 1px solid #DFDFDF; border-bottom: 1px solid #DFDFDF; }
+        .nonhighlight { border-top: 1px solid #DFDFDF;
+                        border-bottom: 1px solid #DFDFDF; }
         .stacktrace .nonhighlight { margin: 5px 15px 10px; }
         .sourceline { margin: 0 0; font-family:monospace; }
         .code { background-color: #F8F8F8; width: 100%; }
@@ -352,4 +358,5 @@ def html_error_template():
 </body>
 </html>
 % endif
-""", output_encoding=sys.getdefaultencoding(), encoding_errors='htmlentityreplace')
+""", output_encoding=sys.getdefaultencoding(),
+        encoding_errors='htmlentityreplace')

@@ -4,7 +4,8 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""provides functionality for rendering a parsetree constructing into module source code."""
+"""provides functionality for rendering a parsetree constructing into module
+source code."""
 
 import time
 import re
@@ -228,7 +229,8 @@ class _GenerateRenderMethod(object):
 
         return main_identifiers.topleveldefs.values()
 
-    def write_render_callable(self, node, name, args, buffered, filtered, cached):
+    def write_render_callable(self, node, name, args, buffered, filtered,
+            cached):
         """write a top-level render callable.
  
         this could be the main render() method or that of a top-level def."""
@@ -236,7 +238,8 @@ class _GenerateRenderMethod(object):
         if self.in_def:
             decorator = node.decorator
             if decorator:
-                self.printer.writeline("@runtime._decorate_toplevel(%s)" % decorator)
+                self.printer.writeline(
+                                 "@runtime._decorate_toplevel(%s)" % decorator)
  
         self.printer.writelines(
             "def %s(%s):" % (name, ','.join(args)),
@@ -247,7 +250,8 @@ class _GenerateRenderMethod(object):
         if buffered or filtered or cached:
             self.printer.writeline("context._push_buffer()")
  
-        self.identifier_stack.append(self.compiler.identifiers.branch(self.node))
+        self.identifier_stack.append(
+                                   self.compiler.identifiers.branch(self.node))
         if (not self.in_def or self.node.is_block) and '**pageargs' in args:
             self.identifier_stack[-1].argument_declared.add('pageargs')
 
@@ -326,7 +330,8 @@ class _GenerateRenderMethod(object):
                     def visitDefOrBase(s, node):
                         if node.is_anonymous:
                             raise exceptions.CompileException(
-                                "Can't put anonymous blocks inside <%namespace>", 
+                                "Can't put anonymous blocks inside "
+                                "<%namespace>",
                                 **node.exception_kwargs
                             )
                         self.write_inline_def(node, identifiers, nested=False)
@@ -343,27 +348,32 @@ class _GenerateRenderMethod(object):
 
             if 'file' in node.parsed_attributes:
                 self.printer.writeline(
-                                "ns = runtime.TemplateNamespace(%r, context._clean_inheritance_tokens(),"
-                                " templateuri=%s, callables=%s, calling_uri=_template_uri)" %
+                                "ns = runtime.TemplateNamespace(%r,"
+                                " context._clean_inheritance_tokens(),"
+                                " templateuri=%s, callables=%s, "
+                                " calling_uri=_template_uri)" %
                                 (
-                                    node.name,
-                                    node.parsed_attributes.get('file', 'None'), 
-                                    callable_name, 
+                                   node.name,
+                                   node.parsed_attributes.get('file', 'None'), 
+                                   callable_name, 
                                 )
                             )
             elif 'module' in node.parsed_attributes:
                 self.printer.writeline(
-                                "ns = runtime.ModuleNamespace(%r, context._clean_inheritance_tokens(),"
-                                " callables=%s, calling_uri=_template_uri, module=%s)" %
+                                "ns = runtime.ModuleNamespace(%r,"
+                                " context._clean_inheritance_tokens(),"
+                                " callables=%s, calling_uri=_template_uri,"
+                                " module=%s)" %
                                 (
-                                    node.name,
-                                    callable_name, 
-                                    node.parsed_attributes.get('module', 'None')
+                                   node.name,
+                                   callable_name, 
+                                   node.parsed_attributes.get('module', 'None')
                                 )
                             )
             else:
                 self.printer.writeline(
-                                "ns = runtime.Namespace(%r, context._clean_inheritance_tokens(),"
+                                "ns = runtime.Namespace(%r,"
+                                " context._clean_inheritance_tokens(),"
                                 " callables=%s, calling_uri=_template_uri)" %
                                 (
                                     node.name,
@@ -373,7 +383,8 @@ class _GenerateRenderMethod(object):
             if eval(node.attributes.get('inheritable', "False")):
                 self.printer.writeline("context['self'].%s = ns" % (node.name))
  
-            self.printer.writeline("context.namespaces[(__name__, %s)] = ns" % repr(node.name))
+            self.printer.writeline(
+                   "context.namespaces[(__name__, %s)] = ns" % repr(node.name))
             self.printer.write("\n")
         if not len(namespaces):
             self.printer.writeline("pass")
@@ -408,7 +419,8 @@ class _GenerateRenderMethod(object):
  
         # write closure functions for closures that we define 
         # right here
-        to_write = to_write.union([c.funcname for c in identifiers.closuredefs.values()])
+        to_write = to_write.union(
+                        [c.funcname for c in identifiers.closuredefs.values()])
 
         # remove identifiers that are declared in the argument 
         # signature of the callable
@@ -435,7 +447,8 @@ class _GenerateRenderMethod(object):
             for ident, ns in self.compiler.namespaces.iteritems():
                 if ns.attributes.has_key('import'):
                     self.printer.writeline(
-                            "_mako_get_namespace(context, %r)._populate(_import_ns, %r)" %
+                            "_mako_get_namespace(context, %r)."\
+                                    "_populate(_import_ns, %r)" %
                             (
                                 ident,
                                 re.split(r'\s*,\s*', ns.attributes['import'])
@@ -481,7 +494,7 @@ class _GenerateRenderMethod(object):
                         )
                     else:
                         self.printer.writeline(
-                        "%s = _import_ns.get(%r, context.get(%r, UNDEFINED))" % 
+                        "%s = _import_ns.get(%r, context.get(%r, UNDEFINED))" %
                         (ident, ident, ident))
                 else:
                     if self.compiler.strict_undefined:
@@ -501,7 +514,8 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("__M_writer = context.writer()")
  
     def write_source_comment(self, node):
-        """write a source comment containing the line number of the corresponding template line."""
+        """write a source comment containing the line number of the
+        corresponding template line."""
         if self.last_source_line != node.lineno:
             self.printer.writeline("# SOURCE LINE %d" % node.lineno)
             self.last_source_line = node.lineno
@@ -519,7 +533,8 @@ class _GenerateRenderMethod(object):
         else:
             nameargs.insert(0, 'context')
         self.printer.writeline("def %s(%s):" % (funcname, ",".join(namedecls)))
-        self.printer.writeline("return render_%s(%s)" % (funcname, ",".join(nameargs)))
+        self.printer.writeline(
+                       "return render_%s(%s)" % (funcname, ",".join(nameargs)))
         self.printer.writeline(None)
  
     def write_inline_def(self, node, identifiers, nested):
@@ -529,8 +544,10 @@ class _GenerateRenderMethod(object):
  
         decorator = node.decorator
         if decorator:
-            self.printer.writeline("@runtime._decorate_inline(context, %s)" % decorator)
-        self.printer.writeline("def %s(%s):" % (node.funcname, ",".join(namedecls)))
+            self.printer.writeline(
+                          "@runtime._decorate_inline(context, %s)" % decorator)
+        self.printer.writeline(
+                          "def %s(%s):" % (node.funcname, ",".join(namedecls)))
         filtered = len(node.filter_args.args) > 0 
         buffered = eval(node.attributes.get('buffered', 'False'))
         cached = eval(node.attributes.get('cached', 'False'))
@@ -560,12 +577,15 @@ class _GenerateRenderMethod(object):
                                         namedecls, False, identifiers, 
                                         inline=True, toplevel=False)
  
-    def write_def_finish(self, node, buffered, filtered, cached, callstack=True):
-        """write the end section of a rendering function, either outermost or inline.
+    def write_def_finish(self, node, buffered, filtered, cached,
+            callstack=True):
+        """write the end section of a rendering function, either outermost or
+        inline.
  
-        this takes into account if the rendering function was filtered, buffered, etc.
-        and closes the corresponding try: block if any, and writes code to retrieve 
-        captured content, apply filters, send proper return value."""
+        this takes into account if the rendering function was filtered,
+        buffered, etc.  and closes the corresponding try: block if any, and
+        writes code to retrieve captured content, apply filters, send proper
+        return value."""
  
         if not buffered and not cached and not filtered:
             self.printer.writeline("return ''")
@@ -588,8 +608,8 @@ class _GenerateRenderMethod(object):
                 )
             else:
                 self.printer.writelines(
-                    "finally:",
-                        "__M_buf, __M_writer = context._pop_buffer_and_writer()"
+                   "finally:",
+                       "__M_buf, __M_writer = context._pop_buffer_and_writer()"
                 )
  
             if callstack:
@@ -597,10 +617,12 @@ class _GenerateRenderMethod(object):
  
             s = "__M_buf.getvalue()"
             if filtered:
-                s = self.create_filter_callable(node.filter_args.args, s, False)
+                s = self.create_filter_callable(node.filter_args.args, s,
+                                                False)
             self.printer.writeline(None)
             if buffered and not cached:
-                s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
+                s = self.create_filter_callable(self.compiler.buffer_filters,
+                                                s, False)
             if buffered or cached:
                 self.printer.writeline("return %s" % s)
             else:
@@ -616,7 +638,8 @@ class _GenerateRenderMethod(object):
             callable with a cached version of itself."""
  
         self.printer.writeline("__M_%s = %s" % (name, name))
-        cachekey = node_or_pagetag.parsed_attributes.get('cache_key', repr(name))
+        cachekey = node_or_pagetag.parsed_attributes.get('cache_key',
+                                                         repr(name))
 
         cache_args = {}
         if self.compiler.pagetag is not None:
@@ -652,24 +675,26 @@ class _GenerateRenderMethod(object):
                             limit=node_or_pagetag.undeclared_identifiers()
                         )
         if buffered:
-            s = "context.get('local')."\
-                "cache.get_or_create(%s, lambda:__M_%s(%s),  %s__M_defname=%r)" % \
-                            (cachekey, name, ','.join(pass_args), 
-                            ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
-                            name
-                            )
+            s = "context.get('local').cache."\
+                   "get_or_create(%s, lambda:__M_%s(%s),  %s__M_defname=%r)" %\
+                   (cachekey, name, ','.join(pass_args), 
+                   ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]),
+                   name
+                   )
             # apply buffer_filters
-            s = self.create_filter_callable(self.compiler.buffer_filters, s, False)
+            s = self.create_filter_callable(self.compiler.buffer_filters, s,
+                                            False)
             self.printer.writelines("return " + s,None)
         else:
             self.printer.writelines(
-                    "__M_writer(context.get('local')."
-                    "cache.get_or_create(%s, lambda:__M_%s(%s), %s__M_defname=%r))" % 
-                    (cachekey, name, ','.join(pass_args), 
-                    ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]), 
-                    name, 
-                    ),
-                    "return ''",
+                   "__M_writer(context.get('local')."
+                   "cache.get_or_create(%s, lambda:__M_%s(%s), "
+                   "%s__M_defname=%r))" %
+                   (cachekey, name, ','.join(pass_args),
+                   ''.join(["%s=%s, " % (k,v) for k, v in cache_args.items()]),
+                   name, 
+                   ),
+                   "return ''",
                 None
             )
 
@@ -717,7 +742,8 @@ class _GenerateRenderMethod(object):
                 ) or \
                 len(self.compiler.default_filters):
  
-            s = self.create_filter_callable(node.escapes_code.args, "%s" % node.text, True)
+            s = self.create_filter_callable(node.escapes_code.args,
+                                            "%s" % node.text, True)
             self.printer.writeline("__M_writer(%s)" % s)
         else:
             self.printer.writeline("__M_writer(%s)" % node.text)
@@ -776,20 +802,21 @@ class _GenerateRenderMethod(object):
                 # declared/modified variables into the "__M_locals" dictionary,
                 # which is used for def calls within the same template, 
                 # to simulate "enclosing scope"
-                self.printer.writeline('__M_locals_builtin_stored = __M_locals_builtin()')
                 self.printer.writeline(
-                            '__M_locals.update(__M_dict_builtin([(__M_key,'
-                            ' __M_locals_builtin_stored[__M_key]) for '
-                            '__M_key in [%s] if __M_key in __M_locals_builtin_stored]))' %
-                            ','.join([repr(x) for x in node.declared_identifiers()]))
+                      '__M_locals_builtin_stored = __M_locals_builtin()')
+                self.printer.writeline(
+                      '__M_locals.update(__M_dict_builtin([(__M_key,'
+                      ' __M_locals_builtin_stored[__M_key]) for __M_key in'
+                      ' [%s] if __M_key in __M_locals_builtin_stored]))' %
+                      ','.join([repr(x) for x in node.declared_identifiers()]))
 
     def visitIncludeTag(self, node):
         self.write_source_comment(node)
         args = node.attributes.get('args')
         if args:
             self.printer.writeline(
-                        "runtime._include_file(context, %s, _template_uri, %s)" %
-                        (node.parsed_attributes['file'], args))
+                      "runtime._include_file(context, %s, _template_uri, %s)" %
+                      (node.parsed_attributes['file'], args))
         else:
             self.printer.writeline(
                         "runtime._include_file(context, %s, _template_uri)" %
@@ -808,9 +835,10 @@ class _GenerateRenderMethod(object):
             nameargs = node.get_argument_expressions(include_defaults=False)
             nameargs += ['**pageargs']
             self.printer.writeline("if 'parent' not in context._data or "
-                                    "not hasattr(context._data['parent'], '%s'):" 
-                                    % node.funcname)
-            self.printer.writeline("context['self'].%s(%s)" % (node.funcname, ",".join(nameargs)))
+                                  "not hasattr(context._data['parent'], '%s'):"
+                                  % node.funcname)
+            self.printer.writeline(
+                "context['self'].%s(%s)" % (node.funcname, ",".join(nameargs)))
             self.printer.writeline("\n")
 
     def visitCallNamespaceTag(self, node):
@@ -842,8 +870,8 @@ class _GenerateRenderMethod(object):
                 self.write_inline_def(node, callable_identifiers, nested=False)
                 if not node.is_anonymous:
                     export.append(node.funcname)
-                # remove defs that are within the <%call> from the "closuredefs" defined
-                # in the body, so they dont render twice
+                # remove defs that are within the <%call> from the
+                # "closuredefs" defined in the body, so they dont render twice
                 if node.funcname in body_identifiers.closuredefs:
                     del body_identifiers.closuredefs[node.funcname]
 
@@ -880,11 +908,13 @@ class _GenerateRenderMethod(object):
         self.printer.writelines(
             # push on caller for nested call
             "context.caller_stack.nextcaller = "
-                "runtime.Namespace('caller', context, callables=ccall(__M_caller))",
+                "runtime.Namespace('caller', context, "
+                                  "callables=ccall(__M_caller))",
             "try:")
         self.write_source_comment(node)
         self.printer.writelines(
-                "__M_writer(%s)" % self.create_filter_callable([], node.expression, True),
+                "__M_writer(%s)" % self.create_filter_callable(
+                                                    [], node.expression, True),
             "finally:",
                 "context.caller_stack.nextcaller = None",
             None
@@ -904,9 +934,9 @@ class _Identifiers(object):
                 # things that have already been declared 
                 # in an enclosing namespace (i.e. names we can just use)
                 self.declared = set(parent.declared).\
-                                        union([c.name for c in parent.closuredefs.values()]).\
-                                        union(parent.locally_declared).\
-                                        union(parent.argument_declared)
+                         union([c.name for c in parent.closuredefs.values()]).\
+                         union(parent.locally_declared).\
+                         union(parent.argument_declared)
  
                 # if these identifiers correspond to a "nested" 
                 # scope, it means whatever the parent identifiers 
@@ -949,7 +979,8 @@ class _Identifiers(object):
         if node is not None:
             node.accept_visitor(self)
 
-        illegal_names = self.compiler.reserved_names.intersection(self.locally_declared)
+        illegal_names = self.compiler.reserved_names.intersection(
+                                                         self.locally_declared)
         if illegal_names:
             raise exceptions.NameConflictError(
                 "Reserved words declared in template: %s" % 
@@ -968,7 +999,8 @@ class _Identifiers(object):
  
     def __repr__(self):
         return "Identifiers(declared=%r, locally_declared=%r, "\
-                "undeclared=%r, topleveldefs=%r, closuredefs=%r, argumentdeclared=%r)" %\
+                "undeclared=%r, topleveldefs=%r, closuredefs=%r, "\
+                "argumentdeclared=%r)" %\
                 (
                     list(self.declared),
                     list(self.locally_declared),
@@ -982,7 +1014,8 @@ class _Identifiers(object):
             and declared identifiers of the given node."""
  
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+            if ident != 'context' and\
+                       ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
         for ident in node.declared_identifiers():
             self.locally_declared.add(ident)
@@ -1001,7 +1034,8 @@ class _Identifiers(object):
     def visitCode(self, node):
         if not node.ismodule:
             self.check_declared(node)
-            self.locally_assigned = self.locally_assigned.union(node.declared_identifiers())
+            self.locally_assigned = self.locally_assigned.union(
+                                                   node.declared_identifiers())
  
     def visitNamespaceTag(self, node):
         # only traverse into the sub-elements of a 
@@ -1029,7 +1063,8 @@ class _Identifiers(object):
             self._check_name_exists(self.closuredefs, node)
 
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+            if ident != 'context' and\
+                       ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
  
         # visit defs only one level deep
@@ -1048,13 +1083,15 @@ class _Identifiers(object):
                 raise exceptions.CompileException(
                         "Named block '%s' not allowed inside of def '%s'" 
                         % (node.name, self.node.name), **node.exception_kwargs)
-            elif isinstance(self.node, (parsetree.CallTag, parsetree.CallNamespaceTag)):
+            elif isinstance(self.node,
+                            (parsetree.CallTag, parsetree.CallNamespaceTag)):
                 raise exceptions.CompileException(
                         "Named block '%s' not allowed inside of <%%call> tag" 
                         % (node.name, ), **node.exception_kwargs)
 
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+            if ident != 'context' and\
+                       ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
  
         if not node.is_anonymous:
@@ -1081,7 +1118,8 @@ class _Identifiers(object):
     def visitCallTag(self, node):
         if node is self.node:
             for ident in node.undeclared_identifiers():
-                if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                if ident != 'context' and\
+                       ident not in self.declared.union(self.locally_declared):
                     self.undeclared.add(ident)
             for ident in node.declared_identifiers():
                 self.argument_declared.add(ident)
@@ -1089,7 +1127,8 @@ class _Identifiers(object):
                 n.accept_visitor(self)
         else:
             for ident in node.undeclared_identifiers():
-                if ident != 'context' and ident not in self.declared.union(self.locally_declared):
+                if ident != 'context' and\
+                       ident not in self.declared.union(self.locally_declared):
                     self.undeclared.add(ident)
  
 

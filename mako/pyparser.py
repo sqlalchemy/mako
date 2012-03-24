@@ -333,9 +333,11 @@ else:
                 self.listener.codeargs.append(p)
                 self.listener.args.append(ExpressionGenerator(n).value())
                 self.listener.declared_identifiers = \
-                    self.listener.declared_identifiers.union(p.declared_identifiers)
+                    self.listener.declared_identifiers.union(
+                                                      p.declared_identifiers)
                 self.listener.undeclared_identifiers = \
-                    self.listener.undeclared_identifiers.union(p.undeclared_identifiers)
+                    self.listener.undeclared_identifiers.union(
+                                                      p.undeclared_identifiers)
 
         def visit(self, expr):
             visitor.walk(expr, self)  # , walker=walker())

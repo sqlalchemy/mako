@@ -307,9 +307,9 @@ class Tag(Node):
             elif key in nonexpressions:
                 if re.search(r'\${.+?}', self.attributes[key]):
                     raise exceptions.CompileException(
-                            "Attibute '%s' in tag '%s' does not allow embedded "
-                            "expressions"  % (key, self.keyword), 
-                            **self.exception_kwargs)
+                           "Attibute '%s' in tag '%s' does not allow embedded "
+                           "expressions"  % (key, self.keyword), 
+                           **self.exception_kwargs)
                 self.parsed_attributes[key] = repr(self.attributes[key])
             else:
                 raise exceptions.CompileException(
@@ -464,8 +464,8 @@ class BlockTag(Tag):
         name = attributes.get('name')
         if name and not re.match(r'^[\w_]+$',name):
             raise exceptions.CompileException(
-                                "%block may not specify an argument signature", 
-                                **self.exception_kwargs)
+                               "%block may not specify an argument signature", 
+                               **self.exception_kwargs)
         if not name and attributes.get('args', None):
             raise exceptions.CompileException(
                                 "Only named %blocks may specify args",
