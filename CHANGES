@@ -17,6 +17,9 @@
   nesting multiple def-calls with content.
   Thanks to Jeff Dairiki. [ticket:186]
 
+- [feature] Added Jinja2 to the example
+  benchmark suite, courtesy fero14041
+
 0.6.2
 - [bug] The ${{"foo":"bar"}} parsing issue is fixed!!
   The legendary Eevee has slain the dragon!
