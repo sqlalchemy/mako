@@ -11,7 +11,12 @@ import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters, exceptions
 
-MAGIC_NUMBER = 7
+MAGIC_NUMBER = 8
+
+# names which are hardwired into the 
+# template and are not accessed via the 
+# context itself
+RESERVED_NAMES = set(['context', 'loop'])
 
 def compile(node, 
                 uri, 
@@ -22,7 +27,8 @@ def compile(node,
                 source_encoding=None, 
                 generate_magic_comment=True,
                 disable_unicode=False,
-                strict_undefined=False):
+                strict_undefined=False,
+                reserved_names=()):
  
     """Generate module source code given a parsetree node, 
       uri, and optional source filename"""
@@ -47,7 +53,8 @@ def compile(node,
                                             source_encoding,
                                             generate_magic_comment,
                                             disable_unicode,
-                                            strict_undefined), 
+                                            strict_undefined,
+                                            reserved_names), 
                                 node)
     return buf.getvalue()
 
@@ -61,7 +68,8 @@ class _CompileContext(object):
                     source_encoding, 
                     generate_magic_comment,
                     disable_unicode,
-                    strict_undefined):
+                    strict_undefined,
+                    reserved_names):
         self.uri = uri
         self.filename = filename
         self.default_filters = default_filters
@@ -71,6 +79,7 @@ class _CompileContext(object):
         self.generate_magic_comment = generate_magic_comment
         self.disable_unicode = disable_unicode
         self.strict_undefined = strict_undefined
+        self.reserved_names = reserved_names
  
 class _GenerateRenderMethod(object):
     """A template visitor object which generates the 
@@ -160,7 +169,7 @@ class _GenerateRenderMethod(object):
         for n in module_code:
             module_ident = module_ident.union(n.declared_identifiers())
 
-        module_identifiers = _Identifiers()
+        module_identifiers = _Identifiers(self.compiler)
         module_identifiers.declared = module_ident
  
         # module-level names, python code
@@ -388,6 +397,7 @@ class _GenerateRenderMethod(object):
         top-level, it is fully rendered as a local closure.
  
         """
+ 
         # collection of all defs available to us in this scope
         comp_idents = dict([(c.funcname, c) for c in identifiers.defs])
         to_write = set()
@@ -410,6 +420,9 @@ class _GenerateRenderMethod(object):
         # means that variable is now a "locally declared" var,
         # which cannot be referenced beforehand. 
         to_write = to_write.difference(identifiers.locally_declared)
+
+        has_loop = "loop" in to_write
+        to_write.discard("loop")
  
         # if a limiting set was sent, constraint to those items in that list
         # (this is used for the caching decorator)
@@ -427,7 +440,12 @@ class _GenerateRenderMethod(object):
                                 ident,
                                 re.split(r'\s*,\s*', ns.attributes['import'])
                             ))
- 
+
+        if has_loop:
+            self.printer.writeline(
+                'loop = __M_loop = runtime.LoopStack()'
+            )
+
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
@@ -709,9 +727,17 @@ class _GenerateRenderMethod(object):
             if not node.get_children():
                 self.printer.writeline("pass")
             self.printer.writeline(None)
+            if node.has_loop_context:
+                self.printer.writeline('finally:')
+                self.printer.writeline("loop = __M_loop._exit()")
+                self.printer.writeline(None)
         else:
             self.write_source_comment(node)
-            self.printer.writeline(node.text)
+            if node.keyword == 'for':
+                text = mangle_mako_loop(node, self.printer)
+            else:
+                text = node.text
+            self.printer.writeline(text)
  
     def visitText(self, node):
         self.write_source_comment(node)
@@ -739,6 +765,8 @@ class _GenerateRenderMethod(object):
                 )
  
     def visitCode(self, node):
+        # mangle loop variables within the scope of a loop context,
+        # if applicable
         if not node.ismodule:
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
@@ -865,7 +893,7 @@ class _GenerateRenderMethod(object):
 class _Identifiers(object):
     """tracks the status of identifier names as template code is rendered."""
  
-    def __init__(self, node=None, parent=None, nested=False):
+    def __init__(self, compiler, node=None, parent=None, nested=False):
         if parent is not None:
             # if we are the branch created in write_namespaces(),
             # we don't share any context from the main body().
@@ -892,7 +920,9 @@ class _Identifiers(object):
         else:
             self.declared = set()
             self.topleveldefs = util.SetLikeDict()
- 
+
+        self.compiler = compiler
+
         # things within this level that are referenced before they 
         # are declared (e.g. assigned to)
         self.undeclared = set()
@@ -918,12 +948,19 @@ class _Identifiers(object):
  
         if node is not None:
             node.accept_visitor(self)
- 
+
+        illegal_names = self.compiler.reserved_names.intersection(self.locally_declared)
+        if illegal_names:
+            raise exceptions.NameConflictError(
+                "Reserved words declared in template: %s" % 
+                ", ".join(illegal_names))
+
+
     def branch(self, node, **kwargs):
         """create a new Identifiers for a new Node, with 
           this Identifiers as the parent."""
  
-        return _Identifiers(node, self, **kwargs)
+        return _Identifiers(self.compiler, node, self, **kwargs)
  
     @property
     def defs(self):
@@ -1055,3 +1092,54 @@ class _Identifiers(object):
                 if ident != 'context' and ident not in self.declared.union(self.locally_declared):
                     self.undeclared.add(ident)
  
+
+_FOR_LOOP = re.compile(
+        r'^for\s+((?:\(?)\s*[A-Za-z_][A-Za-z_0-9]*'
+        r'(?:\s*,\s*(?:[A-Za-z_][A-Za-z0-9_]*),??)*\s*(?:\)?))\s+in\s+(.*):'
+    )
+
+def mangle_mako_loop(node, printer):
+    """converts a for loop into a context manager wrapped around a for loop
+    when access to the `loop` variable has been detected in the for loop body
+    """
+    loop_variable = LoopVariable()
+    node.accept_visitor(loop_variable)
+    if loop_variable.detected:
+        node.nodes[-1].has_loop_context = True
+        match = _FOR_LOOP.match(node.text)
+        if match:
+            printer.writelines(
+                    'loop = __M_loop._enter(%s)' % match.group(2),
+                    'try:'
+                    #'with __M_loop(%s) as loop:' % match.group(2)
+                )
+            text = 'for %s in loop:' % match.group(1)
+        else:
+            raise SyntaxError("Couldn't apply loop context: %s" % node.text)
+    else:
+        text = node.text
+    return text
+
+
+class LoopVariable(object):
+    """A node visitor which looks for the name 'loop' within undeclared 
+    identifiers."""
+
+    def __init__(self):
+        self.detected = False
+
+    def _loop_reference_detected(self, node):
+        if 'loop' in node.undeclared_identifiers():
+            self.detected = True
+        else:
+            for n in node.get_children():
+                n.accept_visitor(self)
+
+    def visitControlLine(self, node):
+        self._loop_reference_detected(node)
+
+    def visitCode(self, node):
+        self._loop_reference_detected(node)
+
+    def visitExpression(self, node):
+        self._loop_reference_detected(node)

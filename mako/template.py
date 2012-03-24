@@ -283,6 +283,10 @@ class Template(object):
             cache_type, cache_dir, cache_url
         )
 
+    @util.memoized_property
+    def reserved_names(self):
+        return codegen.RESERVED_NAMES
+
     def _setup_cache_args(self, 
                 cache_impl, cache_enabled, cache_args,
                 cache_type, cache_dir, cache_url):
@@ -396,7 +400,7 @@ class Template(object):
  
         """
         if getattr(context, '_with_template', None) is None:
-            context._with_template = self
+            context._set_with_template(self)
         runtime._render_context(self, 
                                 self.callable_, 
                                 context, 
@@ -573,7 +577,8 @@ def _compile_text(template, text, filename):
                             source_encoding=lexer.encoding,
                             generate_magic_comment=template.disable_unicode,
                             disable_unicode=template.disable_unicode,
-                            strict_undefined=template.strict_undefined)
+                            strict_undefined=template.strict_undefined,
+                            reserved_names=template.reserved_names)
 
     cid = identifier
     if not util.py3k and isinstance(cid, unicode):
@@ -601,7 +606,8 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
                                 source_encoding=lexer.encoding,
                                 generate_magic_comment=True,
                                 disable_unicode=template.disable_unicode,
-                                strict_undefined=template.strict_undefined)
+                                strict_undefined=template.strict_undefined,
+                                reserved_names=template.reserved_names)
  
     if isinstance(source, unicode):
         source = source.encode(lexer.encoding or 'ascii')

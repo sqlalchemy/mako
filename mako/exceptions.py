@@ -41,6 +41,9 @@ class SyntaxException(MakoException):
 class UnsupportedError(MakoException):
     """raised when a retired feature is used."""
  
+class NameConflictError(MakoException):
+    """raised when a reserved word is used inappropriately"""
+
 class TemplateLookupException(MakoException):
     pass
 

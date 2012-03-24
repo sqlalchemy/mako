@@ -128,6 +128,10 @@ class Lexer(object):
             self.tag[-1].nodes.append(node)
         else:
             self.template.nodes.append(node)
+        # build a set of child nodes for the control line
+        # (used for loop variable detection)
+        if self.control_line:
+            self.control_line[-1].nodes.append(node)
         if isinstance(node, parsetree.Tag):
             if len(self.tag):
                 node.parent = self.tag[-1]

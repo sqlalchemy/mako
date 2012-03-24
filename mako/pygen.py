@@ -65,8 +65,6 @@ class PythonPrinter(object):
             self._flush_adjusted_lines()
             self.in_indent_lines = True
 
-        decreased_indent = False
- 
         if (line is None or 
             re.match(r"^\s*#",line) or
             re.match(r"^\s*$", line)
@@ -78,8 +76,7 @@ class PythonPrinter(object):
         is_comment = line and len(line) and line[0] == '#'
  
         # see if this line should decrease the indentation level
-        if (not decreased_indent and 
-            not is_comment and 
+        if (not is_comment and 
             (not hastext or self._is_unindentor(line))
             ):
  

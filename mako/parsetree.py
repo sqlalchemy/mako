@@ -8,9 +8,10 @@
 
 from mako import exceptions, ast, util, filters
 import re
-
+ 
 class Node(object):
     """base class for a Node in the parse tree."""
+
     def __init__(self, source, lineno, pos, filename):
         self.source = source
         self.lineno = lineno
@@ -29,6 +30,7 @@ class Node(object):
         def traverse(node):
             for n in node.get_children():
                 n.accept_visitor(visitor)
+
         method = getattr(visitor, "visit" + self.__class__.__name__, traverse)
         method(self)
 
@@ -59,12 +61,15 @@ class ControlLine(Node):
  
     """
 
+    has_loop_context = False
+
     def __init__(self, keyword, isend, text, **kwargs):
         super(ControlLine, self).__init__(**kwargs)
         self.text = text
         self.keyword = keyword
         self.isend = isend
-        self.is_primary = keyword in ['for','if', 'while', 'try', 'with']
+        self.is_primary = keyword in ['for', 'if', 'while', 'try', 'with']
+        self.nodes = []
         if self.isend:
             self._declared_identifiers = []
             self._undeclared_identifiers = []
@@ -72,6 +77,9 @@ class ControlLine(Node):
             code = ast.PythonFragment(text, **self.exception_kwargs)
             self._declared_identifiers = code.declared_identifiers 
             self._undeclared_identifiers = code.undeclared_identifiers
+
+    def get_children(self):
+        return self.nodes
 
     def declared_identifiers(self):
         return self._declared_identifiers
