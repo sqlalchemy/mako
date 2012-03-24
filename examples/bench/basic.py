@@ -43,15 +43,21 @@ def u(stringlit):
     else:
         return stringlit.decode('latin1')
 
-__all__ = ['mako', 'mako_inheritance', 'cheetah', 'django', 'myghty', 'genshi', 'kid']
+__all__ = ['mako', 'mako_inheritance', 'jinja2', 'jinja2_inheritance',
+            'cheetah', 'django', 'myghty', 'genshi', 'kid']
+
+# Templates content and constants
+TITLE = 'Just a test'
+USER = 'joe'
+ITEMS = ['Number %d' % num for num in range(1, 15)]
+U_ITEMS = [u(item) for item in ITEMS]
 
 def genshi(dirname, verbose=False):
     from genshi.template import TemplateLoader
     loader = TemplateLoader([dirname], auto_reload=False)
     template = loader.load('template.html')
     def render():
-        data = dict(title='Just a test', user='joe',
-                    items=['Number %d' % num for num in range(1, 15)])
+        data = dict(title=TITLE, user=USER, items=ITEMS)
         return template.generate(**data).render('xhtml')
 
     if verbose:
@@ -62,8 +68,7 @@ def myghty(dirname, verbose=False):
     from myghty import interp
     interpreter = interp.Interpreter(component_root=dirname)
     def render():
-        data = dict(title='Just a test', user='joe',
-                    items=['Number %d' % num for num in range(1, 15)])
+        data = dict(title=TITLE, user=USER, items=ITEMS)
         buffer = StringIO()
         interpreter.execute("template.myt", request_args=data, out_buffer=buffer)
         return buffer.getvalue()
@@ -78,19 +83,30 @@ def mako(dirname, verbose=False):
     lookup = TemplateLookup(directories=[dirname], filesystem_checks=False, disable_unicode=disable_unicode)
     template = lookup.get_template('template.html')
     def render():
-        return template.render(title="Just a test", user="joe", list_items=[u('Number %d') % num for num in range(1,15)])
+        return template.render(title=TITLE, user=USER, list_items=U_ITEMS)
     if verbose:
         print(template.code + " " + render())
     return render
 mako_inheritance = mako
+
+def jinja2(dirname, verbose=False):
+    from jinja2 import Environment, FileSystemLoader
+    env = Environment(loader=FileSystemLoader(dirname))
+    template = env.get_template('template.html')
+    def render():
+        return template.render(title=TITLE, user=USER, list_items=U_ITEMS)
+    if verbose:
+        print(render())
+    return render
+jinja2_inheritance = jinja2
 
 def cheetah(dirname, verbose=False):
     from Cheetah.Template import Template
     filename = os.path.join(dirname, 'template.tmpl')
     template = Template(file=filename)
     def render():
-        template.__dict__.update({'title': 'Just a test', 'user': 'joe',
-                                  'list_items': [u('Number %d') % num for num in range(1, 15)]})
+        template.__dict__.update({'title': TITLE, 'user': USER,
+                                  'list_items': U_ITEMS})
         return template.respond()
 
     if verbose:
@@ -108,8 +124,7 @@ def django(dirname, verbose=False):
     tmpl = loader.get_template('template.html')
 
     def render():
-        data = {'title': 'Just a test', 'user': 'joe',
-                'items': ['Number %d' % num for num in range(1, 15)]}
+        data = {'title': TITLE, 'user': USER, 'items': ITEMS}
         return tmpl.render(template.Context(data))
 
     if verbose:
@@ -122,8 +137,7 @@ def kid(dirname, verbose=False):
     template = kid.Template(file='template.kid')
     def render():
         template = kid.Template(file='template.kid',
-                                title='Just a test', user='joe',
-                                items=['Number %d' % num for num in range(1, 15)])
+                                title=TITLE, user=USER, items=ITEMS)
         return template.serialize(output='xhtml')
 
     if verbose:
@@ -143,7 +157,7 @@ def run(engines, number=2000, verbose=False):
         t = timeit.Timer(setup='from __main__ import %s; render = %s(r"%s", %s)'
                                        % (engine, engine, dirname, verbose),
                                  stmt='render()')
- 
+
         time = t.timeit(number=number) / number
         if verbose:
             print('--------------------------------------------------------')
