@@ -2,7 +2,10 @@
 - [feature] Added new "loop" variable to templates,
   is provided within a % for block to provide
   info about the loop such as index, first/last,
-  odd/even, etc.  Thanks to Ben Trofatter for all
+  odd/even, etc.  A migration path is also provided
+  for legacy templates via the "enable_loop" argument
+  available on Template, TemplateLookup, and <%page>.
+  Thanks to Ben Trofatter for all
   the work on this [ticket:125]
 
 - [feature] Added a real check for "reserved" 

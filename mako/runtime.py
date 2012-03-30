@@ -238,7 +238,10 @@ class LoopStack(object):
 
 class LoopContext(object):
     """A magic loop variable.
-    Automatically accessible in any %for block.
+    Automatically accessible in any ``% for`` block.
+    
+    See the section :ref:`loop_context` for usage
+    notes.
 
     :attr:`parent` -> LoopContext or None
         The parent loop, if one exists

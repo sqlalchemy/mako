@@ -72,6 +72,13 @@ class Template(object):
     :param disable_unicode: Disables all awareness of Python Unicode
      objects.  See :ref:`unicode_disabled`.
 
+    :param enable_loop: When ``True``, enable the ``loop`` context variable.
+     This can be set to ``False`` to support templates that may
+     be making usage of the name "loop".   Individual templates can
+     re-enable the "loop" context by placing the directive 
+     ``enable_loop="True"`` inside the ``<%page>`` tag - see
+     :ref:`migrating_loop`.
+
     :param encoding_errors: Error parameter passed to ``encode()`` when
      string encoding is performed. See :ref:`usage_unicode`.
  
@@ -193,6 +200,7 @@ class Template(object):
                     buffer_filters=(), 
                     strict_undefined=False,
                     imports=None, 
+                    enable_loop=True,
                     preprocessor=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
@@ -221,6 +229,7 @@ class Template(object):
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
         self.bytestring_passthrough = bytestring_passthrough or disable_unicode
+        self.enable_loop = enable_loop
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
 
@@ -285,7 +294,10 @@ class Template(object):
 
     @util.memoized_property
     def reserved_names(self):
-        return codegen.RESERVED_NAMES
+        if self.enable_loop:
+            return codegen.RESERVED_NAMES
+        else:
+            return codegen.RESERVED_NAMES.difference(['loop'])
 
     def _setup_cache_args(self, 
                 cache_impl, cache_enabled, cache_args,
@@ -466,6 +478,7 @@ class ModuleTemplate(Template):
         self.encoding_errors = encoding_errors
         self.disable_unicode = disable_unicode
         self.bytestring_passthrough = bytestring_passthrough or disable_unicode
+        self.enable_loop = module._enable_loop
 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
@@ -506,6 +519,7 @@ class DefTemplate(Template):
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
+        self.enable_loop = parent.enable_loop
         self.lookup = parent.lookup
         self.bytestring_passthrough = parent.bytestring_passthrough
 
@@ -558,16 +572,14 @@ class ModuleInfo(object):
                 return data.decode(self.module._source_encoding)
             else:
                 return data
- 
-def _compile_text(template, text, filename):
-    identifier = template.module_id
+
+def _compile(template, text, filename, generate_magic_comment):
     lexer = Lexer(text, 
                     filename, 
                     disable_unicode=template.disable_unicode,
                     input_encoding=template.input_encoding,
                     preprocessor=template.preprocessor)
     node = lexer.parse()
- 
     source = codegen.compile(node, 
                             template.uri, 
                             filename,
@@ -575,10 +587,17 @@ def _compile_text(template, text, filename):
                             buffer_filters=template.buffer_filters, 
                             imports=template.imports, 
                             source_encoding=lexer.encoding,
-                            generate_magic_comment=template.disable_unicode,
+                            generate_magic_comment=generate_magic_comment,
                             disable_unicode=template.disable_unicode,
                             strict_undefined=template.strict_undefined,
+                            enable_loop=template.enable_loop,
                             reserved_names=template.reserved_names)
+    return source, lexer
+
+def _compile_text(template, text, filename):
+    identifier = template.module_id
+    source, lexer = _compile(template, text, filename, 
+                        generate_magic_comment=template.disable_unicode)
 
     cid = identifier
     if not util.py3k and isinstance(cid, unicode):
@@ -590,24 +609,8 @@ def _compile_text(template, text, filename):
 
 def _compile_module_file(template, text, filename, outputpath, module_writer):
     identifier = template.module_id
-    lexer = Lexer(text, 
-                    filename, 
-                    disable_unicode=template.disable_unicode,
-                    input_encoding=template.input_encoding,
-                    preprocessor=template.preprocessor)
- 
-    node = lexer.parse()
-    source = codegen.compile(node, 
-                                template.uri, 
-                                filename,
-                                default_filters=template.default_filters,
-                                buffer_filters=template.buffer_filters,
-                                imports=template.imports,
-                                source_encoding=lexer.encoding,
-                                generate_magic_comment=True,
-                                disable_unicode=template.disable_unicode,
-                                strict_undefined=template.strict_undefined,
-                                reserved_names=template.reserved_names)
+    source, lexer = _compile(template, text, filename, 
+                        generate_magic_comment=True)
  
     if isinstance(source, unicode):
         source = source.encode(lexer.encoding or 'ascii')

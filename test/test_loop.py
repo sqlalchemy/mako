@@ -2,12 +2,15 @@ import re
 import unittest
 
 from mako.template import Template
+from mako.lookup import TemplateLookup
 from mako.codegen import (
         _FOR_LOOP, mangle_mako_loop, LoopVariable
     )
 from mako.runtime import LoopStack, LoopContext
 from mako import exceptions
 from test import assert_raises_message
+from test import TemplateTest, eq_
+from util import flatten_result, result_lines
 
 class TestLoop(unittest.TestCase):
 
@@ -199,3 +202,94 @@ class TestLoopContext(unittest.TestCase):
         expected = ('a', 'b', 'a')
         actual = tuple(self.ctx.cycle('a', 'b') for i in self.ctx)
         assert expected == actual, "cycle endlessly cycles through the values"
+
+class TestLoopFlags(TemplateTest):
+    def test_loop_disabled_template(self):
+        self._do_memory_test(
+        """
+            the loop: ${loop}
+        """, 
+        "the loop: hi",
+        template_args=dict(loop='hi'),
+        filters=flatten_result,
+        enable_loop=False
+        )
+
+    def test_loop_disabled_lookup(self):
+        l = TemplateLookup(enable_loop=False)
+        l.put_string("x",
+        """
+            the loop: ${loop}
+        """
+        )
+
+        self._do_test(
+            l.get_template("x"),
+            "the loop: hi",
+            template_args=dict(loop='hi'),
+            filters=flatten_result,
+        )
+
+    def test_loop_disabled_override_template(self):
+        self._do_memory_test(
+        """
+            <%page enable_loop="True" />
+            % for i in (1, 2, 3):
+                ${i} ${loop.index}
+            % endfor
+        """, 
+        "1 0 2 1 3 2",
+        template_args=dict(loop='hi'),
+        filters=flatten_result,
+        enable_loop=False
+        )
+
+    def test_loop_disabled_override_lookup(self):
+        l = TemplateLookup(enable_loop=False)
+        l.put_string("x",
+        """
+            <%page enable_loop="True" />
+            % for i in (1, 2, 3):
+                ${i} ${loop.index}
+            % endfor
+        """
+        )
+
+        self._do_test(
+            l.get_template("x"),
+            "1 0 2 1 3 2",
+            template_args=dict(loop='hi'),
+            filters=flatten_result,
+        )
+
+    def test_loop_enabled_override_template(self):
+        self._do_memory_test(
+        """
+            <%page enable_loop="True" />
+            % for i in (1, 2, 3):
+                ${i} ${loop.index}
+            % endfor
+        """, 
+        "1 0 2 1 3 2",
+        template_args=dict(),
+        filters=flatten_result,
+        )
+
+    def test_loop_enabled_override_lookup(self):
+        l = TemplateLookup()
+        l.put_string("x",
+        """
+            <%page enable_loop="True" />
+            % for i in (1, 2, 3):
+                ${i} ${loop.index}
+            % endfor
+        """
+        )
+
+        self._do_test(
+            l.get_template("x"),
+            "1 0 2 1 3 2",
+            template_args=dict(),
+            filters=flatten_result,
+        )
+

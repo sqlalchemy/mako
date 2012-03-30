@@ -15,7 +15,7 @@ Context
 The :class:`.Context` is the central object that is created when
 a template is first executed, and is responsible for handling
 all communication with the outside world.  Within the template
-environment, it is available via the :ref:`reserved name <reserved-names>`
+environment, it is available via the :ref:`reserved name <reserved_names>`
 ``context``.  The :class:`.Context` includes two
 major components, one of which is the output buffer, which is a
 file-like object such as Python's ``StringIO`` or similar, and
@@ -188,15 +188,24 @@ Significant members of :class:`.Context` include:
   :class:`.TemplateLookup` of the originally-called :class:`.Template` gets
   used in a particular execution).
 
-.. loop-context
+.. _loop_context:
 
-Loop Context
-============
+The Loop Context
+================
 
-Within ``% for`` blocks, the :ref:`reserved name<reserved-names>` ``loop``
-is available.  A new feature of Mako 0.7.0, ``loop`` tracks the progress of
+Within ``% for`` blocks, the :ref:`reserved name<reserved_names>` ``loop``
+is available.  A new feature of Mako 0.7, ``loop`` tracks the progress of
 the ``for`` loop and makes it easy to use the iteration state to control
-template behavior.
+template behavior:
+
+.. sourcecode:: mako
+
+    <ul>
+    % for a in ("one", "two", "three"):
+        <li>Item ${loop.index}: ${a}</li>
+    % endfor
+    </ul>
+
 
 Iterations
 ----------
@@ -214,40 +223,18 @@ Cycling
 -------
 
 Cycling is available regardless of whether the iterable you're using provides
-a ``__len__`` method.  Prior to Mako 0.7.0, you might have generated a simple
-zebra striped list with either::
+a ``__len__`` method.  Prior to Mako 0.7, you might have generated a simple
+zebra striped list using ``enumerate``:
 
 .. sourcecode:: mako
 
         <ul>
         % for i, item in enumerate(('spam', 'ham', 'eggs')):
-          <li class="${'odd' if i%2 else 'even'}">${item}</li>
+          <li class="${'odd' if i % 2 else 'even'}">${item}</li>
         % endfor
         </ul>
 
-or::
-
-.. sourcecode:: mako
-
-        <%! from itertools import cycle %>
-        <% parity = cycle(('even', 'odd')) %>
-        <ul>
-        % for item in ('spam', 'ham', 'eggs'):
-          <li class="${next(parity)}">${item}</li>
-        % endfor
-        </ul>
-
-both of which give you::
-
-.. sourcecode:: html
-
-        <ul>
-          <li class="even">spam</li>
-          <li class="odd">ham</li>
-          <li class="even">eggs</li>
-        </ul>
-
-With ``loop``, you get the same results with cleaner code and less prep work.::
+With ``loop``, you get the same results with cleaner code and less prep work:
 
 .. sourcecode:: mako
 
@@ -257,6 +244,17 @@ With ``loop``, you get the same results with cleaner code and less prep work.::
         % endfor
         </ul>
 
+Both approaches produce output like the following:
+
+.. sourcecode:: html
+
+        <ul>
+          <li class="even">spam</li>
+          <li class="odd">ham</li>
+          <li class="even">eggs</li>
+        </ul>
+
+
 Parent loops
 ------------
 
@@ -264,11 +262,10 @@ Loop contexts can also be transparently nested, and the Mako runtime will do
 the right thing and manage the scope for you.  You can access the parent loop
 context through ``loop.parent``.
 
-This
-also allows you to easily reach all the way back up through the loop stack by
+This allows you to reach all the way back up through the loop stack by
 chaining ``parent`` attribute accesses, i.e. ``loop.parent.parent....`` as
 long as the stack depth isn't exceeded.  For example, you can use the parent
-loop to make a checkered table::
+loop to make a checkered table:
 
 .. sourcecode:: mako
 
@@ -322,14 +319,43 @@ loop to make a checkered table::
           </tr>
         </table>
 
-.. reserved-names
 
-Reserved names
-==============
+.. _migrating_loop:
 
-As of Mako 0.7.0, there are two reserved identifiers within the Mako runtime:
-* :ref:`context <context>`
-* :ref:`loop <loop-context>`
+Migrating Legacy Templates that Use the Word "loop"
+---------------------------------------------------
+
+The ``loop`` name is now :ref:`reserved <reserved_names>` in Mako, which means a template that refers to a
+variable named ``loop`` won't function correctly when used in Mako 0.7.  To ease 
+the transition for such systems, the feature can be disabled across the board for
+all templates, then re-enabled on a per-template basis for those templates which wish
+to make use of the new system.
+
+First, the ``enable_loop=False`` flag is passed to either the :class:`.TemplateLookup`
+or :class:`.Template` object in use::
+
+    lookup = TemplateLookup(directories=['/docs'], enable_loop=False)
+
+or::
+
+    template = Template("some template", enable_loop=False)
+
+An individual template can make usage of the feature when ``enable_loop`` is set to
+``False`` by switching it back on within the ``<%page>`` tag:
+
+.. sourcecode:: mako
+
+    <%page enable_loop="True"/>
+
+    % for i in collection:
+        ${i} ${loop.index}
+    % endfor
+
+Using the above scheme, it's safe to pass the name ``loop`` to the :meth:`.Template.render`
+method as well as to freely make usage of a variable named ``loop`` within a template, provided
+the ``<%page>`` tag doesn't override it.   New templates that want to use the ``loop`` context
+can then set up ``<%page enable_loop="True"/>`` to use the new feature without affecting
+old templates.
 
 All the built-in names
 ======================
@@ -338,7 +364,9 @@ A one-stop shop for all the names Mako defines. Most of these
 names are instances of :class:`.Namespace`, which are described
 in the next section, :ref:`namespaces_toplevel`. Also, most of
 these names other than :class:`.Context` and ``UNDEFINED`` are
-also present *within* the :class:`.Context` itself.
+also present *within* the :class:`.Context` itself.   There are only 
+two names, ``context`` and ``loop``, that are themselves not defined
+in the context and can't be replaced - see the section :ref:`reserved_names`.
 
 * ``context`` - this is the :class:`.Context` object, introduced
   at :ref:`context`.
@@ -356,8 +384,8 @@ also present *within* the :class:`.Context` itself.
 * ``caller`` - a "mini" namespace created when using the
   ``<%call>`` tag to define a "def call with content"; described
   in :ref:`defs_with_content`.
-* ``loop`` - this provides access to :class:`.LoopContext`\ s when
-  they are requested within ``% for`` loops, introduced at :ref:`loop`.
+* ``loop`` - this provides access to :class:`.LoopContext` objects when
+  they are requested within ``% for`` loops, introduced at :ref:`loop_context`.
 * ``capture`` - a function that calls a given def and captures
   its resulting content into a string, which is returned. Usage
   is described in :ref:`filtering_toplevel`.
@@ -375,6 +403,21 @@ also present *within* the :class:`.Context` itself.
   default unless otherwise defined as a page argument. If this
   makes no sense, it shouldn't; read the section
   :ref:`namespaces_body`.
+
+.. _reserved_names:
+
+Reserved names
+--------------
+
+Mako has two words that are considered to be "reserved" and can't be used
+as variable names.   As of 0.7, Mako raises an error if these words are found
+passed to the template as context arguments, whereas in previous versions they'd be silently
+ignored or lead to other error messages.  
+
+* ``context`` - see :ref:`context`
+* ``loop`` - see :ref:`loop_context`.  Note this can be disabled for legacy templates
+  via the ``enable_loop=False`` argument; see :ref:`migrating_loop`.
+
 
 API Reference
 ==============

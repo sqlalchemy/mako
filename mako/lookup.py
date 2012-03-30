@@ -165,6 +165,7 @@ class TemplateLookup(TemplateCollection):
                         buffer_filters=(), 
                         strict_undefined=False,
                         imports=None, 
+                        enable_loop=True,
                         input_encoding=None, 
                         preprocessor=None):
  
@@ -203,6 +204,7 @@ class TemplateLookup(TemplateCollection):
             'buffer_filters':buffer_filters, 
             'strict_undefined':strict_undefined,
             'imports':imports, 
+            'enable_loop':enable_loop,
             'preprocessor':preprocessor}
 
         if collection_size == -1:

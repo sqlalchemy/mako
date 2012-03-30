@@ -109,6 +109,23 @@ line, by escaping it as in ``%%``:
  
         %% some more text
 
+The Loop Context
+----------------
+
+Mako 0.7 includes a new feature called the **loop context** which 
+provides additional information about a loop while inside of a ``% for``
+structure:
+
+.. sourcecode:: mako
+
+    <ul>
+    % for a in ("one", "two", "three"):
+        <li>Item ${loop.index}: ${a}</li>
+    % endfor
+    </ul>
+
+See :ref:`loop_context` for more information on this feature.
+
 Comments
 ========
 

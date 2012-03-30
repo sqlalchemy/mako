@@ -565,7 +565,7 @@ class PageTag(Tag):
     __keyword__ = 'page'
 
     def __init__(self, keyword, attributes, **kwargs):
-        expressions =   ['cached', 'args', 'expression_filter'] + [
+        expressions =   ['cached', 'args', 'expression_filter', 'enable_loop'] + [
                     c for c in attributes if c.startswith('cache_')]
 
         super(PageTag, self).__init__(

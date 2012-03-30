@@ -29,6 +29,7 @@ def compile(node,
                 generate_magic_comment=True,
                 disable_unicode=False,
                 strict_undefined=False,
+                enable_loop=True,
                 reserved_names=()):
  
     """Generate module source code given a parsetree node, 
@@ -55,6 +56,7 @@ def compile(node,
                                             generate_magic_comment,
                                             disable_unicode,
                                             strict_undefined,
+                                            enable_loop,
                                             reserved_names), 
                                 node)
     return buf.getvalue()
@@ -70,6 +72,7 @@ class _CompileContext(object):
                     generate_magic_comment,
                     disable_unicode,
                     strict_undefined,
+                    enable_loop,
                     reserved_names):
         self.uri = uri
         self.filename = filename
@@ -80,6 +83,7 @@ class _CompileContext(object):
         self.generate_magic_comment = generate_magic_comment
         self.disable_unicode = disable_unicode
         self.strict_undefined = strict_undefined
+        self.enable_loop = enable_loop
         self.reserved_names = reserved_names
  
 class _GenerateRenderMethod(object):
@@ -115,6 +119,10 @@ class _GenerateRenderMethod(object):
                 if not pagetag.body_decl.kwargs:
                     args += ['**pageargs']
                 cached = eval(pagetag.attributes.get('cached', 'False'))
+                self.compiler.enable_loop = self.compiler.enable_loop or eval(
+                                        pagetag.attributes.get(
+                                                'enable_loop', 'False')
+                                    )
             else:
                 args = ['**pageargs']
                 cached = False
@@ -185,6 +193,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("__M_locals_builtin = locals")
         self.printer.writeline("_magic_number = %r" % MAGIC_NUMBER)
         self.printer.writeline("_modified_time = %r" % time.time())
+        self.printer.writeline("_enable_loop = %r" % self.compiler.enable_loop)
         self.printer.writeline(
                             "_template_filename = %r" % self.compiler.filename)
         self.printer.writeline("_template_uri = %r" % self.compiler.uri)
@@ -433,8 +442,11 @@ class _GenerateRenderMethod(object):
         # which cannot be referenced beforehand. 
         to_write = to_write.difference(identifiers.locally_declared)
 
-        has_loop = "loop" in to_write
-        to_write.discard("loop")
+        if self.compiler.enable_loop:
+            has_loop = "loop" in to_write
+            to_write.discard("loop")
+        else:
+            has_loop = False
  
         # if a limiting set was sent, constraint to those items in that list
         # (this is used for the caching decorator)
@@ -759,7 +771,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline(None)
         else:
             self.write_source_comment(node)
-            if node.keyword == 'for':
+            if self.compiler.enable_loop and node.keyword == 'for':
                 text = mangle_mako_loop(node, self.printer)
             else:
                 text = node.text
@@ -791,8 +803,6 @@ class _GenerateRenderMethod(object):
                 )
  
     def visitCode(self, node):
-        # mangle loop variables within the scope of a loop context,
-        # if applicable
         if not node.ismodule:
             self.write_source_comment(node)
             self.printer.write_indented_block(node.text)
