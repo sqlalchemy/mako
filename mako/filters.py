@@ -165,7 +165,8 @@ def htmlentityreplace_errors(ex):
 codecs.register_error('htmlentityreplace', htmlentityreplace_errors)
 
 
-# TODO: options to make this dynamic per-compilation will be added in a later release
+# TODO: options to make this dynamic per-compilation will be added in a later
+# release
 DEFAULT_ESCAPES = {
     'x':'filters.xml_escape',
     'h':'filters.html_escape',

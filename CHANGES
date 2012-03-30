@@ -1,4 +1,19 @@
-0.6.3
+0.7.0
+- [feature] Added new "loop" variable to templates,
+  is provided within a % for block to provide
+  info about the loop such as index, first/last,
+  odd/even, etc.  A migration path is also provided
+  for legacy templates via the "enable_loop" argument
+  available on Template, TemplateLookup, and <%page>.
+  Thanks to Ben Trofatter for all
+  the work on this [ticket:125]
+
+- [feature] Added a real check for "reserved" 
+  names, that is names which are never pulled
+  from the context and cannot be passed to
+  the template.render() method.  Current names
+  are "context", "loop".
+
 - [feature] The html_error_template() will now
   apply Pygments highlighting to the source
   code displayed in the traceback, if Pygments 

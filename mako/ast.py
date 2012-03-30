@@ -15,13 +15,16 @@ class PythonCode(object):
     def __init__(self, code, **exception_kwargs):
         self.code = code
  
-        # represents all identifiers which are assigned to at some point in the code
+        # represents all identifiers which are assigned to at some point in
+        # the code
         self.declared_identifiers = set()
  
-        # represents all identifiers which are referenced before their assignment, if any
+        # represents all identifiers which are referenced before their
+        # assignment, if any
         self.undeclared_identifiers = set()
  
-        # note that an identifier can be in both the undeclared and declared lists.
+        # note that an identifier can be in both the undeclared and declared
+        # lists.
 
         # using AST to parse instead of using code.co_varnames, 
         # code.co_names has several advantages:
@@ -58,7 +61,8 @@ class ArgumentList(object):
         f.visit(expr)
  
 class PythonFragment(PythonCode):
-    """extends PythonCode to provide identifier lookups in partial control statements
+    """extends PythonCode to provide identifier lookups in partial control
+    statements
  
     e.g. 
         for x in 5:
@@ -70,8 +74,8 @@ class PythonFragment(PythonCode):
         m = re.match(r'^(\w+)(?:\s+(.*?))?:\s*(#|$)', code.strip(), re.S)
         if not m:
             raise exceptions.CompileException(
-                            "Fragment '%s' is not a partial control statement" % 
-                            code, **exception_kwargs)
+                          "Fragment '%s' is not a partial control statement" % 
+                          code, **exception_kwargs)
         if m.group(3):
             code = code[:m.start(3)]
         (keyword, expr) = m.group(1,2)
@@ -102,15 +106,16 @@ class FunctionDecl(object):
         f.visit(expr)
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException(
-                                "Code '%s' is not a function declaration" % code,
-                                **exception_kwargs)
+                              "Code '%s' is not a function declaration" % code,
+                              **exception_kwargs)
         if not allow_kwargs and self.kwargs:
             raise exceptions.CompileException(
                                 "'**%s' keyword argument not allowed here" % 
                                 self.argnames[-1], **exception_kwargs)
  
     def get_argument_expressions(self, include_defaults=True):
-        """return the argument declarations of this FunctionDecl as a printable list."""
+        """return the argument declarations of this FunctionDecl as a printable
+        list."""
  
         namedecls = []
         defaults = [d for d in self.defaults]
@@ -142,4 +147,5 @@ class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
  
     def __init__(self, code, **kwargs):
-        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code, **kwargs)
+        super(FunctionArgs, self).__init__("def ANON(%s):pass" % code,
+                **kwargs)

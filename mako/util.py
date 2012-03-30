@@ -129,6 +129,33 @@ class memoized_property(object):
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
 
+class memoized_instancemethod(object):
+    """Decorate a method memoize its return value.
+
+    Best applied to no-arg methods: memoization is not sensitive to
+    argument values, and will always return the same value even when
+    called with different arguments.
+
+    """
+    def __init__(self, fget, doc=None):
+        self.fget = fget
+        self.__doc__ = doc or fget.__doc__
+        self.__name__ = fget.__name__
+
+    def __get__(self, obj, cls):
+        if obj is None:
+            return self
+        def oneshot(*args, **kw):
+            result = self.fget(obj, *args, **kw)
+            memo = lambda *a, **kw: result
+            memo.__name__ = self.__name__
+            memo.__doc__ = self.__doc__
+            obj.__dict__[self.__name__] = memo
+            return result
+        oneshot.__name__ = self.__name__
+        oneshot.__doc__ = self.__doc__
+        return oneshot
+
 class SetLikeDict(dict):
     """a dictionary that has some setlike methods on it"""
     def union(self, other):
@@ -160,16 +187,17 @@ class FastEncodingBuffer(object):
  
     def getvalue(self):
         if self.encoding:
-            return self.delim.join(self.data).encode(self.encoding, self.errors)
+            return self.delim.join(self.data).encode(self.encoding,
+                                                     self.errors)
         else:
             return self.delim.join(self.data)
 
 class LRUCache(dict):
-    """A dictionary-like object that stores a limited number of items, discarding
-    lesser used items periodically.
+    """A dictionary-like object that stores a limited number of items,
+    discarding lesser used items periodically.
  
     this is a rewrite of LRUCache from Myghty to use a periodic timestamp-based
-    paradigm so that synchronization is not really needed.  the size management 
+    paradigm so that synchronization is not really needed.  the size management
     is inexact.
     """
  
@@ -217,8 +245,8 @@ class LRUCache(dict):
                 try:
                     del self[item.key]
                 except KeyError:
-                    # if we couldnt find a key, most likely some other thread broke in 
-                    # on us. loop around and try again
+                    # if we couldn't find a key, most likely some other thread
+                    # broke in on us. loop around and try again
                     break
 
 # Regexp to match python magic encoding line
@@ -227,7 +255,8 @@ _PYTHON_MAGIC_COMMENT_re = re.compile(
     re.VERBOSE)
 
 def parse_encoding(fp):
-    """Deduce the encoding of a Python source file (binary mode) from magic comment.
+    """Deduce the encoding of a Python source file (binary mode) from magic
+    comment.
 
     It does this in the same way as the `Python interpreter`__
 
@@ -256,7 +285,8 @@ def parse_encoding(fp):
                 pass
             else:
                 line2 = fp.readline()
-                m = _PYTHON_MAGIC_COMMENT_re.match(line2.decode('ascii', 'ignore'))
+                m = _PYTHON_MAGIC_COMMENT_re.match(
+                                               line2.decode('ascii', 'ignore'))
 
         if has_bom:
             if m:

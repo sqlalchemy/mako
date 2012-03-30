@@ -105,7 +105,7 @@ ${u'привет'}
                                     sys.getdefaultencoding(),
                                     'htmlentityreplace') in html_error
                 except ImportError:
-                    assert u"3 ${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+                    assert u"${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
         else:
             assert False, ("This function should trigger a CompileException, "
@@ -204,9 +204,9 @@ ${foobar}
                     result_lines(l.get_template("foo.html").render().decode('utf-8'))
 
             except ImportError:
-                assert '<div class="highlight">2 ${u&#39;&#x43F;&#x440;'\
-                        '&#x438;&#x432;&#x435;&#x442;&#39; + foobar}</div>' \
-                    in result_lines(l.get_template("foo.html").render().decode('utf-8'))
+                assert '${u&#39;&#x43F;&#x440;&#x438;&#x432;&#x435;'\
+                       '&#x442;&#39; + foobar}' in \
+                    result_lines(l.get_template("foo.html").render().decode('utf-8'))
  
  
     def test_custom_tback(self):

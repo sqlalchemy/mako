@@ -10,6 +10,7 @@ Namespace, and various helper functions."""
 from mako import exceptions, util
 import __builtin__, inspect, sys
 
+
 class Context(object):
     """Provides runtime namespace, output buffer, and various
     callstacks for templates.
@@ -23,6 +24,7 @@ class Context(object):
         self._buffer_stack = [buffer]
  
         self._data = data
+
         self._kwargs = data.copy()
         self._with_template = None
         self._outputting_as_unicode = None
@@ -34,7 +36,15 @@ class Context(object):
  
         # "caller" stack used by def calls with content
         self.caller_stack = self._data['caller'] = CallerStack()
- 
+
+    def _set_with_template(self, t):
+        self._with_template = t
+        illegal_names = t.reserved_names.intersection(self._data)
+        if illegal_names:
+            raise exceptions.NameConflictError(
+                "Reserved words passed to render(): %s" % 
+                ", ".join(illegal_names))
+
     @property
     def lookup(self):
         """Return the :class:`.TemplateLookup` associated 
@@ -186,6 +196,110 @@ class Undefined(object):
         return False
 
 UNDEFINED = Undefined()
+
+class LoopStack(object):
+    """a stack for LoopContexts that implements the context manager protocol
+    to automatically pop off the top of the stack on context exit
+    """
+
+    def __init__(self):
+        self.stack = []
+
+    def _enter(self, iterable):
+        self._push(iterable)
+        return self._top
+
+    def _exit(self):
+        self._pop()
+        return self._top
+
+    @property
+    def _top(self):
+        if self.stack:
+            return self.stack[-1]
+        else:
+            return self
+
+    def _pop(self):
+        return self.stack.pop()
+
+    def _push(self, iterable):
+        new = LoopContext(iterable)
+        if self.stack:
+            new.parent = self.stack[-1]
+        return self.stack.append(new)
+
+    def __getattr__(self, key):
+        raise exceptions.RuntimeException("No loop context is established")
+
+    def __iter__(self):
+        return iter(self._top)
+
+
+class LoopContext(object):
+    """A magic loop variable.
+    Automatically accessible in any ``% for`` block.
+    
+    See the section :ref:`loop_context` for usage
+    notes.
+
+    :attr:`parent` -> LoopContext or None
+        The parent loop, if one exists
+    :attr:`index` -> int
+        The 0-based iteration count
+    :attr:`reverse_index` -> int
+        The number of iterations remaining
+    :attr:`first` -> bool
+        `True` on the first iteration, `False` otherwise
+    :attr:`last` -> bool
+        `True` on the last iteration, `False` otherwise
+    :attr:`even` -> bool
+        `True` when `index` is even
+    :attr:`odd` -> bool
+        `True` when `index` is odd
+    """
+
+    def __init__(self, iterable):
+        self._iterable = iterable
+        self.index = 0
+        self.parent = None
+
+    def __iter__(self):
+        for i in self._iterable:
+            yield i
+            self.index += 1
+
+    @util.memoized_instancemethod
+    def __len__(self):
+        return len(self._iterable)
+
+    @property
+    def reverse_index(self):
+        return len(self) - self.index - 1
+
+    @property
+    def first(self):
+        return self.index == 0
+
+    @property
+    def last(self):
+        return self.index == len(self) - 1
+
+    @property
+    def even(self):
+        return not self.odd
+
+    @property
+    def odd(self):
+        return bool(self.index % 2)
+
+    def cycle(self, *values):
+        """cycle through values as the loop progresses
+        """
+        if not values:
+            raise ValueError("You must provide values to cycle through")
+        return values[self.index % len(values)]
+
 
 class _NSAttr(object):
     def __init__(self, parent):
@@ -534,8 +648,8 @@ def capture(context, callable_, *args, **kwargs):
  
     if not callable(callable_):
         raise exceptions.RuntimeException(
-                            "capture() function expects a callable as "
-                            "its argument (i.e. capture(func, *args, **kwargs))"
+                           "capture() function expects a callable as "
+                           "its argument (i.e. capture(func, *args, **kwargs))"
                         )
     context._push_buffer()
     try:
@@ -644,7 +758,7 @@ def _render(template, callable_, args, data, as_unicode=False):
                         errors=template.encoding_errors)
     context = Context(buf, **data)
     context._outputting_as_unicode = as_unicode
-    context._with_template = template
+    context._set_with_template(template)
  
     _render_context(template, callable_, context, *args, 
                             **_kwargs_for_callable(callable_, data))
@@ -721,5 +835,5 @@ def _render_error(template, context, error):
                                             error_template.output_encoding,
                                             error_template.encoding_errors)]
  
-        context._with_template = error_template
+        context._set_with_template(error_template)
         error_template.render_context(context, error=error)
