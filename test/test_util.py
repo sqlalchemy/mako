@@ -32,7 +32,7 @@ class UtilTest(unittest.TestCase):
     def test_read_file(self):
         fn = os.path.join(os.path.dirname(__file__), 'test_util.py')
         data = util.read_file(fn, 'rb')
-        self.failUnless('test_util' in data)
+        self.failUnless('test_util' in str(data)) # str() for py3k
 
     def test_load_module(self):
         fn = os.path.join(os.path.dirname(__file__), 'test_util.py')

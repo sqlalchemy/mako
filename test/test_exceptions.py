@@ -92,7 +92,7 @@ ${u'привет'}
                     assert u"".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
                 except ImportError:
-                    assert u"3 ${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+                    assert u"${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                             'htmlentityreplace') in html_error
             else:
                 try:
