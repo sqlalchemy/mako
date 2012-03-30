@@ -12,7 +12,7 @@
   names, that is names which are never pulled
   from the context and cannot be passed to
   the template.render() method.  Current names
-  are "context", "loop".
+  are "context", "loop", "UNDEFINED".
 
 - [feature] The html_error_template() will now
   apply Pygments highlighting to the source

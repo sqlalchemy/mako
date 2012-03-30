@@ -52,6 +52,8 @@ buffer stack. For this reason, just stick with
 ``context.write()`` and content will always go to the topmost
 buffer.
 
+.. _context_vars:
+
 Context Variables
 ------------------
 
@@ -363,10 +365,10 @@ All the built-in names
 A one-stop shop for all the names Mako defines. Most of these
 names are instances of :class:`.Namespace`, which are described
 in the next section, :ref:`namespaces_toplevel`. Also, most of
-these names other than :class:`.Context` and ``UNDEFINED`` are
-also present *within* the :class:`.Context` itself.   There are only 
-two names, ``context`` and ``loop``, that are themselves not defined
-in the context and can't be replaced - see the section :ref:`reserved_names`.
+these names other than ``context``, ``UNDEFINED``, and ``loop`` are
+also present *within* the :class:`.Context` itself.   The names
+``context``, ``loop`` and ``UNDEFINED`` themselves can't be passed
+to the context and can't be substituted  - see the section :ref:`reserved_names`.
 
 * ``context`` - this is the :class:`.Context` object, introduced
   at :ref:`context`.
@@ -409,12 +411,13 @@ in the context and can't be replaced - see the section :ref:`reserved_names`.
 Reserved names
 --------------
 
-Mako has two words that are considered to be "reserved" and can't be used
+Mako has a few names that are considered to be "reserved" and can't be used
 as variable names.   As of 0.7, Mako raises an error if these words are found
 passed to the template as context arguments, whereas in previous versions they'd be silently
 ignored or lead to other error messages.  
 
 * ``context`` - see :ref:`context`
+* ``UNDEFINED`` - see :ref:`context_vars`
 * ``loop`` - see :ref:`loop_context`.  Note this can be disabled for legacy templates
   via the ``enable_loop=False`` argument; see :ref:`migrating_loop`.
 

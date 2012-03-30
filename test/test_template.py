@@ -747,7 +747,38 @@ class UndefinedVarsTest(TemplateTest):
             result_lines(t.render(t="T")),
             ['t is: T', 'a,b,c']
         )
- 
+
+class ReservedNameTest(TemplateTest):
+    def test_names_on_context(self):
+        for name in ('context', 'loop', 'UNDEFINED'):
+            assert_raises_message(
+                exceptions.NameConflictError,
+                r"Reserved words passed to render\(\): %s" % name,
+                Template("x").render, **{name:'foo'}
+            )
+
+    def test_names_in_template(self):
+        for name in ('context', 'loop', 'UNDEFINED'):
+            assert_raises_message(
+                exceptions.NameConflictError,
+                r"Reserved words declared in template: %s" % name,
+                Template, "<%% %s = 5 %%>" % name
+            )
+
+    def test_exclude_loop_context(self):
+        self._do_memory_test(
+            "loop is ${loop}",
+            "loop is 5",
+            template_args=dict(loop=5),
+            enable_loop=False
+        )
+
+    def test_exclude_loop_template(self):
+        self._do_memory_test(
+            "<% loop = 12 %>loop is ${loop}",
+            "loop is 12",
+            enable_loop=False
+        )
  
 class ControlTest(TemplateTest):
     def test_control(self):

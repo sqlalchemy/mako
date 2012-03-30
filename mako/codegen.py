@@ -17,7 +17,7 @@ MAGIC_NUMBER = 8
 # names which are hardwired into the 
 # template and are not accessed via the 
 # context itself
-RESERVED_NAMES = set(['context', 'loop'])
+RESERVED_NAMES = set(['context', 'loop', 'UNDEFINED'])
 
 def compile(node, 
                 uri, 
