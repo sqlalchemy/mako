@@ -189,21 +189,7 @@ def x(q):
         eq_(parsed.declared_identifiers, set(['x']))
         eq_(parsed.undeclared_identifiers, set())
 
-    def test_locate_identifiers_12(self):
-        code = """
-class ContextManager(object):
-    def __enter__(self):
-        return 1
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
 
-with ContextManager() as x, ContextManager():
-    print x
-"""
-        parsed = ast.PythonCode(code, **exception_kwargs)
-        eq_(parsed.declared_identifiers, set(['ContextManager', 'x']))
-        eq_(parsed.undeclared_identifiers, set())
-        
 
     def test_no_global_imports(self):
         code = """
