@@ -765,8 +765,6 @@ class _GenerateRenderMethod(object):
  
     def visitControlLine(self, node):
         if node.isend:
-            if not node.get_children():
-                self.printer.writeline("pass")
             self.printer.writeline(None)
             if node.has_loop_context:
                 self.printer.writeline('finally:')
@@ -779,6 +777,17 @@ class _GenerateRenderMethod(object):
             else:
                 text = node.text
             self.printer.writeline(text)
+            children = node.get_children()
+            # this covers the two situations where we want to insert a pass:
+            #    1) a ternary control line with no children and
+            #    2) a primary control line with nothing but its own ternary
+            #          and end control lines
+            if (not node.get_children or
+                util.all(isinstance(c, parsetree.ControlLine)
+                         for c in children) and
+                util.all((node.is_ternary(c.keyword) or c.isend)
+                         for c in children)):
+                self.printer.writeline("pass")
  
     def visitText(self, node):
         self.write_source_comment(node)

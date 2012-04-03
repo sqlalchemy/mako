@@ -1,3 +1,9 @@
+0.7.1
+- [feature] Control lines with no bodies will
+  now succeed, as "pass" is added for these
+  when no statements are otherwise present.
+  Courtesy Ben Trofatter [ticket:146]
+
 0.7.0
 - [feature] Added new "loop" variable to templates,
   is provided within a % for block to provide

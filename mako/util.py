@@ -35,7 +35,7 @@ if win32 or jython:
     time_func = time.clock
 else:
     time_func = time.time 
- 
+
 def function_named(fn, name):
     """Return a function with a given __name__.
 
@@ -57,14 +57,23 @@ except:
         return newfunc
 
 if py24:
+    def all(iterable):
+        for i in iterable:
+            if not i:
+                return False
+        return True
+
     def exception_name(exc):
         try:
             return exc.__class__.__name__
         except AttributeError:
             return exc.__name__
 else:
+    all = all
+
     def exception_name(exc):
         return exc.__class__.__name__
+
 
 class PluginLoader(object):
     def __init__(self, group):

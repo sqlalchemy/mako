@@ -25,6 +25,7 @@ class Lexer(object):
         self.match_position = 0
         self.tag = []
         self.control_line = []
+        self.ternary_stack = []
         self.disable_unicode = disable_unicode
         self.encoding = input_encoding
  
@@ -134,8 +135,15 @@ class Lexer(object):
             self.template.nodes.append(node)
         # build a set of child nodes for the control line
         # (used for loop variable detection)
+        # also build a set of child nodes on ternary control lines
+        # (used for determining if a pass needs to be auto-inserted
         if self.control_line:
-            self.control_line[-1].nodes.append(node)
+            control_frame = self.control_line[-1]
+            control_frame.nodes.append(node)
+            if not (isinstance(node, parsetree.ControlLine) and
+                    control_frame.is_ternary(node.keyword)):
+                if self.ternary_stack and self.ternary_stack[-1]:
+                    self.ternary_stack[-1][-1].nodes.append(node)
         if isinstance(node, parsetree.Tag):
             if len(self.tag):
                 node.parent = self.tag[-1]
@@ -143,9 +151,14 @@ class Lexer(object):
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:
                 self.control_line.pop()
+                self.ternary_stack.pop()
             elif node.is_primary:
                 self.control_line.append(node)
-            elif len(self.control_line) and \
+                self.ternary_stack.append([])
+            elif self.control_line and \
+                    self.control_line[-1].is_ternary(node.keyword):
+                self.ternary_stack[-1].append(node)
+            elif self.control_line and \
                     not self.control_line[-1].is_ternary(node.keyword):
                 raise exceptions.SyntaxException(
                           "Keyword '%s' not a legal ternary for keyword '%s'" %
