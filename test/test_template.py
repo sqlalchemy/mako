@@ -882,6 +882,104 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
+
+    def test_commented_blank_control_1(self):
+        self._do_memory_test(
+            """
+            % if True:
+            ## comment
+            % endif
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_2(self):
+        self._do_memory_test(
+            """
+            % if True:
+            ## comment
+            % elif True:
+            ## comment
+            % endif
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_3(self):
+        self._do_memory_test(
+            """
+            % if True:
+            ## comment
+            % else:
+            ## comment
+            % endif
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_4(self):
+        self._do_memory_test(
+            """
+            % if True:
+            ## comment
+            % elif True:
+            ## comment
+            % else:
+            ## comment
+            % endif
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_5(self):
+        self._do_memory_test(
+            """
+            % for x in range(10):
+            ## comment
+            % endfor
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_6(self):
+        self._do_memory_test(
+            """
+            % while False:
+            ## comment
+            % endwhile
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_7(self):
+        self._do_memory_test(
+            """
+            % try:
+            ## comment
+            % except:
+            ## comment
+            % endtry
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
+ 
+    def test_commented_blank_control_8(self):
+        self._do_memory_test(
+            """
+            % with open('x', 'w') as fp:
+            ## comment
+            % endwith
+            """,
+            "",
+            filters=lambda s:s.strip()
+        )
  
     def test_multiline_control(self):
         t = Template("""
