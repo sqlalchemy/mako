@@ -1,6 +1,7 @@
 from mako.template import Template
 import unittest, os
-from mako.util import function_named, py3k
+from mako.util import py3k
+from mako.util import function_named
 import re
 
 from nose import SkipTest
@@ -91,3 +92,18 @@ def skip_if(predicate, reason=None):
                 return fn(*args, **kw)
         return function_named(maybe, fn_name)
     return decorate
+
+def requires_pygments_14(fn):
+    try:
+        import pygments
+        version = pygments.__version__
+    except:
+        version = "0"
+    return skip_if(lambda: version < "1.4")(fn)
+
+def requires_no_pygments(fn):
+    try:
+        import pygments
+    except:
+        pygments = None
+    return skip_if(lambda:pygments is not None)(fn)

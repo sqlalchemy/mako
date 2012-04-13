@@ -873,6 +873,7 @@ class ControlTest(TemplateTest):
             filters=lambda s:s.strip()
         )
  
+    @skip_if(lambda: not util.py26)
     def test_blank_control_8(self):
         self._do_memory_test(
             """
@@ -970,6 +971,7 @@ class ControlTest(TemplateTest):
             filters=lambda s:s.strip()
         )
  
+    @skip_if(lambda: not util.py26)
     def test_commented_blank_control_8(self):
         self._do_memory_test(
             """
@@ -1093,9 +1095,10 @@ class ModuleDirTest(TemplateTest):
     def test_custom_writer(self):
         canary = []
         def write_module(source, outputpath):
-            with open(outputpath, 'wb') as f:
-                canary.append(outputpath)
-                f.write(source)
+            f = open(outputpath, 'wb')
+            canary.append(outputpath)
+            f.write(source)
+            f.close()
         lookup = TemplateLookup(template_base, module_writer=write_module, 
                                             module_directory=module_base)
         t = lookup.get_template('/modtest.html')
