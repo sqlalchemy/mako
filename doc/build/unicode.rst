@@ -60,7 +60,7 @@ the storage format for strings.
 The "pass through encoded data" scheme is what template
 languages like Cheetah and earlier versions of Myghty do by
 default. Mako as of version 0.2 also supports this mode of
-operation when using Python 2, using the "disable_unicode=True"
+operation when using Python 2, using the ``disable_unicode=True``
 flag. However, when using Mako in its default mode of
 unicode-aware, it requires explicitness when dealing with
 non-ASCII encodings. Additionally, if you ever need to handle
@@ -76,12 +76,15 @@ output streams are handled internally as Python ``unicode``
 objects. It's only at the point of :meth:`~.Template.render` that this unicode
 stream may be rendered into whatever the desired output encoding
 is. The implication here is that the template developer must
-ensure that the encoding of all non-ASCII templates is explicit
-(still required in Python 3), that all non-ASCII-encoded
-expressions are in one way or another converted to unicode (not
-much of a burden in Python 3), and that the output stream of the
+:ensure that :ref:`the encoding of all non-ASCII templates is explicit
+<set_template_file_encoding>` (still required in Python 3),
+that :ref:`all non-ASCII-encoded expressions are in one way or another
+converted to unicode <handling_non_ascii_expressions>`
+(not much of a burden in Python 3), and that :ref:`the output stream of the
 template is handled as a unicode stream being encoded to some
-encoding (still required in Python 3).
+encoding <defining_output_encoding>` (still required in Python 3).
+
+.. _set_template_file_encoding:
 
 Specifying the Encoding of a Template File
 ===========================================
@@ -126,6 +129,8 @@ the ``input_encoding`` parameter:
 The above will assume all located templates specify ``utf-8``
 encoding, unless the template itself contains its own magic
 encoding comment, which takes precedence.
+
+.. _handling_non_ascii_expressions:
 
 Handling Expressions
 =====================
@@ -202,6 +207,8 @@ The ``default_filters`` argument can be used to entirely customize
 the filtering process of expressions. This argument is described
 in :ref:`filtering_default_filters`.
 
+.. _defining_output_encoding:
+
 Defining Output Encoding
 =========================
 
@@ -209,7 +216,7 @@ Now that we have a template which produces a pure unicode output
 stream, all the hard work is done. We can take the output and do
 anything with it.
 
-As stated in the "Usage" chapter, both :class:`.Template` and
+As stated in the :doc:`"Usage" chapter <usage>`, both :class:`.Template` and
 :class:`.TemplateLookup` accept ``output_encoding`` and ``encoding_errors``
 parameters which can be used to encode the output in any Python
 supported codec:
@@ -310,19 +317,20 @@ is a regular byte-string.
 
 When ``disable_unicode=True`` is turned on, the ``default_filters``
 argument which normally defaults to ``["unicode"]`` now defaults
-to ``["str"]`` instead. Setting default_filters to the empty list
+to ``["str"]`` instead. Setting ``default_filters`` to the empty list
 ``[]`` can remove the overhead of the ``str`` call. Also, in this
 mode you **cannot** safely call :meth:`~.Template.render_unicode` -- you'll get
 unicode/decode errors.
 
 The ``h`` filter (HTML escape) uses a less performant pure Python
 escape function in non-unicode mode (note that in versions prior
-to 0.3.4, it used cgi.escape(), which has been replaced with a
+to 0.3.4, it used ``cgi.escape()``, which has been replaced with a
 function that also escapes single quotes). This because
 MarkupSafe only supports Python unicode objects for non-ASCII
 strings.
 
-**Rules for using disable_unicode=True**
+Rules for using ``disable_unicode=True``
+----------------------------------------
 
 * Don't use this mode unless you really, really want to and you
   absolutely understand what you're doing.
@@ -332,5 +340,4 @@ strings.
   vast majority of users who stick to the Unicode program.
 * Python 3 is unicode by default, and the flag is not available
   when running on Python 3.
-
 

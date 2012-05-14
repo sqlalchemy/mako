@@ -13,7 +13,9 @@ of integrating Mako's API is already done for you, in which case
 you can skip to the next section, :ref:`syntax_toplevel`.
 
 The most basic way to create a template and render it is through
-the :class:`.Template` class::
+the :class:`.Template` class:
+
+.. sourcecode:: python
 
     from mako.template import Template
 
@@ -32,7 +34,9 @@ returning its string contents.
 The code inside the ``render_body()`` function has access to a
 namespace of variables. You can specify these variables by
 sending them as additional keyword arguments to the :meth:`~.Template.render`
-method::
+method:
+
+.. sourcecode:: python
 
     from mako.template import Template
 
@@ -43,7 +47,9 @@ The :meth:`~.Template.render` method calls upon Mako to create a
 :class:`.Context` object, which stores all the variable names accessible
 to the template and also stores a buffer used to capture output.
 You can create this :class:`.Context` yourself and have the template
-render with it, using the :meth:`~.Template.render_context` method::
+render with it, using the :meth:`~.Template.render_context` method:
+
+.. sourcecode:: python
 
     from mako.template import Template
     from mako.runtime import Context
@@ -59,7 +65,9 @@ Using File-Based Templates
 ===========================
 
 A :class:`.Template` can also load its template source code from a file,
-using the ``filename`` keyword argument::
+using the ``filename`` keyword argument:
+
+.. sourcecode:: python
 
     from mako.template import Template
 
@@ -68,9 +76,11 @@ using the ``filename`` keyword argument::
 
 For improved performance, a :class:`.Template` which is loaded from a
 file can also cache the source code to its generated module on
-the filesystem as a regular Python module file (i.e. a .py
+the filesystem as a regular Python module file (i.e. a ``.py``
 file). To do this, just add the ``module_directory`` argument to
-the template::
+the template:
+
+.. sourcecode:: python
 
     from mako.template import Template
 
@@ -85,8 +95,8 @@ automatically re-used.
 
 .. _usage_templatelookup:
 
-Using TemplateLookup
-====================
+Using ``TemplateLookup``
+========================
 
 All of the examples thus far have dealt with the usage of a
 single :class:`.Template` object. If the code within those templates
@@ -96,7 +106,9 @@ resolution of other templates from within a template is
 accomplished by the :class:`.TemplateLookup` class. This class is
 constructed given a list of directories in which to search for
 templates, as well as keyword arguments that will be passed to
-the :class:`.Template` objects it creates::
+the :class:`.Template` objects it creates:
+
+.. sourcecode:: python
 
     from mako.template import Template
     from mako.lookup import TemplateLookup
@@ -115,7 +127,9 @@ have been a little bit contrived in order to illustrate the
 basic concepts. But a real application would get most or all of
 its templates directly from the :class:`.TemplateLookup`, using the
 aptly named :meth:`~.TemplateLookup.get_template` method, which accepts the URI of the
-desired template::
+desired template:
+
+.. sourcecode:: python
 
     from mako.template import Template
     from mako.lookup import TemplateLookup
@@ -150,7 +164,9 @@ fixed set of templates in memory at a given time, so that
 successive URI lookups do not result in full template
 compilations and/or module reloads on each request. By default,
 the :class:`.TemplateLookup` size is unbounded. You can specify a fixed
-size using the ``collection_size`` argument::
+size using the ``collection_size`` argument:
+
+.. sourcecode:: python
 
     mylookup = TemplateLookup(directories=['/docs'],
                     module_directory='/tmp/mako_modules', collection_size=500)
@@ -180,7 +196,9 @@ Using Unicode and Encoding
 
 Both :class:`.Template` and :class:`.TemplateLookup` accept ``output_encoding``
 and ``encoding_errors`` parameters which can be used to encode the
-output in any Python supported codec::
+output in any Python supported codec:
+
+.. sourcecode:: python
 
     from mako.template import Template
     from mako.lookup import TemplateLookup
@@ -196,12 +214,16 @@ object, **if** ``output_encoding`` is set. Otherwise it returns a
 
 Additionally, the :meth:`~.Template.render_unicode()` method exists which will
 return the template output as a Python ``unicode`` object, or in
-Python 3 a ``string``::
+Python 3 a ``string``:
+
+.. sourcecode:: python
 
     print mytemplate.render_unicode()
 
 The above method disregards the output encoding keyword
-argument; you can encode yourself by saying::
+argument; you can encode yourself by saying:
+
+.. sourcecode:: python
 
     print mytemplate.render_unicode().encode('utf-8', 'replace')
 
@@ -234,7 +256,9 @@ will be converted to be against the originating template file.
 To format exception traces, the :func:`.text_error_template` and
 :func:`.html_error_template` functions are provided. They make usage of
 ``sys.exc_info()`` to get at the most recently thrown exception.
-Usage of these handlers usually looks like::
+Usage of these handlers usually looks like:
+
+.. sourcecode:: python
 
     from mako import exceptions
 
@@ -244,7 +268,9 @@ Usage of these handlers usually looks like::
     except:
         print exceptions.text_error_template().render()
 
-Or for the HTML render function::
+Or for the HTML render function:
+
+.. sourcecode:: python
 
     from mako import exceptions
 
@@ -259,7 +285,9 @@ specifying ``full=False`` causes only a section of an HTML
 document to be rendered. Specifying ``css=False`` will disable the
 default stylesheet from being rendered.
 
-E.g.::
+E.g.:
+
+.. sourcecode:: python
 
     print exceptions.html_error_template().render(full=False)
 
@@ -267,7 +295,9 @@ The HTML render function is also available built-in to
 :class:`.Template` using the ``format_exceptions`` flag. In this case, any
 exceptions raised within the **render** stage of the template
 will result in the output being substituted with the output of
-:func:`.html_error_template`::
+:func:`.html_error_template`:
+
+.. sourcecode:: python
 
     template = Template(filename="/foo/bar", format_exceptions=True)
     print template.render()
@@ -280,13 +310,15 @@ propagate normally. While the pre-render traceback usually will
 not include any Mako-specific lines anyway, it will mean that
 exceptions which occur previous to rendering and those which
 occur within rendering will be handled differently... so the
-try/except patterns described previously are probably of more
+``try``/``except`` patterns described previously are probably of more
 general use.
 
 The underlying object used by the error template functions is
 the :class:`.RichTraceback` object. This object can also be used
 directly to provide custom error views. Here's an example usage
-which describes its general API::
+which describes its general API:
+
+.. sourcecode:: python
 
     from mako.exceptions import RichTraceback
 
@@ -326,18 +358,18 @@ Pygments
 A `Pygments <http://pygments.pocoo.org>`_-compatible syntax
 highlighting module is included under :mod:`mako.ext.pygmentplugin`.
 This module is used in the generation of Mako documentation and
-also contains various setuptools entry points under the heading
+also contains various `setuptools` entry points under the heading
 ``pygments.lexers``, including ``mako``, ``html+mako``, ``xml+mako``
 (see the ``setup.py`` file for all the entry points).
 
 Babel
 ------
 
-Mako provides support for extracting gettext messages from
+Mako provides support for extracting `gettext` messages from
 templates via a `Babel`_ extractor
-entry point under `mako.ext.babelplugin`.
+entry point under ``mako.ext.babelplugin``.
 
-Gettext messages are extracted from all Python code sections,
+`Gettext` messages are extracted from all Python code sections,
 including those of control lines and expressions embedded
 in tags.
 
@@ -345,7 +377,7 @@ in tags.
 comments <http://babel.edgewall.org/wiki/Documentation/messages.html#comments-tags-and-translator-comments-explanation>`_
 may also be extracted from Mako templates when a comment tag is
 specified to `Babel`_ (such as with
-the -c option).
+the ``-c`` option).
 
 For example, a project ``"myproj"`` contains the following Mako
 template at ``myproj/myproj/templates/name.html``:
@@ -362,7 +394,9 @@ template at ``myproj/myproj/templates/name.html``:
 To extract gettext messages from this template the project needs
 a Mako section in its `Babel Extraction Method Mapping
 file <http://babel.edgewall.org/wiki/Documentation/messages.html#extraction-method-mapping-and-configuration>`_
-(typically located at ``myproj/babel.cfg``)::
+(typically located at ``myproj/babel.cfg``):
+
+.. sourcecode:: cfg
 
     # Extraction from Python source files
 
@@ -378,11 +412,15 @@ parameter specifying the encoding of the templates (identical to
 :class:`.Template`/:class:`.TemplateLookup`'s ``input_encoding`` parameter).
 
 Invoking `Babel`_'s extractor at the
-command line in the project's root directory::
+command line in the project's root directory:
+
+.. sourcecode:: sh
 
     myproj$ pybabel extract -F babel.cfg -c "TRANSLATORS:" .
 
-will output a gettext catalog to stdout including the following::
+will output a `gettext` catalog to `stdout` including the following:
+
+.. sourcecode:: pot
 
     #. TRANSLATORS: This is a proper name. See the gettext
     #. manual, section Names.
@@ -391,13 +429,13 @@ will output a gettext catalog to stdout including the following::
     msgstr ""
 
 This is only a basic example:
-`Babel`_ can be invoked from setup.py
+`Babel`_ can be invoked from ``setup.py``
 and its command line options specified in the accompanying
-setup.cfg via `Babel Distutils/Setuptools
+``setup.cfg`` via `Babel Distutils/Setuptools
 Integration <http://babel.edgewall.org/wiki/Documentation/setup.html>`_.
 
-Comments must immediately precede a gettext message to be
-extracted. In the following case the TRANSLATORS: comment would
+Comments must immediately precede a `gettext` message to be
+extracted. In the following case the ``TRANSLATORS:`` comment would
 not have been extracted:
 
 .. sourcecode:: mako
@@ -463,7 +501,7 @@ API Reference
        python traceback elements, plus the
        filename, line number, source line, and full template source
        for the traceline mapped back to its originating source
-       template, if any for that traceline (else the fields are None).
+       template, if any for that traceline (else the fields are ``None``).
 
     .. py:attribute:: reverse_records
 

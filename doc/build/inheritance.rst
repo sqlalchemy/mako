@@ -5,10 +5,10 @@ Inheritance
 ===========
 
 .. note::  Most of the inheritance examples here take advantage of a feature that's
-  new in Mako as of version 0.4.1 called the "block".  This tag is very similar to
-  the "def" tag but is more streamlined for usage with inheritance.  Note that
-  all of the examples here which use blocks can also use defs instead.  Contrasting
-  usages will be illustrated.
+    new in Mako as of version 0.4.1 called the "block".  This tag is very similar to
+    the "def" tag but is more streamlined for usage with inheritance.  Note that
+    all of the examples here which use blocks can also use defs instead.  Contrasting
+    usages will be illustrated.
 
 Using template inheritance, two or more templates can organize
 themselves into an **inheritance chain**, where content and
@@ -57,39 +57,39 @@ And ``base.html``, the inherited template:
 
 Here is a breakdown of the execution:
 
-* When ``index.html`` is rendered, control immediately passes to
-  ``base.html``.
-* ``base.html`` then renders the top part of an HTML document,
-  then invokes the ``<%block name="header">`` block.  It invokes the
-  underlying ``header()`` function off of a built-in namespace
-  called ``self`` (this namespace was first introduced in the
-  Namespaces chapter in :ref:`namespace_self`). Since
-  ``index.html`` is the topmost template and also defines a block
-  called ``header``, it's this ``header`` block that ultimately gets
-  executed -- instead of the one that's present in ``base.html``.
-* Control comes back to ``base.html``. Some more HTML is
-  rendered.
-* ``base.html`` executes ``self.body()``. The ``body()``
-  function on all template-based namespaces refers to the main
-  body of the template, therefore the main body of
-  ``index.html`` is rendered.
-* When ``<%block name="header">`` is encountered in ``index.html`` 
-  during the ``self.body()`` call, a conditional is checked -- does the
-  current inherited template, i.e. ``base.html``, also define this block? If yes,
-  the ``<%block>`` is **not** executed here -- the inheritance
-  mechanism knows that the parent template is responsible for rendering
-  this block (and in fact it already has).  In other words a block
-  only renders in its *basemost scope*.
-* Control comes back to ``base.html``. More HTML is rendered,
-  then the ``<%block name="footer">`` expression is invoked.
-* The ``footer`` block is only defined in ``base.html``, so being
-  the topmost definition of ``footer``, it's the one that
-  executes. If ``index.html`` also specified ``footer``, then
-  its version would **override** that of the base.
-* ``base.html`` finishes up rendering its HTML and the template
-  is complete, producing:
+#. When ``index.html`` is rendered, control immediately passes to
+   ``base.html``.
+#. ``base.html`` then renders the top part of an HTML document,
+   then invokes the ``<%block name="header">`` block.  It invokes the
+   underlying ``header()`` function off of a built-in namespace
+   called ``self`` (this namespace was first introduced in the
+   :doc:`Namespaces chapter <namespaces>` in :ref:`namespace_self`). Since
+   ``index.html`` is the topmost template and also defines a block
+   called ``header``, it's this ``header`` block that ultimately gets
+   executed -- instead of the one that's present in ``base.html``.
+#. Control comes back to ``base.html``. Some more HTML is
+   rendered.
+#. ``base.html`` executes ``self.body()``. The ``body()``
+   function on all template-based namespaces refers to the main
+   body of the template, therefore the main body of
+   ``index.html`` is rendered.
+#. When ``<%block name="header">`` is encountered in ``index.html`` 
+   during the ``self.body()`` call, a conditional is checked -- does the
+   current inherited template, i.e. ``base.html``, also define this block? If yes,
+   the ``<%block>`` is **not** executed here -- the inheritance
+   mechanism knows that the parent template is responsible for rendering
+   this block (and in fact it already has).  In other words a block
+   only renders in its *basemost scope*.
+#. Control comes back to ``base.html``. More HTML is rendered,
+   then the ``<%block name="footer">`` expression is invoked.
+#. The ``footer`` block is only defined in ``base.html``, so being
+   the topmost definition of ``footer``, it's the one that
+   executes. If ``index.html`` also specified ``footer``, then
+   its version would **override** that of the base.
+#. ``base.html`` finishes up rendering its HTML and the template
+   is complete, producing:
 
-  .. sourcecode:: html
+   .. sourcecode:: html
 
         <html>
             <body>
@@ -317,8 +317,8 @@ in order to achieve this it *adds* the restriction that all block names in a sin
 to be globally unique within the template, and additionally that a ``<%block>`` can't be defined
 inside of a ``<%def>``. It's a more restricted tag suited towards a more specific use case than ``<%def>``.
 
-Using the "next" namespace to produce content wrapping
-=======================================================
+Using the ``next`` namespace to produce content wrapping
+=========================================================
 
 Sometimes you have an inheritance chain that spans more than two
 templates. Or maybe you don't, but you'd like to build your
@@ -371,7 +371,6 @@ which inherits from ``base.html``:
     <div class="mainlayout">
         ${next.body()}
     </div>
-
 
 And finally change ``index.html`` to inherit from
 ``layout.html`` instead:
@@ -428,8 +427,8 @@ Without the ``next`` namespace, only the main body of
 
 .. _parent_namespace:
 
-Using the "parent" namespace to augment defs
-=============================================
+Using the ``parent`` namespace to augment defs
+===============================================
 
 Lets now look at the other inheritance-specific namespace, the
 opposite of ``next`` called ``parent``. ``parent`` is the
@@ -498,8 +497,8 @@ and you're now a template inheritance ninja!
 Inheritable Attributes
 ======================
 
-The ``attr`` accessor of the :class:`.Namespace` object allows access
-to module level variables declared in a template. By accessing
+The :attr:`attr <.Namespace.attr>` accessor of the :class:`.Namespace` object
+allows access to module level variables declared in a template. By accessing
 ``self.attr``, you can access regular attributes from the
 inheritance chain as declared in ``<%! %>`` sections. Such as:
 
@@ -514,7 +513,7 @@ inheritance chain as declared in ``<%! %>`` sections. Such as:
     </div>
 
 If an inheriting template overrides ``class_`` to be
-``white``, as in:
+``"white"``, as in:
 
 .. sourcecode:: mako
 
@@ -532,3 +531,4 @@ you'll get output like:
     <div class="white">
         This is the body
     </div>
+

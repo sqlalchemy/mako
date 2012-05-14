@@ -75,7 +75,7 @@ automatically correspond to what was passed into the current
   the current context?** - The value you get back is a special
   value called ``UNDEFINED``, or if the ``strict_undefined=True`` flag
   is used a ``NameError`` is raised. ``UNDEFINED`` is just a simple global
-  variable with the class ``mako.runtime.Undefined``. The
+  variable with the class :class:`mako.runtime.Undefined`. The
   ``UNDEFINED`` object throws an error when you call ``str()`` on
   it, which is what happens if you try to use it in an
   expression.
@@ -169,7 +169,7 @@ Significant members of :class:`.Context` include:
   the context if it isn't defined somewhere already. Use the
   dictionary accessor and/or ``get`` method when you want a
   variable that *is* already defined somewhere else, such as in
-  the local arguments sent to a %def call. If a key is not
+  the local arguments sent to a ``%def`` call. If a key is not
   present, like a dictionary it raises ``KeyError``.
 * ``keys()`` - all the names defined within this context.
 * ``kwargs`` - this returns a **copy** of the context's
@@ -333,11 +333,15 @@ all templates, then re-enabled on a per-template basis for those templates which
 to make use of the new system.
 
 First, the ``enable_loop=False`` flag is passed to either the :class:`.TemplateLookup`
-or :class:`.Template` object in use::
+or :class:`.Template` object in use:
+
+.. sourcecode:: python
 
     lookup = TemplateLookup(directories=['/docs'], enable_loop=False)
 
-or::
+or:
+
+.. sourcecode:: python
 
     template = Template("some template", enable_loop=False)
 
@@ -398,7 +402,7 @@ to the context and can't be substituted -- see the section :ref:`reserved_names`
   an instance of :class:`.Undefined`, and raises an
   exception when its ``__str__()`` method is called.
 * ``pageargs`` - this is a dictionary which is present in a
-  template which does not define any \**kwargs section in its
+  template which does not define any ``**kwargs`` section in its
   ``<%page>`` tag. All keyword arguments sent to the ``body()``
   function of a template (when used via namespaces) go here by
   default unless otherwise defined as a page argument. If this
@@ -419,7 +423,6 @@ ignored or lead to other error messages.
 * ``UNDEFINED`` - see :ref:`context_vars`.
 * ``loop`` - see :ref:`loop_context`.  Note this can be disabled for legacy templates
   via the ``enable_loop=False`` argument; see :ref:`migrating_loop`.
-
 
 API Reference
 ==============

@@ -141,7 +141,7 @@ class Cache(object):
         self.invalidate('render_body', __M_defname='render_body')
  
     def invalidate_def(self, name):
-        """Invalidate the cached content of a particular <%def> within this
+        """Invalidate the cached content of a particular ``<%def>`` within this
         template.
 
         """
@@ -149,7 +149,7 @@ class Cache(object):
         self.invalidate('render_%s' % name, __M_defname='render_%s' % name)
  
     def invalidate_closure(self, name):
-        """Invalidate a nested <%def> within this template.
+        """Invalidate a nested ``<%def>`` within this template.
 
         Caching of nested defs is a blunt tool as there is no
         management of scope -- nested defs that use cache tags
@@ -184,8 +184,9 @@ class CacheImpl(object):
         self.cache = cache
 
     pass_context = False
-    """If True, the Context will be passed to get_or_create
-    as the name 'context'."""
+    """If ``True``, the :class:`.Context` will be passed to
+    :meth:`get_or_create <.CacheImpl.get_or_create>` as the name ``'context'``.
+    """
 
     def get_or_create(self, key, creation_function, **kw):
         """Retrieve a value from the cache, using the given creation function

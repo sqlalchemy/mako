@@ -16,9 +16,9 @@ class Template(object):
     """Represents a compiled template.
 
     :class:`.Template` includes a reference to the original
-    template source (via the ``.source`` attribute)
+    template source (via the :attr:`.source` attribute)
     as well as the source code of the
-    generated Python module (i.e. the ``.code`` attribute),
+    generated Python module (i.e. the :attr:`.code` attribute),
     as well as a reference to an actual Python module.
 
     :class:`.Template` is constructed using either a literal string
@@ -26,45 +26,45 @@ class Template(object):
     path to a source file.
 
     :param text: textual template source.  This argument is mutually
-     exclusive versus the "filename" parameter.
+     exclusive versus the ``filename`` parameter.
 
     :param filename: filename of the source template.  This argument is
-     mutually exclusive versus the "text" parameter.
+     mutually exclusive versus the ``text`` parameter.
 
     :param buffer_filters: string list of filters to be applied
-     to the output of %defs which are buffered, cached, or otherwise
+     to the output of ``%def``\ s which are buffered, cached, or otherwise
      filtered, after all filters
-     defined with the %def itself have been applied. Allows the
+     defined with the ``%def`` itself have been applied. Allows the
      creation of default expression filters that let the output
-     of return-valued %defs "opt out" of that filtering via
+     of return-valued ``%def``\ s "opt out" of that filtering via
      passing special attributes or objects.
 
-    :param bytestring_passthrough: When True, and output_encoding is
-     set to None, and :meth:`.Template.render` is used to render,
-     the StringIO or cStringIO buffer will be used instead of the
+    :param bytestring_passthrough: When ``True``, and ``output_encoding`` is
+     set to ``None``, and :meth:`.Template.render` is used to render,
+     the `StringIO` or `cStringIO` buffer will be used instead of the
      default "fast" buffer.   This allows raw bytestrings in the
      output stream, such as in expressions, to pass straight
      through to the buffer.   New in 0.4 to provide the same
      behavior as that of the previous series.  This flag is forced
-     to True if disable_unicode is also configured.
+     to ``True`` if ``disable_unicode`` is also configured.
 
     :param cache_args: Dictionary of cache configuration arguments that
      will be passed to the :class:`.CacheImpl`.   See :ref:`caching_toplevel`.
 
-    :param cache_dir: Deprecated; use the 'dir' argument in the
-     cache_args dictionary.  See :ref:`caching_toplevel`.
+    :param cache_dir: Deprecated; use the ``'dir'`` argument in the
+     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
 
     :param cache_enabled: Boolean flag which enables caching of this
      template.  See :ref:`caching_toplevel`.
 
     :param cache_impl: String name of a :class:`.CacheImpl` caching
-     implementation to use.   Defaults to 'beaker'.
+     implementation to use.   Defaults to ``'beaker'``.
 
-    :param cache_type: Deprecated; use the 'type' argument in the
-     cache_args dictionary.  See :ref:`caching_toplevel`.
+    :param cache_type: Deprecated; use the ``'type'`` argument in the
+     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
 
-    :param cache_url: Deprecated; use the 'url' argument in the
-     cache_args dictionary.  See :ref:`caching_toplevel`.
+    :param cache_url: Deprecated; use the ``'url'`` argument in the
+     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
 
     :param default_filters: List of string filter names that will
      be applied to all expressions.  See :ref:`filtering_default_filters`.
@@ -74,7 +74,7 @@ class Template(object):
 
     :param enable_loop: When ``True``, enable the ``loop`` context variable.
      This can be set to ``False`` to support templates that may
-     be making usage of the name "loop".   Individual templates can
+     be making usage of the name "``loop``".   Individual templates can
      re-enable the "loop" context by placing the directive 
      ``enable_loop="True"`` inside the ``<%page>`` tag -- see
      :ref:`migrating_loop`.
@@ -123,28 +123,30 @@ class Template(object):
      path to be written to.   The default behavior of module writing
      uses a tempfile in conjunction with a file move in order
      to make the operation atomic.   So a user-defined module
-     writing function that mimics the default behavior would be::
+     writing function that mimics the default behavior would be:
 
-        import tempfile
-        import os
-        import shutil
+     .. sourcecode:: python
 
-        def module_writer(source, outputpath):
-            (dest, name) = \\
-                tempfile.mkstemp(
-                    dir=os.path.dirname(outputpath)
-                )
+         import tempfile
+         import os
+         import shutil
 
-            os.write(dest, source)
-            os.close(dest)
-            shutil.move(name, outputpath)
+         def module_writer(source, outputpath):
+             (dest, name) = \\
+                 tempfile.mkstemp(
+                     dir=os.path.dirname(outputpath)
+                 )
 
-        from mako.template import Template
-        mytemplate = Template(
-                        file="index.html",
-                        module_directory="/path/to/modules",
-                        module_writer=module_writer
-                    )
+             os.write(dest, source)
+             os.close(dest)
+             shutil.move(name, outputpath)
+
+         from mako.template import Template
+         mytemplate = Template(
+                         file="index.html",
+                         module_directory="/path/to/modules",
+                         module_writer=module_writer
+                     )
 
      The function is provided for unusual configurations where
      certain platform-specific permissions or other special
@@ -166,9 +168,9 @@ class Template(object):
      missing variables which include the name. New in 0.3.6.
 
     :param uri: string URI or other identifier for this template.
-     If not provided, the uri is generated from the filesystem
+     If not provided, the ``uri`` is generated from the filesystem
      path, or from the in-memory identity of a non-file-based
-     template. The primary usage of the uri is to provide a key
+     template. The primary usage of the ``uri`` is to provide a key
      within :class:`.TemplateLookup`, as well as to generate the
      file path of the generated Python module file, if
      ``module_directory`` is specified.
@@ -358,13 +360,13 @@ class Template(object):
  
     @property
     def source(self):
-        """Return the template source code for this Template."""
+        """Return the template source code for this :class:`.Template`."""
  
         return _get_module_info_from_callable(self.callable_).source
 
     @property
     def code(self):
-        """Return the module source code for this Template."""
+        """Return the module source code for this :class:`.Template`."""
  
         return _get_module_info_from_callable(self.callable_).code
  
@@ -387,11 +389,11 @@ class Template(object):
 
         If the template specifies an output encoding, the string
         will be encoded accordingly, else the output is raw (raw
-        output uses cStringIO and can't handle multibyte
-        characters). A Context object is created corresponding
+        output uses `cStringIO` and can't handle multibyte
+        characters). A :class:`.Context` object is created corresponding
         to the given data. Arguments that are explicitly declared
         by this template's internal rendering method are also
-        pulled from the given \*args, \**data members.
+        pulled from the given ``*args``, ``**data`` members.
 
         """
         return runtime._render(self, self.callable_, args, data)
@@ -406,7 +408,7 @@ class Template(object):
                                 as_unicode=True)
  
     def render_context(self, context, *args, **kwargs):
-        """Render this Template with the given context.
+        """Render this :class:`.Template` with the given context.
 
         The data is written to the context's buffer.
 
@@ -508,7 +510,7 @@ class ModuleTemplate(Template):
         )
  
 class DefTemplate(Template):
-    """A Template which represents a callable def in a parent
+    """A :class:`.Template` which represents a callable def in a parent
     template."""
  
     def __init__(self, parent, callable_):

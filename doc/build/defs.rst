@@ -94,7 +94,7 @@ To import another template, use the ``<%namespace>`` tag:
 
     <%namespace name="mystuff" file="mystuff.html"/>
 
-The above tag adds a local variable "mystuff" to the current
+The above tag adds a local variable ``mystuff`` to the current
 scope.
 
 Then, just call the defs off of ``mystuff``:
@@ -195,7 +195,7 @@ the following code will raise an error:
         %>
     </%def>
 
-...because the assignment to ``x`` declares x as local to the
+...because the assignment to ``x`` declares ``x`` as local to the
 scope of ``somedef``, rendering the "outer" version unreachable
 in the expression that tries to render it.
 

@@ -78,12 +78,14 @@ caching can be configured using these arguments:
 * ``cache_enabled`` - Setting this
   to ``False`` will disable all caching functionality
   when the template renders.  Defaults to ``True``.
-  e.g.::
+  e.g.:
 
-    lookup = TemplateLookup(
-                    directories='/path/to/templates',
-                    cache_enabled = False
-                    )
+  .. sourcecode:: python
+
+      lookup = TemplateLookup(
+                      directories='/path/to/templates',
+                      cache_enabled = False
+                      )
 
 * ``cache_impl`` - The string name of the cache backend
   to use.   This defaults to ``'beaker'``, which has historically
@@ -92,13 +94,15 @@ caching can be configured using these arguments:
 
   For example, here's how to use the upcoming
   `dogpile.cache <http://dogpilecache.readthedocs.org>`_
-  backend::
+  backend:
 
-    lookup = TemplateLookup(
-                    directories='/path/to/templates',
-                    cache_impl = 'dogpile.cache',
-                    cache_args = {'regions':my_dogpile_regions}
-                    )
+  .. sourcecode:: python
+
+      lookup = TemplateLookup(
+                      directories='/path/to/templates',
+                      cache_impl = 'dogpile.cache',
+                      cache_args = {'regions':my_dogpile_regions}
+                      )
 
 * ``cache_args`` - A dictionary of cache parameters that
   will be consumed by the cache backend.   See
@@ -116,7 +120,7 @@ The actual arguments understood are determined by the backend.
 
 * :ref:`beaker_backend` - Includes arguments understood by
   Beaker.
-* :ref:`mako_plugin` - Includes arguments understood by
+* :ref:`dogpile.cache_backend` - Includes arguments understood by
   dogpile.cache.
 
 .. _beaker_backend:
@@ -135,7 +139,9 @@ region that will store content in a memory-based dictionary,
 expiring after 60 seconds.   The other is a Memcached region,
 where values should expire in five minutes.   To configure
 our :class:`.TemplateLookup`, first we get a handle to a
-:class:`beaker.cache.CacheManager`::
+:class:`beaker.cache.CacheManager`:
+
+.. sourcecode:: python
 
     from beaker.cache import CacheManager
 
@@ -212,6 +218,8 @@ without the ``cache_`` prefix in the ``cache_args`` dictionary:
   an exception is thrown.  Available as ``dir`` in the
   ``cache_args`` dictionary.
 
+.. _dogpile.cache_backend:
+
 Using the dogpile.cache Backend
 --------------------------------
 
@@ -225,7 +233,7 @@ Programmatic Cache Access
 =========================
 
 The :class:`.Template`, as well as any template-derived :class:`.Namespace`, has
-an accessor called ``cache`` which returns the ``Cache`` object
+an accessor called ``cache`` which returns the :class:`.Cache` object
 for that template. This object is a facade on top of the underlying
 :class:`.CacheImpl` object, and provides some very rudimental
 capabilities, such as the ability to get and put arbitrary
@@ -257,7 +265,9 @@ sections programmatically:
     template.cache.invalidate('somekey')
 
 You can access any special method or attribute of the :class:`.CacheImpl`
-itself using the ``impl`` attribute::
+itself using the :attr:`impl <.Cache.impl>` attribute:
+
+.. sourcecode:: python
 
     template.cache.impl.do_something_special()
 
@@ -278,12 +288,14 @@ provide the default implementation.  A :class:`.CacheImpl` class
 is acquired by Mako using a ``pkg_resources`` entrypoint, using
 the name given as the ``cache_impl`` argument to :class:`.Template`
 or :class:`.TemplateLookup`.    This entry point can be
-installed via the standard setuptools/``setup()`` procedure, underneath
-the EntryPoint group named ``"mako.cache"``.  It can also be
+installed via the standard `setuptools`/``setup()`` procedure, underneath
+the `EntryPoint` group named ``"mako.cache"``.  It can also be
 installed at runtime via a convenience installer :func:`.register_plugin`
 which accomplishes essentially the same task.
 
-An example plugin that implements a local dictionary cache::
+An example plugin that implements a local dictionary cache:
+
+.. sourcecode:: python
 
     from mako.cache import Cacheimpl, register_plugin
 
@@ -311,7 +323,9 @@ An example plugin that implements a local dictionary cache::
     # optional - register the class locally
     register_plugin("simple", __name__, "SimpleCacheImpl")
 
-Enabling the above plugin in a template would look like::
+Enabling the above plugin in a template would look like:
+
+.. sourcecode:: python
 
     t = Template("mytemplate",
                     file="mytemplate.html",
@@ -371,3 +385,4 @@ API Reference
 .. autoclass:: mako.ext.beaker_cache.BeakerCacheImpl
     :members:
     :show-inheritance:
+

@@ -38,7 +38,7 @@ current context.
 
 ``<%namespace>`` also provides an ``import`` attribute which can
 be used to pull the names into the local namespace, removing the
-need to call it via the ".". When ``import`` is used, the
+need to call it via the "``.``" operator. When ``import`` is used, the
 ``name`` attribute is optional.
 
 .. sourcecode:: mako
@@ -48,7 +48,7 @@ need to call it via the ".". When ``import`` is used, the
     Heres comp1:  ${comp1()}
     Heres comp2:  ${comp2(x=5)}
 
-``import`` also supports the "*" operator:
+``import`` also supports the "``*``" operator:
 
 .. sourcecode:: mako
 
@@ -206,8 +206,8 @@ pulled in from a remote template or module:
 
 .. _namespaces_body:
 
-The "body()" method
-=====================
+The ``body()`` method
+=======================
 
 Every namespace that is generated from a template contains a
 method called ``body()``. This method corresponds to the main
@@ -271,8 +271,8 @@ two) for free. The names of these namespaces are ``local`` and
 
 .. _namespace_local:
 
-local
------
+``local``
+---------
 
 The ``local`` namespace is basically the namespace for the
 currently executing template. This means that all of the top
@@ -286,8 +286,8 @@ can be particularly useful.
 
 .. _namespace_self:
 
-self
------
+``self``
+---------
 
 The ``self`` namespace, in the case of a template that does not
 use inheritance, is synonymous with ``local``. If inheritance is

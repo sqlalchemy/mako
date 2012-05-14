@@ -62,14 +62,14 @@ class Context(object):
         return self._kwargs.copy()
  
     def push_caller(self, caller):
-        """Push a 'caller' callable onto the callstack for
+        """Push a ``caller`` callable onto the callstack for
         this :class:`.Context`."""
  
  
         self.caller_stack.append(caller)
  
     def pop_caller(self):
-        """Pop a 'caller' callable onto the callstack for this
+        """Pop a ``caller`` callable onto the callstack for this
         :class:`.Context`."""
 
         del self.caller_stack[-1]
@@ -243,20 +243,20 @@ class LoopContext(object):
     See the section :ref:`loop_context` for usage
     notes.
 
-    :attr:`parent` -> LoopContext or None
+    :attr:`parent` -> :class:`.LoopContext` or ``None``
         The parent loop, if one exists.
-    :attr:`index` -> int
+    :attr:`index` -> `int`
         The 0-based iteration count.
-    :attr:`reverse_index` -> int
+    :attr:`reverse_index` -> `int`
         The number of iterations remaining.
-    :attr:`first` -> bool
-        `True` on the first iteration, `False` otherwise.
-    :attr:`last` -> bool
-        `True` on the last iteration, `False` otherwise.
-    :attr:`even` -> bool
-        `True` when `index` is even.
-    :attr:`odd` -> bool
-        `True` when `index` is odd.
+    :attr:`first` -> `bool`
+        ``True`` on the first iteration, ``False`` otherwise.
+    :attr:`last` -> `bool`
+        ``True`` on the last iteration, ``False`` otherwise.
+    :attr:`even` -> `bool`
+        ``True`` when ``index`` is even.
+    :attr:`odd` -> `bool`
+        ``True`` when ``index`` is odd.
     """
 
     def __init__(self, iterable):
@@ -318,7 +318,9 @@ class Namespace(object):
       can be local, from other templates, or from imported modules.
 
       To access a particular rendering method referenced by a
-      :class:`.Namespace`, use plain attribute access::
+      :class:`.Namespace`, use plain attribute access:
+
+      .. sourcecode:: mako
 
         ${some_namespace.foo(x, y, z)}
 
@@ -339,7 +341,7 @@ class Namespace(object):
     callables = ()
 
     module = None
-    """The Python module referenced by this Namespace.
+    """The Python module referenced by this :class:`.Namespace`.
 
     If the namespace references a :class:`.Template`, then
     this module is the equivalent of ``template.module``,
@@ -354,7 +356,7 @@ class Namespace(object):
     """
 
     context = None
-    """The :class:`.Context` object for this namespace.
+    """The :class:`.Context` object for this :class:`.Namespace`.
 
     Namespaces are often created with copies of contexts that
     contain slightly different data, particularly in inheritance
@@ -366,17 +368,17 @@ class Namespace(object):
  
     filename = None
     """The path of the filesystem file used for this
-    Namespace's module or template.
+    :class:`.Namespace`'s module or template.
 
     If this is a pure module-based
-    Namespace, this evaluates to ``module.__file__``. If a
+    :class:`.Namespace`, this evaluates to ``module.__file__``. If a
     template-based namespace, it evaluates to the original
     template file location.
 
     """
  
     uri = None
-    """The URI for this Namespace's template.
+    """The URI for this :class:`.Namespace`'s template.
 
     I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
 
@@ -399,11 +401,11 @@ class Namespace(object):
         return _NSAttr(self)
 
     def get_namespace(self, uri):
-        """Return a :class:`.Namespace` corresponding to the given uri.
+        """Return a :class:`.Namespace` corresponding to the given ``uri``.
 
-        If the given uri is a relative URI (i.e. it does not
-        contain a leading slash ``/``), the uri is adjusted to
-        be relative to the uri of the namespace itself. This
+        If the given ``uri`` is a relative URI (i.e. it does not
+        contain a leading slash ``/``), the ``uri`` is adjusted to
+        be relative to the ``uri`` of the namespace itself. This
         method is therefore mostly useful off of the built-in
         ``local`` namespace, described in :ref:`namespace_local`.
 
@@ -429,9 +431,9 @@ class Namespace(object):
             return ns
  
     def get_template(self, uri):
-        """Return a :class:`.Template` from the given uri.
+        """Return a :class:`.Template` from the given ``uri``.
 
-        The uri resolution is relative to the uri of this :class:`.Namespace`
+        The ``uri`` resolution is relative to the ``uri`` of this :class:`.Namespace`
         object's :class:`.Template`.
 
         """
@@ -461,7 +463,7 @@ class Namespace(object):
         return self.template.cache
  
     def include_file(self, uri, **kwargs):
-        """Include a file at the given uri."""
+        """Include a file at the given ``uri``."""
  
         _include_file(self.context, uri, self._templateuri, **kwargs)
  
@@ -519,7 +521,7 @@ class TemplateNamespace(Namespace):
 
     @property
     def module(self):
-        """The Python module referenced by this Namespace.
+        """The Python module referenced by this :class:`.Namespace`.
 
         If the namespace references a :class:`.Template`, then
         this module is the equivalent of ``template.module``,
@@ -531,13 +533,13 @@ class TemplateNamespace(Namespace):
     @property
     def filename(self):
         """The path of the filesystem file used for this
-        Namespace's module or template.
+        :class:`.Namespace`'s module or template.
         """
         return self.template.filename
 
     @property
     def uri(self):
-        """The URI for this Namespace's template.
+        """The URI for this :class:`.Namespace`'s template.
 
         I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
 
@@ -592,7 +594,7 @@ class ModuleNamespace(Namespace):
     @property
     def filename(self):
         """The path of the filesystem file used for this
-        Namespace's module or template.
+        :class:`.Namespace`'s module or template.
         """
         return self.module.__file__
 

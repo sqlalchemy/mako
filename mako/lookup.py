@@ -32,7 +32,7 @@ class TemplateCollection(object):
     def has_template(self, uri):
         """Return ``True`` if this :class:`.TemplateLookup` is
         capable of returning a :class:`.Template` object for the
-        given URI.
+        given ``uri``.
 
         :param uri: String URI of the template to be resolved.
 
@@ -45,35 +45,35 @@ class TemplateCollection(object):
 
     def get_template(self, uri, relativeto=None):
         """Return a :class:`.Template` object corresponding to the given
-        URI.
+        ``uri``.
 
         The default implementation raises
         :class:`.NotImplementedError`. Implementations should
-        raise :class:`.TemplateLookupException` if the given uri
+        raise :class:`.TemplateLookupException` if the given ``uri``
         cannot be resolved.
 
         :param uri: String URI of the template to be resolved.
-        :param relativeto: if present, the given URI is assumed to
+        :param relativeto: if present, the given ``uri`` is assumed to
          be relative to this URI.
 
         """
         raise NotImplementedError()
 
     def filename_to_uri(self, uri, filename):
-        """Convert the given filename to a URI relative to
-           this TemplateCollection."""
+        """Convert the given ``filename`` to a URI relative to
+           this :class:`.TemplateCollection`."""
  
         return uri
  
     def adjust_uri(self, uri, filename):
-        """Adjust the given uri based on the calling filename.
+        """Adjust the given ``uri`` based on the calling ``filename``.
 
         When this method is called from the runtime, the
-        'filename' parameter is taken directly to the 'filename'
+        ``filename`` parameter is taken directly to the ``filename``
         attribute of the calling template. Therefore a custom
-        TemplateCollection subclass can place any string
-        identifier desired in the "filename" parameter of the
-        Template objects it constructs and have them come back
+        :class:`.TemplateCollection` subclass can place any string
+        identifier desired in the ``filename`` parameter of the
+        :class:`.Template` objects it constructs and have them come back
         here.
 
         """
@@ -84,13 +84,17 @@ class TemplateLookup(TemplateCollection):
     from the local filesystem.
 
     The primary argument is the ``directories`` argument, the list of
-    directories to search::
+    directories to search:
+
+    .. sourcecode:: python
 
         lookup = TemplateLookup(["/path/to/templates"])
         some_template = lookup.get_template("/index.html")
 
     The :class:`.TemplateLookup` can also be given :class:`.Template` objects
-    programatically using :meth:`.put_string` or :meth:`.put_template`::
+    programatically using :meth:`.put_string` or :meth:`.put_template`:
+
+    .. sourcecode:: python
 
         lookup = TemplateLookup()
         lookup.put_string("base.html", '''
@@ -108,7 +112,7 @@ class TemplateLookup(TemplateCollection):
      to each directory and the filesystem checked.
 
     :param collection_size: Approximate size of the collection used
-     to store templates. If left at its default of -1, the size
+     to store templates. If left at its default of ``-1``, the size
      is unbounded, and a plain Python dictionary is used to
      relate URI strings to :class:`.Template` instances.
      Otherwise, a least-recently-used cache object is used which
@@ -217,9 +221,9 @@ class TemplateLookup(TemplateCollection):
  
     def get_template(self, uri):
         """Return a :class:`.Template` object corresponding to the given
-        URI.
+        ``uri``.
 
-        Note the "relativeto" argument is not supported here at the moment.
+        .. note:: The ``relativeto`` argument is not supported here at the moment.
 
         """
 
@@ -239,7 +243,7 @@ class TemplateLookup(TemplateCollection):
                                     "Cant locate template for uri %r" % uri)
 
     def adjust_uri(self, uri, relativeto):
-        """Adjust the given uri based on the given relative URI."""
+        """Adjust the given ``uri`` based on the given relative URI."""
  
         key = (uri, relativeto)
         if key in self._uri_cache:
@@ -257,8 +261,8 @@ class TemplateLookup(TemplateCollection):
  
  
     def filename_to_uri(self, filename):
-        """Convert the given filename to a URI relative to
-           this TemplateCollection."""
+        """Convert the given ``filename`` to a URI relative to
+           this :class:`.TemplateCollection`."""
 
         try:
             return self._uri_cache[filename]
@@ -331,7 +335,7 @@ class TemplateLookup(TemplateCollection):
     def put_string(self, uri, text):
         """Place a new :class:`.Template` object into this
         :class:`.TemplateLookup`, based on the given string of
-        text.
+        ``text``.
 
         """
         self._collection[uri] = Template(

@@ -53,7 +53,7 @@ class TopLevelLookupException(TemplateLookupException):
     pass
  
 class RichTraceback(object):
-    """Pull the current exception from the sys traceback and extracts
+    """Pull the current exception from the ``sys`` traceback and extracts
     Mako-specific template information.
 
     See the usage examples in :ref:`handling_exceptions`.
@@ -248,9 +248,9 @@ def html_error_template():
     filenames, line numbers and code for that of the originating source
     template, as applicable.
 
-    The template's default 'encoding_errors' value is 'htmlentityreplace'. The
-    template has two options. With the full option disabled, only a section of
-    an HTML document is returned. With the css option disabled, the default
+    The template's default ``encoding_errors`` value is ``'htmlentityreplace'``. The
+    template has two options. With the ``full`` option disabled, only a section of
+    an HTML document is returned. With the ``css`` option disabled, the default
     stylesheet won't be included.
 
     """

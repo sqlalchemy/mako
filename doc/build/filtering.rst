@@ -88,12 +88,12 @@ Result:
 
 .. _filtering_default_filters:
 
-The default_filters Argument
-----------------------------
+The ``default_filters`` Argument
+--------------------------------
 
 In addition to the ``expression_filter`` argument, the
-``default_filters`` argument to both ``Template`` and
-``TemplateLookup`` can specify filtering for all expression tags
+``default_filters`` argument to both :class:`.Template` and
+:class:`.TemplateLookup` can specify filtering for all expression tags
 at the programmatic level. This array-based argument, when given
 its default argument of ``None``, will be internally set to
 ``["unicode"]`` (or ``["str"]`` on Python 3), except when
@@ -147,8 +147,8 @@ The above will generate templates something like this:
     def render_body(context):
         context.write(myfilter(unicode("some text")))
 
-Turning off Filtering with the "n" filter
-------------------------------------------
+Turning off Filtering with the ``n`` filter
+--------------------------------------------
 
 In all cases the special ``n`` filter, used locally within an
 expression, will **disable** all filters declared in the
@@ -178,7 +178,7 @@ given list of filter functions to the output of the ``%def``:
         <b>this is bold</b>
     </%def>
 
-When the filter attribute is applied to a def as above, the def
+When the ``filter`` attribute is applied to a def as above, the def
 is automatically **buffered** as well. This is described next.
 
 Buffering
@@ -187,7 +187,7 @@ Buffering
 One of Mako's central design goals is speed. To this end, all of
 the textual content within a template and its various callables
 is by default piped directly to the single buffer that is stored
-within the ``Context`` object. While this normally is easy to
+within the :class:`.Context` object. While this normally is easy to
 miss, it has certain side effects. The main one is that when you
 call a def using the normal expression syntax, i.e.
 ``${somedef()}``, it may appear that the return value of the
@@ -243,8 +243,8 @@ which is then popped off the stack and its value returned. The
 speed hit inherent in buffering the output of a def is also
 apparent.
 
-Note that the ``filter`` argument on %def also causes the def to
-be buffered. This is so that the final content of the %def can
+Note that the ``filter`` argument on ``%def`` also causes the def to
+be buffered. This is so that the final content of the ``%def`` can
 be delivered to the escaping function in one batch, which
 reduces method calls and also produces more deterministic
 behavior for the filtering function itself, which can possibly
@@ -281,7 +281,7 @@ Decorating
 ===========
 
 This is a feature that's new as of version 0.2.5. Somewhat like
-a filter for a %def but more flexible, the ``decorator``
+a filter for a ``%def`` but more flexible, the ``decorator``
 argument to ``%def`` allows the creation of a function that will
 work in a similar manner to a Python decorator. The function can
 control whether or not the function executes. The original
@@ -314,7 +314,7 @@ simplicities' sake:
 The above template will return, with more whitespace than this,
 ``"BAR this is foo BAR"``. The function is the render callable
 itself (or possibly a wrapper around it), and by default will
-write to the context. To capture its output, use the ``capture``
+write to the context. To capture its output, use the :func:`.capture`
 callable in the ``mako.runtime`` module (available in templates
 as just ``runtime``):
 
@@ -335,6 +335,6 @@ as just ``runtime``):
 
 The decorator can be used with top-level defs as well as nested
 defs, and blocks too. Note that when calling a top-level def from the
-``Template`` API, i.e. ``template.get_def('somedef').render()``,
+:class:`.Template` API, i.e. ``template.get_def('somedef').render()``,
 the decorator has to write the output to the ``context``, i.e.
 as in the first example. The return value gets discarded.
