@@ -44,15 +44,20 @@ class Template(object):
      the `StringIO` or `cStringIO` buffer will be used instead of the
      default "fast" buffer.   This allows raw bytestrings in the
      output stream, such as in expressions, to pass straight
-     through to the buffer.   New in 0.4 to provide the same
-     behavior as that of the previous series.  This flag is forced
+     through to the buffer.  This flag is forced
      to ``True`` if ``disable_unicode`` is also configured.
+
+     .. versionadded:: 0.4
+        Added to provide the same behavior as that of the previous series.
 
     :param cache_args: Dictionary of cache configuration arguments that
      will be passed to the :class:`.CacheImpl`.   See :ref:`caching_toplevel`.
 
-    :param cache_dir: Deprecated; use the ``'dir'`` argument in the
-     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
+    :param cache_dir:
+
+     .. deprecated:: 0.6
+        Use the ``'dir'`` argument in the ``cache_args`` dictionary.
+        See :ref:`caching_toplevel`.
 
     :param cache_enabled: Boolean flag which enables caching of this
      template.  See :ref:`caching_toplevel`.
@@ -60,11 +65,17 @@ class Template(object):
     :param cache_impl: String name of a :class:`.CacheImpl` caching
      implementation to use.   Defaults to ``'beaker'``.
 
-    :param cache_type: Deprecated; use the ``'type'`` argument in the
-     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
+    :param cache_type:
 
-    :param cache_url: Deprecated; use the ``'url'`` argument in the
-     ``cache_args`` dictionary.  See :ref:`caching_toplevel`.
+     .. deprecated:: 0.6
+        Use the ``'type'`` argument in the ``cache_args`` dictionary.
+        See :ref:`caching_toplevel`.
+
+    :param cache_url:
+
+     .. deprecated:: 0.6
+        Use the ``'url'`` argument in the ``cache_args`` dictionary.
+        See :ref:`caching_toplevel`.
 
     :param default_filters: List of string filter names that will
      be applied to all expressions.  See :ref:`filtering_default_filters`.
@@ -165,7 +176,9 @@ class Template(object):
      ``UNDEFINED`` for any undeclared variables not located in
      the :class:`.Context` with an immediate raise of
      ``NameError``. The advantage is immediate reporting of
-     missing variables which include the name. New in 0.3.6.
+     missing variables which include the name.
+
+     .. versionadded:: 0.3.6
 
     :param uri: string URI or other identifier for this template.
      If not provided, the ``uri`` is generated from the filesystem

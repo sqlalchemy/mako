@@ -112,9 +112,8 @@ line, by escaping it as in ``%%``:
 The Loop Context
 ----------------
 
-Mako 0.7 includes a new feature called the **loop context** which
-provides additional information about a loop while inside of a ``% for``
-structure:
+The **loop context** provides additional information about a loop
+while inside of a ``% for`` structure:
 
 .. sourcecode:: mako
 
@@ -125,6 +124,8 @@ structure:
     </ul>
 
 See :ref:`loop_context` for more information on this feature.
+
+.. versionadded:: 0.7
 
 Comments
 ========
@@ -321,8 +322,8 @@ full deal on what ``%def`` can do in :ref:`defs_toplevel`.
 ``<%block>``
 ------------
 
-``%block`` is a tag that's new as of Mako 0.4.1. It's close to
-a ``%def``, except executes itself immediately in its base-most scope,
+``%block`` is a tag that is close to a ``%def``,
+except executes itself immediately in its base-most scope,
 and can also be anonymous (i.e. with no name):
 
 .. sourcecode:: mako
@@ -346,6 +347,8 @@ to do inheritance:
     </html>
 
 Blocks are introduced in :ref:`blocks` and further described in :ref:`inheritance_toplevel`.
+
+.. versionadded:: 0.4.1
 
 ``<%namespace>``
 ----------------
@@ -387,7 +390,7 @@ Check it out in :ref:`inheritance_toplevel`.
 ``<%``\ nsname\ ``:``\ defname\ ``>``
 -------------------------------------
 
-As of Mako 0.2.3, any user-defined "tag" can be created against
+Any user-defined "tag" can be created against
 a namespace by using a tag with a name of the form
 ``<%<namespacename>:<defname>>``. The closed and open formats of such a
 tag are equivalent to an inline expression and the ``<%call>``
@@ -401,6 +404,8 @@ tag, respectively.
 
 To create custom tags which accept a body, see
 :ref:`defs_with_content`.
+
+.. versionadded:: 0.2.3
 
 ``<%call>``
 -----------

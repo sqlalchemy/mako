@@ -323,11 +323,13 @@ mode you **cannot** safely call :meth:`~.Template.render_unicode` -- you'll get
 unicode/decode errors.
 
 The ``h`` filter (HTML escape) uses a less performant pure Python
-escape function in non-unicode mode (note that in versions prior
-to 0.3.4, it used ``cgi.escape()``, which has been replaced with a
-function that also escapes single quotes). This because
+escape function in non-unicode mode. This because
 MarkupSafe only supports Python unicode objects for non-ASCII
 strings.
+
+.. versionchanged:: 0.3.4
+   In prior versions, it used ``cgi.escape()``, which has been replaced
+   with a function that also escapes single quotes.
 
 Rules for using ``disable_unicode=True``
 ----------------------------------------

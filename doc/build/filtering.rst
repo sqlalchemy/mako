@@ -23,8 +23,11 @@ The built-in escape flags are:
 * ``u`` : URL escaping, provided by
   ``urllib.quote_plus(string.encode('utf-8'))``
 * ``h`` : HTML escaping, provided by
-  ``markupsafe.escape(string)`` (new as of 0.3.4 -- prior
-  versions use ``cgi.escape(string, True)``)
+  ``markupsafe.escape(string)``
+
+  .. versionadded:: 0.3.4
+     Prior versions use ``cgi.escape(string, True)``.
+
 * ``x`` : XML escaping
 * ``trim`` : whitespace trimming, provided by ``string.strip()``
 * ``entity`` : produces HTML entity references for applicable
@@ -280,8 +283,9 @@ The above call is equivalent to the unbuffered call:
 Decorating
 ==========
 
-This is a feature that's new as of version 0.2.5. Somewhat like
-a filter for a ``%def`` but more flexible, the ``decorator``
+.. versionadded:: 0.2.5
+
+Somewhat like a filter for a ``%def`` but more flexible, the ``decorator``
 argument to ``%def`` allows the creation of a function that will
 work in a similar manner to a Python decorator. The function can
 control whether or not the function executes. The original

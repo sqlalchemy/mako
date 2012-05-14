@@ -90,7 +90,8 @@ caching can be configured using these arguments:
 * ``cache_impl`` - The string name of the cache backend
   to use.   This defaults to ``'beaker'``, which has historically
   been the only cache backend supported by Mako.
-  New in 0.6.0.
+
+  .. versionadded:: 0.6.0
 
   For example, here's how to use the upcoming
   `dogpile.cache <http://dogpilecache.readthedocs.org>`_
@@ -106,7 +107,9 @@ caching can be configured using these arguments:
 
 * ``cache_args`` - A dictionary of cache parameters that
   will be consumed by the cache backend.   See
-  :ref:`beaker_backend` for examples.  New in 0.6.0.
+  :ref:`beaker_backend` for examples.
+
+  .. versionadded:: 0.6.0
 
 Backend-Specific Cache Arguments
 --------------------------------
@@ -132,7 +135,9 @@ When using Beaker, new implementations will want to make usage
 of **cache regions** so that cache configurations can be maintained
 externally to templates.  These configurations live under
 named "regions" that can be referred to within templates themselves.
-Support for Beaker cache regions is new in Mako 0.6.0.
+
+.. versionadded:: 0.6.0
+   Support for Beaker cache regions.
 
 For example, suppose we would like two regions.  One is a "short term"
 region that will store content in a memory-based dictionary,

@@ -80,12 +80,14 @@ automatically correspond to what was passed into the current
   it, which is what happens if you try to use it in an
   expression.
 * **UNDEFINED makes it hard for me to find what name is missing** - An alternative
-  introduced in version 0.3.6 is to specify the option
-  ``strict_undefined=True``
+  is to specify the option ``strict_undefined=True``
   to the :class:`.Template` or :class:`.TemplateLookup`.  This will cause
   any non-present variables to raise an immediate ``NameError``
   which includes the name of the variable in its message
   when :meth:`~.Template.render` is called -- ``UNDEFINED`` is not used.
+
+  .. versionadded:: 0.3.6
+
 * **Why not just return None?** Using ``UNDEFINED``, or
   raising a ``NameError`` is more
   explicit and allows differentiation between a value of ``None``
@@ -196,7 +198,7 @@ The Loop Context
 ================
 
 Within ``% for`` blocks, the :ref:`reserved name<reserved_names>` ``loop``
-is available.  As a new feature of Mako 0.7, ``loop`` tracks the progress of
+is available.  ``loop`` tracks the progress of
 the ``for`` loop and makes it easy to use the iteration state to control
 template behavior:
 
@@ -207,6 +209,8 @@ template behavior:
         <li>Item ${loop.index}: ${a}</li>
     % endfor
     </ul>
+
+.. versionadded:: 0.7
 
 Iterations
 ----------
@@ -324,9 +328,12 @@ loop to make a checkered table:
 Migrating Legacy Templates that Use the Word "loop"
 ---------------------------------------------------
 
-The ``loop`` name is now :ref:`reserved <reserved_names>` in Mako, which means a template that refers to a
-variable named ``loop`` won't function correctly when used in Mako 0.7.  To ease
-the transition for such systems, the feature can be disabled across the board for
+.. versionchanged:: 0.7
+   The ``loop`` name is now :ref:`reserved <reserved_names>` in Mako,
+   which means a template that refers to a variable named ``loop``
+   won't function correctly when used in Mako 0.7.
+
+To ease the transition for such systems, the feature can be disabled across the board for
 all templates, then re-enabled on a per-template basis for those templates which wish
 to make use of the new system.
 
@@ -413,9 +420,12 @@ Reserved Names
 --------------
 
 Mako has a few names that are considered to be "reserved" and can't be used
-as variable names.  As of 0.7, Mako raises an error if these words are found
-passed to the template as context arguments, whereas in previous versions they'd be silently
-ignored or lead to other error messages.
+as variable names.
+
+.. versionchanged:: 0.7
+   Mako raises an error if these words are found passed to the template
+   as context arguments, whereas in previous versions they'd be silently
+   ignored or lead to other error messages.
 
 * ``context`` - see :ref:`context`.
 * ``UNDEFINED`` - see :ref:`context_vars`.

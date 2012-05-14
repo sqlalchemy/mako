@@ -446,8 +446,10 @@ invoked via ``<%namespacename:defname>`` or ``<%call>``.
 Using Blocks
 ============
 
-The ``<%block>`` tag is new as of Mako 0.4.1, and introduces some new twists on the
+The ``<%block>`` tag introduces some new twists on the
 ``<%def>`` tag which make it more closely tailored towards layout.
+
+.. versionadded:: 0.4.1
 
 An example of a block:
 
