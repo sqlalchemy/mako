@@ -328,8 +328,8 @@ Enabling the above plugin in a template would look like:
 .. sourcecode:: python
 
     t = Template("mytemplate",
-                    file="mytemplate.html",
-                    cache_impl='simple')
+                 file="mytemplate.html",
+                 cache_impl='simple')
 
 Guidelines for Writing Cache Plugins
 ------------------------------------

@@ -229,31 +229,31 @@ zebra striped list using ``enumerate``:
 
 .. sourcecode:: mako
 
-        <ul>
-        % for i, item in enumerate(('spam', 'ham', 'eggs')):
-          <li class="${'odd' if i % 2 else 'even'}">${item}</li>
-        % endfor
-        </ul>
+    <ul>
+    % for i, item in enumerate(('spam', 'ham', 'eggs')):
+      <li class="${'odd' if i % 2 else 'even'}">${item}</li>
+    % endfor
+    </ul>
 
 With ``loop.cycle``, you get the same results with cleaner code and less prep work:
 
 .. sourcecode:: mako
 
-        <ul>
-        % for item in ('spam', 'ham', 'eggs'):
-          <li class="${loop.cycle('even', 'odd')}">${item}</li>
-        % endfor
-        </ul>
+    <ul>
+    % for item in ('spam', 'ham', 'eggs'):
+      <li class="${loop.cycle('even', 'odd')}">${item}</li>
+    % endfor
+    </ul>
 
 Both approaches produce output like the following:
 
 .. sourcecode:: html
 
-        <ul>
-          <li class="even">spam</li>
-          <li class="odd">ham</li>
-          <li class="even">eggs</li>
-        </ul>
+    <ul>
+      <li class="even">spam</li>
+      <li class="odd">ham</li>
+      <li class="even">eggs</li>
+    </ul>
 
 Parent Loops
 ------------
@@ -269,55 +269,55 @@ loop to make a checkered table:
 
 .. sourcecode:: mako
 
-        <table>
-        % for consonant in 'pbj':
-          <tr>
-          % for vowel in 'iou':
-            <td class="${'black' if (loop.parent.even == loop.even) else 'red'}">
-              ${consonant + vowel}t
-            </td>
-          % endfor
-          </tr>
-        % endfor
-        </table>
+    <table>
+    % for consonant in 'pbj':
+      <tr>
+      % for vowel in 'iou':
+        <td class="${'black' if (loop.parent.even == loop.even) else 'red'}">
+          ${consonant + vowel}t
+        </td>
+      % endfor
+      </tr>
+    % endfor
+    </table>
 
 .. sourcecode:: html
 
-        <table>
-          <tr>
-            <td class="black">
-              pit
-            </td>
-            <td class="red">
-              pot
-            </td>
-            <td class="black">
-              put
-            </td>
-          </tr>
-          <tr>
-            <td class="red">
-              bit
-            </td>
-            <td class="black">
-              bot
-            </td>
-            <td class="red">
-              but
-            </td>
-          </tr>
-          <tr>
-            <td class="black">
-              jit
-            </td>
-            <td class="red">
-              jot
-            </td>
-            <td class="black">
-              jut
-            </td>
-          </tr>
-        </table>
+    <table>
+      <tr>
+        <td class="black">
+          pit
+        </td>
+        <td class="red">
+          pot
+        </td>
+        <td class="black">
+          put
+        </td>
+      </tr>
+      <tr>
+        <td class="red">
+          bit
+        </td>
+        <td class="black">
+          bot
+        </td>
+        <td class="red">
+          but
+        </td>
+      </tr>
+      <tr>
+        <td class="black">
+          jit
+        </td>
+        <td class="red">
+          jot
+        </td>
+        <td class="black">
+          jut
+        </td>
+      </tr>
+    </table>
 
 .. _migrating_loop:
 

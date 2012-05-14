@@ -134,8 +134,8 @@ the ``imports`` argument:
 .. sourcecode:: python
 
     t = TemplateLookup(directories=['/tmp'],
-        default_filters=['unicode', 'myfilter'],
-        imports=['from mypackage import myfilter'])
+                       default_filters=['unicode', 'myfilter'],
+                       imports=['from mypackage import myfilter'])
 
 The above will generate templates something like this:
 

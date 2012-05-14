@@ -353,21 +353,21 @@ Produces:
 .. sourcecode:: html
 
     <table>
-       <tr>
-           <td>Body data: 1</td>
-           <td>Body data: 2</td>
-           <td>Body data: 3</td>
-       </tr>
-       <tr>
-           <td>Body data: 4</td>
-           <td>Body data: 5</td>
-           <td>Body data: 6</td>
-       </tr>
-       <tr>
-           <td>Body data: 7</td>
-           <td>Body data: 8</td>
-           <td>Body data: 9</td>
-       </tr>
+        <tr>
+            <td>Body data: 1</td>
+            <td>Body data: 2</td>
+            <td>Body data: 3</td>
+        </tr>
+        <tr>
+            <td>Body data: 4</td>
+            <td>Body data: 5</td>
+            <td>Body data: 6</td>
+        </tr>
+        <tr>
+            <td>Body data: 7</td>
+            <td>Body data: 8</td>
+            <td>Body data: 9</td>
+        </tr>
     </table>
 
 You don't have to stick to calling just the ``body()`` function.
@@ -413,20 +413,20 @@ The above layout would produce:
 .. sourcecode:: html
 
     <div class="mainlayout">
-       <div class="header">
-       I am the header
-       </div>
+        <div class="header">
+        I am the header
+        </div>
 
-       <div class="sidebar">
-       <ul>
-           <li>sidebar 1</li>
-           <li>sidebar 2</li>
-       </ul>
-       </div>
+        <div class="sidebar">
+        <ul>
+            <li>sidebar 1</li>
+            <li>sidebar 2</li>
+        </ul>
+        </div>
 
-       <div class="content">
-       this is the body
-       </div>
+        <div class="content">
+        this is the body
+        </div>
     </div>
 
 The number of things you can do with ``<%call>`` and/or the
