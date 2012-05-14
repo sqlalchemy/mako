@@ -1,8 +1,8 @@
 .. _caching_toplevel:
 
-========
+=======
 Caching
-========
+=======
 
 Any template or component can be cached using the ``cache``
 argument to the ``<%page>``, ``<%def>`` or ``<%block>`` directives:
@@ -41,8 +41,8 @@ its options can be used with the ``<%def>`` tag as well:
         other text
     </%block>
 
-Cache arguments
-================
+Cache Arguments
+===============
 
 Mako has two cache arguments available on tags that are
 available in all cases.   The rest of the arguments
@@ -126,7 +126,7 @@ The actual arguments understood are determined by the backend.
 .. _beaker_backend:
 
 Using the Beaker Cache Backend
--------------------------------
+------------------------------
 
 When using Beaker, new implementations will want to make usage
 of **cache regions** so that cache configurations can be maintained
@@ -221,7 +221,7 @@ without the ``cache_`` prefix in the ``cache_args`` dictionary:
 .. _dogpile.cache_backend:
 
 Using the dogpile.cache Backend
---------------------------------
+-------------------------------
 
 `dogpile.cache`_ is a new replacement for Beaker.   It provides
 a modernized, slimmed down interface and is generally easier to use
@@ -278,7 +278,7 @@ later time.
 .. _cache_plugins:
 
 Cache Plugins
-==============
+=============
 
 The mechanism used by caching can be plugged in
 using a :class:`.CacheImpl` subclass.    This class implements
@@ -331,7 +331,7 @@ Enabling the above plugin in a template would look like:
                     file="mytemplate.html",
                     cache_impl='simple')
 
-Guidelines for writing cache plugins
+Guidelines for Writing Cache Plugins
 ------------------------------------
 
 * The :class:`.CacheImpl` is created on a per-:class:`.Template` basis.  The
@@ -370,7 +370,7 @@ Guidelines for writing cache plugins
   conflicts with generated modules don't occur.
 
 API Reference
-==============
+=============
 
 .. autoclass:: mako.cache.Cache
     :members:

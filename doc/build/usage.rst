@@ -62,7 +62,7 @@ render with it, using the :meth:`~.Template.render_context` method:
     print buf.getvalue()
 
 Using File-Based Templates
-===========================
+==========================
 
 A :class:`.Template` can also load its template source code from a file,
 using the ``filename`` keyword argument:
@@ -177,7 +177,7 @@ clean out a certain percentage of templates using a least
 recently used scheme.
 
 Setting Filesystem Checks
---------------------------
+-------------------------
 
 Another important flag on :class:`.TemplateLookup` is
 ``filesystem_checks``. This defaults to ``True``, and says that each
@@ -192,7 +192,7 @@ the type of filesystem used).
 .. _usage_unicode:
 
 Using Unicode and Encoding
-===========================
+==========================
 
 Both :class:`.Template` and :class:`.TemplateLookup` accept ``output_encoding``
 and ``encoding_errors`` parameters which can be used to encode the
@@ -235,7 +235,7 @@ fully in :ref:`unicode_toplevel`.
 .. _handling_exceptions:
 
 Handling Exceptions
-====================
+===================
 
 Template exceptions can occur in two distinct places. One is
 when you **lookup, parse and compile** the template, the other
@@ -353,7 +353,7 @@ of files, and also displays errors using Mako's included
 exception-handling utilities.
 
 Pygments
----------
+--------
 
 A `Pygments <http://pygments.pocoo.org>`_-compatible syntax
 highlighting module is included under :mod:`mako.ext.pygmentplugin`.
@@ -363,7 +363,7 @@ also contains various `setuptools` entry points under the heading
 (see the ``setup.py`` file for all the entry points).
 
 Babel
-------
+-----
 
 Mako provides support for extracting `gettext` messages from
 templates via a `Babel`_ extractor
@@ -454,7 +454,7 @@ for more information.
 
 
 API Reference
-=================
+=============
 
 .. autoclass:: mako.template.Template
     :show-inheritance:

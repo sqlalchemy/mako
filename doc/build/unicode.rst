@@ -87,7 +87,7 @@ encoding <defining_output_encoding>` (still required in Python 3).
 .. _set_template_file_encoding:
 
 Specifying the Encoding of a Template File
-===========================================
+==========================================
 
 This is the most basic encoding-related setting, and it is
 equivalent to Python's "magic encoding comment", as described in
@@ -133,7 +133,7 @@ encoding comment, which takes precedence.
 .. _handling_non_ascii_expressions:
 
 Handling Expressions
-=====================
+====================
 
 The next area that encoding comes into play is in expression
 constructs. By default, Mako's treatment of an expression like
@@ -210,7 +210,7 @@ in :ref:`filtering_default_filters`.
 .. _defining_output_encoding:
 
 Defining Output Encoding
-=========================
+========================
 
 Now that we have a template which produces a pure unicode output
 stream, all the hard work is done. We can take the output and do
@@ -250,7 +250,7 @@ you can encode yourself by saying:
     print mytemplate.render_unicode().encode('utf-8', 'replace')
 
 Buffer Selection
------------------
+----------------
 
 Mako does play some games with the style of buffering used
 internally, to maximize performance. Since the buffer is by far
@@ -269,8 +269,8 @@ a list and uses ``u''.join(elements)`` to produce the final output
 
 .. _unicode_disabled:
 
-Saying to Heck with it: Disabling the usage of Unicode entirely
-================================================================
+Saying to Heck with It: Disabling the Usage of Unicode Entirely
+===============================================================
 
 Some segments of Mako's userbase choose to make no usage of
 Unicode whatsoever, and instead would prefer the "pass through"

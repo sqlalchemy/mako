@@ -5,7 +5,7 @@ Filtering and Buffering
 =======================
 
 Expression Filtering
-=====================
+====================
 
 As described in the chapter :ref:`syntax_toplevel`, the "``|``" operator can be
 applied to a "``${}``" expression to apply escape filters to the
@@ -147,8 +147,8 @@ The above will generate templates something like this:
     def render_body(context):
         context.write(myfilter(unicode("some text")))
 
-Turning off Filtering with the ``n`` filter
---------------------------------------------
+Turning off Filtering with the ``n`` Filter
+-------------------------------------------
 
 In all cases the special ``n`` filter, used locally within an
 expression, will **disable** all filters declared in the
@@ -167,7 +167,7 @@ will render ``myexpression`` with no filtering of any kind, and:
 will render ``myexpression`` using the ``trim`` filter only.
 
 Filtering Defs and Blocks
-==========================
+=========================
 
 The ``%def`` and ``%block`` tags have an argument called ``filter`` which will apply the
 given list of filter functions to the output of the ``%def``:
@@ -182,7 +182,7 @@ When the ``filter`` attribute is applied to a def as above, the def
 is automatically **buffered** as well. This is described next.
 
 Buffering
-==========
+=========
 
 One of Mako's central design goals is speed. To this end, all of
 the textual content within a template and its various callables
@@ -278,7 +278,7 @@ The above call is equivalent to the unbuffered call:
     ${somedef(17, 'hi', use_paging=True)}
 
 Decorating
-===========
+==========
 
 This is a feature that's new as of version 0.2.5. Somewhat like
 a filter for a ``%def`` but more flexible, the ``decorator``

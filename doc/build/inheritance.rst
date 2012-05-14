@@ -168,7 +168,7 @@ Note when we overrode ``header``, we added an extra call ``${parent.header()}`` 
 the parent's ``header`` block in addition to our own.  That's described in more detail below,
 in :ref:`parent_namespace`.
 
-Rendering a named block multiple times
+Rendering a Named Block Multiple Times
 ======================================
 
 Recall from the section :ref:`blocks` that a named block is just like a ``<%def>``,
@@ -192,8 +192,8 @@ a section that is used more than once, such as the title of a page:
 Where above an inheriting template can define ``<%block name="title">`` just once, and it will be
 used in the base template both in the ``<title>`` section as well as the ``<h2>``.
 
-But what about defs?
-=====================
+But what about Defs?
+====================
 
 The previous example used the ``<%block>`` tag to produce areas of content
 to be overridden.  Before Mako 0.4.1, there wasn't any such tag -- instead
@@ -317,8 +317,8 @@ in order to achieve this it *adds* the restriction that all block names in a sin
 to be globally unique within the template, and additionally that a ``<%block>`` can't be defined
 inside of a ``<%def>``. It's a more restricted tag suited towards a more specific use case than ``<%def>``.
 
-Using the ``next`` namespace to produce content wrapping
-=========================================================
+Using the ``next`` Namespace to Produce Content Wrapping
+========================================================
 
 Sometimes you have an inheritance chain that spans more than two
 templates. Or maybe you don't, but you'd like to build your
@@ -427,8 +427,8 @@ Without the ``next`` namespace, only the main body of
 
 .. _parent_namespace:
 
-Using the ``parent`` namespace to augment defs
-===============================================
+Using the ``parent`` Namespace to Augment Defs
+==============================================
 
 Lets now look at the other inheritance-specific namespace, the
 opposite of ``next`` called ``parent``. ``parent`` is the

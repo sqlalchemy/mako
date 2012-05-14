@@ -72,7 +72,7 @@ context variables, the ``context`` must be named explicitly:
     <%namespace name="dyn" file="${context['namespace_name']}"/>
 
 Ways to Call Namespaces
-========================
+=======================
 
 There are essentially four ways to call a function from a
 namespace.
@@ -126,7 +126,7 @@ the caller, see :ref:`defs_with_content`.
 .. _namespaces_python_modules:
 
 Namespaces from Regular Python Modules
-========================================
+======================================
 
 Namespaces can also import regular Python functions from
 modules. These callables need to take at least one argument,
@@ -184,8 +184,8 @@ which accepts the "context" as its first argument:
         return "<div>%s</div>" % \
                 capture(context, context['caller'].body, x="foo", y="bar")
 
-Declaring defs in namespaces
-=============================
+Declaring Defs in Namespaces
+============================
 
 The ``<%namespace>`` tag supports the definition of ``<%def>``\ s
 directly inside the tag. These defs become part of the namespace
@@ -206,8 +206,8 @@ pulled in from a remote template or module:
 
 .. _namespaces_body:
 
-The ``body()`` method
-=======================
+The ``body()`` Method
+=====================
 
 Every namespace that is generated from a template contains a
 method called ``body()``. This method corresponds to the main
@@ -261,7 +261,7 @@ this, as well as the meanings of the names ``self`` and
 .. _namespaces_builtin:
 
 Built-in Namespaces
-====================
+===================
 
 The namespace is so great that Mako gives your template one (or
 two) for free. The names of these namespaces are ``local`` and
@@ -287,7 +287,7 @@ can be particularly useful.
 .. _namespace_self:
 
 ``self``
----------
+--------
 
 The ``self`` namespace, in the case of a template that does not
 use inheritance, is synonymous with ``local``. If inheritance is
@@ -298,7 +298,7 @@ overridden at various points in an inheritance chain. See
 :ref:`inheritance_toplevel`.
 
 Inheritable Namespaces
-========================
+======================
 
 The ``<%namespace>`` tag includes an optional attribute
 ``inheritable="True"``, which will cause the namespace to be
@@ -329,7 +329,7 @@ use the explicit namespace name off of ``self``, followed by the
 desired function name. But more on this in a future release.
 
 API Reference
-==============
+=============
 
 .. autoclass:: mako.runtime.Namespace
     :show-inheritance:

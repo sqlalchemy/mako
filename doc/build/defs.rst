@@ -73,7 +73,7 @@ value). This is in contrast to using context-level variables,
 which evaluate to ``UNDEFINED`` if you reference a name that
 does not exist.
 
-Calling defs from Other Files
+Calling Defs from Other Files
 -----------------------------
 
 Top level ``<%def>``\ s are **exported** by your template's
@@ -117,7 +117,7 @@ which is a central Mako concept that has its own chapter in
 these docs. For more detail and examples, see
 :ref:`namespaces_toplevel`.
 
-Calling defs programmatically
+Calling Defs Programmatically
 -----------------------------
 
 You can call defs programmatically from any :class:`.Template` object
@@ -201,7 +201,7 @@ in the expression that tries to render it.
 
 .. _defs_with_content:
 
-Calling a def with embedded content and/or other defs
+Calling a Def with Embedded Content and/or Other Defs
 -----------------------------------------------------
 
 A flip-side to def within def is a def call with content. This
@@ -518,7 +518,6 @@ rendering body, so have access to local variable scope:
         <%block>i is ${i}</%block>
     % endfor
 
-
 Using Named Blocks
 ------------------
 
@@ -576,8 +575,8 @@ To keep things sane, named blocks have restrictions that defs do not:
 * A named ``<%block>`` cannot be defined within a ``<%def>``, or inside the body of a "call", i.e.
   ``<%call>`` or ``<%namespacename:defname>`` tag.  Anonymous blocks can, however.
 
-Using page arguments in named blocks
--------------------------------------
+Using Page Arguments in Named Blocks
+------------------------------------
 
 A named block is very much like a top level def. It has a similar
 restriction to these types of defs in that arguments passed to the

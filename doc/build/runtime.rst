@@ -1,8 +1,8 @@
 .. _runtime_toplevel:
 
-=============================
+============================
 The Mako Runtime Environment
-=============================
+============================
 
 This section describes a little bit about the objects and
 built-in functions that are available in templates.
@@ -55,7 +55,7 @@ buffer.
 .. _context_vars:
 
 Context Variables
-------------------
+-----------------
 
 When your template is compiled into a Python module, the body
 content is enclosed within a Python function called
@@ -159,7 +159,7 @@ are all stored in unique :class:`.Context` instances).
   be explicit.
 
 Context Methods and Accessors
-------------------------------
+-----------------------------
 
 Significant members of :class:`.Context` include:
 
@@ -208,7 +208,6 @@ template behavior:
     % endfor
     </ul>
 
-
 Iterations
 ----------
 
@@ -256,8 +255,7 @@ Both approaches produce output like the following:
           <li class="even">eggs</li>
         </ul>
 
-
-Parent loops
+Parent Loops
 ------------
 
 Loop contexts can also be transparently nested, and the Mako runtime will do
@@ -362,7 +360,7 @@ the ``<%page>`` tag doesn't override it.  New templates that want to use the ``l
 can then set up ``<%page enable_loop="True"/>`` to use the new feature without affecting
 old templates.
 
-All the built-in names
+All the Built-in Names
 ======================
 
 A one-stop shop for all the names Mako defines. Most of these
@@ -411,7 +409,7 @@ to the context and can't be substituted -- see the section :ref:`reserved_names`
 
 .. _reserved_names:
 
-Reserved names
+Reserved Names
 --------------
 
 Mako has a few names that are considered to be "reserved" and can't be used
@@ -425,7 +423,7 @@ ignored or lead to other error messages.
   via the ``enable_loop=False`` argument; see :ref:`migrating_loop`.
 
 API Reference
-==============
+=============
 
 .. autoclass:: mako.runtime.Context
     :show-inheritance:

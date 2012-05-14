@@ -15,7 +15,7 @@ you can leverage the full power of Python in almost every aspect
 of a Mako template.
 
 Expression Substitution
-========================
+=======================
 
 The simplest expression is just a variable substitution. The
 syntax for this is the ``${}`` construct, which is inspired by
@@ -147,7 +147,7 @@ A multiline version exists using ``<%doc> ...text... </%doc>``:
     </%doc>
 
 Newline Filters
-================
+===============
 
 The backslash ("``\``") character, placed at the end of any
 line, will consume the newline character before continuing to
@@ -188,7 +188,7 @@ Mako's compiler will adjust the block of Python to be consistent
 with the surrounding generated Python code.
 
 Module-level Blocks
-====================
+===================
 
 A variant on ``<% %>`` is the module-level code block, denoted
 by ``<%! %>``. Code within these tags is executed at the module
@@ -274,7 +274,7 @@ want. The details of what ``<%page>`` is used for are described
 further in :ref:`namespaces_body` as well as :ref:`caching_toplevel`.
 
 ``<%include>``
----------------
+--------------
 
 A tag that is familiar from other template languages, ``%include``
 is a regular joe that just accepts a file argument and calls in
@@ -319,7 +319,7 @@ arguments to other def calls (not as hard as it sounds). Get the
 full deal on what ``%def`` can do in :ref:`defs_toplevel`.
 
 ``<%block>``
--------------
+------------
 
 ``%block`` is a tag that's new as of Mako 0.4.1. It's close to
 a ``%def``, except executes itself immediately in its base-most scope,
@@ -348,7 +348,7 @@ to do inheritance:
 Blocks are introduced in :ref:`blocks` and further described in :ref:`inheritance_toplevel`.
 
 ``<%namespace>``
------------------
+----------------
 
 ``%namespace`` is Mako's equivalent of Python's ``import``
 statement. It allows access to all the rendering functions and
@@ -385,7 +385,7 @@ inheritance, content wrapping, and polymorphic method calls.
 Check it out in :ref:`inheritance_toplevel`.
 
 ``<%``\ nsname\ ``:``\ defname\ ``>``
----------------------------------------------
+-------------------------------------
 
 As of Mako 0.2.3, any user-defined "tag" can be created against
 a namespace by using a tag with a name of the form
@@ -438,7 +438,7 @@ Mako:
         <%def name="x()">${x}</%def>
     <%/text>
 
-Returning early from a template
+Returning Early from a Template
 ===============================
 
 Sometimes you want to stop processing a template or ``<%def>``
