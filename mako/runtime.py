@@ -14,10 +14,10 @@ import __builtin__, inspect, sys
 class Context(object):
     """Provides runtime namespace, output buffer, and various
     callstacks for templates.
- 
+
     See :ref:`runtime_toplevel` for detail on the usage of
     :class:`.Context`.
- 
+
      """
  
     def __init__(self, buffer, **data):
@@ -47,29 +47,29 @@ class Context(object):
 
     @property
     def lookup(self):
-        """Return the :class:`.TemplateLookup` associated 
+        """Return the :class:`.TemplateLookup` associated
         with this :class:`.Context`.
- 
+
         """
         return self._with_template.lookup
  
     @property
     def kwargs(self):
-        """Return the dictionary of keyword argments associated with this
+        """Return the dictionary of keyword arguments associated with this
         :class:`.Context`.
- 
+
         """
         return self._kwargs.copy()
  
     def push_caller(self, caller):
-        """Pushes a 'caller' callable onto the callstack for
+        """Push a 'caller' callable onto the callstack for
         this :class:`.Context`."""
  
  
         self.caller_stack.append(caller)
  
     def pop_caller(self):
-        """Pops a 'caller' callable onto the callstack for this
+        """Pop a 'caller' callable onto the callstack for this
         :class:`.Context`."""
 
         del self.caller_stack[-1]
@@ -126,7 +126,7 @@ class Context(object):
         self._buffer_stack[-1].write(string)
  
     def writer(self):
-        """Return the current writer function"""
+        """Return the current writer function."""
 
         return self._buffer_stack[-1].write
 
@@ -142,8 +142,8 @@ class Context(object):
         return c
  
     def locals_(self, d):
-        """create a new :class:`.Context` with a copy of this 
-        :class:`Context`'s current state, updated with the given dictionary."""
+        """Create a new :class:`.Context` with a copy of this
+        :class:`.Context`'s current state, updated with the given dictionary."""
  
         if len(d) == 0:
             return self
@@ -184,11 +184,11 @@ class CallerStack(list):
  
 class Undefined(object):
     """Represents an undefined value in a template.
- 
-    All template modules have a constant value 
+
+    All template modules have a constant value
     ``UNDEFINED`` present which is an instance of this
     object.
- 
+
     """
     def __str__(self):
         raise NameError("Undefined")
@@ -239,24 +239,24 @@ class LoopStack(object):
 class LoopContext(object):
     """A magic loop variable.
     Automatically accessible in any ``% for`` block.
-    
+
     See the section :ref:`loop_context` for usage
     notes.
 
     :attr:`parent` -> LoopContext or None
-        The parent loop, if one exists
+        The parent loop, if one exists.
     :attr:`index` -> int
-        The 0-based iteration count
+        The 0-based iteration count.
     :attr:`reverse_index` -> int
-        The number of iterations remaining
+        The number of iterations remaining.
     :attr:`first` -> bool
-        `True` on the first iteration, `False` otherwise
+        `True` on the first iteration, `False` otherwise.
     :attr:`last` -> bool
-        `True` on the last iteration, `False` otherwise
+        `True` on the last iteration, `False` otherwise.
     :attr:`even` -> bool
-        `True` when `index` is even
+        `True` when `index` is even.
     :attr:`odd` -> bool
-        `True` when `index` is odd
+        `True` when `index` is odd.
     """
 
     def __init__(self, iterable):
@@ -294,7 +294,7 @@ class LoopContext(object):
         return bool(self.index % 2)
 
     def cycle(self, *values):
-        """cycle through values as the loop progresses
+        """Cycle through values as the loop progresses.
         """
         if not values:
             raise ValueError("You must provide values to cycle through")
@@ -314,17 +314,17 @@ class _NSAttr(object):
         raise AttributeError(key) 
  
 class Namespace(object):
-    """Provides access to collections of rendering methods, which 
+    """Provides access to collections of rendering methods, which
       can be local, from other templates, or from imported modules.
- 
-      To access a particular rendering method referenced by a 
+
+      To access a particular rendering method referenced by a
       :class:`.Namespace`, use plain attribute access::
- 
+
         ${some_namespace.foo(x, y, z)}
- 
-      :class:`.Namespace` also contains several built-in attributes 
+
+      :class:`.Namespace` also contains several built-in attributes
       described here.
- 
+
       """
  
     def __init__(self, name, context, 
@@ -355,7 +355,7 @@ class Namespace(object):
 
     context = None
     """The :class:`.Context` object for this namespace.
- 
+
     Namespaces are often created with copies of contexts that
     contain slightly different data, particularly in inheritance
     scenarios. Using the :class:`.Context` off of a :class:`.Namespace` one
@@ -376,11 +376,11 @@ class Namespace(object):
     """
  
     uri = None
-    """The uri for this Namespace's template.
+    """The URI for this Namespace's template.
 
     I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
 
-    This is the equivalent of :attr:`Template.uri`.
+    This is the equivalent of :attr:`.Template.uri`.
 
     """
 
@@ -388,8 +388,8 @@ class Namespace(object):
 
     @util.memoized_property
     def attr(self):
-        """Access module level attributes by name. 
- 
+        """Access module level attributes by name.
+
         This accessor allows templates to supply "scalar"
         attributes which are particularly handy in inheritance
         relationships. See the example in
@@ -400,23 +400,23 @@ class Namespace(object):
 
     def get_namespace(self, uri):
         """Return a :class:`.Namespace` corresponding to the given uri.
- 
-        If the given uri is a relative uri (i.e. it does not
-        contain ia leading slash ``/``), the uri is adjusted to
+
+        If the given uri is a relative URI (i.e. it does not
+        contain a leading slash ``/``), the uri is adjusted to
         be relative to the uri of the namespace itself. This
         method is therefore mostly useful off of the built-in
-        ``local`` namespace, described in :ref:`namespace_local`
+        ``local`` namespace, described in :ref:`namespace_local`.
 
         In
         most cases, a template wouldn't need this function, and
         should instead use the ``<%namespace>`` tag to load
         namespaces. However, since all ``<%namespace>`` tags are
-        evaulated before the body of a template ever runs,
+        evaluated before the body of a template ever runs,
         this method can be used to locate namespaces using
         expressions that were generated within the body code of
         the template, or to conditionally use a particular
         namespace.
- 
+
         """
         key = (self, uri)
         if key in self.context.namespaces:
@@ -430,38 +430,38 @@ class Namespace(object):
  
     def get_template(self, uri):
         """Return a :class:`.Template` from the given uri.
- 
+
         The uri resolution is relative to the uri of this :class:`.Namespace`
         object's :class:`.Template`.
- 
+
         """
         return _lookup_template(self.context, uri, self._templateuri)
  
     def get_cached(self, key, **kwargs):
-        """Return a value from the :class:`.Cache` referenced by this 
+        """Return a value from the :class:`.Cache` referenced by this
         :class:`.Namespace` object's :class:`.Template`.
- 
-        The advantage to this method versus direct access to the 
+
+        The advantage to this method versus direct access to the
         :class:`.Cache` is that the configuration parameters
         declared in ``<%page>`` take effect here, thereby calling
         up the same configured backend as that configured
         by ``<%page>``.
- 
+
         """
 
         return self.cache.get(key, **kwargs)
  
     @property
     def cache(self):
-        """Return the :class:`.Cache` object referenced 
+        """Return the :class:`.Cache` object referenced
         by this :class:`.Namespace` object's
         :class:`.Template`.
- 
+
         """
         return self.template.cache
  
     def include_file(self, uri, **kwargs):
-        """Include a file at the given uri"""
+        """Include a file at the given uri."""
  
         _include_file(self.context, uri, self._templateuri, **kwargs)
  
@@ -520,7 +520,7 @@ class TemplateNamespace(Namespace):
     @property
     def module(self):
         """The Python module referenced by this Namespace.
- 
+
         If the namespace references a :class:`.Template`, then
         this module is the equivalent of ``template.module``,
         i.e. the generated module for the template.
@@ -537,11 +537,11 @@ class TemplateNamespace(Namespace):
 
     @property
     def uri(self):
-        """The uri for this Namespace's template.
- 
+        """The URI for this Namespace's template.
+
         I.e. whatever was sent to :meth:`.TemplateLookup.get_template()`.
- 
-        This is the equivalent of :attr:`Template.uri`.
+
+        This is the equivalent of :attr:`.Template.uri`.
 
         """
         return self.template.uri
@@ -625,9 +625,9 @@ class ModuleNamespace(Namespace):
 def supports_caller(func):
     """Apply a caller_stack compatibility decorator to a plain
     Python function.
- 
+
     See the example in :ref:`namespaces_python_modules`.
- 
+
     """
  
     def wrap_stackframe(context,  *args, **kwargs):
@@ -641,9 +641,9 @@ def supports_caller(func):
 def capture(context, callable_, *args, **kwargs):
     """Execute the given template def, capturing the output into
     a buffer.
- 
+
     See the example in :ref:`namespaces_python_modules`.
- 
+
     """
  
     if not callable(callable_):

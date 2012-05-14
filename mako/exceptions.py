@@ -53,11 +53,11 @@ class TopLevelLookupException(TemplateLookupException):
     pass
  
 class RichTraceback(object):
-    """Pulls the current exception from the sys traceback and extracts
+    """Pull the current exception from the sys traceback and extracts
     Mako-specific template information.
- 
+
     See the usage examples in :ref:`handling_exceptions`.
- 
+
     """
     def __init__(self, error=None, traceback=None):
         self.source, self.lineno = "", 0
@@ -109,10 +109,10 @@ class RichTraceback(object):
  
     @property
     def traceback(self):
-        """return a list of 4-tuple traceback records (i.e. normal python
+        """Return a list of 4-tuple traceback records (i.e. normal python
         format) with template-corresponding lines remapped to the originating
         template.
- 
+
         """
         return list(self._get_reformatted_records(self.records))
  
@@ -122,7 +122,7 @@ class RichTraceback(object):
  
     @property
     def reverse_traceback(self):
-        """return the same data as traceback, except in reverse order.
+        """Return the same data as traceback, except in reverse order.
         """
  
         return list(self._get_reformatted_records(self.reverse_records))
@@ -248,11 +248,11 @@ def html_error_template():
     filenames, line numbers and code for that of the originating source
     template, as applicable.
 
-    The template's default encoding_errors value is 'htmlentityreplace'. the
+    The template's default 'encoding_errors' value is 'htmlentityreplace'. The
     template has two options. With the full option disabled, only a section of
-    an HTML document is returned. with the css option disabled, the default
+    an HTML document is returned. With the css option disabled, the default
     stylesheet won't be included.
- 
+
     """
     import mako.template
     return mako.template.Template(r"""

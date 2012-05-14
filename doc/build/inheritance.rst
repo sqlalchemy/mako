@@ -4,10 +4,10 @@
 Inheritance
 ===========
 
-.. note::  Most of the inheritance examples here take advantage of a feature that's 
-  new in Mako as of version 0.4.1 called the "block".  This tag is very similar to 
+.. note::  Most of the inheritance examples here take advantage of a feature that's
+  new in Mako as of version 0.4.1 called the "block".  This tag is very similar to
   the "def" tag but is more streamlined for usage with inheritance.  Note that
-  all of the examples here which use blocks can also use defs instead.   Constrasting
+  all of the examples here which use blocks can also use defs instead.  Contrasting
   usages will be illustrated.
 
 Using template inheritance, two or more templates can organize
@@ -27,13 +27,13 @@ template, ``index.html``:
 
     ## index.html
     <%inherit file="base.html"/>
- 
+
     <%block name="header">
         this is some header content
     </%block>
- 
+
     this is the body content.
- 
+
 And ``base.html``, the inherited template:
 
 .. sourcecode:: mako
@@ -44,9 +44,9 @@ And ``base.html``, the inherited template:
             <div class="header">
                 <%block name="header"/>
             </div>
- 
+
             ${self.body()}
- 
+
             <div class="footer">
                 <%block name="footer">
                     this is the footer
@@ -56,17 +56,17 @@ And ``base.html``, the inherited template:
     </html>
 
 Here is a breakdown of the execution:
- 
+
 * When ``index.html`` is rendered, control immediately passes to
   ``base.html``.
 * ``base.html`` then renders the top part of an HTML document,
   then invokes the ``<%block name="header">`` block.  It invokes the
-  underlying ``header()`` function off of a built in namespace
+  underlying ``header()`` function off of a built-in namespace
   called ``self`` (this namespace was first introduced in the
   Namespaces chapter in :ref:`namespace_self`). Since
   ``index.html`` is the topmost template and also defines a block
-  called ``header``, its this ``header`` block that ultimately gets
-  executed - instead of the one that's present in ``base.html``.
+  called ``header``, it's this ``header`` block that ultimately gets
+  executed -- instead of the one that's present in ``base.html``.
 * Control comes back to ``base.html``. Some more HTML is
   rendered.
 * ``base.html`` executes ``self.body()``. The ``body()``
@@ -74,31 +74,31 @@ Here is a breakdown of the execution:
   body of the template, therefore the main body of
   ``index.html`` is rendered.
 * When ``<%block name="header">`` is encountered in ``index.html`` 
-  during the ``self.body()`` call, a conditional is checked - does the 
-  current inherited template, i.e. ``base.html``, also define this block ?  If yes,
-  the ``<%block>`` is **not** executed here - the inheritance 
+  during the ``self.body()`` call, a conditional is checked -- does the
+  current inherited template, i.e. ``base.html``, also define this block? If yes,
+  the ``<%block>`` is **not** executed here -- the inheritance
   mechanism knows that the parent template is responsible for rendering
   this block (and in fact it already has).  In other words a block
   only renders in its *basemost scope*.
 * Control comes back to ``base.html``. More HTML is rendered,
   then the ``<%block name="footer">`` expression is invoked.
 * The ``footer`` block is only defined in ``base.html``, so being
-  the topmost definition of ``footer``, its the one that
+  the topmost definition of ``footer``, it's the one that
   executes. If ``index.html`` also specified ``footer``, then
   its version would **override** that of the base.
 * ``base.html`` finishes up rendering its HTML and the template
   is complete, producing:
 
-.. sourcecode:: html
+  .. sourcecode:: html
 
         <html>
             <body>
                 <div class="header">
                     this is some header content
                 </div>
- 
+
                 this is the body content.
- 
+
                 <div class="footer">
                     this is the footer
                 </div>
@@ -119,8 +119,8 @@ Nesting Blocks
 ==============
 
 The named blocks defined in an inherited template can also be nested within
-other blocks.   The name given to each block is globally accessible via any inheriting
-template.   We can add a new block ``title`` to our ``header`` block:
+other blocks.  The name given to each block is globally accessible via any inheriting
+template.  We can add a new block ``title`` to our ``header`` block:
 
 .. sourcecode:: mako
 
@@ -134,9 +134,9 @@ template.   We can add a new block ``title`` to our ``header`` block:
                     </h2>
                 </%block>
             </div>
- 
+
             ${self.body()}
- 
+
             <div class="footer">
                 <%block name="footer">
                     this is the footer
@@ -152,7 +152,7 @@ or nested themselves:
 
     ## index.html
     <%inherit file="base.html"/>
- 
+
     <%block name="header">
         this is some header content
         ${parent.header()}
@@ -161,7 +161,7 @@ or nested themselves:
     <%block name="title">
         this is the title
     </%block>
- 
+
     this is the body content.
 
 Note when we overrode ``header``, we added an extra call ``${parent.header()}`` in order to invoke
@@ -172,7 +172,7 @@ Rendering a named block multiple times
 ======================================
 
 Recall from the section :ref:`blocks` that a named block is just like a ``<%def>``,
-with some different usage rules.   We can call one of our named sections distinctly, for example
+with some different usage rules.  We can call one of our named sections distinctly, for example
 a section that is used more than once, such as the title of a page:
 
 .. sourcecode:: mako
@@ -192,28 +192,28 @@ a section that is used more than once, such as the title of a page:
 Where above an inheriting template can define ``<%block name="title">`` just once, and it will be
 used in the base template both in the ``<title>`` section as well as the ``<h2>``.
 
-But what about defs ?
+But what about defs?
 =====================
 
 The previous example used the ``<%block>`` tag to produce areas of content
-to be overridden.   Before Mako 0.4.1, there wasn't any such tag - instead
+to be overridden.  Before Mako 0.4.1, there wasn't any such tag -- instead
 there was only the ``<%def>`` tag.   As it turns out, named blocks and defs are
 largely interchangeable.  The def simply doesn't call itself automatically,
 and has more open-ended naming and scoping rules that are more flexible and similar
-to Python itself, but less suited towards layout.  The first example from 
+to Python itself, but less suited towards layout.  The first example from
 this chapter using defs would look like:
 
 .. sourcecode:: mako
 
     ## index.html
     <%inherit file="base.html"/>
- 
+
     <%def name="header()">
         this is some header content
     </%def>
- 
+
     this is the body content.
- 
+
 And ``base.html``, the inherited template:
 
 .. sourcecode:: mako
@@ -224,9 +224,9 @@ And ``base.html``, the inherited template:
             <div class="header">
                 ${self.header()}
             </div>
- 
+
             ${self.body()}
- 
+
             <div class="footer">
                 ${self.footer()}
             </div>
@@ -238,8 +238,8 @@ And ``base.html``, the inherited template:
         this is the footer
     </%def>
 
-Above, we illustrate that defs differ from blocks in that their definition 
-and invocation are defined in two separate places, instead of at once. You can *almost* do exactly what a 
+Above, we illustrate that defs differ from blocks in that their definition
+and invocation are defined in two separate places, instead of at once. You can *almost* do exactly what a
 block does if you put the two together:
 
 .. sourcecode:: mako
@@ -312,16 +312,16 @@ one or both in **any** configuration, nested inside each other or not, in order 
         the header
     </%block>
 
-So while the ``<%block>`` tag lifts the restriction of nested blocks not being available externally, 
+So while the ``<%block>`` tag lifts the restriction of nested blocks not being available externally,
 in order to achieve this it *adds* the restriction that all block names in a single template need
-to be globally unique within the template, and additionally that a ``<%block>`` can't be defined 
-inside of a ``<%def>``. It's a more restricted tag suited towards a more specific use case than ``<%def>``. 
+to be globally unique within the template, and additionally that a ``<%block>`` can't be defined
+inside of a ``<%def>``. It's a more restricted tag suited towards a more specific use case than ``<%def>``.
 
-Using the "next" namespace to produce content wrapping 
+Using the "next" namespace to produce content wrapping
 =======================================================
 
 Sometimes you have an inheritance chain that spans more than two
-templates. Or maybe you don't, but youd like to build your
+templates. Or maybe you don't, but you'd like to build your
 system such that extra inherited templates can be inserted in
 the middle of a chain where they would be smoothly integrated.
 If each template wants to define its layout just within its main
@@ -342,9 +342,9 @@ Lets change the line in ``base.html`` which calls upon
             <div class="header">
                 <%block name="header"/>
             </div>
- 
+
             ${next.body()}
- 
+
             <div class="footer">
                 <%block name="footer">
                     this is the footer
@@ -366,12 +366,12 @@ which inherits from ``base.html``:
             <li>selection 1</li>
             <li>selection 2</li>
             <li>selection 3</li>
-        </%block> 
+        </%block>
     </ul>
     <div class="mainlayout">
         ${next.body()}
     </div>
- 
+
 
 And finally change ``index.html`` to inherit from
 ``layout.html`` instead:
@@ -380,9 +380,9 @@ And finally change ``index.html`` to inherit from
 
     ## index.html
     <%inherit file="layout.html"/>
- 
+
     ## .. rest of template
- 
+
 In this setup, each call to ``next.body()`` will render the body
 of the next template in the inheritance chain (which can be
 written as ``base.html -> layout.html -> index.html``). Control
@@ -405,11 +405,11 @@ The output we get would be:
                 <li>selection 2</li>
                 <li>selection 3</li>
             </ul>
- 
+
             <div class="mainlayout">
             this is the body content.
             </div>
- 
+
             <div class="footer">
                 this is the footer
             </div>
@@ -428,7 +428,7 @@ Without the ``next`` namespace, only the main body of
 
 .. _parent_namespace:
 
-Using the "parent" namespace to augment defs 
+Using the "parent" namespace to augment defs
 =============================================
 
 Lets now look at the other inheritance-specific namespace, the
@@ -456,7 +456,7 @@ by the ``toolbar`` function in ``layout.html``:
         <li>selection 4</li>
         <li>selection 5</li>
     </%block>
- 
+
     this is the body content.
 
 Above, we implemented a ``toolbar()`` function, which is meant
@@ -482,18 +482,18 @@ thing is now:
                 <li>selection 4</li>
                 <li>selection 5</li>
             </ul>
- 
+
             <div class="mainlayout">
             this is the body content.
             </div>
- 
+
             <div class="footer">
                 this is the footer
             </div>
         </body>
     </html>
 
-and you're now a template inheritance ninja !
+and you're now a template inheritance ninja!
 
 Inheritable Attributes
 ======================
@@ -508,12 +508,12 @@ inheritance chain as declared in ``<%! %>`` sections. Such as:
     <%!
         class_ = "grey"
     %>
- 
+
     <div class="${self.attr.class_}">
         ${self.body()}
     </div>
- 
-If a an inheriting template overrides ``class_`` to be
+
+If an inheriting template overrides ``class_`` to be
 ``white``, as in:
 
 .. sourcecode:: mako
@@ -522,10 +522,10 @@ If a an inheriting template overrides ``class_`` to be
         class_ = "white"
     %>
     <%inherit file="parent.html"/>
- 
+
     This is the body
- 
-You'll get output like:
+
+you'll get output like:
 
 .. sourcecode:: html
 

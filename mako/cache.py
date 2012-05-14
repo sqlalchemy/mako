@@ -15,19 +15,19 @@ register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
 class Cache(object):
     """Represents a data content cache made available to the module
     space of a specific :class:`.Template` object.
- 
-    As of Mako 0.6, :class:`.Cache` by itself is mostly a 
+
+    As of Mako 0.6, :class:`.Cache` by itself is mostly a
     container for a :class:`.CacheImpl` object, which implements
-    a fixed API to provide caching services; specific subclasses exist to 
+    a fixed API to provide caching services; specific subclasses exist to
     implement different
-    caching strategies.   Mako includes a backend that works with 
+    caching strategies.   Mako includes a backend that works with
     the Beaker caching system.   Beaker itself then supports
     a number of backends (i.e. file, memory, memcached, etc.)
 
     The construction of a :class:`.Cache` is part of the mechanics
     of a :class:`.Template`, and programmatic access to this
     cache is typically via the :attr:`.Template.cache` attribute.
- 
+
     """
 
     impl = None
@@ -41,7 +41,7 @@ class Cache(object):
     id = None
     """Return the 'id' that identifies this cache.
 
-    This is a value that should be globally unique to the 
+    This is a value that should be globally unique to the
     :class:`.Template` associated with this cache, and can
     be used by a caching system to name a local container
     for data specific to this template.
@@ -55,7 +55,7 @@ class Cache(object):
     A cache implementation may wish to invalidate data earlier than
     this timestamp; this has the effect of the cache for a specific
     :class:`.Template` starting clean any time the :class:`.Template`
-    is recompiled, such as when the original template file changed on 
+    is recompiled, such as when the original template file changed on
     the filesystem.
 
     """
@@ -75,7 +75,7 @@ class Cache(object):
         return _cache_plugins.load(name)(self)
 
     def get_or_create(self, key, creation_function, **kw):
-        """Retrieve a value from the cache, using the given creation function 
+        """Retrieve a value from the cache, using the given creation function
         to generate a new value."""
 
         return self._ctx_get_or_create(key, creation_function, None, **kw)
@@ -93,70 +93,70 @@ class Cache(object):
 
     def set(self, key, value, **kw):
         """Place a value in the cache.
- 
+
         :param key: the value's key.
-        :param value: the value
+        :param value: the value.
         :param \**kw: cache configuration arguments.
- 
+
         """
 
         self.impl.set(key, value, **self._get_cache_kw(kw, None))
 
     put = set
     """A synonym for :meth:`.Cache.set`.
-    
+
     This is here for backwards compatibility.
 
     """
 
     def get(self, key, **kw):
         """Retrieve a value from the cache.
- 
+
         :param key: the value's key.
-        :param \**kw: cache configuration arguments.  The 
+        :param \**kw: cache configuration arguments.  The
          backend is configured using these arguments upon first request.
          Subsequent requests that use the same series of configuration
          values will use that same backend.
- 
+
         """
         return self.impl.get(key, **self._get_cache_kw(kw, None))
  
     def invalidate(self, key, **kw):
         """Invalidate a value in the cache.
- 
+
         :param key: the value's key.
-        :param \**kw: cache configuration arguments.  The 
+        :param \**kw: cache configuration arguments.  The
          backend is configured using these arguments upon first request.
          Subsequent requests that use the same series of configuration
          values will use that same backend.
- 
+
         """
         self.impl.invalidate(key, **self._get_cache_kw(kw, None))
  
     def invalidate_body(self):
         """Invalidate the cached content of the "body" method for this
         template.
- 
+
         """
         self.invalidate('render_body', __M_defname='render_body')
  
     def invalidate_def(self, name):
         """Invalidate the cached content of a particular <%def> within this
         template.
-        
+
         """
  
         self.invalidate('render_%s' % name, __M_defname='render_%s' % name)
  
     def invalidate_closure(self, name):
         """Invalidate a nested <%def> within this template.
- 
+
         Caching of nested defs is a blunt tool as there is no
-        management of scope - nested defs that use cache tags
-        need to have names unique of all other nested defs in the 
-        template, else their content will be overwritten by 
+        management of scope -- nested defs that use cache tags
+        need to have names unique of all other nested defs in the
+        template, else their content will be overwritten by
         each other.
- 
+
         """
  
         self.invalidate(name, __M_defname=name)
@@ -188,47 +188,47 @@ class CacheImpl(object):
     as the name 'context'."""
 
     def get_or_create(self, key, creation_function, **kw):
-        """Retrieve a value from the cache, using the given creation function 
+        """Retrieve a value from the cache, using the given creation function
         to generate a new value.
 
-        This function *must* return a value, either from 
+        This function *must* return a value, either from
         the cache, or via the given creation function.
-        If the creation function is called, the newly 
-        created value should be populated into the cache 
+        If the creation function is called, the newly
+        created value should be populated into the cache
         under the given key before being returned.
 
         :param key: the value's key.
         :param creation_function: function that when called generates
          a new value.
-        :param \**kw: cache configuration arguments. 
+        :param \**kw: cache configuration arguments.
 
         """
         raise NotImplementedError()
 
     def set(self, key, value, **kw):
         """Place a value in the cache.
- 
+
         :param key: the value's key.
-        :param value: the value
+        :param value: the value.
         :param \**kw: cache configuration arguments.
- 
+
         """
         raise NotImplementedError()
  
     def get(self, key, **kw):
         """Retrieve a value from the cache.
- 
+
         :param key: the value's key.
-        :param \**kw: cache configuration arguments. 
- 
+        :param \**kw: cache configuration arguments.
+
         """
         raise NotImplementedError()
  
     def invalidate(self, key, **kw):
         """Invalidate a value in the cache.
- 
+
         :param key: the value's key.
-        :param \**kw: cache configuration arguments. 
- 
+        :param \**kw: cache configuration arguments.
+
         """
         raise NotImplementedError()

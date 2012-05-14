@@ -14,28 +14,28 @@ except:
     import dummy_threading as threading
  
 class TemplateCollection(object):
-    """Represent a collection of :class:`.Template` objects, 
-    identifiable via uri.
- 
+    """Represent a collection of :class:`.Template` objects,
+    identifiable via URI.
+
     A :class:`.TemplateCollection` is linked to the usage of
     all template tags that address other templates, such 
     as ``<%include>``, ``<%namespace>``, and ``<%inherit>``.
     The ``file`` attribute of each of those tags refers
     to a string URI that is passed to that :class:`.Template`
     object's :class:`.TemplateCollection` for resolution.
- 
+
     :class:`.TemplateCollection` is an abstract class,
     with the usual default implementation being :class:`.TemplateLookup`.
- 
+
      """
 
     def has_template(self, uri):
         """Return ``True`` if this :class:`.TemplateLookup` is
         capable of returning a :class:`.Template` object for the
-        given URL.
+        given URI.
 
-        :param uri: String uri of the template to be resolved.
- 
+        :param uri: String URI of the template to be resolved.
+
         """
         try:
             self.get_template(uri)
@@ -44,30 +44,30 @@ class TemplateCollection(object):
             return False
 
     def get_template(self, uri, relativeto=None):
-        """Return a :class:`.Template` object corresponding to the given 
-        URL.
- 
+        """Return a :class:`.Template` object corresponding to the given
+        URI.
+
         The default implementation raises
         :class:`.NotImplementedError`. Implementations should
         raise :class:`.TemplateLookupException` if the given uri
         cannot be resolved.
- 
-        :param uri: String uri of the template to be resolved.
-        :param relativeto: if present, the given URI is assumed to 
-         be relative to this uri.
- 
+
+        :param uri: String URI of the template to be resolved.
+        :param relativeto: if present, the given URI is assumed to
+         be relative to this URI.
+
         """
         raise NotImplementedError()
 
     def filename_to_uri(self, uri, filename):
-        """Convert the given filename to a uri relative to 
+        """Convert the given filename to a URI relative to
            this TemplateCollection."""
  
         return uri
  
     def adjust_uri(self, uri, filename):
         """Adjust the given uri based on the calling filename.
- 
+
         When this method is called from the runtime, the
         'filename' parameter is taken directly to the 'filename'
         attribute of the calling template. Therefore a custom
@@ -75,69 +75,69 @@ class TemplateCollection(object):
         identifier desired in the "filename" parameter of the
         Template objects it constructs and have them come back
         here.
- 
+
         """
         return uri
  
 class TemplateLookup(TemplateCollection):
     """Represent a collection of templates that locates template source files
     from the local filesystem.
- 
+
     The primary argument is the ``directories`` argument, the list of
     directories to search::
- 
+
         lookup = TemplateLookup(["/path/to/templates"])
         some_template = lookup.get_template("/index.html")
- 
+
     The :class:`.TemplateLookup` can also be given :class:`.Template` objects
     programatically using :meth:`.put_string` or :meth:`.put_template`::
- 
+
         lookup = TemplateLookup()
         lookup.put_string("base.html", '''
             <html><body>${self.next()}</body></html>
         ''')
         lookup.put_string("hello.html", '''
             <%include file='base.html'/>
- 
+
             Hello, world !
         ''')
- 
- 
-    :param directories: A list of directory names which will be 
+
+
+    :param directories: A list of directory names which will be
      searched for a particular template URI. The URI is appended
      to each directory and the filesystem checked.
- 
-    :param collection_size: Approximate size of the collection used 
+
+    :param collection_size: Approximate size of the collection used
      to store templates. If left at its default of -1, the size
      is unbounded, and a plain Python dictionary is used to
      relate URI strings to :class:`.Template` instances.
      Otherwise, a least-recently-used cache object is used which
      will maintain the size of the collection approximately to
      the number given.
- 
-    :param filesystem_checks: When at its default value of ``True``, 
-     each call to :meth:`TemplateLookup.get_template()` will
+
+    :param filesystem_checks: When at its default value of ``True``,
+     each call to :meth:`.TemplateLookup.get_template()` will
      compare the filesystem last modified time to the time in
      which an existing :class:`.Template` object was created.
      This allows the :class:`.TemplateLookup` to regenerate a
      new :class:`.Template` whenever the original source has
      been updated. Set this to ``False`` for a very minor
      performance increase.
- 
-    :param modulename_callable: A callable which, when present, 
+
+    :param modulename_callable: A callable which, when present,
      is passed the path of the source file as well as the
      requested URI, and then returns the full path of the
      generated Python module file. This is used to inject
-     alternate schemes for Pyhton module location. If left at
+     alternate schemes for Python module location. If left at
      its default of ``None``, the built in system of generation
      based on ``module_directory`` plus ``uri`` is used.
- 
+
     All other keyword parameters available for
     :class:`.Template` are mirrored here. When new
     :class:`.Template` objects are created, the keywords
     established with this :class:`.TemplateLookup` are passed on
     to each new :class:`.Template`.
- 
+
     """
  
     def __init__(self, 
@@ -216,11 +216,11 @@ class TemplateLookup(TemplateCollection):
         self._mutex = threading.Lock()
  
     def get_template(self, uri):
-        """Return a :class:`.Template` object corresponding to the given 
-        URL.
- 
+        """Return a :class:`.Template` object corresponding to the given
+        URI.
+
         Note the "relativeto" argument is not supported here at the moment.
- 
+
         """
 
         try:
@@ -239,7 +239,7 @@ class TemplateLookup(TemplateCollection):
                                     "Cant locate template for uri %r" % uri)
 
     def adjust_uri(self, uri, relativeto):
-        """adjust the given uri based on the given relative uri."""
+        """Adjust the given uri based on the given relative URI."""
  
         key = (uri, relativeto)
         if key in self._uri_cache:
@@ -257,7 +257,7 @@ class TemplateLookup(TemplateCollection):
  
  
     def filename_to_uri(self, filename):
-        """Convert the given filename to a uri relative to 
+        """Convert the given filename to a URI relative to
            this TemplateCollection."""
 
         try:
@@ -332,7 +332,7 @@ class TemplateLookup(TemplateCollection):
         """Place a new :class:`.Template` object into this
         :class:`.TemplateLookup`, based on the given string of
         text.
- 
+
         """
         self._collection[uri] = Template(
                                     text, 
@@ -344,7 +344,7 @@ class TemplateLookup(TemplateCollection):
         """Place a new :class:`.Template` object into this
         :class:`.TemplateLookup`, based on the given
         :class:`.Template` object.
- 
+
         """
         self._collection[uri] = template
  

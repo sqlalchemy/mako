@@ -27,18 +27,18 @@ Perl, Genshi, JSP EL, and others:
 
 Above, the string representation of ``x`` is applied to the
 template's output stream. If you're wondering where ``x`` comes
-from, its usually from the ``Context`` supplied to the
+from, it's usually from the ``Context`` supplied to the
 template's rendering function. If ``x`` was not supplied to the
 template and was not otherwise assigned locally, it evaluates to
 a special value ``UNDEFINED``. More on that later.
- 
+
 The contents within the ``${}`` tag are evaluated by Python
 directly, so full expressions are OK:
 
 .. sourcecode:: mako
 
     pythagorean theorem:  ${pow(x,2) + pow(y,2)}
- 
+
 The results of the expression are evaluated into a string result
 in all cases before being rendered to the output stream, such as
 the above example where the expression produces a numeric
@@ -50,7 +50,7 @@ Expression Escaping
 Mako includes a number of built-in escaping mechanisms,
 including HTML, URI and XML escaping, as well as a "trim"
 function. These escapes can be added to an expression
-substituion using the ``|`` operator:
+substitution using the ``|`` operator:
 
 .. sourcecode:: mako
 
@@ -61,14 +61,14 @@ produces ``this+is+some+text``. The ``u`` name indicates URL
 escaping, whereas ``h`` represents HTML escaping, ``x``
 represents XML escaping, and ``trim`` applies a trim function.
 
-Read more about built in filtering functions, including how to
+Read more about built-in filtering functions, including how to
 make your own filter functions, in :ref:`filtering_toplevel`.
 
 Control Structures
 ==================
 
 A control structure refers to all those things that control the
-flow of a program - conditionals (i.e. if/else), loops (like
+flow of a program -- conditionals (i.e. if/else), loops (like
 while and for), as well as things like ``try/except``. In Mako,
 control structures are written using the ``%`` marker followed
 by a regular Python control expression, and are "closed" by
@@ -80,9 +80,9 @@ using another ``%`` marker with the tag "``end<name>``", where
     % if x==5:
         this is some output
     % endif
- 
+
 The ``%`` can appear anywhere on the line as long as no text
-precedes it; indentation is not signficant. The full range of
+precedes it; indentation is not significant. The full range of
 Python "colon" expressions are allowed here, including
 ``if/elif/else``, ``while``, ``for``, and even ``def``, although
 Mako has a built-in tag for defs which is more full-featured.
@@ -91,12 +91,12 @@ Mako has a built-in tag for defs which is more full-featured.
 
     % for a in ['one', 'two', 'three', 'four', 'five']:
         % if a[0] == 't':
-         its two or three
+        its two or three
         % elif a[0] == 'f':
         four/five
         % else:
         one
-        %endif
+        % endif
     % endfor
 
 The ``%`` sign can also be "escaped", if you actually want to
@@ -106,13 +106,13 @@ line, by escaping it as in ``%%``:
 .. sourcecode:: mako
 
     %% some text
- 
+
         %% some more text
 
 The Loop Context
 ----------------
 
-Mako 0.7 includes a new feature called the **loop context** which 
+Mako 0.7 includes a new feature called the **loop context** which
 provides additional information about a loop while inside of a ``% for``
 structure:
 
@@ -137,7 +137,7 @@ Comments come in two varieties. The single line comment uses
     ## this is a comment.
     ...text ...
 
-A multiline version exists using ``<%doc>  ...text... </%doc>``:
+A multiline version exists using ``<%doc> ...text... </%doc>``:
 
 .. sourcecode:: mako
 
@@ -157,11 +157,11 @@ the next line:
 
     here is a line that goes onto \
     another line.
- 
+
 The above text evaluates to::
 
     here is a line that goes onto another line.
- 
+
 Python Blocks
 =============
 
@@ -178,7 +178,7 @@ Any arbitrary block of python can be dropped in using the ``<%
     % for elem in y:
         element: ${elem}
     % endfor
- 
+
 Within ``<% %>``, you're writing a regular block of Python code.
 While the code can appear with an arbitrary level of preceding
 whitespace, it has to be consistently formatted with itself.
@@ -203,11 +203,11 @@ pure-Python functions you might want to declare:
     <%!
         import mylib
         import re
- 
+
         def filter(text):
             return re.sub(r'^@', '', text)
     %>
- 
+
 Any number of ``<%! %>`` blocks can be declared anywhere in a
 template; they will be rendered in the resulting module 
 in a single contiguous block above all render callables,
@@ -225,11 +225,11 @@ character, or an explicit closing tag:
 .. sourcecode:: mako
 
     <%include file="foo.txt"/>
- 
+
     <%def name="foo" buffered="True">
         this is a def
     </%def>
- 
+
 All tags have a set of attributes which are defined for each
 tag. Some of these attributes are required. Also, many
 attributes support **evaluation**, meaning you can embed an
@@ -238,11 +238,11 @@ expression (using ``${}``) inside the attribute text:
 .. sourcecode:: mako
 
     <%include file="/foo/bar/${myfile}.txt"/>
- 
+
 Whether or not an attribute accepts runtime evaluation depends
 on the type of tag and how that tag is compiled into the
 template. The best way to find out if you can stick an
-expression in is to try it ! The lexer will tell you if its not
+expression in is to try it! The lexer will tell you if it's not
 valid.
 
 Heres a quick summary of all the tags:
@@ -257,9 +257,9 @@ which the template expects when invoked.
 .. sourcecode:: mako
 
     <%page args="x, y, z='default'"/>
- 
+
 Or a page tag that defines caching characteristics:
- 
+
 .. sourcecode:: mako
 
     <%page cached="True" cache_type="memory"/>
@@ -270,7 +270,7 @@ release, for now make sure you have only one ``<%page>`` tag
 defined in your template, else you may not get the results you
 want. The details of what ``<%page>`` is used for are described
 further in :ref:`namespaces_body` as well as :ref:`caching_toplevel`.
- 
+
 <%include>
 -----------
 
@@ -281,9 +281,9 @@ the rendered result of that file:
 .. sourcecode:: mako
 
     <%include file="header.html"/>
- 
+
         hello world
- 
+
     <%include file="footer.html"/>
 
 Include also accepts arguments which are available as ``<%page>`` arguments in the receiving template:
@@ -304,9 +304,9 @@ template. The basic idea is simple:
     <%def name="myfunc(x)">
         this is myfunc, x is ${x}
     </%def>
- 
+
     ${myfunc(7)}
- 
+
 The %def tag is a lot more powerful than a plain Python def, as
 the Mako compiler provides many extra services with %def that
 you wouldn't normally have, such as the ability to export defs
@@ -319,7 +319,7 @@ full deal on what %def can do in :ref:`defs_toplevel`.
 <%block>
 ---------
 
-``%block`` is a tag that's new as of Mako 0.4.1.   It's close to 
+``%block`` is a tag that's new as of Mako 0.4.1. It's close to
 a ``%def``, except executes itself immediately in its base-most scope,
 and can also be anonymous (i.e. with no name):
 
@@ -329,7 +329,7 @@ and can also be anonymous (i.e. with no name):
         some <html> stuff.
     </%block>
 
-Inspired by Jinja2 blocks, named blocks offer a syntactically pleasing way 
+Inspired by Jinja2 blocks, named blocks offer a syntactically pleasing way
 to do inheritance:
 
 .. sourcecode:: mako
@@ -378,7 +378,7 @@ languages.
 When using the %inherit tag, control is passed to the topmost
 inherited template first, which then decides how to handle
 calling areas of content from its inheriting templates. Mako
-offers a lot of flexbility in this area, including dynamic
+offers a lot of flexibility in this area, including dynamic
 inheritance, content wrapping, and polymorphic method calls.
 Check it out in :ref:`inheritance_toplevel`.
 
@@ -404,7 +404,7 @@ To create custom tags which accept a body, see
 -------
 
 The call tag is the "classic" form of a user-defined tag, and is
-roughly equiavlent to the ``<%namespacename:defname>`` syntax
+roughly equivalent to the ``<%namespacename:defname>`` syntax
 described above. This tag is also described in :ref:`defs_with_content`.
 
 <%doc>
@@ -434,14 +434,14 @@ Mako:
     <%text filter="h">
         heres some fake mako ${syntax}
         <%def name="x()">${x}</%def>
-    %CLOSETEXT
+    <%/text>
 
 Returning early from a template
 ===============================
 
 Sometimes you want to stop processing a template or ``<%def>``
 method in the middle and just use the text you've accumulated so
-far. You can use a ````return```` statement inside a Python
+far. You can use a ``return`` statement inside a Python
 block to do that.
 
 .. sourcecode:: mako
