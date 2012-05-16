@@ -441,7 +441,7 @@ Mako:
     <%text filter="h">
         heres some fake mako ${syntax}
         <%def name="x()">${x}</%def>
-    <%/text>
+    </%text>
 
 Returning Early from a Template
 ===============================
