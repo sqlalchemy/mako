@@ -282,6 +282,6 @@ epub_copyright = u'Mako authors'
 #epub_tocdup = True
 
 intersphinx_mapping = {
-    'dogpile.cache':('http://dogpilecache.readthedocs.org/en/latest', None),
+    'dogpilecache':('http://dogpilecache.readthedocs.org/en/latest', None),
     'beaker':('http://beaker.readthedocs.org/en/latest',None),
 }

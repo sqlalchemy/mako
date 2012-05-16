@@ -231,7 +231,7 @@ Using the dogpile.cache Backend
 `dogpile.cache`_ is a new replacement for Beaker.   It provides
 a modernized, slimmed down interface and is generally easier to use
 than Beaker.   As of this writing it has not yet been released.  dogpile.cache
-includes its own Mako cache plugin -- see :ref:`mako_plugin` in the
+includes its own Mako cache plugin -- see :mod:`dogpile.cache.plugins.mako_cache` in the
 dogpile.cache documentation.
 
 Programmatic Cache Access
