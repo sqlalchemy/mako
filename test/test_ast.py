@@ -75,39 +75,22 @@ for y in range(1, y):
         )
 
     def test_locate_identifiers_4(self):
-        if util.py3k:
-            code = """
+        code = """
 x = 5
 (y, )
 def mydef(mydefarg):
     print("mda is", mydefarg)
-"""
-        else:
-            code = """
-x = 5
-(y, )
-def mydef(mydefarg):
-    print "mda is", mydefarg
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, set(['y']))
         eq_(parsed.declared_identifiers, set(['mydef', 'x']))
 
     def test_locate_identifiers_5(self):
-        if util.py3k:
-            code = """
+        code = """
 try:
     print(x)
 except:
     print(y)
-"""
-        else:
-
-            code = """
-try:
-    print x
-except:
-    print y
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, set(['x', 'y']))
@@ -120,37 +103,21 @@ def foo():
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, set(['bar']))
 
-        if util.py3k:
-            code = """
+        code = """
 def lala(x, y):
     return x, y, z
 print(x)
-"""
-        else:
-            code = """
-def lala(x, y):
-    return x, y, z
-print x
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, set(['z', 'x']))
         eq_(parsed.declared_identifiers, set(['lala']))
 
-        if util.py3k:
-            code = """
+        code = """
 def lala(x, y):
     def hoho():
         def bar():
             z = 7
 print(z)
-"""
-        else:
-            code = """
-def lala(x, y):
-    def hoho():
-        def bar():
-            z = 7
-print z
 """
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, set(['z']))
