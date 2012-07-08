@@ -4,6 +4,12 @@
   when no statements are otherwise present.
   Courtesy Ben Trofatter [ticket:146]
 
+- [bug] Fixed some long-broken scoping behavior
+  involving variables declared in defs and such,
+  which only became apparent when
+  the strict_undefined flag was turned on.
+  [ticket:192]
+
 - [bug] Can now use strict_undefined at the
   same time args passed to def() are used
   by other elements of the <%def> tag.

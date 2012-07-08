@@ -208,6 +208,40 @@ def x(q):
         eq_(parsed.undeclared_identifiers, set())
 
 
+    def test_locate_identifiers_12(self):
+        code = """
+def foo():
+    s = 1
+    def bar():
+        t = s
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['foo']))
+        eq_(parsed.undeclared_identifiers, set())
+
+    def test_locate_identifiers_13(self):
+        code = """
+def foo():
+    class Bat(object):
+        pass
+    Bat
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['foo']))
+        eq_(parsed.undeclared_identifiers, set())
+
+    def test_locate_identifiers_14(self):
+        code = """
+def foo():
+    class Bat(object):
+        pass
+    Bat
+
+print(Bat)
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['foo']))
+        eq_(parsed.undeclared_identifiers, set(['Bat']))
 
     def test_no_global_imports(self):
         code = """

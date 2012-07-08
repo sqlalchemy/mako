@@ -66,13 +66,15 @@ if _ast:
         def __init__(self, listener, **exception_kwargs):
             self.in_function = False
             self.in_assign_targets = False
-            self.local_ident_stack = {}
+            self.local_ident_stack = set()
             self.listener = listener
             self.exception_kwargs = exception_kwargs
 
         def _add_declared(self, name):
             if not self.in_function:
                 self.listener.declared_identifiers.add(name)
+            else:
+                self.local_ident_stack.add(name)
 
         def visit_ClassDef(self, node):
             self._add_declared(node.name)
@@ -118,23 +120,20 @@ if _ast:
             # argument names in each function header so they arent
             # counted as "undeclared"
 
-            saved = {}
             inf = self.in_function
             self.in_function = True
-            for arg in node.args.args:
-                if arg_id(arg) in self.local_ident_stack:
-                    saved[arg_id(arg)] = True
-                else:
-                    self.local_ident_stack[arg_id(arg)] = True
+
+            local_ident_stack = self.local_ident_stack
+            self.local_ident_stack = local_ident_stack.union([
+                arg_id(arg) for arg in node.args.args
+            ])
             if islambda:
                 self.visit(node.body)
             else:
                 for n in node.body:
                     self.visit(n)
             self.in_function = inf
-            for arg in node.args.args:
-                if arg_id(arg) not in saved:
-                    del self.local_ident_stack[arg_id(arg)]
+            self.local_ident_stack = local_ident_stack
 
         def visit_For(self, node):
 
@@ -149,8 +148,10 @@ if _ast:
 
         def visit_Name(self, node):
             if isinstance(node.ctx, _ast.Store):
+                # this is eqiuvalent to visit_AssName in 
+                # compiler
                 self._add_declared(node.id)
-            if node.id not in reserved and node.id \
+            elif node.id not in reserved and node.id \
                 not in self.listener.declared_identifiers and node.id \
                 not in self.local_ident_stack:
                 self.listener.undeclared_identifiers.add(node.id)
@@ -228,13 +229,15 @@ else:
 
         def __init__(self, listener, **exception_kwargs):
             self.in_function = False
-            self.local_ident_stack = {}
+            self.local_ident_stack = set()
             self.listener = listener
             self.exception_kwargs = exception_kwargs
 
         def _add_declared(self, name):
             if not self.in_function:
                 self.listener.declared_identifiers.add(name)
+            else:
+                self.local_ident_stack.add(name)
 
         def visitClass(self, node, *args):
             self._add_declared(node.name)
@@ -247,7 +250,6 @@ else:
             # flip around the visiting of Assign so the expression gets
             # evaluated first, in the case of a clause like "x=x+5" (x
             # is undeclared)
-
             self.visit(node.expr, *args)
             for n in node.nodes:
                 self.visit(n, *args)
@@ -267,20 +269,18 @@ else:
             # argument names in each function header so they arent
             # counted as "undeclared"
 
-            saved = {}
             inf = self.in_function
             self.in_function = True
-            for arg in node.argnames:
-                if arg in self.local_ident_stack:
-                    saved[arg] = True
-                else:
-                    self.local_ident_stack[arg] = True
+
+            local_ident_stack = self.local_ident_stack
+            self.local_ident_stack = local_ident_stack.union([
+                arg_id(arg) for arg in node.argnames
+            ])
+
             for n in node.getChildNodes():
                 self.visit(n, *args)
             self.in_function = inf
-            for arg in node.argnames:
-                if arg not in saved:
-                    del self.local_ident_stack[arg]
+            self.local_ident_stack = local_ident_stack
 
         def visitFor(self, node, *args):
 
