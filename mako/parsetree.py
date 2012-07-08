@@ -445,6 +445,8 @@ class DefTag(Tag):
                             difference(filters.DEFAULT_ESCAPES.keys())
         ).union(
             self.expression_undeclared_identifiers
+        ).difference(
+            self.function_decl.argnames
         )
 
 class BlockTag(Tag):

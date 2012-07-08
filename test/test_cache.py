@@ -12,14 +12,17 @@ try:
 except:
     from nose import SkipTest
     raise SkipTest("Beaker is required for these tests.")
- 
+
 from mako.cache import register_plugin, CacheImpl
 
 class MockCacheImpl(CacheImpl):
     realcacheimpl = None
+
     def __init__(self, cache):
         self.cache = cache
-        use_beaker= self.cache.template.cache_args.get('use_beaker', True)
+        use_beaker = self.cache.\
+                    template.cache_args.\
+                    get('use_beaker', True)
         if use_beaker:
             self.realcacheimpl = cache._load_impl("beaker")
 
@@ -27,7 +30,8 @@ class MockCacheImpl(CacheImpl):
         self.key = key
         self.kwargs = kw.copy()
         if self.realcacheimpl:
-            return self.realcacheimpl.get_or_create(key, creation_function, **kw)
+            return self.realcacheimpl.\
+                    get_or_create(key, creation_function, **kw)
         else:
             return creation_function()
 
@@ -36,13 +40,13 @@ class MockCacheImpl(CacheImpl):
         self.kwargs = kw.copy()
         if self.realcacheimpl:
             self.realcacheimpl.put(key, value, **kw)
- 
+
     def get(self, key, **kw):
         self.key = key
         self.kwargs = kw.copy()
         if self.realcacheimpl:
             return self.realcacheimpl.get(key, **kw)
- 
+
     def invalidate(self, key, **kw):
         self.key = key
         self.kwargs = kw.copy()
@@ -104,7 +108,7 @@ class CacheTest(TemplateTest):
             callcount[0] += 1
             %>
         </%def>
- 
+
         ${foo()}
         ${foo()}
         ${foo()}
@@ -134,7 +138,7 @@ class CacheTest(TemplateTest):
         m = self._install_mock_cache(t)
 
         eq_(t.render().strip(), "callcount: [2]")
- 
+
     def test_nested_def(self):
         t = Template("""
         <%!
@@ -163,7 +167,7 @@ class CacheTest(TemplateTest):
             'callcount: [1]',
         ]
         assert m.kwargs == {}
- 
+
     def test_page(self):
         t = Template("""
         <%!
@@ -251,7 +255,7 @@ class CacheTest(TemplateTest):
         assert result_lines(t.render()) == ['hi']
         assert m.key == "foo_hi"
 
- 
+
     def test_dynamic_key_with_imports(self):
         lookup = TemplateLookup()
         lookup.put_string("foo.html", """
@@ -276,7 +280,7 @@ class CacheTest(TemplateTest):
             "callcount: [1]"
         ]
         assert m.kwargs == {}
- 
+
     def test_fileargs_implicit(self):
         l = lookup.TemplateLookup(module_directory=module_base)
         l.put_string("test","""
@@ -295,7 +299,7 @@ class CacheTest(TemplateTest):
                 ${foo()}
                 callcount: ${callcount}
         """)
- 
+
         m = self._install_mock_cache(l.get_template('test'))
         assert result_lines(l.get_template('test').render()) == [
             'this is foo',
@@ -304,7 +308,7 @@ class CacheTest(TemplateTest):
             'callcount: [1]',
         ]
         eq_(m.kwargs, {'type':'dbm'})
- 
+
     def test_fileargs_deftag(self):
         t = Template("""
         <%%!
@@ -369,7 +373,7 @@ class CacheTest(TemplateTest):
         m = self._install_mock_cache(t)
         t.render()
         eq_(m.kwargs, {'dir':module_base, 'type':'file', 'timeout':30})
- 
+
         t2 = Template("""
         <%%page cached="True" cache_timeout="30" cache_dir="%s" cache_type="file" cache_key='somekey'/>
         hi
@@ -396,7 +400,7 @@ class CacheTest(TemplateTest):
                 ${foo()}
                 callcount: ${callcount}
         """)
- 
+
         t = l.get_template('test')
         m = self._install_mock_cache(t)
         assert result_lines(l.get_template('test').render()) == [
@@ -406,7 +410,7 @@ class CacheTest(TemplateTest):
             'callcount: [1]',
         ]
         eq_(m.kwargs, {'dir':module_base, 'type':'file'})
- 
+
     def test_buffered(self):
         t = Template("""
         <%!
@@ -420,11 +424,11 @@ class CacheTest(TemplateTest):
         </%def>
         """, buffer_filters=["a"])
         assert result_lines(t.render()) == ["this is a this is a test", "this is a this is a test"]
- 
+
     def test_load_from_expired(self):
         """test that the cache callable can be called safely after the
         originating template has completed rendering.
- 
+
         """
         t = Template("""
         ${foo()}
@@ -432,12 +436,12 @@ class CacheTest(TemplateTest):
             foo
         </%def>
         """)
- 
+
         x1 = t.render()
         time.sleep(3)
         x2 = t.render()
         assert x1.strip() == x2.strip() == "foo"
- 
+
     def test_cache_uses_current_context(self):
         t = Template("""
         ${foo()}
@@ -445,7 +449,7 @@ class CacheTest(TemplateTest):
             foo: ${x}
         </%def>
         """)
- 
+
         x1 = t.render(x=1)
         time.sleep(3)
         x2 = t.render(x=2)
@@ -496,10 +500,10 @@ class CacheTest(TemplateTest):
         assert result_lines(t.render(x=3)) == ["foo: 3", "bar: 1"]
         t.cache.invalidate_def('bar')
         assert result_lines(t.render(x=4)) == ["foo: 3", "bar: 4"]
- 
+
         t = Template("""
             <%%page cached="True" cache_type="dbm" cache_dir="%s"/>
- 
+
             page: ${x}
         """ % module_base)
         assert result_lines(t.render(x=1)) == ["page: 1"]
@@ -507,10 +511,10 @@ class CacheTest(TemplateTest):
         t.cache.invalidate_body()
         assert result_lines(t.render(x=3)) == ["page: 3"]
         assert result_lines(t.render(x=4)) == ["page: 3"]
- 
+
     def test_custom_args_def(self):
         t = Template("""
-            <%def name="foo()" cached="True" cache_region="myregion" 
+            <%def name="foo()" cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob">
             </%def>
             ${foo()}
@@ -521,7 +525,7 @@ class CacheTest(TemplateTest):
 
     def test_custom_args_block(self):
         t = Template("""
-            <%block name="foo" cached="True" cache_region="myregion" 
+            <%block name="foo" cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob">
             </%block>
         """, cache_args={'use_beaker':False})
@@ -531,7 +535,7 @@ class CacheTest(TemplateTest):
 
     def test_custom_args_page(self):
         t = Template("""
-            <%page cached="True" cache_region="myregion" 
+            <%page cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob"/>
         """, cache_args={'use_beaker':False})
         m = self._install_mock_cache(t)

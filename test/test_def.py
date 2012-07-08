@@ -438,6 +438,54 @@ class ScopeTest(TemplateTest):
             "this is a, x is 15"
         ])
 
+    def test_inline_expression_from_arg_one(self):
+        """test that cache_key=${foo} gets its value from
+        the 'foo' argument in the <%def> tag,
+        and strict_undefined doesn't complain.
+
+        this is #191.
+
+        """
+        t = Template("""
+        <%def name="layout(foo)" cached="True" cache_key="${foo}">
+        foo: ${foo}
+        </%def>
+
+        ${layout(3)}
+        """, strict_undefined=True,
+            cache_impl="plain")
+
+        eq_(
+            result_lines(t.render()),
+            ["foo: 3"]
+        )
+
+    def test_interpret_expression_from_arg_two(self):
+        """test that cache_key=${foo} gets its value from
+        the 'foo' argument regardless of it being passed
+        from the context.
+
+        This is here testing that there's no change
+        to existing behavior before and after #191.
+
+        """
+        t = Template("""
+        <%def name="layout(foo)" cached="True" cache_key="${foo}">
+        foo: ${value}
+        </%def>
+
+        ${layout(3)}
+        """, cache_impl="plain")
+
+        eq_(
+            result_lines(t.render(foo='foo', value=1)),
+            ["foo: 1"]
+        )
+        eq_(
+            result_lines(t.render(foo='bar', value=2)),
+            ["foo: 1"]
+        )
+
 class NestedDefTest(TemplateTest):
     def test_nested_def(self):
         t = Template("""

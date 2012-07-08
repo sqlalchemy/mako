@@ -4,6 +4,11 @@
   when no statements are otherwise present.
   Courtesy Ben Trofatter [ticket:146]
 
+- [bug] Can now use strict_undefined at the
+  same time args passed to def() are used
+  by other elements of the <%def> tag.
+  [ticket:191]
+
 0.7.0
 - [feature] Added new "loop" variable to templates,
   is provided within a % for block to provide
