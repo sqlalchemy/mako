@@ -15,17 +15,17 @@ from mako import exceptions, util
 import operator
 
 if util.py3k:
-    # words that cannot be assigned to (notably 
+    # words that cannot be assigned to (notably
     # smaller than the total keys in __builtins__)
     reserved = set(['True', 'False', 'None', 'print'])
 
     # the "id" attribute on a function node
     arg_id = operator.attrgetter('arg')
 else:
-    # words that cannot be assigned to (notably 
+    # words that cannot be assigned to (notably
     # smaller than the total keys in __builtins__)
     reserved = set(['True', 'False', 'None'])
- 
+
     # the "id" attribute on a function node
     arg_id = operator.attrgetter('id')
 
@@ -42,7 +42,7 @@ except ImportError:
 
 def parse(code, mode='exec', **exception_kwargs):
     """Parse an expression into AST"""
- 
+
 
     try:
         if _ast:
@@ -54,8 +54,8 @@ def parse(code, mode='exec', **exception_kwargs):
     except Exception, e:
         raise exceptions.SyntaxException(
                     "(%s) %s (%r)" % (
-                        e.__class__.__name__, 
-                        e, 
+                        e.__class__.__name__,
+                        e,
                         code[0:50]
                     ), **exception_kwargs)
 

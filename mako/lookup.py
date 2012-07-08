@@ -12,13 +12,13 @@ try:
     import threading
 except:
     import dummy_threading as threading
- 
+
 class TemplateCollection(object):
     """Represent a collection of :class:`.Template` objects,
     identifiable via URI.
 
     A :class:`.TemplateCollection` is linked to the usage of
-    all template tags that address other templates, such 
+    all template tags that address other templates, such
     as ``<%include>``, ``<%namespace>``, and ``<%inherit>``.
     The ``file`` attribute of each of those tags refers
     to a string URI that is passed to that :class:`.Template`
@@ -62,9 +62,9 @@ class TemplateCollection(object):
     def filename_to_uri(self, uri, filename):
         """Convert the given ``filename`` to a URI relative to
            this :class:`.TemplateCollection`."""
- 
+
         return uri
- 
+
     def adjust_uri(self, uri, filename):
         """Adjust the given ``uri`` based on the calling ``filename``.
 
@@ -78,7 +78,7 @@ class TemplateCollection(object):
 
         """
         return uri
- 
+
 class TemplateLookup(TemplateCollection):
     """Represent a collection of templates that locates template source files
     from the local filesystem.
@@ -143,36 +143,36 @@ class TemplateLookup(TemplateCollection):
     to each new :class:`.Template`.
 
     """
- 
-    def __init__(self, 
-                        directories=None, 
-                        module_directory=None, 
-                        filesystem_checks=True, 
-                        collection_size=-1, 
-                        format_exceptions=False, 
-                        error_handler=None, 
-                        disable_unicode=False, 
+
+    def __init__(self,
+                        directories=None,
+                        module_directory=None,
+                        filesystem_checks=True,
+                        collection_size=-1,
+                        format_exceptions=False,
+                        error_handler=None,
+                        disable_unicode=False,
                         bytestring_passthrough=False,
-                        output_encoding=None, 
-                        encoding_errors='strict', 
+                        output_encoding=None,
+                        encoding_errors='strict',
 
                         cache_args=None,
                         cache_impl='beaker',
                         cache_enabled=True,
-                        cache_type=None, 
-                        cache_dir=None, 
-                        cache_url=None, 
+                        cache_type=None,
+                        cache_dir=None,
+                        cache_url=None,
 
-                        modulename_callable=None, 
+                        modulename_callable=None,
                         module_writer=None,
-                        default_filters=None, 
-                        buffer_filters=(), 
+                        default_filters=None,
+                        buffer_filters=(),
                         strict_undefined=False,
-                        imports=None, 
+                        imports=None,
                         enable_loop=True,
-                        input_encoding=None, 
+                        input_encoding=None,
                         preprocessor=None):
- 
+
         self.directories = [posixpath.normpath(d) for d in
                             util.to_list(directories, ())
                             ]
@@ -192,22 +192,22 @@ class TemplateLookup(TemplateCollection):
             cache_args.setdefault('type', cache_type)
 
         self.template_args = {
-            'format_exceptions':format_exceptions, 
-            'error_handler':error_handler, 
-            'disable_unicode':disable_unicode, 
+            'format_exceptions':format_exceptions,
+            'error_handler':error_handler,
+            'disable_unicode':disable_unicode,
             'bytestring_passthrough':bytestring_passthrough,
-            'output_encoding':output_encoding, 
+            'output_encoding':output_encoding,
             'cache_impl':cache_impl,
-            'encoding_errors':encoding_errors, 
-            'input_encoding':input_encoding, 
-            'module_directory':module_directory, 
+            'encoding_errors':encoding_errors,
+            'input_encoding':input_encoding,
+            'module_directory':module_directory,
             'module_writer':module_writer,
             'cache_args':cache_args,
-            'cache_enabled':cache_enabled, 
-            'default_filters':default_filters, 
-            'buffer_filters':buffer_filters, 
+            'cache_enabled':cache_enabled,
+            'default_filters':default_filters,
+            'buffer_filters':buffer_filters,
             'strict_undefined':strict_undefined,
-            'imports':imports, 
+            'imports':imports,
             'enable_loop':enable_loop,
             'preprocessor':preprocessor}
 
@@ -218,7 +218,7 @@ class TemplateLookup(TemplateCollection):
             self._collection = util.LRUCache(collection_size)
             self._uri_cache = util.LRUCache(collection_size)
         self._mutex = threading.Lock()
- 
+
     def get_template(self, uri):
         """Return a :class:`.Template` object corresponding to the given
         ``uri``.
@@ -244,7 +244,7 @@ class TemplateLookup(TemplateCollection):
 
     def adjust_uri(self, uri, relativeto):
         """Adjust the given ``uri`` based on the given relative URI."""
- 
+
         key = (uri, relativeto)
         if key in self._uri_cache:
             return self._uri_cache[key]
@@ -258,8 +258,8 @@ class TemplateLookup(TemplateCollection):
         else:
             v = self._uri_cache[key] = uri
         return v
- 
- 
+
+
     def filename_to_uri(self, filename):
         """Convert the given ``filename`` to a URI relative to
            this :class:`.TemplateCollection`."""
@@ -270,25 +270,25 @@ class TemplateLookup(TemplateCollection):
             value = self._relativeize(filename)
             self._uri_cache[filename] = value
             return value
- 
+
     def _relativeize(self, filename):
-        """Return the portion of a filename that is 'relative' 
+        """Return the portion of a filename that is 'relative'
            to the directories in this lookup.
- 
+
         """
- 
+
         filename = posixpath.normpath(filename)
         for dir in self.directories:
             if filename[0:len(dir)] == dir:
                 return filename[len(dir):]
         else:
             return None
- 
+
     def _load(self, filename, uri):
         self._mutex.acquire()
         try:
             try:
-                # try returning from collection one 
+                # try returning from collection one
                 # more time in case concurrent thread already loaded
                 return self._collection[uri]
             except KeyError:
@@ -301,19 +301,19 @@ class TemplateLookup(TemplateCollection):
                 self._collection[uri] = template = Template(
                                         uri=uri,
                                         filename=posixpath.normpath(filename),
-                                        lookup=self, 
+                                        lookup=self,
                                         module_filename=module_filename,
                                         **self.template_args)
                 return template
             except:
-                # if compilation fails etc, ensure 
+                # if compilation fails etc, ensure
                 # template is removed from collection,
                 # re-raise
                 self._collection.pop(uri, None)
                 raise
         finally:
             self._mutex.release()
- 
+
     def _check(self, uri, template):
         if template.filename is None:
             return template
@@ -331,7 +331,7 @@ class TemplateLookup(TemplateCollection):
             raise exceptions.TemplateLookupException(
                                 "Cant locate template for uri %r" % uri)
 
- 
+
     def put_string(self, uri, text):
         """Place a new :class:`.Template` object into this
         :class:`.TemplateLookup`, based on the given string of
@@ -339,11 +339,11 @@ class TemplateLookup(TemplateCollection):
 
         """
         self._collection[uri] = Template(
-                                    text, 
-                                    lookup=self, 
-                                    uri=uri, 
+                                    text,
+                                    lookup=self,
+                                    uri=uri,
                                     **self.template_args)
- 
+
     def put_template(self, uri, template):
         """Place a new :class:`.Template` object into this
         :class:`.TemplateLookup`, based on the given
@@ -351,4 +351,4 @@ class TemplateLookup(TemplateCollection):
 
         """
         self._collection[uri] = template
- 
+

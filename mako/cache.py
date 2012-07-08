@@ -82,14 +82,14 @@ class Cache(object):
         return self._ctx_get_or_create(key, creation_function, None, **kw)
 
     def _ctx_get_or_create(self, key, creation_function, context, **kw):
-        """Retrieve a value from the cache, using the given creation function 
+        """Retrieve a value from the cache, using the given creation function
         to generate a new value."""
 
         if not self.template.cache_enabled:
             return creation_function()
 
-        return self.impl.get_or_create(key, 
-                        creation_function, 
+        return self.impl.get_or_create(key,
+                        creation_function,
                         **self._get_cache_kw(kw, context))
 
     def set(self, key, value, **kw):
@@ -121,7 +121,7 @@ class Cache(object):
 
         """
         return self.impl.get(key, **self._get_cache_kw(kw, None))
- 
+
     def invalidate(self, key, **kw):
         """Invalidate a value in the cache.
 
@@ -133,22 +133,22 @@ class Cache(object):
 
         """
         self.impl.invalidate(key, **self._get_cache_kw(kw, None))
- 
+
     def invalidate_body(self):
         """Invalidate the cached content of the "body" method for this
         template.
 
         """
         self.invalidate('render_body', __M_defname='render_body')
- 
+
     def invalidate_def(self, name):
         """Invalidate the cached content of a particular ``<%def>`` within this
         template.
 
         """
- 
+
         self.invalidate('render_%s' % name, __M_defname='render_%s' % name)
- 
+
     def invalidate_closure(self, name):
         """Invalidate a nested ``<%def>`` within this template.
 
@@ -159,9 +159,9 @@ class Cache(object):
         each other.
 
         """
- 
+
         self.invalidate(name, __M_defname=name)
- 
+
     def _get_cache_kw(self, kw, context):
         defname = kw.pop('__M_defname', None)
         if not defname:
@@ -216,7 +216,7 @@ class CacheImpl(object):
 
         """
         raise NotImplementedError()
- 
+
     def get(self, key, **kw):
         """Retrieve a value from the cache.
 
@@ -225,7 +225,7 @@ class CacheImpl(object):
 
         """
         raise NotImplementedError()
- 
+
     def invalidate(self, key, **kw):
         """Invalidate a value in the cache.
 

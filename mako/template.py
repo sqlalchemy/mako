@@ -11,7 +11,7 @@ from mako.lexer import Lexer
 from mako import runtime, util, exceptions, codegen, cache
 import os, re, shutil, stat, sys, tempfile, types, weakref
 
- 
+
 class Template(object):
     """Represents a compiled template.
 
@@ -86,7 +86,7 @@ class Template(object):
     :param enable_loop: When ``True``, enable the ``loop`` context variable.
      This can be set to ``False`` to support templates that may
      be making usage of the name "``loop``".   Individual templates can
-     re-enable the "loop" context by placing the directive 
+     re-enable the "loop" context by placing the directive
      ``enable_loop="True"`` inside the ``<%page>`` tag -- see
      :ref:`migrating_loop`.
 
@@ -172,7 +172,7 @@ class Template(object):
      result of the callable will be used as the template source
      code.
 
-    :param strict_undefined: Replaces the automatic usage of 
+    :param strict_undefined: Replaces the automatic usage of
      ``UNDEFINED`` for any undeclared variables not located in
      the :class:`.Context` with an immediate raise of
      ``NameError``. The advantage is immediate reporting of
@@ -190,31 +190,31 @@ class Template(object):
 
     """
 
-    def __init__(self, 
-                    text=None, 
-                    filename=None, 
-                    uri=None, 
-                    format_exceptions=False, 
-                    error_handler=None, 
-                    lookup=None, 
-                    output_encoding=None, 
-                    encoding_errors='strict', 
-                    module_directory=None, 
+    def __init__(self,
+                    text=None,
+                    filename=None,
+                    uri=None,
+                    format_exceptions=False,
+                    error_handler=None,
+                    lookup=None,
+                    output_encoding=None,
+                    encoding_errors='strict',
+                    module_directory=None,
                     cache_args=None,
                     cache_impl='beaker',
                     cache_enabled=True,
-                    cache_type=None, 
-                    cache_dir=None, 
-                    cache_url=None, 
-                    module_filename=None, 
-                    input_encoding=None, 
+                    cache_type=None,
+                    cache_dir=None,
+                    cache_url=None,
+                    module_filename=None,
+                    input_encoding=None,
                     disable_unicode=False,
                     module_writer=None,
-                    bytestring_passthrough=False, 
-                    default_filters=None, 
-                    buffer_filters=(), 
+                    bytestring_passthrough=False,
+                    default_filters=None,
+                    buffer_filters=(),
                     strict_undefined=False,
-                    imports=None, 
+                    imports=None,
                     enable_loop=True,
                     preprocessor=None):
         if uri:
@@ -264,10 +264,10 @@ class Template(object):
         else:
             self.default_filters = default_filters
         self.buffer_filters = buffer_filters
- 
+
         self.imports = imports
         self.preprocessor = preprocessor
- 
+
         # if plain text, compile code in memory only
         if text is not None:
             (code, module) = _compile_text(self, text, filename)
@@ -282,7 +282,7 @@ class Template(object):
             elif module_directory is not None:
                 path = os.path.abspath(
                         os.path.join(
-                            os.path.normpath(module_directory), 
+                            os.path.normpath(module_directory),
                             u_norm + ".py"
                             )
                         )
@@ -314,7 +314,7 @@ class Template(object):
         else:
             return codegen.RESERVED_NAMES.difference(['loop'])
 
-    def _setup_cache_args(self, 
+    def _setup_cache_args(self,
                 cache_impl, cache_enabled, cache_args,
                 cache_type, cache_dir, cache_url):
         self.cache_impl = cache_impl
@@ -340,9 +340,9 @@ class Template(object):
                         os.stat(path)[stat.ST_MTIME] < filemtime:
                 data = util.read_file(filename)
                 _compile_module_file(
-                            self, 
+                            self,
                             data,
-                            filename, 
+                            filename,
                             path,
                             self.module_writer)
             module = util.load_module(self.module_id, path)
@@ -350,9 +350,9 @@ class Template(object):
             if module._magic_number != codegen.MAGIC_NUMBER:
                 data = util.read_file(filename)
                 _compile_module_file(
-                            self, 
-                            data, 
-                            filename, 
+                            self,
+                            data,
+                            filename,
                             path,
                             self.module_writer)
                 module = util.load_module(self.module_id, path)
@@ -363,26 +363,26 @@ class Template(object):
             # in memory
             data = util.read_file(filename)
             code, module = _compile_text(
-                                self, 
-                                data, 
+                                self,
+                                data,
                                 filename)
             self._source = None
             self._code = code
             ModuleInfo(module, None, self, filename, code, None)
         return module
- 
+
     @property
     def source(self):
         """Return the template source code for this :class:`.Template`."""
- 
+
         return _get_module_info_from_callable(self.callable_).source
 
     @property
     def code(self):
         """Return the module source code for this :class:`.Template`."""
- 
+
         return _get_module_info_from_callable(self.callable_).code
- 
+
     @util.memoized_property
     def cache(self):
         return cache.Cache(self)
@@ -396,7 +396,7 @@ class Template(object):
     @property
     def cache_type(self):
         return self.cache_args['type']
- 
+
     def render(self, *args, **data):
         """Render the output of this template as a string.
 
@@ -410,16 +410,16 @@ class Template(object):
 
         """
         return runtime._render(self, self.callable_, args, data)
- 
+
     def render_unicode(self, *args, **data):
         """Render the output of this template as a unicode object."""
- 
-        return runtime._render(self, 
-                                self.callable_, 
-                                args, 
-                                data, 
+
+        return runtime._render(self,
+                                self.callable_,
+                                args,
+                                data,
                                 as_unicode=True)
- 
+
     def render_context(self, context, *args, **kwargs):
         """Render this :class:`.Template` with the given context.
 
@@ -428,63 +428,63 @@ class Template(object):
         """
         if getattr(context, '_with_template', None) is None:
             context._set_with_template(self)
-        runtime._render_context(self, 
-                                self.callable_, 
-                                context, 
-                                *args, 
+        runtime._render_context(self,
+                                self.callable_,
+                                context,
+                                *args,
                                 **kwargs)
- 
+
     def has_def(self, name):
         return hasattr(self.module, "render_%s" % name)
- 
+
     def get_def(self, name):
         """Return a def of this template as a :class:`.DefTemplate`."""
- 
+
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
 
     def _get_def_callable(self, name):
         return getattr(self.module, "render_%s" % name)
- 
+
     @property
-    def last_modified(self): 
-        return self.module._modified_time 
- 
+    def last_modified(self):
+        return self.module._modified_time
+
 class ModuleTemplate(Template):
     """A Template which is constructed given an existing Python module.
- 
+
         e.g.::
- 
+
         t = Template("this is a template")
         f = file("mymodule.py", "w")
         f.write(t.code)
         f.close()
- 
+
         import mymodule
- 
+
         t = ModuleTemplate(mymodule)
         print t.render()
- 
+
     """
- 
-    def __init__(self, module, 
-                        module_filename=None, 
-                        template=None, 
-                        template_filename=None, 
-                        module_source=None, 
+
+    def __init__(self, module,
+                        module_filename=None,
+                        template=None,
+                        template_filename=None,
+                        module_source=None,
                         template_source=None,
-                        output_encoding=None, 
+                        output_encoding=None,
                         encoding_errors='strict',
-                        disable_unicode=False, 
+                        disable_unicode=False,
                         bytestring_passthrough=False,
                         format_exceptions=False,
-                        error_handler=None, 
-                        lookup=None, 
+                        error_handler=None,
+                        lookup=None,
                         cache_args=None,
                         cache_impl='beaker',
                         cache_enabled=True,
-                        cache_type=None, 
-                        cache_dir=None, 
-                        cache_url=None, 
+                        cache_type=None,
+                        cache_dir=None,
+                        cache_url=None,
     ):
         self.module_id = re.sub(r'\W', "_", module._template_uri)
         self.uri = module._template_uri
@@ -506,13 +506,13 @@ class ModuleTemplate(Template):
 
         self.module = module
         self.filename = template_filename
-        ModuleInfo(module, 
-                        module_filename, 
-                        self, 
-                        template_filename, 
-                        module_source, 
+        ModuleInfo(module,
+                        module_filename,
+                        self,
+                        template_filename,
+                        module_source,
                         template_source)
- 
+
         self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
@@ -521,11 +521,11 @@ class ModuleTemplate(Template):
             cache_impl, cache_enabled, cache_args,
             cache_type, cache_dir, cache_url
         )
- 
+
 class DefTemplate(Template):
     """A :class:`.Template` which represents a callable def in a parent
     template."""
- 
+
     def __init__(self, parent, callable_):
         self.parent = parent
         self.callable_ = callable_
@@ -545,16 +545,16 @@ class ModuleInfo(object):
     """Stores information about a module currently loaded into
     memory, provides reverse lookups of template source, module
     source code based on a module's identifier.
- 
+
      """
     _modules = weakref.WeakValueDictionary()
 
-    def __init__(self, 
-                    module, 
-                    module_filename, 
-                    template, 
-                    template_filename, 
-                    module_source, 
+    def __init__(self,
+                    module,
+                    module_filename,
+                    template,
+                    template_filename,
+                    module_source,
                     template_source):
         self.module = module
         self.module_filename = module_filename
@@ -564,14 +564,14 @@ class ModuleInfo(object):
         self._modules[module.__name__] = template._mmarker = self
         if module_filename:
             self._modules[module_filename] = self
- 
+
     @property
     def code(self):
         if self.module_source is not None:
             return self.module_source
         else:
             return util.read_file(self.module_filename)
- 
+
     @property
     def source(self):
         if self.template_source is not None:
@@ -589,18 +589,18 @@ class ModuleInfo(object):
                 return data
 
 def _compile(template, text, filename, generate_magic_comment):
-    lexer = Lexer(text, 
-                    filename, 
+    lexer = Lexer(text,
+                    filename,
                     disable_unicode=template.disable_unicode,
                     input_encoding=template.input_encoding,
                     preprocessor=template.preprocessor)
     node = lexer.parse()
-    source = codegen.compile(node, 
-                            template.uri, 
+    source = codegen.compile(node,
+                            template.uri,
                             filename,
                             default_filters=template.default_filters,
-                            buffer_filters=template.buffer_filters, 
-                            imports=template.imports, 
+                            buffer_filters=template.buffer_filters,
+                            imports=template.imports,
                             source_encoding=lexer.encoding,
                             generate_magic_comment=generate_magic_comment,
                             disable_unicode=template.disable_unicode,
@@ -611,7 +611,7 @@ def _compile(template, text, filename, generate_magic_comment):
 
 def _compile_text(template, text, filename):
     identifier = template.module_id
-    source, lexer = _compile(template, text, filename, 
+    source, lexer = _compile(template, text, filename,
                         generate_magic_comment=template.disable_unicode)
 
     cid = identifier
@@ -624,27 +624,27 @@ def _compile_text(template, text, filename):
 
 def _compile_module_file(template, text, filename, outputpath, module_writer):
     identifier = template.module_id
-    source, lexer = _compile(template, text, filename, 
+    source, lexer = _compile(template, text, filename,
                         generate_magic_comment=True)
- 
+
     if isinstance(source, unicode):
         source = source.encode(lexer.encoding or 'ascii')
 
     if module_writer:
         module_writer(source, outputpath)
     else:
-        # make tempfiles in the same location as the ultimate 
+        # make tempfiles in the same location as the ultimate
         # location.   this ensures they're on the same filesystem,
         # avoiding synchronization issues.
         (dest, name) = tempfile.mkstemp(dir=os.path.dirname(outputpath))
- 
+
         os.write(dest, source)
         os.close(dest)
         shutil.move(name, outputpath)
 
 def _get_module_info_from_callable(callable_):
     return _get_module_info(callable_.func_globals['__name__'])
- 
+
 def _get_module_info(filename):
     return ModuleInfo._modules[filename]
- 
+
