@@ -210,6 +210,17 @@ print(Bat)
         eq_(parsed.declared_identifiers, set(['foo']))
         eq_(parsed.undeclared_identifiers, set(['Bat']))
 
+    def test_locate_identifiers_15(self):
+        code = """
+def t1((x,y)):
+    return x+5, y+4
+
+t2 = lambda (x,y):(x+5, y+4)
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, set(['t1', 't2']))
+        eq_(parsed.undeclared_identifiers, set())
+
     def test_no_global_imports(self):
         code = """
 from foo import *

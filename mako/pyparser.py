@@ -112,6 +112,14 @@ if _ast:
             self._add_declared(node.name)
             self._visit_function(node, False)
 
+        def _expand_tuples(self, args):
+            for arg in args:
+                if isinstance(arg, _ast.Tuple):
+                    for n in arg.elts:
+                        yield n
+                else:
+                    yield arg
+
         def _visit_function(self, node, islambda):
 
             # push function state onto stack.  dont log any more
@@ -125,7 +133,7 @@ if _ast:
 
             local_ident_stack = self.local_ident_stack
             self.local_ident_stack = local_ident_stack.union([
-                arg_id(arg) for arg in node.args.args
+                arg_id(arg) for arg in self._expand_tuples(node.args.args)
             ])
             if islambda:
                 self.visit(node.body)
@@ -148,7 +156,7 @@ if _ast:
 
         def visit_Name(self, node):
             if isinstance(node.ctx, _ast.Store):
-                # this is eqiuvalent to visit_AssName in 
+                # this is eqiuvalent to visit_AssName in
                 # compiler
                 self._add_declared(node.id)
             elif node.id not in reserved and node.id \
@@ -261,6 +269,14 @@ else:
             self._add_declared(node.name)
             self._visit_function(node, args)
 
+        def _expand_tuples(self, args):
+            for arg in args:
+                if isinstance(arg, tuple):
+                    for n in arg:
+                        yield n
+                else:
+                    yield arg
+
         def _visit_function(self, node, args):
 
             # push function state onto stack.  dont log any more
@@ -274,7 +290,7 @@ else:
 
             local_ident_stack = self.local_ident_stack
             self.local_ident_stack = local_ident_stack.union([
-                arg for arg in node.argnames
+                arg for arg in self._expand_tuples(node.argnames)
             ])
 
             for n in node.getChildNodes():
