@@ -1,7 +1,10 @@
+
 0.7.3
 - [bug] AST supporting now supports tuple-packed
   function arguments inside pure-python def
   or lambda expressions.  [ticket:201]
+
+- [bug] Fixed Py3K bug in the Babel extension.
 
 0.7.2
 - [bug] Fixed regression in 0.7.1 where AST

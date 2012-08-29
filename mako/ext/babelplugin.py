@@ -9,7 +9,7 @@ from StringIO import StringIO
 
 from babel.messages.extract import extract_python
 
-from mako import lexer, parsetree
+from mako import lexer, parsetree, util
 
 def extract(fileobj, keywords, comment_tags, options):
     """Extract messages from Mako templates.
@@ -108,7 +108,7 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             translator_comments = \
                 [comment[1] for comment in translator_comments]
 
-        if isinstance(code, unicode):
+        if not util.py3k and isinstance(code, unicode):
             code = code.encode('ascii', 'backslashreplace')
         code = StringIO(code)
         for lineno, funcname, messages, python_translator_comments \
