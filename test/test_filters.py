@@ -28,17 +28,17 @@ class FilterTest(TemplateTest):
             ${x | trim}
         """)
         assert flatten_result(t.render(x=5)) == "5"
- 
+
     def test_quoting(self):
         t = Template("""
             foo ${bar | h}
         """)
- 
+
         eq_(
             flatten_result(t.render(bar="<'some bar'>")),
             "foo &lt;&#39;some bar&#39;&gt;"
         )
- 
+
     @skip_if(lambda: util.py3k)
     def test_quoting_non_unicode(self):
         t = Template("""
@@ -50,8 +50,8 @@ class FilterTest(TemplateTest):
             flatten_result(t.render(bar="<'привет'>")),
             "foo &lt;&#39;привет&#39;&gt;"
         )
- 
- 
+
+
     def test_def(self):
         t = Template("""
             <%def name="foo()" filter="myfilter">
@@ -61,7 +61,7 @@ class FilterTest(TemplateTest):
 """)
 
         eq_(
-            flatten_result(t.render(x="this is x", 
+            flatten_result(t.render(x="this is x",
                         myfilter=lambda t: "MYFILTER->%s<-MYFILTER" % t)),
             "MYFILTER-> this is foo <-MYFILTER"
         )
@@ -75,7 +75,7 @@ class FilterTest(TemplateTest):
         """)
 
         assert t.render().strip()=="trim this string: some string to trim continue"
- 
+
     def test_import_2(self):
         t = Template("""
         trim this string: ${"  some string to trim   " | filters.trim} continue\
@@ -89,18 +89,18 @@ class FilterTest(TemplateTest):
         """, default_filters=['decode.utf8'])
         #print t.code
         assert t.render_unicode(x="voix m’a réveillé").strip() == u"some stuff.... voix m’a réveillé"
- 
+
     def test_custom_default(self):
         t = Template("""
         <%!
             def myfilter(x):
                 return "->" + x + "<-"
         %>
- 
+
             hi ${'there'}
         """, default_filters=['myfilter'])
         assert t.render().strip()=="hi ->there<-"
- 
+
     def test_global(self):
         t = Template("""
             <%page expression_filter="h"/>
@@ -135,6 +135,20 @@ class FilterTest(TemplateTest):
             ["MYTEXT", "some text"]
         )
 
+    def test_text_via_context(self):
+        t = Template("""
+            <%text filter="myfilter">
+                some text
+            </%text>
+        """)
+        def myfilter(text):
+            return "MYTEXT" + text
+        eq_(
+            result_lines(t.render(myfilter=myfilter)),
+            ["MYTEXT", "some text"]
+        )
+
+
     def test_nflag(self):
         t = Template("""
             ${"<tag>this is html</tag>" | n}
@@ -152,7 +166,7 @@ class FilterTest(TemplateTest):
             ${"<tag>this is html</tag>" | n, h}
         """)
         assert t.render().strip()  == "&lt;tag&gt;this is html&lt;/tag&gt;"
- 
+
     def test_non_expression(self):
         t = Template("""
         <%!
@@ -161,7 +175,7 @@ class FilterTest(TemplateTest):
             def b(text):
                 return "this is b"
         %>
- 
+
         ${foo()}
         <%def name="foo()" buffered="True">
             this is text
@@ -176,7 +190,7 @@ class FilterTest(TemplateTest):
             def b(text):
                 return "this is b"
         %>
- 
+
         ${'hi'}
         ${foo()}
         <%def name="foo()" buffered="True">
@@ -199,7 +213,7 @@ class FilterTest(TemplateTest):
                 else:
                     return "this is b"
         %>
- 
+
         ${'hi'}
         ${foo()}
         <%def name="foo()" buffered="True">
@@ -215,7 +229,7 @@ class FilterTest(TemplateTest):
             def b(text):
                 return "this is b"
         %>
- 
+
         ${foo()}
         ${bar()}
         <%def name="foo()" filter="b">
@@ -227,19 +241,19 @@ class FilterTest(TemplateTest):
         """, buffer_filters=['a'])
         assert flatten_result(t.render()) == "this is b this is a"
 
- 
+
     def test_builtins(self):
         t = Template("""
             ${"this is <text>" | h}
 """)
         assert flatten_result(t.render()) == "this is &lt;text&gt;"
- 
+
         t = Template("""
             http://foo.com/arg1=${"hi! this is a string." | u}
 """)
         assert flatten_result(t.render()) == "http://foo.com/arg1=hi%21+this+is+a+string."
 
-class BufferTest(unittest.TestCase): 
+class BufferTest(unittest.TestCase):
     def test_buffered_def(self):
         t = Template("""
             <%def name="foo()" buffered="True">
@@ -271,7 +285,7 @@ class BufferTest(unittest.TestCase):
         template = Template("""
             <%def name="a()">
                 this is a
-                <% 
+                <%
                     raise TypeError("hi")
                 %>
             </%def>
@@ -285,7 +299,7 @@ class BufferTest(unittest.TestCase):
             assert False
         except TypeError:
             assert True
- 
+
     def test_buffered_exception(self):
         template = Template("""
             <%def name="a()" buffered="True">
@@ -293,16 +307,16 @@ class BufferTest(unittest.TestCase):
                     raise TypeError("hi")
                 %>
             </%def>
- 
+
             ${a()}
- 
-""") 
+
+""")
         try:
             print template.render()
             assert False
         except TypeError:
             assert True
- 
+
     def test_capture_ccall(self):
         t = Template("""
             <%def name="foo()">
@@ -316,7 +330,7 @@ class BufferTest(unittest.TestCase):
                 ccall body
             </%call>
 """)
- 
+
         #print t.render()
         assert flatten_result(t.render()) == "this is foo. body: ccall body"
- 
+

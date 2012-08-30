@@ -393,6 +393,13 @@ class TextTag(Tag):
                                     attributes.get('filter', ''),
                                     **self.exception_kwargs)
 
+    def undeclared_identifiers(self):
+        return self.filter_args.\
+                            undeclared_identifiers.\
+                            difference(filters.DEFAULT_ESCAPES.keys()).union(
+                        self.expression_undeclared_identifiers
+                    )
+
 class DefTag(Tag):
     __keyword__ = 'def'
 
@@ -405,11 +412,11 @@ class DefTag(Tag):
                 keyword,
                 attributes,
                 expressions,
-                ('name','filter', 'decorator'),
+                ('name', 'filter', 'decorator'),
                 ('name',),
                 **kwargs)
         name = attributes['name']
-        if re.match(r'^[\w_]+$',name):
+        if re.match(r'^[\w_]+$', name):
             raise exceptions.CompileException(
                                 "Missing parenthesis in %def",
                                 **self.exception_kwargs)

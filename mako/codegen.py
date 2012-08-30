@@ -153,7 +153,7 @@ class _GenerateRenderMethod(object):
         inherit = []
         namespaces = {}
         module_code = []
-        encoding =[None]
+        encoding = [None]
 
         self.compiler.pagetag = None
 
@@ -315,7 +315,7 @@ class _GenerateRenderMethod(object):
                 "except KeyError:",
                     "_mako_generate_namespaces(context)",
                 "return context.namespaces[(__name__, name)]",
-            None,None
+            None, None
             )
         self.printer.writeline("def _mako_generate_namespaces(context):")
 
@@ -1115,7 +1115,7 @@ class _Identifiers(object):
                         % (node.name, ), **node.exception_kwargs)
 
         for ident in node.undeclared_identifiers():
-            if ident != 'context' and\
+            if ident != 'context' and \
                        ident not in self.declared.union(self.locally_declared):
                 self.undeclared.add(ident)
 
@@ -1128,6 +1128,12 @@ class _Identifiers(object):
             self.argument_declared.add(ident)
         for n in node.nodes:
             n.accept_visitor(self)
+
+    def visitTextTag(self, node):
+        for ident in node.undeclared_identifiers():
+            if ident != 'context' and \
+                ident not in self.declared.union(self.locally_declared):
+                self.undeclared.add(ident)
 
     def visitIncludeTag(self, node):
         self.check_declared(node)

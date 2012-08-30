@@ -6,6 +6,11 @@
 
 - [bug] Fixed Py3K bug in the Babel extension.
 
+- [bug] Fixed the "filter" attribute of the
+  <%text> tag so that it pulls locally specified
+  identifiers from the context the same
+  way as that of <%block> and <%filter>.
+
 0.7.2
 - [bug] Fixed regression in 0.7.1 where AST
   parsing for Py2.4 was broken.
