@@ -13,6 +13,7 @@ py26 = sys.version_info >= (2, 6)
 py24 = sys.version_info >= (2, 4) and sys.version_info < (2, 5)
 jython = sys.platform.startswith('java')
 win32 = sys.platform.startswith('win')
+pypy = hasattr(sys, 'pypy_version_info')
 
 if py3k:
     from io import StringIO
