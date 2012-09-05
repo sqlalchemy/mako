@@ -95,13 +95,13 @@ def skip_if(predicate, reason=None):
     return decorate
 
 def requires_python_2(fn):
-    return skip_if(lambda: py3k, "Requires Python 2.xx")
+    return skip_if(lambda: py3k, "Requires Python 2.xx")(fn)
 
 def requires_python_26_or_greater(fn):
-    return skip_if(lambda: not py26, "Requires Python 2.6 or greater")
+    return skip_if(lambda: not py26, "Requires Python 2.6 or greater")(fn)
 
 def requires_python_25_or_greater(fn):
-    return skip_if(lambda: not py25, "Requires Python 2.5 or greater")
+    return skip_if(lambda: not py25, "Requires Python 2.5 or greater")(fn)
 
 def requires_pygments_14(fn):
     try:
