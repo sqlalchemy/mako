@@ -10,7 +10,7 @@ import sys
 
 py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
 py26 = sys.version_info >= (2, 6)
-py24 = sys.version_info >= (2, 4) and sys.version_info < (2, 5)
+py25 = sys.version_info >= (2, 5)
 jython = sys.platform.startswith('java')
 win32 = sys.platform.startswith('win')
 pypy = hasattr(sys, 'pypy_version_info')
@@ -58,7 +58,7 @@ except:
             return func(*(args + fargs), **newkeywords)
         return newfunc
 
-if py24:
+if not py25:
     def all(iterable):
         for i in iterable:
             if not i:

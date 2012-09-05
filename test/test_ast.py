@@ -1,7 +1,7 @@
 import unittest
 
 from mako import ast, exceptions, pyparser, util
-from test import eq_
+from test import eq_, requires_python_2
 
 exception_kwargs = {
     'source': '',
@@ -210,6 +210,7 @@ print(Bat)
         eq_(parsed.declared_identifiers, set(['foo']))
         eq_(parsed.undeclared_identifiers, set(['Bat']))
 
+    @requires_python_2
     def test_locate_identifiers_15(self):
         code = """
 def t1((x,y)):

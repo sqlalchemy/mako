@@ -7,7 +7,9 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from util import result_lines
 from test import template_base, module_base, TemplateTest
-from test import requires_pygments_14, requires_no_pygments
+from test import requires_pygments_14, requires_no_pygments, \
+    requires_python_25_or_greater
+
 
 class ExceptionsTest(TemplateTest):
     def test_html_error_template(self):
@@ -58,7 +60,7 @@ class ExceptionsTest(TemplateTest):
     def test_utf8_html_error_template_pygments(self):
         """test the html_error_template with a Template containing utf8
         chars"""
- 
+
         if util.py3k:
             code = """# -*- coding: utf-8 -*-
 % if 2 == 2: /an error
@@ -86,7 +88,7 @@ ${u'привет'}
                         "error&#39; is not a partial control statement "
                         "at line: 2 char: 1") in \
                         html_error
- 
+
             if util.py3k:
                 assert u"".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
@@ -106,7 +108,7 @@ ${u'привет'}
     def test_utf8_html_error_template_no_pygments(self):
         """test the html_error_template with a Template containing utf8
         chars"""
- 
+
         if util.py3k:
             code = """# -*- coding: utf-8 -*-
 % if 2 == 2: /an error
@@ -134,7 +136,7 @@ ${u'привет'}
                         "error&#39; is not a partial control statement "
                         "at line: 2 char: 1") in \
                         html_error
- 
+
             if util.py3k:
                 assert u"${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
@@ -144,7 +146,7 @@ ${u'привет'}
         else:
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
- 
+
     def test_format_closures(self):
         try:
             exec "def foo():"\
@@ -154,7 +156,8 @@ ${u'привет'}
         except:
             html_error = exceptions.html_error_template().render()
             assert "RuntimeError: test" in str(html_error)
- 
+
+    @requires_python_25_or_greater
     def test_py_utf8_html_error_template(self):
         try:
             foo = u'日本'
@@ -210,12 +213,12 @@ ${foobar}
 
         assert '<div class="sourceline">${foobar}</div>' in \
             result_lines(l.get_template("foo.html").render_unicode())
- 
+
     @requires_pygments_14
     def test_utf8_format_exceptions_pygments(self):
-        """test that htmlentityreplace formatting is applied to 
+        """test that htmlentityreplace formatting is applied to
            exceptions reported with format_exceptions=True"""
- 
+
         l = TemplateLookup(format_exceptions=True)
         if util.py3k:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${'привет' + foobar}""")
@@ -244,9 +247,9 @@ ${foobar}
 
     @requires_no_pygments
     def test_utf8_format_exceptions_no_pygments(self):
-        """test that htmlentityreplace formatting is applied to 
+        """test that htmlentityreplace formatting is applied to
            exceptions reported with format_exceptions=True"""
- 
+
         l = TemplateLookup(format_exceptions=True)
         if util.py3k:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${'привет' + foobar}""")
@@ -260,21 +263,22 @@ ${foobar}
             assert '${u&#39;&#x43F;&#x440;&#x438;&#x432;&#x435;'\
                    '&#x442;&#39; + foobar}' in \
                 result_lines(l.get_template("foo.html").render().decode('utf-8'))
- 
- 
+
+
+    @requires_python_25_or_greater
     def test_custom_tback(self):
         try:
             raise RuntimeError("error 1")
             foo('bar')
         except:
             t, v, tback = sys.exc_info()
- 
+
         try:
             raise RuntimeError("error 2")
         except:
             html_error = exceptions.html_error_template().\
                         render_unicode(error=v, traceback=tback)
- 
+
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
         assert "".join(reversed(");93#&rab;93#&(oof")) in html_error
@@ -289,7 +293,7 @@ ${foobar}
         if not util.py3k:
             # blow away tracebaack info
             sys.exc_clear()
- 
+
         # and don't even send what we have.
         html_error = exceptions.html_error_template().\
                     render_unicode(error=v, traceback=None)

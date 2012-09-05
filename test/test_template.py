@@ -9,7 +9,8 @@ import os
 from util import flatten_result, result_lines
 import codecs
 from test import TemplateTest, eq_, template_base, module_base, \
-    skip_if, assert_raises, assert_raises_message
+    requires_python_26_or_greater, assert_raises, assert_raises_message, \
+    requires_python_2
 
 class EncodingTest(TemplateTest):
     def test_escapes_html_tags(self):
@@ -49,7 +50,7 @@ class EncodingTest(TemplateTest):
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             output_encoding='utf-8'
         )
- 
+
     def test_unicode_arg(self):
         val = u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         self._do_memory_test(
@@ -73,8 +74,8 @@ class EncodingTest(TemplateTest):
 
     def test_unicode_file_lookup(self):
         lookup = TemplateLookup(
-                    directories=[template_base], 
-                    output_encoding='utf-8', 
+                    directories=[template_base],
+                    output_encoding='utf-8',
                     default_filters=['decode.utf8'])
         if util.py3k:
             template = lookup.get_template('/chs_unicode_py3k.html')
@@ -108,7 +109,7 @@ class EncodingTest(TemplateTest):
             ("## -*- coding: utf-8 -*-\n" + val).encode('utf-8'),
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »"""
         )
- 
+
     def test_unicode_text(self):
         val = u"""<%text>Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »</%text>"""
         self._do_memory_test(
@@ -129,7 +130,7 @@ class EncodingTest(TemplateTest):
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
             filters=flatten_result
         )
- 
+
     def test_unicode_literal_in_expr(self):
         if util.py3k:
             self._do_memory_test(
@@ -176,7 +177,7 @@ class EncodingTest(TemplateTest):
                 u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
                 filters=lambda s:s.strip()
             )
- 
+
     def test_unicode_literal_in_controlline(self):
         if util.py3k:
             self._do_memory_test(
@@ -204,7 +205,7 @@ class EncodingTest(TemplateTest):
                 u"""hi, drôle de petite voix m’a réveillé.""",
                 filters=lambda s:s.strip(),
             )
- 
+
     def test_unicode_literal_in_tag(self):
         self._do_file_test(
             "unicode_arguments.html",
@@ -227,7 +228,7 @@ class EncodingTest(TemplateTest):
             ],
             filters=result_lines
         )
- 
+
     def test_unicode_literal_in_def(self):
         if util.py3k:
             self._do_memory_test(
@@ -264,7 +265,7 @@ class EncodingTest(TemplateTest):
                 u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP""",
                 filters=flatten_result
             )
- 
+
             self._do_memory_test(
                 u"""## -*- coding: utf-8 -*-
                 <%def name="hello(foo=u'árvíztűrő tükörfúrógép', bar=u'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP')">
@@ -275,18 +276,18 @@ class EncodingTest(TemplateTest):
                 u"""Foo: árvíztűrő tükörfúrógép Bar: ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP""",
                 filters=flatten_result
             )
- 
+
     def test_input_encoding(self):
-        """test the 'input_encoding' flag on Template, and that unicode 
+        """test the 'input_encoding' flag on Template, and that unicode
             objects arent double-decoded"""
- 
+
         if util.py3k:
             self._do_memory_test(
                 u"hello ${f('śląsk')}",
                 u"hello śląsk",
                 input_encoding='utf-8',
                 template_args={'f':lambda x:x}
-            ) 
+            )
 
             self._do_memory_test(
                 u"## -*- coding: utf-8 -*-\nhello ${f('śląsk')}",
@@ -299,7 +300,7 @@ class EncodingTest(TemplateTest):
                 u"hello śląsk",
                 input_encoding='utf-8',
                 template_args={'f':lambda x:x}
-            ) 
+            )
 
             self._do_memory_test(
                 u"## -*- coding: utf-8 -*-\nhello ${f(u'śląsk')}",
@@ -310,7 +311,7 @@ class EncodingTest(TemplateTest):
     def test_raw_strings(self):
         """test that raw strings go straight thru with default_filters turned off,
         bytestring_passthrough enabled.
-        
+
         """
 
         self._do_memory_test(
@@ -329,7 +330,7 @@ class EncodingTest(TemplateTest):
             u"hello śląsk",
             template_args={'x':u'śląsk'}
         )
- 
+
     def test_encoding(self):
         self._do_memory_test(
             u"""Alors vous imaginez ma surprise, au lever du jour, quand une drôle de petite voix m’a réveillé. Elle disait: « S’il vous plaît… dessine-moi un mouton! »""",
@@ -345,21 +346,21 @@ class EncodingTest(TemplateTest):
             output_encoding='iso-8859-1', encoding_errors='replace',
             unicode_=False
         )
- 
+
     def test_read_unicode(self):
-        lookup = TemplateLookup(directories=[template_base], 
+        lookup = TemplateLookup(directories=[template_base],
                                 filesystem_checks=True, output_encoding='utf-8')
         if util.py3k:
             template = lookup.get_template('/read_unicode_py3k.html')
         else:
             template = lookup.get_template('/read_unicode.html')
-        # TODO: I've no idea what encoding this file is, Python 3.1.2 
+        # TODO: I've no idea what encoding this file is, Python 3.1.2
         # won't read the file even with open(...encoding='utf-8') unless
         # errors is specified.   or if there's some quirk in 3.1.2
         # since I'm pretty sure this test worked with py3k when I wrote it.
         data = template.render(path=self._file_path('internationalization.html'))
 
-    @skip_if(lambda: util.py3k)
+    @requires_python_2
     def test_bytestring_passthru(self):
         self._do_file_test(
             'chs_utf8.html',
@@ -368,7 +369,7 @@ class EncodingTest(TemplateTest):
             disable_unicode=True,
             output_encoding=None,
             template_args={'name':'毛泽东'},
-            filters=flatten_result, 
+            filters=flatten_result,
             unicode_=False
         )
 
@@ -382,7 +383,7 @@ class EncodingTest(TemplateTest):
             unicode_=False
         )
 
-        template = self._file_template('chs_utf8.html', 
+        template = self._file_template('chs_utf8.html',
                     output_encoding=None,
                     disable_unicode=True)
         self.assertRaises(UnicodeDecodeError, template.render_unicode, name='毛泽东')
@@ -391,7 +392,7 @@ class EncodingTest(TemplateTest):
             "${'Alors vous imaginez ma surprise, au lever"
             " du jour, quand une drôle de petite voix m’a "
             "réveillé. Elle disait: « S’il vous plaît… "
-            "dessine-moi un mouton! »'}", 
+            "dessine-moi un mouton! »'}",
             output_encoding=None,
             disable_unicode=True, input_encoding='utf-8')
         assert template.render() == "Alors vous imaginez ma surprise, "\
@@ -402,8 +403,8 @@ class EncodingTest(TemplateTest):
                 "${'Alors vous imaginez ma surprise, au "
                 "lever du jour, quand une drôle de petite "
                 "voix m’a réveillé. Elle disait: « S’il "
-                "vous plaît… dessine-moi un mouton! »'}", 
-                input_encoding='utf8', output_encoding='utf8', 
+                "vous plaît… dessine-moi un mouton! »'}",
+                input_encoding='utf8', output_encoding='utf8',
                 disable_unicode=False, default_filters=[])
         # raises because expression contains an encoded bytestring which cannot be decoded
         self.assertRaises(UnicodeDecodeError, template.render)
@@ -413,7 +414,7 @@ class PageArgsTest(TemplateTest):
     def test_basic(self):
         template = Template("""
             <%page args="x, y, z=7"/>
- 
+
             this is page, ${x}, ${y}, ${z}
 """)
 
@@ -424,7 +425,7 @@ class PageArgsTest(TemplateTest):
             assert False
         except TypeError, e:
             assert True
- 
+
     def test_inherits(self):
         lookup = TemplateLookup()
         lookup.put_string("base.tmpl",
@@ -446,7 +447,7 @@ class PageArgsTest(TemplateTest):
             "bar foo var",
             filters=flatten_result,
             template_args={'variable':'var', 'bar':'bar', 'foo':'foo'}
- 
+
         )
 
     def test_includes(self):
@@ -494,12 +495,12 @@ class PageArgsTest(TemplateTest):
     def test_overrides_builtins(self):
         template = Template("""
             <%page args="id"/>
- 
+
             this is page, id is ${id}
         """)
- 
+
         assert flatten_result(template.render(id="im the id")) == "this is page, id is im the id"
- 
+
     def test_canuse_builtin_names(self):
         template = Template("""
             exception: ${Exception}
@@ -509,7 +510,7 @@ class PageArgsTest(TemplateTest):
 
     def test_builtin_names_dont_clobber_defaults_in_includes(self):
         lookup = TemplateLookup()
-        lookup.put_string("test.mako", 
+        lookup.put_string("test.mako",
         """
         <%include file="test1.mako"/>
 
@@ -525,7 +526,7 @@ class PageArgsTest(TemplateTest):
             assert flatten_result(lookup.get_template(template).render()) == "foo"
             assert flatten_result(lookup.get_template(template).render(id=5)) == "5"
             assert flatten_result(lookup.get_template(template).render(id=id)) == "<built-in function id>"
- 
+
     def test_dict_locals(self):
         template = Template("""
             <%
@@ -561,8 +562,8 @@ class IncludeTest(TemplateTest):
             this is b.  ${a}, ${b}, ${c}
         """)
         assert flatten_result(lookup.get_template("a").render(a=7,b=8)) == "this is a this is b. 7, 8, 5"
- 
-    def test_viakwargs(self): 
+
+    def test_viakwargs(self):
         lookup = TemplateLookup()
         lookup.put_string("a", """
             this is a
@@ -586,7 +587,7 @@ class IncludeTest(TemplateTest):
             this is b.  ${a}, ${b}, ${c}
         """)
         assert flatten_result(lookup.get_template("a").render(a=7,b=8,i='b')) == "this is a this is b. 7, 8, 5"
- 
+
     def test_within_ccall(self):
         lookup = TemplateLookup()
         lookup.put_string("a", """this is a""")
@@ -613,7 +614,7 @@ class UndefinedVarsTest(TemplateTest):
                 x: ${x}
             % endif
         """)
- 
+
         assert result_lines(t.render(x=12)) == ["x: 12"]
         assert result_lines(t.render(y=12)) == ["undefined"]
 
@@ -625,14 +626,14 @@ class UndefinedVarsTest(TemplateTest):
                 x: ${x}
             % endif
         """, strict_undefined=True)
- 
+
         assert result_lines(t.render(x=12)) == ['x: 12']
- 
+
         assert_raises(
             NameError,
             t.render, y=12
         )
- 
+
         l = TemplateLookup(strict_undefined=True)
         l.put_string("a", "some template")
         l.put_string("b", """
@@ -645,41 +646,41 @@ class UndefinedVarsTest(TemplateTest):
         """)
 
         assert result_lines(t.render(x=12)) == ['x: 12']
- 
+
         assert_raises(
             NameError,
             t.render, y=12
         )
- 
+
     def test_expression_declared(self):
         t = Template("""
             ${",".join([t for t in ("a", "b", "c")])}
         """, strict_undefined=True)
- 
+
         eq_(result_lines(t.render()), ['a,b,c'])
 
         t = Template("""
             <%self:foo value="${[(val, n) for val, n in [(1, 2)]]}"/>
- 
+
             <%def name="foo(value)">
                 ${value}
             </%def>
- 
+
         """, strict_undefined=True)
- 
+
         eq_(result_lines(t.render()), ['[(1, 2)]'])
 
         t = Template("""
             <%call expr="foo(value=[(val, n) for val, n in [(1, 2)]])" />
- 
+
             <%def name="foo(value)">
                 ${value}
             </%def>
- 
+
         """, strict_undefined=True)
- 
+
         eq_(result_lines(t.render()), ['[(1, 2)]'])
- 
+
         l = TemplateLookup(strict_undefined=True)
         l.put_string("i", "hi, ${pageargs['y']}")
         l.put_string("t", """
@@ -688,7 +689,7 @@ class UndefinedVarsTest(TemplateTest):
         eq_(
             result_lines(l.get_template("t").render()), ['hi, [0, 1, 2]']
         )
- 
+
         l.put_string('q', """
             <%namespace name="i" file="${(str([x for x in range(3)][2]) + 'i')[-1]}" />
             ${i.body(y='x')}
@@ -712,19 +713,19 @@ class UndefinedVarsTest(TemplateTest):
         # is treated as an "undefined", so is pulled from the context.
         t = Template("""
             t is: ${t}
- 
+
             ${",".join([t for t in ("a", "b", "c")])}
         """)
- 
+
         eq_(
             result_lines(t.render(t="T")),
-            ['t is: T', 'a,b,c'] 
+            ['t is: T', 'a,b,c']
         )
- 
+
     def test_traditional_assignment_plus_undeclared(self):
         t = Template("""
             t is: ${t}
- 
+
             <%
                 t = 12
             %>
@@ -733,16 +734,16 @@ class UndefinedVarsTest(TemplateTest):
             UnboundLocalError,
             t.render, t="T"
         )
- 
+
     def test_list_comprehensions_plus_undeclared_strict(self):
         # with strict, a list comprehension now behaves
         # like the undeclared case above.
         t = Template("""
             t is: ${t}
- 
+
             ${",".join([t for t in ("a", "b", "c")])}
         """, strict_undefined=True)
- 
+
         eq_(
             result_lines(t.render(t="T")),
             ['t is: T', 'a,b,c']
@@ -779,7 +780,7 @@ class ReservedNameTest(TemplateTest):
             "loop is 12",
             enable_loop=False
         )
- 
+
 class ControlTest(TemplateTest):
     def test_control(self):
         t = Template("""
@@ -797,7 +798,7 @@ class ControlTest(TemplateTest):
             "no x does not have test",
             "yes x has test"
         ]
- 
+
     def test_blank_control_1(self):
         self._do_memory_test(
             """
@@ -807,7 +808,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_2(self):
         self._do_memory_test(
             """
@@ -818,7 +819,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_3(self):
         self._do_memory_test(
             """
@@ -829,7 +830,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_4(self):
         self._do_memory_test(
             """
@@ -841,7 +842,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_5(self):
         self._do_memory_test(
             """
@@ -851,7 +852,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_6(self):
         self._do_memory_test(
             """
@@ -861,7 +862,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_blank_control_7(self):
         self._do_memory_test(
             """
@@ -872,8 +873,8 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
-    @skip_if(lambda: not util.py26)
+
+    @requires_python_26_or_greater
     def test_blank_control_8(self):
         self._do_memory_test(
             """
@@ -894,7 +895,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_2(self):
         self._do_memory_test(
             """
@@ -907,7 +908,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_3(self):
         self._do_memory_test(
             """
@@ -920,7 +921,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_4(self):
         self._do_memory_test(
             """
@@ -935,7 +936,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_5(self):
         self._do_memory_test(
             """
@@ -946,7 +947,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_6(self):
         self._do_memory_test(
             """
@@ -957,7 +958,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_commented_blank_control_7(self):
         self._do_memory_test(
             """
@@ -970,8 +971,8 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
-    @skip_if(lambda: not util.py26)
+
+    @requires_python_26_or_greater
     def test_commented_blank_control_8(self):
         self._do_memory_test(
             """
@@ -982,7 +983,7 @@ class ControlTest(TemplateTest):
             "",
             filters=lambda s:s.strip()
         )
- 
+
     def test_multiline_control(self):
         t = Template("""
     % for x in \\
@@ -992,7 +993,7 @@ class ControlTest(TemplateTest):
 """)
         #print t.code
         assert flatten_result(t.render()) == "1 2 3"
- 
+
 class GlobalsTest(TemplateTest):
     def test_globals(self):
         self._do_memory_test(
@@ -1007,7 +1008,7 @@ class GlobalsTest(TemplateTest):
         )
 
 class RichTracebackTest(TemplateTest):
- 
+
     def _do_test_traceback(self, utf8, memory, syntax):
         if memory:
             if syntax:
@@ -1047,8 +1048,8 @@ for utf8 in (True, False):
         for syntax in (True, False):
             def _do_test(self):
                 self._do_test_traceback(utf8, memory, syntax)
-            name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode', 
-                                        memory and 'memory' or 'file', 
+            name = 'test_%s_%s_%s' % (utf8 and 'utf8' or 'unicode',
+                                        memory and 'memory' or 'file',
                                         syntax and 'syntax' or 'runtime')
             _do_test.__name__ = name
             setattr(RichTracebackTest, name, _do_test)
@@ -1071,24 +1072,24 @@ class ModuleDirTest(TemplateTest):
             t2.module.__file__,
             os.path.join(module_base, 'subdir', 'modtest.html.py')
         )
- 
+
     def test_callable(self):
         def get_modname(filename, uri):
             return os.path.join(
-                        module_base, 
-                        os.path.dirname(uri)[1:], 
-                        'foo', 
+                        module_base,
+                        os.path.dirname(uri)[1:],
+                        'foo',
                         os.path.basename(filename) + ".py")
 
         lookup = TemplateLookup(template_base, modulename_callable=get_modname)
         t = lookup.get_template('/modtest.html')
         t2 = lookup.get_template('/subdir/modtest.html')
         eq_(
-            t.module.__file__, 
+            t.module.__file__,
             os.path.join(module_base, 'foo', 'modtest.html.py')
         )
         eq_(
-            t2.module.__file__, 
+            t2.module.__file__,
             os.path.join(module_base, 'subdir', 'foo', 'modtest.html.py')
         )
 
@@ -1099,7 +1100,7 @@ class ModuleDirTest(TemplateTest):
             canary.append(outputpath)
             f.write(source)
             f.close()
-        lookup = TemplateLookup(template_base, module_writer=write_module, 
+        lookup = TemplateLookup(template_base, module_writer=write_module,
                                             module_directory=module_base)
         t = lookup.get_template('/modtest.html')
         t2 = lookup.get_template('/subdir/modtest.html')
@@ -1112,7 +1113,7 @@ class ModuleDirTest(TemplateTest):
 class FilenameToURITest(TemplateTest):
     def test_windows_paths(self):
         """test that windows filenames are handled appropriately by Template."""
- 
+
         current_path = os.path
         import ntpath
         os.path = ntpath
@@ -1121,19 +1122,19 @@ class FilenameToURITest(TemplateTest):
                 def _compile_from_file(self, path, filename):
                     self.path = path
                     return Template("foo bar").module
- 
+
             t1 = NoCompileTemplate(
-                                    filename="c:\\foo\\template.html", 
+                                    filename="c:\\foo\\template.html",
                                     module_directory="c:\\modules\\")
- 
+
             eq_(t1.uri, "/foo/template.html")
             eq_(t1.path, "c:\\modules\\foo\\template.html.py")
 
             t1 = NoCompileTemplate(
-                                    filename="c:\\path\\to\\templates\\template.html", 
+                                    filename="c:\\path\\to\\templates\\template.html",
                                     uri = "/bar/template.html",
                                     module_directory="c:\\modules\\")
- 
+
             eq_(t1.uri, "/bar/template.html")
             eq_(t1.path, "c:\\modules\\bar\\template.html.py")
 
@@ -1153,14 +1154,14 @@ class FilenameToURITest(TemplateTest):
                     return Template("foo bar").module
 
             t1 = NoCompileTemplate(
-                                    filename="/var/www/htdocs/includes/template.html", 
+                                    filename="/var/www/htdocs/includes/template.html",
                                     module_directory="/var/lib/modules")
 
             eq_(t1.uri, "/var/www/htdocs/includes/template.html")
             eq_(t1.path, "/var/lib/modules/var/www/htdocs/includes/template.html.py")
 
             t1 = NoCompileTemplate(
-                                    filename="/var/www/htdocs/includes/template.html", 
+                                    filename="/var/www/htdocs/includes/template.html",
                                     uri = "/bar/template.html",
                                     module_directory="/var/lib/modules")
 
@@ -1169,20 +1170,20 @@ class FilenameToURITest(TemplateTest):
 
         finally:
             os.path = current_path
- 
+
     def test_dont_accept_relative_outside_of_root(self):
         assert_raises_message(
             exceptions.TemplateLookupException,
             "Template uri \"../../foo.html\" is invalid - it "
             "cannot be relative outside of the root path",
-            Template, "test", uri="../../foo.html", 
+            Template, "test", uri="../../foo.html",
         )
 
         assert_raises_message(
             exceptions.TemplateLookupException,
             "Template uri \"/../../foo.html\" is invalid - it "
             "cannot be relative outside of the root path",
-            Template, "test", uri="/../../foo.html", 
+            Template, "test", uri="/../../foo.html",
         )
 
         # normalizes in the root is OK
@@ -1196,7 +1197,7 @@ class ModuleTemplateTest(TemplateTest):
 
         template = Template("""
         <%inherit file="base.html"/>
- 
+
         % for x in range(5):
             ${x}
         % endfor
@@ -1209,30 +1210,30 @@ class ModuleTemplateTest(TemplateTest):
 
         lookup.put_template("base.html", base)
         lookup.put_template("template.html", template)
- 
+
         assert result_lines(template.render()) == [
             "This is base.", "0", "1", "2", "3", "4"
         ]
- 
+
         lookup = TemplateLookup()
         template = ModuleTemplate(template.module, lookup=lookup)
         base = ModuleTemplate(base.module, lookup=lookup)
 
         lookup.put_template("base.html", base)
         lookup.put_template("template.html", template)
- 
+
         assert result_lines(template.render()) == [
             "This is base.", "0", "1", "2", "3", "4"
         ]
- 
- 
+
+
 class PreprocessTest(TemplateTest):
     def test_old_comments(self):
         t = Template("""
         im a template
 # old style comment
     # more old style comment
- 
+
     ## new style comment
     - # not a comment
     - ## not a comment

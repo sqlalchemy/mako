@@ -1,6 +1,6 @@
 from mako.template import Template
 import unittest, os
-from mako.util import py3k
+from mako.util import py3k, py26, py25
 from mako.util import function_named
 import re
 from mako.cache import CacheImpl, register_plugin
@@ -39,7 +39,8 @@ class TemplateTest(unittest.TestCase):
         self._do_test(t1, expected, filters=filters,
                         unicode_=unicode_, template_args=template_args)
 
-    def _do_test(self, template, expected, filters=None, template_args=None, unicode_=True):
+    def _do_test(self, template, expected, filters=None, template_args=None,
+                                unicode_=True):
         if template_args is None:
             template_args = {}
         if unicode_:
@@ -92,6 +93,15 @@ def skip_if(predicate, reason=None):
                 return fn(*args, **kw)
         return function_named(maybe, fn_name)
     return decorate
+
+def requires_python_2(fn):
+    return skip_if(lambda: py3k, "Requires Python 2.xx")
+
+def requires_python_26_or_greater(fn):
+    return skip_if(lambda: not py26, "Requires Python 2.6 or greater")
+
+def requires_python_25_or_greater(fn):
+    return skip_if(lambda: not py25, "Requires Python 2.5 or greater")
 
 def requires_pygments_14(fn):
     try:

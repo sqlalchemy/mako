@@ -2,8 +2,7 @@
 
 from mako.template import Template
 import unittest
-from mako import util
-from test import TemplateTest, eq_, skip_if, assert_raises
+from test import TemplateTest, eq_, requires_python_2
 from util import result_lines, flatten_result
 
 class FilterTest(TemplateTest):
@@ -39,7 +38,7 @@ class FilterTest(TemplateTest):
             "foo &lt;&#39;some bar&#39;&gt;"
         )
 
-    @skip_if(lambda: util.py3k)
+    @requires_python_2
     def test_quoting_non_unicode(self):
         t = Template("""
             foo ${bar | h}
