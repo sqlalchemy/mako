@@ -84,7 +84,7 @@ class PluginLoader(object):
 
     def load(self, name):
         if name in self.impls:
-             return self.impls[name]()
+            return self.impls[name]()
         else:
             import pkg_resources
             for impl in pkg_resources.iter_entry_points(
@@ -93,6 +93,7 @@ class PluginLoader(object):
                 self.impls[name] = impl.load
                 return impl.load()
             else:
+                from mako import exceptions
                 raise exceptions.RuntimeException(
                         "Can't load plugin %s %s" %
                         (self.group, name))

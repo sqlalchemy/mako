@@ -11,6 +11,10 @@
   identifiers from the context the same
   way as that of <%block> and <%filter>.
 
+- [bug] Fixed bug in plugin loader to correctly
+  raise exception when non-existent plugin
+  is specified.
+
 0.7.2
 - [bug] Fixed regression in 0.7.1 where AST
   parsing for Py2.4 was broken.

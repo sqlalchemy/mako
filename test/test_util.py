@@ -2,8 +2,8 @@
 
 import os
 import unittest
-from mako import util
-from test import eq_, skip_if
+from mako import util, exceptions
+from test import eq_, skip_if, assert_raises_message
 
 class UtilTest(unittest.TestCase):
     def test_fast_buffer_write(self):
@@ -40,3 +40,11 @@ class UtilTest(unittest.TestCase):
         module = util.load_module('mako.template', fn)
         import mako.template
         self.assertEqual(module, mako.template)
+
+    def test_load_plugin_failure(self):
+        loader = util.PluginLoader("fakegroup")
+        assert_raises_message(
+            exceptions.RuntimeException,
+            "Can't load plugin fakegroup fake",
+            loader.load, "fake"
+        )
