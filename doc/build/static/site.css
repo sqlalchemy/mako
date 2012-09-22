@@ -1,4 +1,4 @@
-body { 
+body {
     font-family: Tahoma, Geneva, sans-serif;
     line-height:1.4em;
     margin:15px;
@@ -14,7 +14,7 @@ a:hover { color: #0000ff;}
     max-width:1024px;
     min-width:480px;
     position:relative;
-    
+
 }
 h1 {
     font-size:1.6em;
@@ -37,11 +37,15 @@ h2 {
 }
 .rightbar {
     float:right;
-    margin:10px 30px 10px 30px;
 }
 .slogan {
     margin-top:10px;
 }
+#gittip_nav {
+    float:right;
+    margin:10px 0px 0px 0px;
+}
+
 .toolbar {
     margin-top:20px;
 }
@@ -66,10 +70,10 @@ li {
     font-size:small;
 }
 
-pre.codesample { 
-    margin: 1.5em; 
-    padding: .5em; 
-    font-size: .95em; 
+pre.codesample {
+    margin: 1.5em;
+    padding: .5em;
+    font-size: .95em;
     line-height:1em;
     background-color: #eee;
     border: 1px solid #ccc;
