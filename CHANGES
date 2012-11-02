@@ -1,5 +1,10 @@
 
 0.7.3
+- [bug] legacy_html_escape function, used when
+  Markupsafe isn't installed, was using an inline-compiled
+  regexp which causes major slowdowns on Python 3.3;
+  is now precompiled.
+
 - [bug] AST supporting now supports tuple-packed
   function arguments inside pure-python def
   or lambda expressions.  [ticket:201]
