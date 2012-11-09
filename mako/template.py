@@ -216,7 +216,8 @@ class Template(object):
                     strict_undefined=False,
                     imports=None,
                     enable_loop=True,
-                    preprocessor=None):
+                    preprocessor=None,
+                    futures=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -247,6 +248,7 @@ class Template(object):
         self.enable_loop = enable_loop
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
+        self.futures = futures
 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
@@ -306,6 +308,7 @@ class Template(object):
             cache_impl, cache_enabled, cache_args,
             cache_type, cache_dir, cache_url
         )
+      
 
     @util.memoized_property
     def reserved_names(self):
@@ -601,6 +604,7 @@ def _compile(template, text, filename, generate_magic_comment):
                             default_filters=template.default_filters,
                             buffer_filters=template.buffer_filters,
                             imports=template.imports,
+                            future_imports=template.futures,
                             source_encoding=lexer.encoding,
                             generate_magic_comment=generate_magic_comment,
                             disable_unicode=template.disable_unicode,

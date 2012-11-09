@@ -171,7 +171,8 @@ class TemplateLookup(TemplateCollection):
                         imports=None,
                         enable_loop=True,
                         input_encoding=None,
-                        preprocessor=None):
+                        preprocessor=None,
+                        futures=False):
 
         self.directories = [posixpath.normpath(d) for d in
                             util.to_list(directories, ())
@@ -209,7 +210,8 @@ class TemplateLookup(TemplateCollection):
             'strict_undefined':strict_undefined,
             'imports':imports,
             'enable_loop':enable_loop,
-            'preprocessor':preprocessor}
+            'preprocessor':preprocessor,
+            'futures': futures}
 
         if collection_size == -1:
             self._collection = {}

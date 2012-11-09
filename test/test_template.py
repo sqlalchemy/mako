@@ -1240,3 +1240,10 @@ class PreprocessTest(TemplateTest):
 """, preprocessor=convert_comments)
 
         assert flatten_result(t.render()) == "im a template - # not a comment - ## not a comment"
+
+
+class FuturesTest(TemplateTest):
+
+    def test_future_import(self):
+        t = Template("${ x / y }", futures=["division"])
+        assert result_lines(t.render(x=12, y=5)) == ["2.4"]

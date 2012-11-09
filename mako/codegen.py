@@ -25,6 +25,7 @@ def compile(node,
                 default_filters=None,
                 buffer_filters=None,
                 imports=None,
+                future_imports=None,
                 source_encoding=None,
                 generate_magic_comment=True,
                 disable_unicode=False,
@@ -52,6 +53,7 @@ def compile(node,
                                             default_filters,
                                             buffer_filters,
                                             imports,
+                                            future_imports,
                                             source_encoding,
                                             generate_magic_comment,
                                             disable_unicode,
@@ -68,6 +70,7 @@ class _CompileContext(object):
                     default_filters,
                     buffer_filters,
                     imports,
+                    future_imports,
                     source_encoding,
                     generate_magic_comment,
                     disable_unicode,
@@ -79,6 +82,7 @@ class _CompileContext(object):
         self.default_filters = default_filters
         self.buffer_filters = buffer_filters
         self.imports = imports
+        self.future_imports = future_imports
         self.source_encoding = source_encoding
         self.generate_magic_comment = generate_magic_comment
         self.disable_unicode = disable_unicode
@@ -187,6 +191,10 @@ class _GenerateRenderMethod(object):
             self.printer.writeline("# -*- encoding:%s -*-" %
                                     self.compiler.source_encoding)
 
+        if self.compiler.future_imports:
+            # FIXME: this should only import the future features requested
+            self.printer.writeline("from __future__ import %s" %
+                                   (", ".join(self.compiler.future_imports),))
         self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
         self.printer.writeline("__M_dict_builtin = dict")
