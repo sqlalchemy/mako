@@ -172,7 +172,7 @@ class TemplateLookup(TemplateCollection):
                         enable_loop=True,
                         input_encoding=None,
                         preprocessor=None,
-                        futures=False):
+                        futures=None):
 
         self.directories = [posixpath.normpath(d) for d in
                             util.to_list(directories, ())
