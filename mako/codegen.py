@@ -192,7 +192,6 @@ class _GenerateRenderMethod(object):
                                     self.compiler.source_encoding)
 
         if self.compiler.future_imports:
-            # FIXME: this should only import the future features requested
             self.printer.writeline("from __future__ import %s" %
                                    (", ".join(self.compiler.future_imports),))
         self.printer.writeline("from mako import runtime, filters, cache")
