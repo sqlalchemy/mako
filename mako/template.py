@@ -112,6 +112,15 @@ class Template(object):
      preamble of all generated Python modules. See the example
      in :ref:`filtering_default_filters`.
 
+    :param future_imports: String list of names to import from `__future__`.
+     These will be concatenated into a comma-separated string and inserted
+     into the beginning of the template, e.g. ``futures_imports=['FOO',
+     'BAR']`` results in ``from __future__ import FOO, BAR``.  If you're
+     interested in using features like the new division operator, you must
+     use future_imports to convey that to the renderer, as otherwise the
+     import will not appear as the first executed statement in the generated
+     code and will therefore not have the desired effect.
+
     :param input_encoding: Encoding of the template's source code.  Can
      be used in lieu of the coding comment. See
      :ref:`usage_unicode` as well as :ref:`unicode_toplevel` for
@@ -215,9 +224,9 @@ class Template(object):
                     buffer_filters=(),
                     strict_undefined=False,
                     imports=None,
+                    future_imports=None,
                     enable_loop=True,
-                    preprocessor=None,
-                    futures=None):
+                    preprocessor=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -248,7 +257,6 @@ class Template(object):
         self.enable_loop = enable_loop
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
-        self.futures = futures
 
         if util.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
@@ -268,6 +276,7 @@ class Template(object):
         self.buffer_filters = buffer_filters
 
         self.imports = imports
+        self.future_imports = future_imports
         self.preprocessor = preprocessor
 
         # if plain text, compile code in memory only
@@ -604,7 +613,7 @@ def _compile(template, text, filename, generate_magic_comment):
                             default_filters=template.default_filters,
                             buffer_filters=template.buffer_filters,
                             imports=template.imports,
-                            future_imports=template.futures,
+                            future_imports=template.future_imports,
                             source_encoding=lexer.encoding,
                             generate_magic_comment=generate_magic_comment,
                             disable_unicode=template.disable_unicode,
