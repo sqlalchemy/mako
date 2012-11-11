@@ -3,12 +3,6 @@ import os
 import re
 import sys
 
-extra = {}
-if sys.version_info >= (3, 0):
-    extra.update(
-        use_2to3=True,
-    )
-
 v = open(os.path.join(os.path.dirname(__file__), 'mako', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
@@ -47,7 +41,7 @@ setup(name='Mako',
       entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin
- 
+
       [pygments.lexers]
       mako = mako.ext.pygmentplugin:MakoLexer
       html+mako = mako.ext.pygmentplugin:MakoHtmlLexer
@@ -57,6 +51,5 @@ setup(name='Mako',
 
       [babel.extractors]
       mako = mako.ext.babelplugin:extract
-      """,
-      **extra
+      """
 )

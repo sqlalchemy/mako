@@ -232,7 +232,7 @@ class _GenerateRenderMethod(object):
         self.compiler.identifiers = module_identifiers
         self.printer.writeline("_exports = %r" %
                             [n.name for n in
-                            list(main_identifiers.topleveldefs.values())]
+                            main_identifiers.topleveldefs.values()]
                         )
         self.printer.write("\n\n")
 
@@ -329,7 +329,7 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("def _mako_generate_namespaces(context):")
 
 
-        for node in list(namespaces.values()):
+        for node in namespaces.values():
             if 'import' in node.attributes:
                 self.compiler.has_ns_imports = True
             self.write_source_comment(node)
@@ -438,7 +438,7 @@ class _GenerateRenderMethod(object):
         # write closure functions for closures that we define
         # right here
         to_write = to_write.union(
-                        [c.funcname for c in list(identifiers.closuredefs.values())])
+                        [c.funcname for c in identifiers.closuredefs.values()])
 
         # remove identifiers that are declared in the argument
         # signature of the callable
@@ -700,22 +700,22 @@ class _GenerateRenderMethod(object):
                 "cache._ctx_get_or_create("\
                 "%s, lambda:__M_%s(%s),  context, %s__M_defname=%r)" % \
                             (cachekey, name, ','.join(pass_args),
-                            ''.join(["%s=%s, " % (k,v)
-                            for k, v in list(cache_args.items())]),
+                            ''.join(["%s=%s, " % (k, v)
+                            for k, v in cache_args.items()]),
                             name
                             )
             # apply buffer_filters
             s = self.create_filter_callable(self.compiler.buffer_filters, s,
                                             False)
-            self.printer.writelines("return " + s,None)
+            self.printer.writelines("return " + s, None)
         else:
             self.printer.writelines(
                     "__M_writer(context.get('local')."
                     "cache._ctx_get_or_create("\
                     "%s, lambda:__M_%s(%s), context, %s__M_defname=%r))" %
                     (cachekey, name, ','.join(pass_args),
-                    ''.join(["%s=%s, " % (k,v)
-                        for k, v in list(cache_args.items())]),
+                    ''.join(["%s=%s, " % (k, v)
+                        for k, v in cache_args.items()]),
                     name,
                     ),
                     "return ''",
@@ -968,7 +968,7 @@ class _Identifiers(object):
                 # things that have already been declared
                 # in an enclosing namespace (i.e. names we can just use)
                 self.declared = set(parent.declared).\
-                         union([c.name for c in list(parent.closuredefs.values())]).\
+                         union([c.name for c in parent.closuredefs.values()]).\
                          union(parent.locally_declared).\
                          union(parent.argument_declared)
 
@@ -1039,8 +1039,8 @@ class _Identifiers(object):
                     list(self.declared),
                     list(self.locally_declared),
                     list(self.undeclared),
-                    [c.name for c in list(self.topleveldefs.values())],
-                    [c.name for c in list(self.closuredefs.values())],
+                    [c.name for c in self.topleveldefs.values()],
+                    [c.name for c in self.closuredefs.values()],
                     self.argument_declared)
 
     def check_declared(self, node):

@@ -394,7 +394,7 @@ class TextTag(Tag):
     def undeclared_identifiers(self):
         return self.filter_args.\
                             undeclared_identifiers.\
-                            difference(list(filters.DEFAULT_ESCAPES.keys())).union(
+                            difference(filters.DEFAULT_ESCAPES.keys()).union(
                         self.expression_undeclared_identifiers
                     )
 
@@ -447,7 +447,7 @@ class DefTag(Tag):
         return set(res).union(
             self.filter_args.\
                             undeclared_identifiers.\
-                            difference(list(filters.DEFAULT_ESCAPES.keys()))
+                            difference(filters.DEFAULT_ESCAPES.keys())
         ).union(
             self.expression_undeclared_identifiers
         ).difference(
@@ -507,7 +507,7 @@ class BlockTag(Tag):
     def undeclared_identifiers(self):
         return (self.filter_args.\
                             undeclared_identifiers.\
-                            difference(list(filters.DEFAULT_ESCAPES.keys()))
+                            difference(filters.DEFAULT_ESCAPES.keys())
                 ).union(self.expression_undeclared_identifiers)
 
 
