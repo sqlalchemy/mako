@@ -7,7 +7,7 @@ from mako import exceptions, util, runtime
 from mako import compat
 import re
 import os
-from util import flatten_result, result_lines
+from test.util import flatten_result, result_lines
 import codecs
 from mako.compat import u
 from test import TemplateTest, eq_, template_base, module_base, \
