@@ -1,7 +1,9 @@
 from mako.template import Template
 from mako import lookup, exceptions, runtime
 from mako.util import FastEncodingBuffer
-from .util import flatten_result, result_lines
+from mako import compat
+from test.util import flatten_result, result_lines
+from test import eq_
 import unittest
 import os
 
@@ -24,7 +26,7 @@ class LookupTest(unittest.TestCase):
 
         assert tl.get_template('/subdir/index.html').module_id \
                             == '_subdir_index_html'
- 
+
     def test_updir(self):
         t = tl.get_template('/subdir/foo/../bar/../index.html')
         assert result_lines(t.render()) == [
@@ -32,25 +34,27 @@ class LookupTest(unittest.TestCase):
             "this is include 2"
 
         ]
- 
+
     def test_directory_lookup(self):
         """test that hitting an existent directory still raises
         LookupError."""
- 
+
         self.assertRaises(exceptions.TopLevelLookupException,
             tl.get_template, "/subdir"
         )
- 
+
     def test_no_lookup(self):
         t = Template("hi <%include file='foo.html'/>")
         try:
             t.render()
             assert False
-        except exceptions.TemplateLookupException as e:
-            assert str(e) == \
-                "Template 'memory:%s' has no TemplateLookup associated" % \
-                hex(id(t))
- 
+        except exceptions.TemplateLookupException:
+            eq_(
+                str(compat.exception_as()),
+            "Template 'memory:%s' has no TemplateLookup associated" % \
+                            hex(id(t))
+                )
+
     def test_uri_adjust(self):
         tl = lookup.TemplateLookup(directories=['/foo/bar'])
         assert tl.filename_to_uri('/foo/bar/etc/lala/index.html') == \
@@ -59,12 +63,12 @@ class LookupTest(unittest.TestCase):
         tl = lookup.TemplateLookup(directories=['./foo/bar'])
         assert tl.filename_to_uri('./foo/bar/etc/index.html') == \
                         '/etc/index.html'
- 
+
     def test_uri_cache(self):
         """test that the _uri_cache dictionary is available"""
         tl._uri_cache[('foo', 'bar')] = '/some/path'
         assert tl._uri_cache[('foo', 'bar')] == '/some/path'
- 
+
     def test_check_not_found(self):
         tl = lookup.TemplateLookup()
         tl.put_string("foo", "this is a template")
@@ -77,7 +81,7 @@ class LookupTest(unittest.TestCase):
         assert f.uri not in tl._collection
 
     def test_dont_accept_relative_outside_of_root(self):
-        """test the mechanics of an include where 
+        """test the mechanics of an include where
         the include goes outside of the path"""
         tl = lookup.TemplateLookup(directories=[os.path.join(template_base, "subdir")])
         index = tl.get_template("index.html")

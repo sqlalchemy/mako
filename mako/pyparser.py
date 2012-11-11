@@ -51,11 +51,11 @@ def parse(code, mode='exec', **exception_kwargs):
             if isinstance(code, compat.text_types):
                 code = code.encode('ascii', 'backslashreplace')
             return compiler_parse(code, mode)
-    except Exception as e:
+    except Exception:
         raise exceptions.SyntaxException(
                     "(%s) %s (%r)" % (
-                        e.__class__.__name__,
-                        e,
+                        compat.exception_as().__class__.__name__,
+                        compat.exception_as(),
                         code[0:50]
                     ), **exception_kwargs)
 

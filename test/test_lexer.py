@@ -77,8 +77,11 @@ class LexerTest(TemplateTest):
         try:
             nodes = Lexer(template).parse()
             assert False
-        except exceptions.SyntaxException as e:
-            assert str(e) == "Unclosed tag: <%def> at line: 5 char: 9"
+        except exceptions.SyntaxException:
+            eq_(
+                str(compat.exception_as()),
+                "Unclosed tag: <%def> at line: 5 char: 9"
+            )
 
     def test_onlyclosed_tag(self):
         template = \

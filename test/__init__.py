@@ -6,7 +6,7 @@ from mako.util import function_named
 import re
 from mako.cache import CacheImpl, register_plugin
 from nose import SkipTest
-
+import sys
 
 template_base = os.path.join(os.path.dirname(__file__), 'templates')
 module_base = os.path.join(template_base, 'modules')
@@ -65,7 +65,7 @@ def assert_raises(except_cls, callable_, *args, **kw):
     try:
         callable_(*args, **kw)
         success = False
-    except except_cls as e:
+    except except_cls:
         success = True
 
     # assert outside the block so it works for AssertionError too !
@@ -75,7 +75,8 @@ def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
     try:
         callable_(*args, **kwargs)
         assert False, "Callable did not raise an exception"
-    except except_cls as e:
+    except except_cls:
+        e = sys.exc_info()[1]
         assert re.search(msg, str(e)), "%r !~ %s" % (msg, e)
         print(str(e))
 

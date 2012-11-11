@@ -21,7 +21,7 @@ class ExceptionsTest(TemplateTest):
             template = Template(code)
             template.render_unicode()
             assert False
-        except exceptions.CompileException as ce:
+        except exceptions.CompileException:
             html_error = exceptions.html_error_template().render_unicode()
             assert ("CompileException: Fragment &#39;i = 0&#39; is not "
                     "a partial control statement at line: 2 char: 1") in html_error
@@ -50,7 +50,7 @@ class ExceptionsTest(TemplateTest):
             template = Template(code)
             template.render_unicode()
             assert False
-        except exceptions.CompileException as ce:
+        except exceptions.CompileException:
             text_error = exceptions.text_error_template().render_unicode()
             assert 'Traceback (most recent call last):' in text_error
             assert ("CompileException: Fragment 'i = 0' is not a partial "
@@ -76,7 +76,7 @@ ${u'привет'}
         try:
             template = Template(code)
             template.render_unicode()
-        except exceptions.CompileException as ce:
+        except exceptions.CompileException:
             html_error = exceptions.html_error_template().render()
             if compat.py3k:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "
@@ -124,7 +124,7 @@ ${u'привет'}
         try:
             template = Template(code)
             template.render_unicode()
-        except exceptions.CompileException as ce:
+        except exceptions.CompileException:
             html_error = exceptions.html_error_template().render()
             if compat.py3k:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "

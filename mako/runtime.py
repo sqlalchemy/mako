@@ -660,7 +660,7 @@ def capture(context, callable_, *args, **kwargs):
 
     """
 
-    if not isinstance(callable_, collections.Callable):
+    if not compat.callable(callable_):
         raise exceptions.RuntimeException(
                            "capture() function expects a callable as "
                            "its argument (i.e. capture(func, *args, **kwargs))"
@@ -742,8 +742,8 @@ def _lookup_template(context, uri, relativeto):
     uri = lookup.adjust_uri(uri, relativeto)
     try:
         return lookup.get_template(uri)
-    except exceptions.TopLevelLookupException as e:
-        raise exceptions.TemplateLookupException(str(e))
+    except exceptions.TopLevelLookupException:
+        raise exceptions.TemplateLookupException(str(compat.exception_as()))
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
@@ -827,8 +827,8 @@ def _exec_template(callable_, context, args=None, kwargs=None):
         error = None
         try:
             callable_(context, *args, **kwargs)
-        except Exception as e:
-            _render_error(template, context, e)
+        except Exception:
+            _render_error(template, context, compat.exception_as())
         except:
             e = sys.exc_info()[0]
             _render_error(template, context, e)

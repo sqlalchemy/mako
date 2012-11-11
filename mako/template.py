@@ -663,7 +663,10 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
         shutil.move(name, outputpath)
 
 def _get_module_info_from_callable(callable_):
-    return _get_module_info(callable_.__globals__['__name__'])
+    if compat.py3k:
+        return _get_module_info(callable_.__globals__['__name__'])
+    else:
+        return _get_module_info(callable_.func_globals['__name__'])
 
 def _get_module_info(filename):
     return ModuleInfo._modules[filename]

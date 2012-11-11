@@ -1,8 +1,9 @@
 from mako.template import Template
 from mako import lookup
 from test import TemplateTest
-from .util import flatten_result, result_lines
+from test.util import flatten_result, result_lines
 from test import eq_, assert_raises
+from mako import compat
 
 class DefTest(TemplateTest):
     def test_def_noargs(self):
@@ -63,8 +64,12 @@ class DefTest(TemplateTest):
         </%def>
 """)
         # check that "a" is declared in "b", but not in "c"
-        assert "a" not in template.module.render_c.__code__.co_varnames
-        assert "a" in template.module.render_b.__code__.co_varnames
+        if compat.py3k:
+            assert "a" not in template.module.render_c.__code__.co_varnames
+            assert "a" in template.module.render_b.__code__.co_varnames
+        else:
+            assert "a" not in template.module.render_c.func_code.co_varnames
+            assert "a" in template.module.render_b.func_code.co_varnames
 
         # then test output
         eq_(
