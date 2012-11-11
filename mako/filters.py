@@ -37,6 +37,7 @@ try:
 except ImportError:
     html_escape = legacy_html_escape
 
+html_escape = legacy_html_escape
 
 def xml_escape(string):
     return re.sub(r'([&<"\'>])', lambda m: xml_escapes[m.group()], string)
@@ -164,7 +165,7 @@ def htmlentityreplace_errors(ex):
         # Handle encoding errors
         bad_text = ex.object[ex.start:ex.end]
         text = _html_entities_escaper.escape(bad_text)
-        return (str(text), ex.end)
+        return (compat.text_type(text), ex.end)
     raise ex
 
 codecs.register_error('htmlentityreplace', htmlentityreplace_errors)

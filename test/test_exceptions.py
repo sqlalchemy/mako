@@ -9,7 +9,7 @@ from test.util import result_lines
 from test import TemplateTest
 from test import requires_pygments_14, requires_no_pygments, \
     requires_python_25_or_greater
-
+from mako.compat import u
 
 class ExceptionsTest(TemplateTest):
     def test_html_error_template(self):
@@ -159,16 +159,16 @@ ${u'привет'}
     @requires_python_25_or_greater
     def test_py_utf8_html_error_template(self):
         try:
-            foo = '日本'
+            foo = u('日本')
             raise RuntimeError('test')
         except:
             html_error = exceptions.html_error_template().render()
             if compat.py3k:
                 assert 'RuntimeError: test' in html_error.decode('utf-8')
-                assert "foo = &#39;日本&#39;" in html_error.decode('utf-8')
+                assert "foo = u(&#39;日本&#39;)" in html_error.decode('utf-8')
             else:
                 assert 'RuntimeError: test' in html_error
-                assert "foo = u&#39;&#x65E5;&#x672C;&#39;" in html_error
+                assert "foo = u(&#39;&#x65E5;&#x672C;&#39;)" in html_error
 
     def test_py_unicode_error_html_error_template(self):
         try:
