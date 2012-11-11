@@ -639,11 +639,12 @@ def _compile_text(template, text, filename):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
+
+    # this exec() works for 2.4->3.3.
     exec(code, module.__dict__, module.__dict__)
     return (source, module)
 
 def _compile_module_file(template, text, filename, outputpath, module_writer):
-    identifier = template.module_id
     source, lexer = _compile(template, text, filename,
                         generate_magic_comment=True)
 
