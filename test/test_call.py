@@ -1,6 +1,6 @@
 from mako.template import Template
 from mako import util
-from .util import result_lines, flatten_result
+from test.util import result_lines, flatten_result
 from test import TemplateTest, eq_
 
 class CallTest(TemplateTest):

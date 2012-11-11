@@ -10,7 +10,7 @@ from mako.runtime import LoopStack, LoopContext
 from mako import exceptions
 from test import assert_raises_message
 from test import TemplateTest, eq_
-from .util import flatten_result, result_lines
+from test.util import flatten_result, result_lines
 
 class TestLoop(unittest.TestCase):
 
@@ -208,7 +208,7 @@ class TestLoopFlags(TemplateTest):
         self._do_memory_test(
         """
             the loop: ${loop}
-        """, 
+        """,
         "the loop: hi",
         template_args=dict(loop='hi'),
         filters=flatten_result,
@@ -237,7 +237,7 @@ class TestLoopFlags(TemplateTest):
             % for i in (1, 2, 3):
                 ${i} ${loop.index}
             % endfor
-        """, 
+        """,
         "1 0 2 1 3 2",
         template_args=dict(loop='hi'),
         filters=flatten_result,
@@ -269,7 +269,7 @@ class TestLoopFlags(TemplateTest):
             % for i in (1, 2, 3):
                 ${i} ${loop.index}
             % endfor
-        """, 
+        """,
         "1 0 2 1 3 2",
         template_args=dict(),
         filters=flatten_result,

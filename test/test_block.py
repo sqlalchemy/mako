@@ -2,7 +2,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
 from test import TemplateTest, assert_raises, assert_raises_message
-from .util import flatten_result, result_lines
+from test.util import flatten_result, result_lines
 
 
 
@@ -22,13 +22,13 @@ class BlockTest(TemplateTest):
 
     def test_anonymous_block_in_call(self):
         template = Template("""
-        
+
             <%self:foo x="5">
                 <%block>
                     this is the block x
                 </%block>
             </%self:foo>
-            
+
             <%def name="foo(x)">
                 foo:
                 ${caller.body()}
@@ -45,13 +45,13 @@ class BlockTest(TemplateTest):
             exceptions.CompileException,
             "Named block 'y' not allowed inside of <%call> tag",
             Template,"""
-        
+
             <%self:foo x="5">
                 <%block name="y">
                     this is the block
                 </%block>
             </%self:foo>
-            
+
             <%def name="foo(x)">
                 foo:
                 ${caller.body()}
@@ -68,9 +68,9 @@ class BlockTest(TemplateTest):
                 <%block name="x">
                     block
                 </%block>
-                
-                foob 
-                
+
+                foob
+
                 <%block name="x">
                     block
                 </%block>
@@ -87,9 +87,9 @@ class BlockTest(TemplateTest):
                 <%block name="x">
                     block
                 </%block>
-                
-                foob 
-                
+
+                foob
+
                 <%block name="x">
                     block
                 </%block>
@@ -107,9 +107,9 @@ class BlockTest(TemplateTest):
                 <%block name="x">
                     block
                 </%block>
-                
-                foob 
-                
+
+                foob
+
                 <%block name="x">
                     block
                 </%block>
@@ -126,9 +126,9 @@ class BlockTest(TemplateTest):
                 <%block name="x">
                     block
                 </%block>
-                
-                foob 
-                
+
+                foob
+
                 <%def name="x()">
                     block
                 </%def>
@@ -145,12 +145,12 @@ class BlockTest(TemplateTest):
                     block
                 </%def>
 
-                foob 
-                
+                foob
+
                 <%block name="x">
                     block
                 </%block>
-                
+
             """
         )
 
@@ -162,7 +162,7 @@ class BlockTest(TemplateTest):
             </%block>
             below
         """)
-        self._do_test(template, ["above", "the header", "below"], 
+        self._do_test(template, ["above", "the header", "below"],
                 filters=result_lines)
 
     def test_inherited_block_no_render(self):
@@ -180,12 +180,12 @@ class BlockTest(TemplateTest):
             <%block name="header">
                 the header
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "index header", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "index header", "below"],
                 filters=result_lines)
 
     def test_no_named_in_def(self):
@@ -208,7 +208,7 @@ class BlockTest(TemplateTest):
                 <%block name="title">
                     index title
                 </%block>
-                
+
                 <%block name="header">
                     index header
                     ${parent.header()}
@@ -223,12 +223,12 @@ class BlockTest(TemplateTest):
                     the title
                 </%block>
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "index header", "base header", "index title", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "index header", "base header", "index title", "below"],
                 filters=result_lines)
 
     def test_inherited_block_nested_inner_only(self):
@@ -239,7 +239,7 @@ class BlockTest(TemplateTest):
                 <%block name="title">
                     index title
                 </%block>
-                
+
             """
         )
         l.put_string("base","""
@@ -250,12 +250,12 @@ class BlockTest(TemplateTest):
                     the title
                 </%block>
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "base header", "index title", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "base header", "index title", "below"],
                 filters=result_lines)
 
     def test_noninherited_block_no_render(self):
@@ -273,12 +273,12 @@ class BlockTest(TemplateTest):
             <%block name="header">
                 the header
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "the header", "some thing", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "the header", "some thing", "below"],
                 filters=result_lines)
 
     def test_no_conflict_nested_one(self):
@@ -298,12 +298,12 @@ class BlockTest(TemplateTest):
             <%block name="header">
                 the header
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "inner header", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "inner header", "below"],
                 filters=result_lines)
 
     def test_nested_dupe_names_raise(self):
@@ -346,13 +346,13 @@ class BlockTest(TemplateTest):
             <%block name="header">
                 the header
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "index header", "middle anon", 
-                "index anon", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "index header", "middle anon",
+                "index anon", "below"],
                 filters=result_lines)
 
     def test_filter(self):
@@ -361,7 +361,7 @@ class BlockTest(TemplateTest):
                 <html>
             </%block>
         """)
-        self._do_test(template, ['&lt;html&gt;'], 
+        self._do_test(template, ['&lt;html&gt;'],
                     filters=result_lines)
 
     def test_anon_in_named(self):
@@ -413,7 +413,7 @@ class BlockTest(TemplateTest):
         self._test_block_in_block(template)
 
     def _test_block_in_block(self, template):
-        self._do_test(template, 
+        self._do_test(template,
             ["outer above", "inner", "outer below"],
             filters=result_lines
         )
@@ -424,7 +424,7 @@ class BlockTest(TemplateTest):
                 <%block>${i}</%block>
             % endfor
         """)
-        self._do_test(t, 
+        self._do_test(t,
             ["1", "2", "3"],
             filters=result_lines
         )
@@ -439,7 +439,7 @@ class BlockTest(TemplateTest):
                 <%block>false</%block>
             % endif
         """)
-        self._do_test(t, 
+        self._do_test(t,
             ["true"],
             filters=result_lines
         )
@@ -459,12 +459,12 @@ class BlockTest(TemplateTest):
             <%block name="header">
                 the header
             </%block>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "inner header", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "inner header", "below"],
                 filters=result_lines)
 
     def test_def_overridden_by_block(self):
@@ -483,20 +483,20 @@ class BlockTest(TemplateTest):
             <%def name="header()">
                 the header
             </%def>
-            
+
             ${next.body()}
             below
         """)
-        self._do_test(l.get_template("index"), 
-                ["above", "inner header", "below"], 
+        self._do_test(l.get_template("index"),
+                ["above", "inner header", "below"],
                 filters=result_lines)
 
     def test_block_args(self):
         l = TemplateLookup()
         l.put_string("caller", """
-        
+
             <%include file="callee" args="val1='3', val2='4'"/>
-            
+
         """)
         l.put_string("callee", """
             <%page args="val1, val2"/>
@@ -511,7 +511,7 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_variables_contextual(self):
-        t = Template("""            
+        t = Template("""
             <%block name="foob" >
                 foob, ${val1}, ${val2}
             </%block>
@@ -524,7 +524,7 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_args_contextual(self):
-        t = Template("""            
+        t = Template("""
             <%page args="val1"/>
             <%block name="foob" args="val1">
                 foob, ${val1}, ${val2}
@@ -538,7 +538,7 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_pageargs_contextual(self):
-        t = Template("""            
+        t = Template("""
             <%block name="foob">
                 foob, ${pageargs['val1']}, ${pageargs['val2']}
             </%block>
@@ -553,9 +553,9 @@ class BlockTest(TemplateTest):
     def test_block_pageargs(self):
         l = TemplateLookup()
         l.put_string("caller", """
-        
+
             <%include file="callee" args="val1='3', val2='4'"/>
-            
+
         """)
         l.put_string("callee", """
             <%block name="foob">

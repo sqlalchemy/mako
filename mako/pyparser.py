@@ -33,7 +33,7 @@ else:
 try:
     import _ast
     util.restore__ast(_ast)
-    from . import _ast_util
+    from mako import _ast_util
 except ImportError:
     _ast = None
     from compiler import parse as compiler_parse
@@ -48,7 +48,7 @@ def parse(code, mode='exec', **exception_kwargs):
         if _ast:
             return _ast_util.parse(code, '<unknown>', mode)
         else:
-            if isinstance(code, compat.text_types):
+            if isinstance(code, compat.text_type):
                 code = code.encode('ascii', 'backslashreplace')
             return compiler_parse(code, mode)
     except Exception:
