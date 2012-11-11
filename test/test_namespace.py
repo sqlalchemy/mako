@@ -1,6 +1,6 @@
 from mako.template import Template
 from mako import lookup
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 from test import TemplateTest, eq_
 
 class NamespaceTest(TemplateTest):

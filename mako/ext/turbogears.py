@@ -19,7 +19,7 @@ class TGPlugin(object):
 
         # Pull the options out and initialize the lookup
         lookup_options = {}
-        for k, v in options.iteritems():
+        for k, v in options.items():
             if k.startswith('mako.'):
                 lookup_options[k[5:]] = v
             elif k in ['directories', 'filesystem_checks', 'module_directory']:
@@ -46,7 +46,7 @@ class TGPlugin(object):
         return self.lookup.get_template(templatename)
 
     def render(self, info, format="html", fragment=False, template=None):
-        if isinstance(template, basestring):
+        if isinstance(template, str):
             template = self.load_template(template)
 
         # Load extra vars func if provided

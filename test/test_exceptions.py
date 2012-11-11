@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import sys
-import unittest
 
-from mako import exceptions, util
+from mako import exceptions, compat
 from mako.template import Template
 from mako.lookup import TemplateLookup
-from util import result_lines
-from test import template_base, module_base, TemplateTest
+from mako.compat import u
+from test.util import result_lines
+from test import TemplateTest
 from test import requires_pygments_14, requires_no_pygments, \
     requires_python_25_or_greater
 
@@ -21,7 +21,7 @@ class ExceptionsTest(TemplateTest):
             template = Template(code)
             template.render_unicode()
             assert False
-        except exceptions.CompileException, ce:
+        except exceptions.CompileException as ce:
             html_error = exceptions.html_error_template().render_unicode()
             assert ("CompileException: Fragment &#39;i = 0&#39; is not "
                     "a partial control statement at line: 2 char: 1") in html_error
@@ -50,7 +50,7 @@ class ExceptionsTest(TemplateTest):
             template = Template(code)
             template.render_unicode()
             assert False
-        except exceptions.CompileException, ce:
+        except exceptions.CompileException as ce:
             text_error = exceptions.text_error_template().render_unicode()
             assert 'Traceback (most recent call last):' in text_error
             assert ("CompileException: Fragment 'i = 0' is not a partial "
@@ -61,7 +61,7 @@ class ExceptionsTest(TemplateTest):
         """test the html_error_template with a Template containing utf8
         chars"""
 
-        if util.py3k:
+        if compat.py3k:
             code = """# -*- coding: utf-8 -*-
 % if 2 == 2: /an error
 ${'привет'}
@@ -76,9 +76,9 @@ ${u'привет'}
         try:
             template = Template(code)
             template.render_unicode()
-        except exceptions.CompileException, ce:
+        except exceptions.CompileException as ce:
             html_error = exceptions.html_error_template().render()
-            if util.py3k:
+            if compat.py3k:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "
                     "error&#39; is not a partial control statement "
                     "at line: 2 char: 1").encode(sys.getdefaultencoding(), 'htmlentityreplace') in \
@@ -89,11 +89,11 @@ ${u'привет'}
                         "at line: 2 char: 1") in \
                         html_error
 
-            if util.py3k:
-                assert u"".encode(sys.getdefaultencoding(),
+            if compat.py3k:
+                assert "".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
             else:
-                assert u'<pre>3</pre></div></td><td class="code">'\
+                assert '<pre>3</pre></div></td><td class="code">'\
                         '<div class="syntax-highlighted"><pre><span '\
                         'class="cp">${</span><span class="s">u&#39;'\
                         '&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;'\
@@ -109,7 +109,7 @@ ${u'привет'}
         """test the html_error_template with a Template containing utf8
         chars"""
 
-        if util.py3k:
+        if compat.py3k:
             code = """# -*- coding: utf-8 -*-
 % if 2 == 2: /an error
 ${'привет'}
@@ -124,9 +124,9 @@ ${u'привет'}
         try:
             template = Template(code)
             template.render_unicode()
-        except exceptions.CompileException, ce:
+        except exceptions.CompileException as ce:
             html_error = exceptions.html_error_template().render()
-            if util.py3k:
+            if compat.py3k:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "
                     "error&#39; is not a partial control statement "
                     "at line: 2 char: 1").encode(sys.getdefaultencoding(), 'htmlentityreplace') in \
@@ -137,11 +137,11 @@ ${u'привет'}
                         "at line: 2 char: 1") in \
                         html_error
 
-            if util.py3k:
-                assert u"${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+            if compat.py3k:
+                assert "${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
             else:
-                assert u"${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
+                assert "${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
         else:
             assert False, ("This function should trigger a CompileException, "
@@ -149,9 +149,8 @@ ${u'привет'}
 
     def test_format_closures(self):
         try:
-            exec "def foo():"\
-                 "    raise RuntimeError('test')"\
-                 in locals()
+            exec("def foo():"\
+                 "    raise RuntimeError('test')", locals())
             foo()
         except:
             html_error = exceptions.html_error_template().render()
@@ -160,23 +159,23 @@ ${u'привет'}
     @requires_python_25_or_greater
     def test_py_utf8_html_error_template(self):
         try:
-            foo = u'日本'
+            foo = '日本'
             raise RuntimeError('test')
         except:
             html_error = exceptions.html_error_template().render()
-            if util.py3k:
+            if compat.py3k:
                 assert 'RuntimeError: test' in html_error.decode('utf-8')
-                assert u"foo = &#39;日本&#39;" in html_error.decode('utf-8')
+                assert "foo = &#39;日本&#39;" in html_error.decode('utf-8')
             else:
                 assert 'RuntimeError: test' in html_error
                 assert "foo = u&#39;&#x65E5;&#x672C;&#39;" in html_error
 
     def test_py_unicode_error_html_error_template(self):
         try:
-            raise RuntimeError(u'日本')
+            raise RuntimeError(u('日本'))
         except:
             html_error = exceptions.html_error_template().render()
-            assert u"RuntimeError: 日本".encode('ascii', 'ignore') in html_error
+            assert u("RuntimeError: 日本").encode('ascii', 'ignore') in html_error
 
     @requires_pygments_14
     def test_format_exceptions_pygments(self):
@@ -220,12 +219,12 @@ ${foobar}
            exceptions reported with format_exceptions=True"""
 
         l = TemplateLookup(format_exceptions=True)
-        if util.py3k:
+        if compat.py3k:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${'привет' + foobar}""")
         else:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${u'привет' + foobar}""")
 
-        if util.py3k:
+        if compat.py3k:
             assert '<table class="error syntax-highlightedtable"><tr><td '\
                     'class="linenos"><div class="linenodiv"><pre>2</pre>'\
                     '</div></td><td class="code"><div class="error '\
@@ -251,13 +250,13 @@ ${foobar}
            exceptions reported with format_exceptions=True"""
 
         l = TemplateLookup(format_exceptions=True)
-        if util.py3k:
+        if compat.py3k:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${'привет' + foobar}""")
         else:
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${u'привет' + foobar}""")
 
-        if util.py3k:
-            assert u'<div class="sourceline">${&#39;привет&#39; + foobar}</div>'\
+        if compat.py3k:
+            assert '<div class="sourceline">${&#39;привет&#39; + foobar}</div>'\
                 in result_lines(l.get_template("foo.html").render().decode('utf-8'))
         else:
             assert '${u&#39;&#x43F;&#x440;&#x438;&#x432;&#x435;'\
@@ -290,7 +289,7 @@ ${foobar}
         except:
             t, v, tback = sys.exc_info()
 
-        if not util.py3k:
+        if not compat.py3k:
             # blow away tracebaack info
             sys.exc_clear()
 

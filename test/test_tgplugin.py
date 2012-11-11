@@ -1,7 +1,7 @@
 import unittest
 
 from mako.ext.turbogears import TGPlugin
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 from test import TemplateTest, template_base
 
 tl = TGPlugin(options=dict(directories=[template_base]), extension='html')

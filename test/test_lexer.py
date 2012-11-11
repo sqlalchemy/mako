@@ -1,11 +1,9 @@
-import unittest
-
 from mako.lexer import Lexer
-from mako import exceptions, util
-from util import flatten_result, result_lines
+from mako import exceptions, util, compat
+from test.util import flatten_result
 from mako.template import Template
 import re
-from test import TemplateTest, template_base, skip_if, eq_, assert_raises_message
+from test import TemplateTest, eq_, assert_raises_message
 
 # create fake parsetree classes which are constructed
 # exactly as the repr() of a real parsetree object.
@@ -18,21 +16,31 @@ def repr_arg(x):
     else:
         return repr(x)
 
+def _as_unicode(arg):
+    if isinstance(arg, compat.string_types):
+        return compat.text_type(arg)
+    elif isinstance(arg, dict):
+        return dict(
+            (_as_unicode(k), _as_unicode(v))
+            for k, v in arg.items()
+        )
+    else:
+        return arg
 from mako import parsetree
-for cls in parsetree.__dict__.values():
+for cls in list(parsetree.__dict__.values()):
     if isinstance(cls, type) and \
         issubclass(cls, parsetree.Node):
         clsname = cls.__name__
-        exec ("""
+        exec(("""
 class %s(object):
     def __init__(self, *args):
-        self.args = args
+        self.args = [_as_unicode(arg) for arg in args]
     def __repr__(self):
         return "%%s(%%s)" %% (
             self.__class__.__name__,
             ", ".join(repr_arg(x) for x in self.args)
             )
-""" % clsname) in locals()
+""" % clsname), locals())
 
 # NOTE: most assertion expressions were generated, then formatted
 # by PyTidy, hence the dense formatting.
@@ -48,28 +56,28 @@ class LexerTest(TemplateTest):
         <%def name="foo()">
                 this is a def.
         </%def>
-        
+
         and some more text.
 """
         node = Lexer(template).parse()
         self._compare(node, TemplateNode({},
-                      [Text(u'''\n<b>Hello world</b>\n        ''', (1,
-                      1)), DefTag(u'def', {u'name': u'foo()'}, (3, 9),
-                      [Text(u'''\n                this is a def.\n        ''',
+                      [Text('''\n<b>Hello world</b>\n        ''', (1,
+                      1)), DefTag('def', {'name': 'foo()'}, (3, 9),
+                      [Text('''\n                this is a def.\n        ''',
                       (3, 28))]),
-                      Text(u'''\n        \n        and some more text.\n''',
+                      Text('''\n\n        and some more text.\n''',
                       (5, 16))]))
 
     def test_unclosed_tag(self):
         template = """
-        
+
             <%def name="foo()">
              other text
         """
         try:
             nodes = Lexer(template).parse()
             assert False
-        except exceptions.SyntaxException, e:
+        except exceptions.SyntaxException as e:
             assert str(e) == "Unclosed tag: <%def> at line: 5 char: 9"
 
     def test_onlyclosed_tag(self):
@@ -78,9 +86,9 @@ class LexerTest(TemplateTest):
             <%def name="foo()">
                 foo
             </%def>
-            
+
             </%namespace>
-            
+
             hi.
         """
         self.assertRaises(exceptions.SyntaxException,
@@ -102,8 +110,8 @@ class LexerTest(TemplateTest):
             foo
             </%namespace>
         </%def>
-        
-        
+
+
         hi.
 """
         self.assertRaises(exceptions.SyntaxException,
@@ -121,7 +129,7 @@ class LexerTest(TemplateTest):
             """
             <%DEF name="foo()">
             </%def>
-        
+
         """
         self.assertRaises(exceptions.CompileException,
                           Lexer(template).parse)
@@ -129,7 +137,7 @@ class LexerTest(TemplateTest):
     def test_percent_escape(self):
         template = \
             """
-        
+
 %% some whatever.
 
     %% more some whatever
@@ -137,12 +145,12 @@ class LexerTest(TemplateTest):
     % endif
         """
         node = Lexer(template).parse()
-        self._compare(node, TemplateNode({}, [Text(u'''\n        \n''',
-                      (1, 1)), Text(u'''% some whatever.\n\n''', (3, 2)),
-                      Text(u'   %% more some whatever\n', (5, 2)),
-                      ControlLine(u'if', u'if foo:', False, (6, 1)),
-                      ControlLine(u'if', u'endif', True, (7, 1)),
-                      Text(u'        ', (8, 1))]))
+        self._compare(node, TemplateNode({}, [Text('''\n\n''',
+                      (1, 1)), Text('''% some whatever.\n\n''', (3, 2)),
+                      Text('   %% more some whatever\n', (5, 2)),
+                      ControlLine('if', 'if foo:', False, (6, 1)),
+                      ControlLine('if', 'endif', True, (7, 1)),
+                      Text('        ', (8, 1))]))
 
     def test_text_tag(self):
         template = \
@@ -153,44 +161,40 @@ class LexerTest(TemplateTest):
         % endif
         <%text>
             # more code
-            
+
             % more code
             <%illegal compionent>/></>
             <%def name="laal()">def</%def>
-            
-            
+
+
         </%text>
 
         <%def name="foo()">this is foo</%def>
-        
+
         % if bar:
             code
         % endif
         """
         node = Lexer(template).parse()
-        self._compare(node, 
-            TemplateNode({}, [Text(u'\n', (1, 1)),
-              Comment(u'comment', (2, 1)), 
-              ControlLine(u'if', u'if foo:', False, (3, 1)),
-              Text(u'            hi\n', (4, 1)),
-              ControlLine(u'if', u'endif', True, (5, 1)),
-              Text(u'        ', (6, 1)), TextTag(u'text', {},
-              (6, 9),
-              [Text(u'''\n            # more code\n            '''
-              '''\n            % more code\n            '''
-              '''<%illegal compionent>/></>\n            '''
-              '''<%def name="laal()">def</%def>\n       '''
-              '''     \n            \n        ''',
-                      (6, 16))]), Text(u'''
-
-        ''', (14, 17)),
-                      DefTag(u'def', {u'name': u'foo()'}, (16, 9),
-                      [Text(u'this is foo', (16, 28))]),
-                      Text(u'''\n        \n''', (16, 46)),
-                      ControlLine(u'if', u'if bar:', False, (18, 1)),
-                      Text(u'            code\n', (19, 1)),
-                      ControlLine(u'if', u'endif', True, (20, 1)),
-                      Text(u'        ', (21, 1))]))
+        self._compare(node,
+            TemplateNode({}, [Text('\n', (1, 1)),
+                    Comment('comment', (2, 1)),
+                    ControlLine('if', 'if foo:', False, (3, 1)),
+                    Text('            hi\n', (4, 1)),
+                    ControlLine('if', 'endif', True, (5, 1)),
+                    Text('        ', (6, 1)),
+                    TextTag('text', {}, (6, 9),
+                    [Text('\n            # more code\n\n           '
+                        ' % more code\n            <%illegal compionent>/></>\n'
+                        '            <%def name="laal()">def</%def>\n\n\n        ',
+                        (6, 16))]), Text('\n\n        ', (14, 17)),
+                    DefTag('def', {'name': 'foo()'}, (16, 9),
+                    [Text('this is foo', (16, 28))]), Text('\n\n', (16, 46)),
+                    ControlLine('if', 'if bar:', False, (18, 1)),
+                    Text('            code\n', (19, 1)),
+                    ControlLine('if', 'endif', True, (20, 1)),
+                    Text('        ', (21, 1))])
+        )
 
     def test_def_syntax(self):
         template = \
@@ -220,26 +224,26 @@ class LexerTest(TemplateTest):
             </%def>
         """
         node = Lexer(template).parse()
-        self._compare(node, TemplateNode({}, [Text(u'\n            ',
-                      (1, 1)), DefTag(u'def', {u'name': u'adef()'}, (2,
+        self._compare(node, TemplateNode({}, [Text('\n            ',
+                      (1, 1)), DefTag('def', {'name': 'adef()'}, (2,
                       13),
-                      [Text(u'''\n              adef\n            ''',
-                      (2, 36))]), Text(u'\n        ', (4, 20))]))
+                      [Text('''\n              adef\n            ''',
+                      (2, 36))]), Text('\n        ', (4, 20))]))
 
     def test_ns_tag_closed(self):
         template = \
             """
-        
+
             <%self:go x="1" y="2" z="${'hi' + ' ' + 'there'}"/>
         """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'''
-        
+                      [Text('''
+
             ''', (1, 1)),
-                      CallNamespaceTag(u'self:go', {u'x': u'1', u'y'
-                      : u'2', u'z': u"${'hi' + ' ' + 'there'}"}, (3,
-                      13), []), Text(u'\n        ', (3, 64))]))
+                      CallNamespaceTag('self:go', {'x': '1', 'y'
+                      : '2', 'z': "${'hi' + ' ' + 'there'}"}, (3,
+                      13), []), Text('\n        ', (3, 64))]))
 
     def test_ns_tag_empty(self):
         template = \
@@ -247,34 +251,34 @@ class LexerTest(TemplateTest):
             <%form:option value=""></%form:option>
         """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n            ',
-                      (1, 1)), CallNamespaceTag(u'form:option',
-                      {u'value': u''}, (2, 13), []), Text(u'\n        '
+        self._compare(nodes, TemplateNode({}, [Text('\n            ',
+                      (1, 1)), CallNamespaceTag('form:option',
+                      {'value': ''}, (2, 13), []), Text('\n        '
                       , (2, 51))]))
 
     def test_ns_tag_open(self):
         template = \
             """
-        
+
             <%self:go x="1" y="${process()}">
                 this is the body
             </%self:go>
         """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'''
-        
+                      [Text('''
+
             ''', (1, 1)),
-                      CallNamespaceTag(u'self:go', {u'x': u'1', u'y'
-                      : u'${process()}'}, (3, 13),
-                      [Text(u'''
+                      CallNamespaceTag('self:go', {'x': '1', 'y'
+                      : '${process()}'}, (3, 13),
+                      [Text('''
                 this is the body
             ''',
-                      (3, 46))]), Text(u'\n        ', (5, 24))]))
+                      (3, 46))]), Text('\n        ', (5, 24))]))
 
     def test_expr_in_attribute(self):
         """test some slightly trickier expressions.
-        
+
         you can still trip up the expression parsing, though, unless we
         integrated really deeply somehow with AST."""
 
@@ -284,26 +288,26 @@ class LexerTest(TemplateTest):
             <%call expr='foo<bar and hoho>lala and "x" + "y"'/>
         """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n            ',
-                      (1, 1)), CallTag(u'call', {u'expr'
-                      : u"foo>bar and 'lala' or 'hoho'"}, (2, 13), []),
-                      Text(u'\n            ', (2, 57)), CallTag(u'call'
-                      , {u'expr': u'foo<bar and hoho>lala and "x" + "y"'
-                      }, (3, 13), []), Text(u'\n        ', (3, 64))]))
+        self._compare(nodes, TemplateNode({}, [Text('\n            ',
+                      (1, 1)), CallTag('call', {'expr'
+                      : "foo>bar and 'lala' or 'hoho'"}, (2, 13), []),
+                      Text('\n            ', (2, 57)), CallTag('call'
+                      , {'expr': 'foo<bar and hoho>lala and "x" + "y"'
+                      }, (3, 13), []), Text('\n        ', (3, 64))]))
 
     def test_pagetag(self):
         template = \
             """
             <%page cached="True", args="a, b"/>
-            
+
             some template
         """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n            ',
-                      (1, 1)), PageTag(u'page', {u'args': u'a, b',
-                      u'cached': u'True'}, (2, 13), []),
-                      Text(u'''
-            
+        self._compare(nodes, TemplateNode({}, [Text('\n            ',
+                      (1, 1)), PageTag('page', {'args': 'a, b',
+                      'cached': 'True'}, (2, 13), []),
+                      Text('''
+
             some template
         ''',
                       (2, 48))]))
@@ -311,31 +315,31 @@ class LexerTest(TemplateTest):
     def test_nesting(self):
         template = \
             """
-        
+
         <%namespace name="ns">
             <%def name="lala(hi, there)">
                 <%call expr="something()"/>
             </%def>
         </%namespace>
-        
+
         """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'''
-        
+                      [Text('''
+
         ''', (1, 1)),
-                      NamespaceTag(u'namespace', {u'name': u'ns'}, (3,
-                      9), [Text(u'\n            ', (3, 31)),
-                      DefTag(u'def', {u'name': u'lala(hi, there)'}, (4,
-                      13), [Text(u'\n                ', (4, 42)),
-                      CallTag(u'call', {u'expr': u'something()'}, (5,
-                      17), []), Text(u'\n            ', (5, 44))]),
-                      Text(u'\n        ', (6, 20))]),
-                      Text(u'''
-        
+                      NamespaceTag('namespace', {'name': 'ns'}, (3,
+                      9), [Text('\n            ', (3, 31)),
+                      DefTag('def', {'name': 'lala(hi, there)'}, (4,
+                      13), [Text('\n                ', (4, 42)),
+                      CallTag('call', {'expr': 'something()'}, (5,
+                      17), []), Text('\n            ', (5, 44))]),
+                      Text('\n        ', (6, 20))]),
+                      Text('''
+
         ''', (7, 22))]))
 
-    if util.py3k:
+    if compat.py3k:
         def test_code(self):
             template = \
 """text
@@ -350,14 +354,14 @@ more text
     %>
 """
             nodes = Lexer(template).parse()
-            self._compare(nodes, 
+            self._compare(nodes,
             TemplateNode({}, [
-                Text(u'text\n    ', (1, 1)), 
-                Code(u'\nprint("hi")\nfor x in range(1,5):\n    '
-                            'print(x)\n    \n', False, (2, 5)), 
-                Text(u'\nmore text\n    ', (6, 7)), 
-                Code(u'\nimport foo\n    \n', True, (8, 5)), 
-                Text(u'\n', (10, 7))])
+                Text('text\n    ', (1, 1)),
+                Code('\nprint("hi")\nfor x in range(1,5):\n    '
+                            'print(x)\n    \n', False, (2, 5)),
+                Text('\nmore text\n    ', (6, 7)),
+                Code('\nimport foo\n    \n', True, (8, 5)),
+                Text('\n', (10, 7))])
             )
 
 
@@ -377,14 +381,14 @@ more text
     %>
 """
             nodes = Lexer(template).parse()
-            self._compare(nodes, 
+            self._compare(nodes,
             TemplateNode({}, [
-                Text(u'text\n    ', (1, 1)), 
-                Code(u'\nprint "hi"\nfor x in range(1,5):\n    '
-                            'print x\n    \n', False, (2, 5)), 
-                Text(u'\nmore text\n    ', (6, 7)), 
-                Code(u'\nimport foo\n    \n', True, (8, 5)), 
-                Text(u'\n', (10, 7))])
+                Text('text\n    ', (1, 1)),
+                Code('\nprint "hi"\nfor x in range(1,5):\n    '
+                            'print x\n    \n', False, (2, 5)),
+                Text('\nmore text\n    ', (6, 7)),
+                Code('\nimport foo\n    \n', True, (8, 5)),
+                Text('\n', (10, 7))])
             )
 
     def test_code_and_tags(self):
@@ -409,20 +413,20 @@ more text
     result: <%call expr="foo.x(result)"/>
 """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n', (1, 1)),
-                      NamespaceTag(u'namespace', {u'name': u'foo'}, (2,
-                      1), [Text(u'\n    ', (2, 24)), DefTag(u'def',
-                      {u'name': u'x()'}, (3, 5),
-                      [Text(u'''\n        this is x\n    ''', (3, 22))]),
-                      Text(u'\n    ', (5, 12)), DefTag(u'def', {u'name'
-                      : u'y()'}, (6, 5),
-                      [Text(u'''\n        this is y\n    ''', (6, 22))]),
-                      Text(u'\n', (8, 12))]), Text(u'''\n\n''', (9, 14)),
-                      Code(u'''\nresult = []\ndata = get_data()\n'''
+        self._compare(nodes, TemplateNode({}, [Text('\n', (1, 1)),
+                      NamespaceTag('namespace', {'name': 'foo'}, (2,
+                      1), [Text('\n    ', (2, 24)), DefTag('def',
+                      {'name': 'x()'}, (3, 5),
+                      [Text('''\n        this is x\n    ''', (3, 22))]),
+                      Text('\n    ', (5, 12)), DefTag('def', {'name'
+                      : 'y()'}, (6, 5),
+                      [Text('''\n        this is y\n    ''', (6, 22))]),
+                      Text('\n', (8, 12))]), Text('''\n\n''', (9, 14)),
+                      Code('''\nresult = []\ndata = get_data()\n'''
                       '''for x in data:\n    result.append(x+7)\n\n''',
-                      False, (11, 1)), Text(u'''\n\n    result: ''', (16,
-                      3)), CallTag(u'call', {u'expr': u'foo.x(result)'
-                      }, (18, 13), []), Text(u'\n', (18, 42))]))
+                      False, (11, 1)), Text('''\n\n    result: ''', (16,
+                      3)), CallTag('call', {'expr': 'foo.x(result)'
+                      }, (18, 13), []), Text('\n', (18, 42))]))
 
     def test_expression(self):
         template = \
@@ -435,77 +439,77 @@ more text
 """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'\n        this is some ', (1, 1)),
-                      Expression(u'text', [], (2, 22)),
-                      Text(u' and this is ', (2, 29)),
-                      Expression(u'textwith ', ['escapes', 'moreescapes'
-                      ], (2, 42)), Text(u'\n        ', (2, 76)),
-                      DefTag(u'def', {u'name': u'hi()'}, (3, 9),
-                      [Text(u'\n            give me ', (3, 27)),
-                      Expression(u'foo()', [], (4, 21)), Text(u' and ',
-                      (4, 29)), Expression(u'bar()', [], (4, 34)),
-                      Text(u'\n        ', (4, 42))]), Text(u'\n        '
-                      , (5, 16)), Expression(u'hi()', [], (6, 9)),
-                      Text(u'\n', (6, 16))]))
+                      [Text('\n        this is some ', (1, 1)),
+                      Expression('text', [], (2, 22)),
+                      Text(' and this is ', (2, 29)),
+                      Expression('textwith ', ['escapes', 'moreescapes'
+                      ], (2, 42)), Text('\n        ', (2, 76)),
+                      DefTag('def', {'name': 'hi()'}, (3, 9),
+                      [Text('\n            give me ', (3, 27)),
+                      Expression('foo()', [], (4, 21)), Text(' and ',
+                      (4, 29)), Expression('bar()', [], (4, 34)),
+                      Text('\n        ', (4, 42))]), Text('\n        '
+                      , (5, 16)), Expression('hi()', [], (6, 9)),
+                      Text('\n', (6, 16))]))
 
 
     def test_tricky_expression(self):
         template = """
-        
+
             ${x and "|" or "hi"}
         """
         nodes = Lexer(template).parse()
         self._compare(
             nodes,
             TemplateNode({}, [
-                Text(u'\n        \n            ', (1, 1)), 
-                Expression(u'x and "|" or "hi"', [], (3, 13)), 
-                Text(u'\n        ', (3, 33))
+                Text('\n\n            ', (1, 1)),
+                Expression('x and "|" or "hi"', [], (3, 13)),
+                Text('\n        ', (3, 33))
             ])
         )
 
         template = """
-        
+
             ${hello + '''heres '{|}' text | | }''' | escape1}
         """
         nodes = Lexer(template).parse()
         self._compare(
             nodes,
             TemplateNode({}, [
-                Text(u'\n        \n            ', (1, 1)), 
-                Expression(u"hello + '''heres '{|}' text | | }''' ", 
-                                ['escape1'], (3, 13)), 
-                Text(u'\n        ', (3, 62))
+                Text('\n\n            ', (1, 1)),
+                Expression("hello + '''heres '{|}' text | | }''' ",
+                                ['escape1'], (3, 13)),
+                Text('\n        ', (3, 62))
             ])
         )
 
     def test_tricky_code(self):
-        if util.py3k:
+        if compat.py3k:
             template = """<% print('hi %>') %>"""
             nodes = Lexer(template).parse()
             self._compare(nodes, TemplateNode({},
-                          [Code(u"print('hi %>') \n", False, (1, 1))]))
+                          [Code("print('hi %>') \n", False, (1, 1))]))
         else:
             template = """<% print 'hi %>' %>"""
             nodes = Lexer(template).parse()
             self._compare(nodes, TemplateNode({},
-                          [Code(u"print 'hi %>' \n", False, (1, 1))]))
+                          [Code("print 'hi %>' \n", False, (1, 1))]))
 
     def test_tricky_code_2(self):
         template = \
-            """<% 
+            """<%
         # someone's comment
-        %>
+%>
         """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Code(u""" 
+                      [Code("""
         # someone's comment
-        
-""",
-                      False, (1, 1)), Text(u'\n        ', (3, 11))]))
 
-    if util.py3k:
+""",
+                      False, (1, 1)), Text('\n        ', (3, 3))]))
+
+    if compat.py3k:
         def test_tricky_code_3(self):
             template = \
                 """<%
@@ -517,10 +521,10 @@ more text
         there
         ''')
             # someone else's comment
-        %> '''and now some text '''"""
+%> '''and now some text '''"""
             nodes = Lexer(template).parse()
             self._compare(nodes, TemplateNode({},
-                          [Code(u"""
+                          [Code("""
 print('hi')
 # this is a comment
 # another comment
@@ -529,11 +533,11 @@ print('''
         there
         ''')
 # someone else's comment
-        
+
 """,
                           False, (1, 1)),
-                          Text(u" '''and now some text '''", (10,
-                          11))]))
+                          Text(" '''and now some text '''", (10,
+                          3))]))
     else:
         def test_tricky_code_3(self):
             template = \
@@ -546,23 +550,23 @@ print('''
         there
         '''
             # someone else's comment
-        %> '''and now some text '''"""
+%> '''and now some text '''"""
             nodes = Lexer(template).parse()
             self._compare(nodes, TemplateNode({},
-                      [Code(u"""\nprint 'hi'\n# this is a comment\n"""
+                      [Code("""\nprint 'hi'\n# this is a comment\n"""
                       """# another comment\nx = 7 """
                       """# someone's '''comment\nprint '''\n        """
                       """there\n        '''\n# someone else's """
-                      """comment\n        \n""",
+                      """comment\n\n""",
                       False, (1, 1)),
-                      Text(u" '''and now some text '''", (10,11))]))
+                      Text(" '''and now some text '''", (10, 3))]))
 
     def test_tricky_code_4(self):
         template = \
             """<% foo = "\\"\\\\" %>"""
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Code(u"""foo = "\\"\\\\" \n""",
+                      [Code("""foo = "\\"\\\\" \n""",
                       False, (1, 1))]))
 
     def test_tricky_code_5(self):
@@ -570,9 +574,9 @@ print('''
             """before ${ {'key': 'value'} } after"""
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'before ', (1, 1)),
-                      Expression(u" {'key': 'value'} ", [], (1, 8)),
-                      Text(u' after', (1, 29))]))
+                      [Text('before ', (1, 1)),
+                      Expression(" {'key': 'value'} ", [], (1, 8)),
+                      Text(' after', (1, 29))]))
 
     def test_control_lines(self):
         template = \
@@ -587,21 +591,21 @@ text text la la
     tex tesl asdl l is ${l} kfmas d
       % endfor
     tetx text
-    
+
 """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'''\ntext text la la\n''', (1, 1)),
-                      ControlLine(u'if', u'if foo():', False, (3, 1)),
-                      Text(u' mroe text la la blah blah\n', (4, 1)),
-                      ControlLine(u'if', u'endif', True, (5, 1)),
-                      Text(u'''\n        and osme more stuff\n''', (6,
-                      1)), ControlLine(u'for', u'for l in range(1,5):',
-                      False, (8, 1)), Text(u'    tex tesl asdl l is ',
-                      (9, 1)), Expression(u'l', [], (9, 24)),
-                      Text(u' kfmas d\n', (9, 28)), ControlLine(u'for',
-                      u'endfor', True, (10, 1)),
-                      Text(u'''    tetx text\n    \n''', (11, 1))]))
+                      [Text('''\ntext text la la\n''', (1, 1)),
+                      ControlLine('if', 'if foo():', False, (3, 1)),
+                      Text(' mroe text la la blah blah\n', (4, 1)),
+                      ControlLine('if', 'endif', True, (5, 1)),
+                      Text('''\n        and osme more stuff\n''', (6,
+                      1)), ControlLine('for', 'for l in range(1,5):',
+                      False, (8, 1)), Text('    tex tesl asdl l is ',
+                      (9, 1)), Expression('l', [], (9, 24)),
+                      Text(' kfmas d\n', (9, 28)), ControlLine('for',
+                      'endfor', True, (10, 1)),
+                      Text('''    tetx text\n\n''', (11, 1))]))
 
     def test_control_lines_2(self):
         template = \
@@ -610,10 +614,10 @@ text text la la
 % endfor
 """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [ControlLine(u'for',
-                      u"for file in requestattr['toc'].filenames:",
-                      False, (1, 1)), Text(u'    x\n', (2, 1)),
-                      ControlLine(u'for', u'endfor', True, (3, 1))]))
+        self._compare(nodes, TemplateNode({}, [ControlLine('for',
+                      "for file in requestattr['toc'].filenames:",
+                      False, (1, 1)), Text('    x\n', (2, 1)),
+                      ControlLine('for', 'endfor', True, (3, 1))]))
 
     def test_long_control_lines(self):
         template = \
@@ -627,13 +631,13 @@ text text la la
         self._compare(
             nodes,
             TemplateNode({}, [
-                Text(u'\n', (1, 1)), 
-                ControlLine(u'for', u"for file in \\\n        "
-                                "requestattr['toc'].filenames:", 
-                                False, (2, 1)), 
-                Text(u'        x\n', (4, 1)), 
-                ControlLine(u'for', u'endfor', True, (5, 1)), 
-                Text(u'        ', (6, 1))
+                Text('\n', (1, 1)),
+                ControlLine('for', "for file in \\\n        "
+                                "requestattr['toc'].filenames:",
+                                False, (2, 1)),
+                Text('        x\n', (4, 1)),
+                ControlLine('for', 'endfor', True, (5, 1)),
+                Text('        ', (6, 1))
             ])
         )
 
@@ -692,16 +696,16 @@ text text la la
         % endif
 """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n', (1, 1)),
-                      ControlLine(u'if', u'if x:', False, (2, 1)),
-                      Text(u'            hi\n', (3, 1)),
-                      ControlLine(u'elif', u'elif y+7==10:', False, (4,
-                      1)), Text(u'            there\n', (5, 1)),
-                      ControlLine(u'elif', u'elif lala:', False, (6,
-                      1)), Text(u'            lala\n', (7, 1)),
-                      ControlLine(u'else', u'else:', False, (8, 1)),
-                      Text(u'            hi\n', (9, 1)),
-                      ControlLine(u'if', u'endif', True, (10, 1))]))
+        self._compare(nodes, TemplateNode({}, [Text('\n', (1, 1)),
+                      ControlLine('if', 'if x:', False, (2, 1)),
+                      Text('            hi\n', (3, 1)),
+                      ControlLine('elif', 'elif y+7==10:', False, (4,
+                      1)), Text('            there\n', (5, 1)),
+                      ControlLine('elif', 'elif lala:', False, (6,
+                      1)), Text('            lala\n', (7, 1)),
+                      ControlLine('else', 'else:', False, (8, 1)),
+                      Text('            hi\n', (9, 1)),
+                      ControlLine('if', 'endif', True, (10, 1))]))
 
     def test_integration(self):
         template = \
@@ -727,27 +731,27 @@ text text la la
 </table>
 """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [NamespaceTag(u'namespace'
-                      , {u'file': u'somefile.html', u'name': u'foo'},
-                      (1, 1), []), Text(u'\n', (1, 46)),
-                      Comment(u'inherit from foobar.html', (2, 1)),
-                      InheritTag(u'inherit', {u'file': u'foobar.html'},
-                      (3, 1), []), Text(u'''\n\n''', (3, 31)),
-                      DefTag(u'def', {u'name': u'header()'}, (5, 1),
-                      [Text(u'''\n     <div>header</div>\n''', (5,
-                      23))]), Text(u'\n', (7, 8)), DefTag(u'def',
-                      {u'name': u'footer()'}, (8, 1),
-                      [Text(u'''\n    <div> footer</div>\n''', (8,
-                      23))]), Text(u'''\n\n<table>\n''', (10, 8)),
-                      ControlLine(u'for', u'for j in data():', False,
-                      (13, 1)), Text(u'    <tr>\n', (14, 1)),
-                      ControlLine(u'for', u'for x in j:', False, (15,
-                      1)), Text(u'            <td>Hello ', (16, 1)),
-                      Expression(u'x', ['h'], (16, 23)), Text(u'</td>\n'
-                      , (16, 30)), ControlLine(u'for', u'endfor', True,
-                      (17, 1)), Text(u'    </tr>\n', (18, 1)),
-                      ControlLine(u'for', u'endfor', True, (19, 1)),
-                      Text(u'</table>\n', (20, 1))]))
+        self._compare(nodes, TemplateNode({}, [NamespaceTag('namespace'
+                      , {'file': 'somefile.html', 'name': 'foo'},
+                      (1, 1), []), Text('\n', (1, 46)),
+                      Comment('inherit from foobar.html', (2, 1)),
+                      InheritTag('inherit', {'file': 'foobar.html'},
+                      (3, 1), []), Text('''\n\n''', (3, 31)),
+                      DefTag('def', {'name': 'header()'}, (5, 1),
+                      [Text('''\n     <div>header</div>\n''', (5,
+                      23))]), Text('\n', (7, 8)), DefTag('def',
+                      {'name': 'footer()'}, (8, 1),
+                      [Text('''\n    <div> footer</div>\n''', (8,
+                      23))]), Text('''\n\n<table>\n''', (10, 8)),
+                      ControlLine('for', 'for j in data():', False,
+                      (13, 1)), Text('    <tr>\n', (14, 1)),
+                      ControlLine('for', 'for x in j:', False, (15,
+                      1)), Text('            <td>Hello ', (16, 1)),
+                      Expression('x', ['h'], (16, 23)), Text('</td>\n'
+                      , (16, 30)), ControlLine('for', 'endfor', True,
+                      (17, 1)), Text('    </tr>\n', (18, 1)),
+                      ControlLine('for', 'endfor', True, (19, 1)),
+                      Text('</table>\n', (20, 1))]))
 
     def test_comment_after_statement(self):
         template = \
@@ -759,12 +763,12 @@ text text la la
         % endif #end
 """
         nodes = Lexer(template).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'\n', (1, 1)),
-                      ControlLine(u'if', u'if x: #comment', False, (2,
-                      1)), Text(u'            hi\n', (3, 1)),
-                      ControlLine(u'else', u'else: #next', False, (4,
-                      1)), Text(u'            hi\n', (5, 1)),
-                      ControlLine(u'if', u'endif #end', True, (6, 1))]))
+        self._compare(nodes, TemplateNode({}, [Text('\n', (1, 1)),
+                      ControlLine('if', 'if x: #comment', False, (2,
+                      1)), Text('            hi\n', (3, 1)),
+                      ControlLine('else', 'else: #next', False, (4,
+                      1)), Text('            hi\n', (5, 1)),
+                      ControlLine('if', 'endif #end', True, (6, 1))]))
 
     def test_crlf(self):
         template = open(self._file_path("crlf.html"), 'rb').read()
@@ -772,23 +776,23 @@ text text la la
         self._compare(
             nodes,
             TemplateNode({}, [
-                Text(u'<html>\r\n\r\n', (1, 1)), 
-                PageTag(u'page', {
-                            u'args': u"a=['foo',\n                'bar']"
-                        }, (3, 1), []), 
-                Text(u'\r\n\r\nlike the name says.\r\n\r\n', (4, 26)), 
-                ControlLine(u'for', u'for x in [1,2,3]:', False, (8, 1)), 
-                Text(u'        ', (9, 1)), 
-                Expression(u'x', [], (9, 9)), 
-                ControlLine(u'for', u'endfor', True, (10, 1)), 
-                Text(u'\r\n', (11, 1)), 
-                Expression(u"trumpeter == 'Miles' and "
-                                "trumpeter or \\\n      'Dizzy'", 
-                                [], (12, 1)), 
-                Text(u'\r\n\r\n', (13, 15)), 
-                DefTag(u'def', {u'name': u'hi()'}, (15, 1), [
-                    Text(u'\r\n    hi!\r\n', (15, 19))]), 
-                    Text(u'\r\n\r\n</html>\r\n', (17, 8))
+                Text('<html>\r\n\r\n', (1, 1)),
+                PageTag('page', {
+                            'args': "a=['foo',\n                'bar']"
+                        }, (3, 1), []),
+                Text('\r\n\r\nlike the name says.\r\n\r\n', (4, 26)),
+                ControlLine('for', 'for x in [1,2,3]:', False, (8, 1)),
+                Text('        ', (9, 1)),
+                Expression('x', [], (9, 9)),
+                ControlLine('for', 'endfor', True, (10, 1)),
+                Text('\r\n', (11, 1)),
+                Expression("trumpeter == 'Miles' and "
+                                "trumpeter or \\\n      'Dizzy'",
+                                [], (12, 1)),
+                Text('\r\n\r\n', (13, 15)),
+                DefTag('def', {'name': 'hi()'}, (15, 1), [
+                    Text('\r\n    hi!\r\n', (15, 19))]),
+                    Text('\r\n\r\n</html>\r\n', (17, 8))
                 ])
         )
         assert flatten_result(Template(template).render()) \
@@ -806,7 +810,7 @@ text text la la
 # also not a comment
 
    ## this is a comment
-   
+
 this is ## not a comment
 
 <%doc> multiline
@@ -817,14 +821,14 @@ hi
 """
         nodes = Lexer(template).parse()
         self._compare(nodes, TemplateNode({},
-                      [Text(u'''\n<style>\n #someselector\n # '''
+                      [Text('''\n<style>\n #someselector\n # '''
                         '''other non comment stuff\n</style>\n''',
-                      (1, 1)), Comment(u'a comment', (6, 1)),
-                      Text(u'''\n# also not a comment\n\n''', (7, 1)),
-                      Comment(u'this is a comment', (10, 1)),
-                      Text(u'''   \nthis is ## not a comment\n\n''', (11,
-                      1)), Comment(u''' multiline\ncomment\n''', (14,
-                      1)), Text(u'''
+                      (1, 1)), Comment('a comment', (6, 1)),
+                      Text('''\n# also not a comment\n\n''', (7, 1)),
+                      Comment('this is a comment', (10, 1)),
+                      Text('''\nthis is ## not a comment\n\n''', (11,
+                      1)), Comment(''' multiline\ncomment\n''', (14,
+                      1)), Text('''
 
 hi
 ''', (16, 8))]))
@@ -842,17 +846,17 @@ hi
         </%def>
         """
         nodes = Lexer(template).parse()
-        self._compare(nodes, 
-            TemplateNode({}, [Text(u'\n        ', (1,
+        self._compare(nodes,
+            TemplateNode({}, [Text('\n        ', (1,
               1)),
-              Comment(u'''\n            this is a comment\n        ''',
-              (2, 9)), Text(u'\n        ', (4, 16)),
-              DefTag(u'def', {u'name': u'foo()'}, (5, 9),
-              [Text(u'\n            ', (5, 28)),
-              Comment(u'''\n                this is the foo func\n'''
+              Comment('''\n            this is a comment\n        ''',
+              (2, 9)), Text('\n        ', (4, 16)),
+              DefTag('def', {'name': 'foo()'}, (5, 9),
+              [Text('\n            ', (5, 28)),
+              Comment('''\n                this is the foo func\n'''
                 '''            ''',
-              (6, 13)), Text(u'\n        ', (8, 20))]),
-              Text(u'\n        ', (9, 16))]))
+              (6, 13)), Text('\n        ', (8, 20))]),
+              Text('\n        ', (9, 16))]))
 
     def test_preprocess(self):
 
@@ -866,6 +870,6 @@ hi
 # another comment
 """
         nodes = Lexer(template, preprocessor=preproc).parse()
-        self._compare(nodes, TemplateNode({}, [Text(u'''\n    hi\n''',
-                      (1, 1)), Comment(u'old style comment', (3, 1)),
-                      Comment(u'another comment', (4, 1))]))
+        self._compare(nodes, TemplateNode({}, [Text('''\n    hi\n''',
+                      (1, 1)), Comment('old style comment', (3, 1)),
+                      Comment('another comment', (4, 1))]))

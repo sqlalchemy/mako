@@ -1,7 +1,7 @@
 from mako.template import Template
 from mako import lookup, exceptions, runtime
 from mako.util import FastEncodingBuffer
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 import unittest
 import os
 
@@ -46,7 +46,7 @@ class LookupTest(unittest.TestCase):
         try:
             t.render()
             assert False
-        except exceptions.TemplateLookupException, e:
+        except exceptions.TemplateLookupException as e:
             assert str(e) == \
                 "Template 'memory:%s' has no TemplateLookup associated" % \
                 hex(id(t))

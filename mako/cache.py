@@ -64,7 +64,7 @@ class Cache(object):
     def __init__(self, template, *args):
         # check for a stale template calling the
         # constructor
-        if isinstance(template, basestring) and args:
+        if isinstance(template, str) and args:
             return
         self.template = template
         self.id = template.module.__name__

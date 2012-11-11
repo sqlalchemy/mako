@@ -1,7 +1,9 @@
 import unittest
 
 from mako.pygen import PythonPrinter, adjust_whitespace
-from StringIO import StringIO
+from mako.compat import StringIO
+from test import eq_
+
 
 class GeneratePythonTest(unittest.TestCase):
     def test_generate_normal(self):
@@ -48,7 +50,7 @@ if x > 7:
                     print "hi"
                 print "there"
                 foo(lala)
-        """
+"""
         stream = StringIO()
         printer = PythonPrinter(stream)
         printer.writeline("import lala")
@@ -59,7 +61,7 @@ if x > 7:
         printer.writeline("print y")
         printer.close()
         #print "->" + stream.getvalue().replace(' ', '#') + "<-"
-        assert stream.getvalue() == \
+        eq_(stream.getvalue(),
 """import lala
 for x in foo:
     print x
@@ -71,9 +73,9 @@ for x in foo:
         print "hi"
     print "there"
     foo(lala)
-        
+
 print y
-"""
+""")
     def test_multi_line(self):
         block = \
 """
@@ -99,7 +101,7 @@ and more block.
     do_more_stuff(g)
 
 """
-    
+
     def test_false_unindentor(self):
         stream = StringIO()
         printer = PythonPrinter(stream)
@@ -114,7 +116,7 @@ and more block.
             None
         ]:
             printer.writeline(line)
-        
+
         assert stream.getvalue() == \
 """try:
     elsemyvar = 12
@@ -123,8 +125,8 @@ and more block.
 finally:
     dosomething
 """    , stream.getvalue()
-        
-        
+
+
     def test_backslash_line(self):
         block = \
 """
@@ -167,9 +169,9 @@ print "hi"
     def test_blank_lines(self):
         text = """
     print "hi"  # a comment
-    
+
     # more comments
-    
+
     print g
 """
         assert adjust_whitespace(text) == \

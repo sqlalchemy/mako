@@ -19,7 +19,7 @@ class BeakerCacheImpl(CacheImpl):
         if _beaker_cache is None:
             try:
                 from beaker import cache as beaker_cache
-            except ImportError, e:
+            except ImportError as e:
                 raise exceptions.RuntimeException(
                             "the Beaker package is required to use cache "
                             "functionality.")

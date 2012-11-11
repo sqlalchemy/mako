@@ -11,6 +11,8 @@ import time
 import re
 from mako.pygen import PythonPrinter
 from mako import util, ast, parsetree, filters, exceptions
+from mako import compat
+
 
 MAGIC_NUMBER = 8
 
@@ -40,7 +42,7 @@ def compile(node,
     # a bytestring itself, as we will be embedding it into
     # the generated source and we don't want to coerce the
     # result into a unicode object, in "disable_unicode" mode
-    if not util.py3k and isinstance(source_encoding, unicode):
+    if not compat.py3k and isinstance(source_encoding, compat.text_type):
         source_encoding = source_encoding.encode(source_encoding)
 
 
@@ -230,7 +232,7 @@ class _GenerateRenderMethod(object):
         self.compiler.identifiers = module_identifiers
         self.printer.writeline("_exports = %r" %
                             [n.name for n in
-                            main_identifiers.topleveldefs.values()]
+                            list(main_identifiers.topleveldefs.values())]
                         )
         self.printer.write("\n\n")
 
@@ -243,7 +245,7 @@ class _GenerateRenderMethod(object):
         elif len(namespaces):
             self.write_namespaces(namespaces)
 
-        return main_identifiers.topleveldefs.values()
+        return list(main_identifiers.topleveldefs.values())
 
     def write_render_callable(self, node, name, args, buffered, filtered,
             cached):
@@ -327,8 +329,8 @@ class _GenerateRenderMethod(object):
         self.printer.writeline("def _mako_generate_namespaces(context):")
 
 
-        for node in namespaces.values():
-            if node.attributes.has_key('import'):
+        for node in list(namespaces.values()):
+            if 'import' in node.attributes:
                 self.compiler.has_ns_imports = True
             self.write_source_comment(node)
             if len(node.nodes):
@@ -436,7 +438,7 @@ class _GenerateRenderMethod(object):
         # write closure functions for closures that we define
         # right here
         to_write = to_write.union(
-                        [c.funcname for c in identifiers.closuredefs.values()])
+                        [c.funcname for c in list(identifiers.closuredefs.values())])
 
         # remove identifiers that are declared in the argument
         # signature of the callable
@@ -463,8 +465,8 @@ class _GenerateRenderMethod(object):
         if toplevel and getattr(self.compiler, 'has_ns_imports', False):
             self.printer.writeline("_import_ns = {}")
             self.compiler.has_imports = True
-            for ident, ns in self.compiler.namespaces.iteritems():
-                if ns.attributes.has_key('import'):
+            for ident, ns in self.compiler.namespaces.items():
+                if 'import' in ns.attributes:
                     self.printer.writeline(
                             "_mako_get_namespace(context, %r)."\
                                     "_populate(_import_ns, %r)" %
@@ -699,7 +701,7 @@ class _GenerateRenderMethod(object):
                 "%s, lambda:__M_%s(%s),  context, %s__M_defname=%r)" % \
                             (cachekey, name, ','.join(pass_args),
                             ''.join(["%s=%s, " % (k,v)
-                            for k, v in cache_args.items()]),
+                            for k, v in list(cache_args.items())]),
                             name
                             )
             # apply buffer_filters
@@ -713,7 +715,7 @@ class _GenerateRenderMethod(object):
                     "%s, lambda:__M_%s(%s), context, %s__M_defname=%r))" %
                     (cachekey, name, ','.join(pass_args),
                     ''.join(["%s=%s, " % (k,v)
-                        for k, v in cache_args.items()]),
+                        for k, v in list(cache_args.items())]),
                     name,
                     ),
                     "return ''",
@@ -791,10 +793,10 @@ class _GenerateRenderMethod(object):
             #          and end control lines, and
             #    3) any control line with no content other than comments
             if not children or (
-                    util.all(isinstance(c, (parsetree.Comment,
+                    compat.all(isinstance(c, (parsetree.Comment,
                                             parsetree.ControlLine))
                              for c in children) and
-                    util.all((node.is_ternary(c.keyword) or c.isend)
+                    compat.all((node.is_ternary(c.keyword) or c.isend)
                              for c in children
                              if isinstance(c, parsetree.ControlLine))):
                 self.printer.writeline("pass")
@@ -966,7 +968,7 @@ class _Identifiers(object):
                 # things that have already been declared
                 # in an enclosing namespace (i.e. names we can just use)
                 self.declared = set(parent.declared).\
-                         union([c.name for c in parent.closuredefs.values()]).\
+                         union([c.name for c in list(parent.closuredefs.values())]).\
                          union(parent.locally_declared).\
                          union(parent.argument_declared)
 
@@ -1037,8 +1039,8 @@ class _Identifiers(object):
                     list(self.declared),
                     list(self.locally_declared),
                     list(self.undeclared),
-                    [c.name for c in self.topleveldefs.values()],
-                    [c.name for c in self.closuredefs.values()],
+                    [c.name for c in list(self.topleveldefs.values())],
+                    [c.name for c in list(self.closuredefs.values())],
                     self.argument_declared)
 
     def check_declared(self, node):

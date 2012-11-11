@@ -1,6 +1,6 @@
 import unittest
 
-from mako import ast, exceptions, pyparser, util
+from mako import ast, exceptions, pyparser, util, compat
 from test import eq_, requires_python_2
 
 exception_kwargs = {
@@ -237,7 +237,7 @@ import x as bar
 
         parsed = ast.PythonFragment("try:", **exception_kwargs)
 
-        if util.py3k:
+        if compat.py3k:
             parsed = ast.PythonFragment(
                         "except MyException as e:", **exception_kwargs)
         else:

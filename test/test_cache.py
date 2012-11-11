@@ -2,7 +2,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import lookup
 import shutil, unittest, os, time
-from util import result_lines
+from .util import result_lines
 from test import TemplateTest, template_base, module_base
 from test import eq_
 

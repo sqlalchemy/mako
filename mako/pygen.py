@@ -6,8 +6,7 @@
 
 """utilities for generating and formatting literal Python code."""
 
-import re, string
-from StringIO import StringIO
+import re
 from mako import exceptions
 
 class PythonPrinter(object):

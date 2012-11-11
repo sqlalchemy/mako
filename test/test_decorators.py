@@ -1,7 +1,7 @@
 from mako.template import Template
 from mako import lookup
 import unittest
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 
 class DecoratorTest(unittest.TestCase):
     def test_toplevel(self):

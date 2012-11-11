@@ -7,8 +7,11 @@
 """provides runtime services for templates, including Context,
 Namespace, and various helper functions."""
 
-from mako import exceptions, util
-import __builtin__, inspect, sys
+from mako import exceptions, util, compat
+from mako.compat import compat_builtins
+import inspect
+import sys
+import collections
 
 
 class Context(object):
@@ -32,7 +35,7 @@ class Context(object):
 
         # "capture" function which proxies to the
         # generic "capture" function
-        self._data['capture'] = util.partial(capture, self)
+        self._data['capture'] = compat.partial(capture, self)
 
         # "caller" stack used by def calls with content
         self.caller_stack = self._data['caller'] = CallerStack()
@@ -77,13 +80,13 @@ class Context(object):
     def keys(self):
         """Return a list of all names established in this :class:`.Context`."""
 
-        return self._data.keys()
+        return list(self._data.keys())
 
     def __getitem__(self, key):
         if key in self._data:
             return self._data[key]
         else:
-            return __builtin__.__dict__[key]
+            return compat_builtins.__dict__[key]
 
     def _push_writer(self):
         """push a capturing buffer onto this Context and return
@@ -116,7 +119,7 @@ class Context(object):
         """Return a value from this :class:`.Context`."""
 
         return self._data.get(key,
-                __builtin__.__dict__.get(key, default)
+                compat_builtins.__dict__.get(key, default)
                 )
 
     def write(self, string):
@@ -165,8 +168,13 @@ class Context(object):
 class CallerStack(list):
     def __init__(self):
         self.nextcaller = None
+
     def __nonzero__(self):
+        return self.__bool__()
+
+    def __bool__(self):
         return self._get_caller() and True or False
+
     def _get_caller(self):
         # this method can be removed once
         # codegen MAGIC_NUMBER moves past 7
@@ -192,7 +200,11 @@ class Undefined(object):
     """
     def __str__(self):
         raise NameError("Undefined")
+
     def __nonzero__(self):
+        return self.__bool__()
+
+    def __bool__(self):
         return False
 
 UNDEFINED = Undefined()
@@ -336,7 +348,7 @@ class Namespace(object):
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
     callables = ()
 
@@ -502,7 +514,7 @@ class TemplateNamespace(Namespace):
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
         if templateuri is not None:
             self.template = _lookup_template(context, templateuri,
@@ -554,7 +566,7 @@ class TemplateNamespace(Namespace):
                 yield (key, self.callables[key])
         def get(key):
             callable_ = self.template._get_def_callable(key)
-            return util.partial(callable_, self.context)
+            return compat.partial(callable_, self.context)
         for k in self.template.module._exports:
             yield (k, get(k))
 
@@ -563,7 +575,7 @@ class TemplateNamespace(Namespace):
             val = self.callables[key]
         elif self.template.has_def(key):
             callable_ = self.template._get_def_callable(key)
-            val = util.partial(callable_, self.context)
+            val = compat.partial(callable_, self.context)
         elif self.inherits:
             val = getattr(self.inherits, key)
 
@@ -584,7 +596,7 @@ class ModuleNamespace(Namespace):
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
         mod = __import__(module)
         for token in module.split('.')[1:]:
@@ -604,7 +616,7 @@ class ModuleNamespace(Namespace):
                 yield (key, self.callables[key])
         def get(key):
             callable_ = getattr(self.module, key)
-            return util.partial(callable_, self.context)
+            return compat.partial(callable_, self.context)
         for k in dir(self.module):
             if k[0] != '_':
                 yield (k, get(k))
@@ -614,7 +626,7 @@ class ModuleNamespace(Namespace):
             val = self.callables[key]
         elif hasattr(self.module, key):
             callable_ = getattr(self.module, key)
-            val = util.partial(callable_, self.context)
+            val = compat.partial(callable_, self.context)
         elif self.inherits:
             val = getattr(self.inherits, key)
         else:
@@ -648,7 +660,7 @@ def capture(context, callable_, *args, **kwargs):
 
     """
 
-    if not callable(callable_):
+    if not isinstance(callable_, collections.Callable):
         raise exceptions.RuntimeException(
                            "capture() function expects a callable as "
                            "its argument (i.e. capture(func, *args, **kwargs))"
@@ -730,7 +742,7 @@ def _lookup_template(context, uri, relativeto):
     uri = lookup.adjust_uri(uri, relativeto)
     try:
         return lookup.get_template(uri)
-    except exceptions.TopLevelLookupException, e:
+    except exceptions.TopLevelLookupException as e:
         raise exceptions.TemplateLookupException(str(e))
 
 def _populate_self_namespace(context, template, self_ns=None):
@@ -750,12 +762,12 @@ def _render(template, callable_, args, data, as_unicode=False):
     output of the given template and template callable."""
 
     if as_unicode:
-        buf = util.FastEncodingBuffer(unicode=True)
+        buf = util.FastEncodingBuffer(as_unicode=True)
     elif template.bytestring_passthrough:
-        buf = util.StringIO()
+        buf = compat.StringIO()
     else:
         buf = util.FastEncodingBuffer(
-                        unicode=as_unicode,
+                        as_unicode=as_unicode,
                         encoding=template.output_encoding,
                         errors=template.encoding_errors)
     context = Context(buf, **data)
@@ -767,7 +779,7 @@ def _render(template, callable_, args, data, as_unicode=False):
     return context._pop_buffer().getvalue()
 
 def _kwargs_for_callable(callable_, data):
-    argspec = util.inspect_func_args(callable_)
+    argspec = compat.inspect_func_args(callable_)
     # for normal pages, **pageargs is usually present
     if argspec[2]:
         return data
@@ -781,7 +793,7 @@ def _kwargs_for_callable(callable_, data):
     return kwargs
 
 def _kwargs_for_include(callable_, data, **kwargs):
-    argspec = util.inspect_func_args(callable_)
+    argspec = compat.inspect_func_args(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
         if arg != 'context' and arg in data and arg not in kwargs:
@@ -815,7 +827,7 @@ def _exec_template(callable_, context, args=None, kwargs=None):
         error = None
         try:
             callable_(context, *args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             _render_error(template, context, e)
         except:
             e = sys.exc_info()[0]
@@ -831,7 +843,7 @@ def _render_error(template, context, error):
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:
-            context._buffer_stack[:] = [util.FastEncodingBuffer(unicode=True)]
+            context._buffer_stack[:] = [util.FastEncodingBuffer(as_unicode=True)]
         else:
             context._buffer_stack[:] = [util.FastEncodingBuffer(
                                             error_template.output_encoding,

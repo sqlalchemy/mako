@@ -1,6 +1,7 @@
 from mako.template import Template
-import unittest, os
-from mako.util import py3k, py26, py25
+import unittest
+import os
+from mako.compat import py3k, py26, py25
 from mako.util import function_named
 import re
 from mako.cache import CacheImpl, register_plugin
@@ -64,7 +65,7 @@ def assert_raises(except_cls, callable_, *args, **kw):
     try:
         callable_(*args, **kw)
         success = False
-    except except_cls, e:
+    except except_cls as e:
         success = True
 
     # assert outside the block so it works for AssertionError too !
@@ -74,9 +75,9 @@ def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
     try:
         callable_(*args, **kwargs)
         assert False, "Callable did not raise an exception"
-    except except_cls, e:
+    except except_cls as e:
         assert re.search(msg, str(e)), "%r !~ %s" % (msg, e)
-        print str(e)
+        print(str(e))
 
 def skip_if(predicate, reason=None):
     """Skip a test if predicate is true."""

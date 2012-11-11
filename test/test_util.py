@@ -2,7 +2,7 @@
 
 import os
 import unittest
-from mako import util, exceptions
+from mako import util, exceptions, compat
 from test import eq_, skip_if, assert_raises_message
 
 class UtilTest(unittest.TestCase):
@@ -22,7 +22,7 @@ class UtilTest(unittest.TestCase):
         eq_(buf.getvalue(), "string c string d")
 
     def test_fast_buffer_encoded(self):
-        s = u"drôl m’a rée « S’il"
+        s = "drôl m’a rée « S’il"
         buf = util.FastEncodingBuffer(encoding='utf-8')
         buf.write(s[0:10])
         buf.write(s[10:])
@@ -34,7 +34,7 @@ class UtilTest(unittest.TestCase):
         data = util.read_file(fn, 'rb')
         self.failUnless('test_util' in str(data)) # str() for py3k
 
-    @skip_if(lambda: util.pypy, "Pypy does this differently")
+    @skip_if(lambda: compat.pypy, "Pypy does this differently")
     def test_load_module(self):
         fn = os.path.join(os.path.dirname(__file__), 'test_util.py')
         module = util.load_module('mako.template', fn)

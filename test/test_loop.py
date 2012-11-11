@@ -10,7 +10,7 @@ from mako.runtime import LoopStack, LoopContext
 from mako import exceptions
 from test import assert_raises_message
 from test import TemplateTest, eq_
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 
 class TestLoop(unittest.TestCase):
 
@@ -37,7 +37,7 @@ ${x}
         code = template.code
         assert not re.match(r"loop = __M_loop._enter\(:", code), "No need to "\
                 "generate a loop context if the loop variable wasn't accessed"
-        print template.render()
+        print(template.render())
 
     def test_loop_demo(self):
         template = Template("""x|index|reverse_index|first|last|cycle|even|odd
@@ -54,7 +54,7 @@ ${x}|${loop.index}|${loop.reverse_index}|${loop.first}|${loop.last}|${loop.cycle
         assert "loop = __M_loop._enter(" in code, "Generated a loop context since "\
                 "the loop variable was accessed"
         rendered = template.render()
-        print rendered
+        print(rendered)
         for line in expected:
             assert line in rendered, "Loop variables give information about "\
                     "the progress of the loop"
@@ -101,7 +101,7 @@ ${x} ${loop.index} <- outer loop
                 "b 1 <- parent loop"
             ]
         for line in expected:
-            print code
+            print(code)
             assert line in rendered, "The parent attribute of a loop gives "\
                     "you the previous loop context in the stack"
 
@@ -174,7 +174,7 @@ class TestLoopContext(unittest.TestCase):
         length = len(self.iterable)
         expected = tuple([length-i-1 for i in range(length)])
         actual = tuple(self.ctx.reverse_index for i in self.ctx)
-        print expected, actual
+        print(expected, actual)
         assert expected == actual, "The reverse_index is the number of "\
                 "iterations until the end"
 

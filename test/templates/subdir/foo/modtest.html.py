@@ -17,7 +17,7 @@ def render_body(context,**pageargs):
         __M_locals = __M_dict_builtin(pageargs=pageargs)
         __M_writer = context.writer()
         # SOURCE LINE 1
-        __M_writer(u'this is a test')
+        __M_writer('this is a test')
         return ''
     finally:
         context.caller_stack._pop_frame()

@@ -693,7 +693,7 @@ class SourceGenerator(NodeVisitor):
 
     def visit_Dict(self, node):
         self.write('{')
-        for idx, (key, value) in enumerate(zip(node.keys, node.values)):
+        for idx, (key, value) in enumerate(list(zip(node.keys, node.values))):
             if idx:
                 self.write(', ')
             self.visit(key)

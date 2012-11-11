@@ -13,7 +13,7 @@ from pygments.token import \
      Text, Comment, Operator, Keyword, Name, String, Other
 from pygments.formatters.html import HtmlFormatter
 from pygments import highlight
-from mako import util
+from mako import compat
 
 class MakoLexer(RegexLexer):
     name = 'Mako'
@@ -110,7 +110,7 @@ pygments_html_formatter = HtmlFormatter(cssclass='syntax-highlighted',
                                         linenos=True)
 def syntax_highlight(filename='', language=None):
     mako_lexer = MakoLexer()
-    if util.py3k:
+    if compat.py3k:
         python_lexer = Python3Lexer()
     else:
         python_lexer = PythonLexer()

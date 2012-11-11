@@ -2,7 +2,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
 from test import TemplateTest, assert_raises, assert_raises_message
-from util import flatten_result, result_lines
+from .util import flatten_result, result_lines
 
 
 
@@ -361,7 +361,7 @@ class BlockTest(TemplateTest):
                 <html>
             </%block>
         """)
-        self._do_test(template, [u'&lt;html&gt;'], 
+        self._do_test(template, ['&lt;html&gt;'], 
                     filters=result_lines)
 
     def test_anon_in_named(self):
@@ -506,7 +506,7 @@ class BlockTest(TemplateTest):
         """)
         self._do_test(
             l.get_template("caller"),
-            [u'foob, 3, 4'],
+            ['foob, 3, 4'],
             filters=result_lines
         )
 
@@ -518,7 +518,7 @@ class BlockTest(TemplateTest):
         """)
         self._do_test(
             t,
-            [u'foob, 3, 4'],
+            ['foob, 3, 4'],
             template_args={'val1':3, 'val2':4},
             filters=result_lines
         )
@@ -532,7 +532,7 @@ class BlockTest(TemplateTest):
         """)
         self._do_test(
             t,
-            [u'foob, 3, 4'],
+            ['foob, 3, 4'],
             template_args={'val1':3, 'val2':4},
             filters=result_lines
         )
@@ -545,7 +545,7 @@ class BlockTest(TemplateTest):
         """)
         self._do_test(
             t,
-            [u'foob, 3, 4'],
+            ['foob, 3, 4'],
             template_args={'val1':3, 'val2':4},
             filters=result_lines
         )
@@ -564,6 +564,6 @@ class BlockTest(TemplateTest):
         """)
         self._do_test(
             l.get_template("caller"),
-            [u'foob, 3, 4'],
+            ['foob, 3, 4'],
             filters=result_lines
         )

@@ -3,7 +3,7 @@
 from mako.template import Template
 import unittest
 from test import TemplateTest, eq_, requires_python_2
-from util import result_lines, flatten_result
+from .util import result_lines, flatten_result
 
 class FilterTest(TemplateTest):
     def test_basic(self):
@@ -87,7 +87,7 @@ class FilterTest(TemplateTest):
             some stuff.... ${x}
         """, default_filters=['decode.utf8'])
         #print t.code
-        assert t.render_unicode(x="voix m’a réveillé").strip() == u"some stuff.... voix m’a réveillé"
+        assert t.render_unicode(x="voix m’a réveillé").strip() == "some stuff.... voix m’a réveillé"
 
     def test_custom_default(self):
         t = Template("""
@@ -311,7 +311,7 @@ class BufferTest(unittest.TestCase):
 
 """)
         try:
-            print template.render()
+            print(template.render())
             assert False
         except TypeError:
             assert True

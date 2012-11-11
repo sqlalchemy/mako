@@ -8,8 +8,15 @@
 template strings, as well as template runtime operations."""
 
 from mako.lexer import Lexer
-from mako import runtime, util, exceptions, codegen, cache
-import os, re, shutil, stat, sys, tempfile, types, weakref
+from mako import runtime, util, exceptions, codegen, cache, compat
+import os
+import re
+import shutil
+import stat
+import sys
+import tempfile
+import types
+import weakref
 
 
 class Template(object):
@@ -258,7 +265,7 @@ class Template(object):
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
 
-        if util.py3k and disable_unicode:
+        if compat.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
                                     "Mako for Python 3 does not "
                                     "support disabling Unicode")
@@ -267,7 +274,7 @@ class Template(object):
                                     "output_encoding must be set to "
                                     "None when disable_unicode is used.")
         if default_filters is None:
-            if util.py3k or self.disable_unicode:
+            if compat.py3k or self.disable_unicode:
                 self.default_filters = ['str']
             else:
                 self.default_filters = ['unicode']
@@ -317,7 +324,7 @@ class Template(object):
             cache_impl, cache_enabled, cache_args,
             cache_type, cache_dir, cache_url
         )
-      
+
 
     @util.memoized_property
     def reserved_names(self):
@@ -507,7 +514,7 @@ class ModuleTemplate(Template):
         self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.enable_loop = module._enable_loop
 
-        if util.py3k and disable_unicode:
+        if compat.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
                                     "Mako for Python 3 does not "
                                     "support disabling Unicode")
@@ -588,7 +595,7 @@ class ModuleInfo(object):
     def source(self):
         if self.template_source is not None:
             if self.module._source_encoding and \
-                    not isinstance(self.template_source, unicode):
+                    not isinstance(self.template_source, compat.text_type):
                 return self.template_source.decode(
                                 self.module._source_encoding)
             else:
@@ -628,11 +635,11 @@ def _compile_text(template, text, filename):
                         generate_magic_comment=template.disable_unicode)
 
     cid = identifier
-    if not util.py3k and isinstance(cid, unicode):
+    if not compat.py3k and isinstance(cid, compat.text_type):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
-    exec code in module.__dict__, module.__dict__
+    exec(code, module.__dict__, module.__dict__)
     return (source, module)
 
 def _compile_module_file(template, text, filename, outputpath, module_writer):
@@ -640,7 +647,7 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
     source, lexer = _compile(template, text, filename,
                         generate_magic_comment=True)
 
-    if isinstance(source, unicode):
+    if isinstance(source, compat.text_type):
         source = source.encode(lexer.encoding or 'ascii')
 
     if module_writer:
@@ -656,7 +663,7 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
         shutil.move(name, outputpath)
 
 def _get_module_info_from_callable(callable_):
-    return _get_module_info(callable_.func_globals['__name__'])
+    return _get_module_info(callable_.__globals__['__name__'])
 
 def _get_module_info(filename):
     return ModuleInfo._modules[filename]

@@ -5,11 +5,10 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 """gettext message extraction via Babel: http://babel.edgewall.org/"""
-from StringIO import StringIO
-
 from babel.messages.extract import extract_python
-
-from mako import lexer, parsetree, util
+from mako.compat import StringIO
+from mako import compat
+from mako import lexer, parsetree
 
 def extract(fileobj, keywords, comment_tags, options):
     """Extract messages from Mako templates.
@@ -78,7 +77,7 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             code = node.body_decl.code
         elif isinstance(node, parsetree.CallNamespaceTag):
             attribs = ', '.join(['%s=%s' % (key, val)
-                                 for key, val in node.attributes.iteritems()])
+                                 for key, val in node.attributes.items()])
             code = '{%s}' % attribs
             child_nodes = node.nodes
         elif isinstance(node, parsetree.ControlLine):
@@ -108,7 +107,7 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             translator_comments = \
                 [comment[1] for comment in translator_comments]
 
-        if not util.py3k and isinstance(code, unicode):
+        if not compat.py3k and isinstance(code, str):
             code = code.encode('ascii', 'backslashreplace')
         code = StringIO(code)
         for lineno, funcname, messages, python_translator_comments \

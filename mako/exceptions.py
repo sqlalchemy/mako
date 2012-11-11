@@ -6,8 +6,10 @@
 
 """exception classes"""
 
-import traceback, sys, re
-from mako import util
+import traceback
+import sys
+import re
+from mako import util, compat
 
 class MakoException(Exception):
     pass
@@ -84,12 +86,12 @@ class RichTraceback(object):
 
     @property
     def errorname(self):
-        return util.exception_name(self.error)
+        return compat.exception_name(self.error)
 
     def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
-            self.message = unicode(self.error)
+            self.message = compat.text_type(self.error)
         except UnicodeError:
             try:
                 self.message = str(self.error)
@@ -97,8 +99,8 @@ class RichTraceback(object):
                 # Fallback to args as neither unicode nor
                 # str(Exception(u'\xe6')) work in Python < 2.6
                 self.message = self.error.args[0]
-        if not isinstance(self.message, unicode):
-            self.message = unicode(self.message, 'ascii', 'replace')
+        if not isinstance(self.message, compat.text_type):
+            self.message = compat.text_type(self.message, 'ascii', 'replace')
 
     def _get_reformatted_records(self, records):
         for rec in records:
@@ -150,7 +152,7 @@ class RichTraceback(object):
                     template_filename = info.template_filename or filename
                 except KeyError:
                     # A normal .py file (not a Template)
-                    if not util.py3k:
+                    if not compat.py3k:
                         try:
                             fp = open(filename, 'rb')
                             encoding = util.parse_encoding(fp)
