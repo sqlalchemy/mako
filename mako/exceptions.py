@@ -235,14 +235,24 @@ ${tback.errorname}: ${tback.message}
 """)
 
 
-try:
+def _install_pygments():
+    global syntax_highlight, pygments_html_formatter
     from mako.ext.pygmentplugin import syntax_highlight,\
             pygments_html_formatter
-except ImportError:
+
+def _install_fallback():
+    global syntax_highlight, pygments_html_formatter
     from mako.filters import html_escape
     pygments_html_formatter = None
     def syntax_highlight(filename='', language=None):
         return html_escape
+
+def _install_highlighting():
+    try:
+        _install_pygments()
+    except ImportError:
+        _install_fallback()
+_install_highlighting()
 
 def html_error_template():
     """Provides a template that renders a stack trace in an HTML format,

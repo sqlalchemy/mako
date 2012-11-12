@@ -7,9 +7,8 @@ from mako.lookup import TemplateLookup
 from mako.compat import u
 from test.util import result_lines
 from test import TemplateTest
-from test import requires_pygments_14, requires_no_pygments, \
+from test import requires_pygments_14, requires_no_pygments_exceptions, \
     requires_python_25_or_greater
-from mako.compat import u
 
 class ExceptionsTest(TemplateTest):
     def test_html_error_template(self):
@@ -104,7 +103,7 @@ ${u'привет'}
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
 
-    @requires_no_pygments
+    @requires_no_pygments_exceptions
     def test_utf8_html_error_template_no_pygments(self):
         """test the html_error_template with a Template containing utf8
         chars"""
@@ -129,7 +128,8 @@ ${u'привет'}
             if compat.py3k:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "
                     "error&#39; is not a partial control statement "
-                    "at line: 2 char: 1").encode(sys.getdefaultencoding(), 'htmlentityreplace') in \
+                    "at line: 2 char: 1").encode(sys.getdefaultencoding(),
+                            'htmlentityreplace') in \
                     html_error
             else:
                 assert ("CompileException: Fragment &#39;if 2 == 2: /an "
@@ -139,10 +139,10 @@ ${u'привет'}
 
             if compat.py3k:
                 assert "${&#39;привет&#39;}".encode(sys.getdefaultencoding(),
-                                        'htmlentityreplace') in html_error
+                                 'htmlentityreplace') in html_error
             else:
-                assert "${u&#39;привет&#39;}".encode(sys.getdefaultencoding(),
-                                        'htmlentityreplace') in html_error
+                assert u("${u&#39;привет&#39;}").encode(sys.getdefaultencoding(),
+                                    'htmlentityreplace') in html_error
         else:
             assert False, ("This function should trigger a CompileException, "
                            "but didn't")
@@ -197,7 +197,7 @@ ${foobar}
                 '<span class="n">foobar</span><span class="p">}</span>' in \
             result_lines(l.get_template("foo.html").render_unicode())
 
-    @requires_no_pygments
+    @requires_no_pygments_exceptions
     def test_format_exceptions_no_pygments(self):
         l = TemplateLookup(format_exceptions=True)
 
@@ -244,7 +244,7 @@ ${foobar}
                     '<span class="x"></span>' in \
                 result_lines(l.get_template("foo.html").render().decode('utf-8'))
 
-    @requires_no_pygments
+    @requires_no_pygments_exceptions
     def test_utf8_format_exceptions_no_pygments(self):
         """test that htmlentityreplace formatting is applied to
            exceptions reported with format_exceptions=True"""

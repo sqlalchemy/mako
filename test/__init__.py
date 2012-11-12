@@ -113,12 +113,15 @@ def requires_pygments_14(fn):
         version = "0"
     return skip_if(lambda: version < "1.4")(fn)
 
-def requires_no_pygments(fn):
-    try:
-        import pygments
-    except:
-        pygments = None
-    return skip_if(lambda: pygments is not None)(fn)
+def requires_no_pygments_exceptions(fn):
+    def go(*arg, **kw):
+        from mako import exceptions
+        exceptions._install_fallback()
+        try:
+            return fn(*arg, **kw)
+        finally:
+            exceptions._install_highlighting()
+    return function_named(go, fn.__name__)
 
 class PlainCacheImpl(CacheImpl):
     """Simple memory cache impl so that tests which
