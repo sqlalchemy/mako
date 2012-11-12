@@ -103,7 +103,6 @@ class _GenerateRenderMethod(object):
         self.compiler = compiler
         self.node = node
         self.identifier_stack = [None]
-
         self.in_def = isinstance(node, (parsetree.DefTag, parsetree.BlockTag))
 
         if self.in_def:
@@ -159,7 +158,6 @@ class _GenerateRenderMethod(object):
         inherit = []
         namespaces = {}
         module_code = []
-        encoding = [None]
 
         self.compiler.pagetag = None
 

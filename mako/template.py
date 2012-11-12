@@ -188,6 +188,12 @@ class Template(object):
      result of the callable will be used as the template source
      code.
 
+    :param lexer_cls: A :class:`.Lexer` class used to parse
+     the template.   The :class:`.Lexer` class is used by
+     default.
+
+     .. versionadded:: 0.7.4
+
     :param strict_undefined: Replaces the automatic usage of
      ``UNDEFINED`` for any undeclared variables not located in
      the :class:`.Context` with an immediate raise of
@@ -205,6 +211,8 @@ class Template(object):
      ``module_directory`` is specified.
 
     """
+
+    lexer_cls = Lexer
 
     def __init__(self,
                     text=None,
@@ -233,7 +241,8 @@ class Template(object):
                     imports=None,
                     future_imports=None,
                     enable_loop=True,
-                    preprocessor=None):
+                    preprocessor=None,
+                    lexer_cls=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -285,6 +294,9 @@ class Template(object):
         self.imports = imports
         self.future_imports = future_imports
         self.preprocessor = preprocessor
+
+        if lexer_cls is not None:
+            self.lexer_cls = lexer_cls
 
         # if plain text, compile code in memory only
         if text is not None:
@@ -608,11 +620,11 @@ class ModuleInfo(object):
                 return data
 
 def _compile(template, text, filename, generate_magic_comment):
-    lexer = Lexer(text,
-                    filename,
-                    disable_unicode=template.disable_unicode,
-                    input_encoding=template.input_encoding,
-                    preprocessor=template.preprocessor)
+    lexer = template.lexer_cls(text,
+                           filename,
+                           disable_unicode=template.disable_unicode,
+                           input_encoding=template.input_encoding,
+                           preprocessor=template.preprocessor)
     node = lexer.parse()
     source = codegen.compile(node,
                             template.uri,

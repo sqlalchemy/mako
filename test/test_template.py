@@ -3,12 +3,10 @@
 from mako.template import Template, ModuleTemplate
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
-from mako import exceptions, util, runtime
+from mako import exceptions, runtime
 from mako import compat
-import re
 import os
 from test.util import flatten_result, result_lines
-import codecs
 from mako.compat import u
 from test import TemplateTest, eq_, template_base, module_base, \
     requires_python_26_or_greater, assert_raises, assert_raises_message, \
@@ -1239,6 +1237,38 @@ class PreprocessTest(TemplateTest):
 
         assert flatten_result(t.render()) == "im a template - # not a comment - ## not a comment"
 
+class LexerTest(TemplateTest):
+    def _fixture(self):
+        from mako.parsetree import TemplateNode, Text
+        class MyLexer(object):
+            encoding = 'ascii'
+            def __init__(self, *arg, **kw):
+                pass
+
+            def parse(self):
+                t = TemplateNode("foo")
+                t.nodes.append(
+                    Text("hello world", source="foo", lineno=0,
+                            pos=0, filename=None)
+                )
+                return t
+        return MyLexer
+
+    def _test_custom_lexer(self, template):
+        eq_(
+            result_lines(template.render()),
+            ["hello world"]
+        )
+
+    def test_via_template(self):
+        t = Template("foo", lexer_cls=self._fixture())
+        self._test_custom_lexer(t)
+
+    def test_via_lookup(self):
+        tl = TemplateLookup(lexer_cls=self._fixture())
+        tl.put_string("foo", "foo")
+        t = tl.get_template("foo")
+        self._test_custom_lexer(t)
 
 class FuturesTest(TemplateTest):
 

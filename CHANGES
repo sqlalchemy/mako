@@ -2,6 +2,10 @@
 - [feature] Code has been reworked to support Python 2.4->
   Python 3.xx in place.  2to3 no longer needed.
 
+- [feature] Added lexer_cls argument to Template,
+  TemplateLookup, allows alternate Lexer classes
+  to be used.
+
 - [feature] Added future_imports parameter to Template
   and TemplateLookup, renders the __future__ header
   with desired capabilities at the top of the generated

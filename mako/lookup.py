@@ -172,7 +172,8 @@ class TemplateLookup(TemplateCollection):
                         future_imports=None,
                         enable_loop=True,
                         input_encoding=None,
-                        preprocessor=None):
+                        preprocessor=None,
+                        lexer_cls=None):
 
         self.directories = [posixpath.normpath(d) for d in
                             util.to_list(directories, ())
@@ -211,7 +212,9 @@ class TemplateLookup(TemplateCollection):
             'imports':imports,
             'future_imports':future_imports,
             'enable_loop':enable_loop,
-            'preprocessor':preprocessor}
+            'preprocessor':preprocessor,
+            'lexer_cls':lexer_cls
+        }
 
         if collection_size == -1:
             self._collection = {}
