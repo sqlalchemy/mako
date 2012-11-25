@@ -130,7 +130,7 @@ Namespaces from Regular Python Modules
 
 Namespaces can also import regular Python functions from
 modules. These callables need to take at least one argument,
-``context``, an instance of :class:`.Context`. A module file 
+``context``, an instance of :class:`.Context`. A module file
 ``some/module.py`` might contain the callable:
 
 .. sourcecode:: python
@@ -328,6 +328,132 @@ interact with the ``inheritable`` flag, so currently you have to
 use the explicit namespace name off of ``self``, followed by the
 desired function name. But more on this in a future release.
 
+Namespace API Usage Example - Static Dependencies
+==================================================
+
+The ``<%namespace>`` tag at runtime produces an instance of
+:class:`.Namespace`.   Programmatic access of :class:`.Namespace` can be used
+to build various kinds of scaffolding in templates and between templates.
+
+A common request is the ability for a particular template to declare
+"static includes" - meaning, the usage of a particular set of defs requires
+that certain Javascript/CSS files are present.   Using :class:`.Namespace` as the
+object that holds together the various templates present, we can build a variety
+of such schemes.   In particular, the :class:`.Context` has a ``namespaces``
+attribute, which is a dictionary of all :class:`.Namespace` objects declared.
+Iterating the values of this dictionary will provide a :class:`.Namespace`
+object for each time the ``<%namespace>`` tag was used, anywhere within the
+inheritance chain.
+
+
+.. _namespace_attr_for_includes:
+
+Version One - Use :attr:`.Namespace.attr`
+-----------------------------------------
+
+The :attr:`.Namespace.attr` attribute allows us to locate any variables declared
+in the ``<%! %>`` of a template.
+
+.. sourcecode:: mako
+
+    ## base.mako
+    ## base-most template, renders layout etc.
+    <html>
+    <head>
+    ## traverse through all namespaces present,
+    ## look for an attribute named 'includes'
+    % for ns in context.namespaces.values():
+        % for incl in getattr(ns.attr, 'includes', []):
+            ${incl}
+        % endfor
+    % endfor
+    </head>
+    <body>
+    ${next.body()}
+    </body
+    </html>
+
+    ## library.mako
+    ## library functions.
+    <%!
+        includes = [
+            '<link rel="stylesheet" type="text/css" href="mystyle.css"/>',
+            '<script type="text/javascript" src="functions.js"></script>'
+        ]
+    %>
+
+    <%def name="mytag()">
+        <form>
+            ${caller.body()}
+        </form>
+    </%def>
+
+    ## index.mako
+    ## calling template.
+    <%inherit file="base.mako"/>
+    <%namespace name="foo" file="library.mako"/>
+
+    <%foo:mytag>
+        a form
+    </%foo:mytag>
+
+
+Above, the file ``library.mako`` declares an attribute ``includes`` inside its global ``<%! %>`` section.
+``index.mako`` includes this template using the ``<%namespace>`` tag.  The base template ``base.mako``, which is the inherited parent of ``index.mako`` and is reponsible for layout, then locates this attribute and iterates through its contents to produce the includes that are specific to ``library.mako``.
+
+Version Two - Use a specific named def
+-----------------------------------------
+
+In this version, we put the includes into a ``<%def>`` that
+follows a naming convention.
+
+.. sourcecode:: mako
+
+    ## base.mako
+    ## base-most template, renders layout etc.
+    <html>
+    <head>
+    ## traverse through all namespaces present,
+    ## look for a %def named 'includes'
+    % for ns in context.namespaces.values():
+        % if hasattr(ns, 'includes'):
+            ${ns.includes()}
+        % endif
+    % endfor
+    </head>
+    <body>
+    ${next.body()}
+    </body
+    </html>
+
+    ## library.mako
+    ## library functions.
+
+    <%def name="includes()">
+        <link rel="stylesheet" type="text/css" href="mystyle.css"/>
+        <script type="text/javascript" src="functions.js"></script>
+    </%def>
+
+    <%def name="mytag()">
+        <form>
+            ${caller.body()}
+        </form>
+    </%def>
+
+
+    ## index.mako
+    ## calling template.
+    <%inherit file="base.mako"/>
+    <%namespace name="foo" file="library.mako"/>
+
+    <%foo:mytag>
+        a form
+    </%foo:mytag>
+
+In this version, ``library.mako`` declares a ``<%def>`` named ``includes``.   The example works
+identically to the previous one, except that ``base.mako`` looks for defs named ``include``
+on each namespace it examines.
+
 API Reference
 =============
 
@@ -342,7 +468,7 @@ API Reference
 .. autoclass:: mako.runtime.ModuleNamespace
     :show-inheritance:
     :members:
- 
+
 .. autofunction:: mako.runtime.supports_caller
 
 .. autofunction:: mako.runtime.capture

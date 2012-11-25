@@ -73,7 +73,7 @@ Here is a breakdown of the execution:
    function on all template-based namespaces refers to the main
    body of the template, therefore the main body of
    ``index.html`` is rendered.
-#. When ``<%block name="header">`` is encountered in ``index.html`` 
+#. When ``<%block name="header">`` is encountered in ``index.html``
    during the ``self.body()`` call, a conditional is checked -- does the
    current inherited template, i.e. ``base.html``, also define this block? If yes,
    the ``<%block>`` is **not** executed here -- the inheritance
@@ -494,6 +494,8 @@ thing is now:
 
 and you're now a template inheritance ninja!
 
+.. _inheritance_attr:
+
 Inheritable Attributes
 ======================
 
@@ -532,3 +534,7 @@ you'll get output like:
         This is the body
     </div>
 
+.. seealso::
+
+    :ref:`namespace_attr_for_includes` - a more sophisticated example using
+    :attr:`.Namespace.attr`.

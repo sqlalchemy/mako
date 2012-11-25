@@ -406,8 +406,13 @@ class Namespace(object):
 
         This accessor allows templates to supply "scalar"
         attributes which are particularly handy in inheritance
-        relationships. See the example in
-        :ref:`inheritance_toplevel`.
+        relationships.
+
+        .. seealso::
+
+            :ref:`inheritance_attr`
+
+            :ref:`namespace_attr_for_includes`
 
         """
         return _NSAttr(self)
