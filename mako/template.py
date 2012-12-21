@@ -170,7 +170,7 @@ class Template(object):
 
          from mako.template import Template
          mytemplate = Template(
-                         file="index.html",
+                         filename="index.html",
                          module_directory="/path/to/modules",
                          module_writer=module_writer
                      )
