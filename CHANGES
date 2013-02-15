@@ -1,4 +1,8 @@
 0.7.4
+- [bug] Change default for compile()->reserved_names
+  from tuple to frozenset, as this is expected to be
+  a set by default.  [ticket:208]
+
 - [feature] Code has been reworked to support Python 2.4->
   Python 3.xx in place.  2to3 no longer needed.
 

@@ -33,7 +33,7 @@ def compile(node,
                 disable_unicode=False,
                 strict_undefined=False,
                 enable_loop=True,
-                reserved_names=()):
+                reserved_names=frozenset()):
 
     """Generate module source code given a parsetree node,
       uri, and optional source filename"""
