@@ -353,6 +353,17 @@ def read_file(path, mode='rb'):
     finally:
         fp.close()
 
+def read_python_file(path):
+    fp = open(path, "rb")
+    try:
+        encoding = parse_encoding(fp)
+        data = fp.read()
+        if encoding:
+            data = data.decode(encoding)
+        return data
+    finally:
+        fp.close()
+
 def load_module(module_id, path):
     fp = open(path, 'rb')
     try:

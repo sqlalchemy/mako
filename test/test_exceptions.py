@@ -282,7 +282,7 @@ ${foobar}
         # isn't in the 'wrong' exception
         assert "".join(reversed(");93#&rab;93#&(oof")) in html_error
 
-    def test_tback_no_trace(self):
+    def test_tback_no_trace_from_py_file(self):
         try:
             t = self._file_template("runtimeerr.html")
             t.render()
@@ -296,4 +296,15 @@ ${foobar}
         # and don't even send what we have.
         html_error = exceptions.html_error_template().\
                     render_unicode(error=v, traceback=None)
+        assert "local variable &#39;y&#39; referenced before assignment" in html_error
+
+    def test_tback_trace_from_py_file(self):
+        t = self._file_template("runtimeerr.html")
+        try:
+            t.render()
+            assert False
+        except:
+            html_error = exceptions.html_error_template().\
+                        render_unicode()
+
         assert "local variable &#39;y&#39; referenced before assignment" in html_error

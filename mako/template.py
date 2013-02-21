@@ -601,7 +601,7 @@ class ModuleInfo(object):
         if self.module_source is not None:
             return self.module_source
         else:
-            return util.read_file(self.module_filename)
+            return util.read_python_file(self.module_filename)
 
     @property
     def source(self):
