@@ -1,4 +1,4 @@
-0.7.4
+0.8.0
 - [feature] Performance improvement to the
   "legacy" HTML escape feature, used for XML
   escaping and when markupsafe isn't present,
