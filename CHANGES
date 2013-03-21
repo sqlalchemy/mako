@@ -1,4 +1,9 @@
 0.7.4
+- [feature] Performance improvement to the
+  "legacy" HTML escape feature, used for XML
+  escaping and when markupsafe isn't present,
+  courtesy George Xie.
+
 - [bug] Fixed bug whereby an exception in Python 3
   against a module compiled to the filesystem would
   fail trying to produce a RichTraceback due to the
