@@ -24,12 +24,15 @@ xml_escapes = {
 # XXX: &quot; is valid in HTML and XML
 #      &apos; is not valid HTML, but is valid XML
 
-LEGACY_HTML_ESCAPE_RE = re.compile(r'([&<"\'>])')
-
-def legacy_html_escape(string):
+def legacy_html_escape(s):
     """legacy HTML escape for non-unicode mode."""
-
-    return LEGACY_HTML_ESCAPE_RE.sub(lambda m: xml_escapes[m.group()], string)
+    s = s.replace("&", "&amp;") 
+    s = s.replace(">", "&gt;")  
+    s = s.replace("<", "&lt;")  
+    s = s.replace('"', "&#34;")
+    s = s.replace("'", "&#39;")
+    return s
+ 
 
 try:
     import markupsafe
