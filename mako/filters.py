@@ -37,8 +37,6 @@ try:
 except ImportError:
     html_escape = legacy_html_escape
 
-html_escape = legacy_html_escape
-
 def xml_escape(string):
     return re.sub(r'([&<"\'>])', lambda m: xml_escapes[m.group()], string)
 
