@@ -2,6 +2,11 @@
 - [bug] Fixed bug where mako-render script wasn't
   compatible with Py3k.  [ticket:212]
 
+- [bug] Cleaned up all the various deprecation/
+  file warnings when running the tests under
+  various Pythons with warnings turned on.
+  [ticket:213]
+
 0.8.0
 - [feature] Performance improvement to the
   "legacy" HTML escape feature, used for XML

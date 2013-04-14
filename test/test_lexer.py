@@ -774,7 +774,7 @@ text text la la
                       ControlLine('if', 'endif #end', True, (6, 1))]))
 
     def test_crlf(self):
-        template = open(self._file_path("crlf.html"), 'rb').read()
+        template = util.read_file(self._file_path("crlf.html"))
         nodes = Lexer(template).parse()
         self._compare(
             nodes,

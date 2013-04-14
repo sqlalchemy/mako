@@ -5,6 +5,7 @@ from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
 from mako import exceptions, runtime
 from mako import compat
+from mako import util
 import os
 from test.util import flatten_result, result_lines
 from mako.compat import u
@@ -219,7 +220,7 @@ class EncodingTest(TemplateTest):
         )
 
         self._do_memory_test(
-            open(self._file_path("unicode_arguments.html"), 'rb').read(),
+            util.read_file(self._file_path("unicode_arguments.html")),
             [
                 u('x is: drôle de petite voix m’a réveillé'),
                 u('x is: drôle de petite voix m’a réveillé'),
@@ -1017,16 +1018,16 @@ class RichTracebackTest(TemplateTest):
                 source = source.encode('utf-8')
             else:
                 source = source
-            templateargs = {'text':source}
+            templateargs = {'text': source}
         else:
             if syntax:
                 filename = 'unicode_syntax_error.html'
             else:
                 filename = 'unicode_runtime_error.html'
-            source = open(self._file_path(filename), 'rb').read()
+            source = util.read_file(self._file_path(filename), 'rb')
             if not utf8:
                 source = source.decode('utf-8')
-            templateargs = {'filename':self._file_path(filename)}
+            templateargs = {'filename': self._file_path(filename)}
         try:
             template = Template(**templateargs)
             if not syntax:

@@ -23,12 +23,12 @@ class LRUTest(unittest.TestCase):
             l[id] = item(id)
 
         # first couple of items should be gone
-        self.assert_(1 not in l)
-        self.assert_(2 not in l)
+        assert 1 not in l
+        assert 2 not in l
 
         # next batch over the threshold of 10 should be present
         for id in range(11,20):
-            self.assert_(id in l)
+            assert id in l
 
         l[12]
         l[15]
@@ -38,11 +38,11 @@ class LRUTest(unittest.TestCase):
         l[26] = item(26)
         l[27] = item(27)
 
-        self.assert_(11 not in l)
-        self.assert_(13 not in l)
+        assert 11 not in l
+        assert 13 not in l
 
         for id in (25, 24, 23, 14, 12, 19, 18, 17, 16, 15):
-            self.assert_(id in l)
+            assert id in l
 
     def _disabled_test_threaded(self):
         size = 100

@@ -376,7 +376,7 @@ class Template(object):
                             filename,
                             path,
                             self.module_writer)
-            module = util.load_module(self.module_id, path)
+            module = compat.load_module(self.module_id, path)
             del sys.modules[self.module_id]
             if module._magic_number != codegen.MAGIC_NUMBER:
                 data = util.read_file(filename)
@@ -386,7 +386,7 @@ class Template(object):
                             filename,
                             path,
                             self.module_writer)
-                module = util.load_module(self.module_id, path)
+                module = compat.load_module(self.module_id, path)
                 del sys.modules[self.module_id]
             ModuleInfo(module, path, self, filename, None, None)
         else:

@@ -2,7 +2,7 @@ import sys
 import time
 
 py3k = sys.version_info >= (3, 0)
-py3kwarning = getattr(sys, 'py3kwarning', False) or py3k
+py33 = sys.version_info >= (3, 3)
 py26 = sys.version_info >= (2, 6)
 py25 = sys.version_info >= (2, 5)
 jython = sys.platform.startswith('java')
@@ -41,6 +41,21 @@ else:
 
     def octal(lit):
         return eval("0" + lit)
+
+
+if py33:
+    from importlib import machinery
+    def load_module(module_id, path):
+        return machinery.SourceFileLoader(module_id, path).load_module()
+else:
+    import imp
+    def load_module(module_id, path):
+        fp = open(path, 'rb')
+        try:
+            return imp.load_source(module_id, path, fp)
+        finally:
+            fp.close()
+
 
 def exception_as():
     return sys.exc_info()[1]
@@ -120,7 +135,7 @@ except ImportError:
     def inspect_func_args(fn):
         return inspect.getargspec(fn)
 
-if py3kwarning:
+if py3k:
     def callable(fn):
         return hasattr(fn, '__call__')
 else:
@@ -134,5 +149,4 @@ def with_metaclass(meta, base=object):
     """Create a base class with a metaclass."""
     return meta("%sBase" % meta.__name__, (base,), {})
 ################################################
-
 

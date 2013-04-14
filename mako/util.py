@@ -4,7 +4,6 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import imp
 import re
 import collections
 import codecs
@@ -364,9 +363,3 @@ def read_python_file(path):
     finally:
         fp.close()
 
-def load_module(module_id, path):
-    fp = open(path, 'rb')
-    try:
-        return imp.load_source(module_id, path, fp)
-    finally:
-        fp.close()
