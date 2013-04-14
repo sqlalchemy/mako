@@ -40,7 +40,7 @@ def main(argv=None):
 
     kw = dict([varsplit(var) for var in opts.var])
     data = fo.read()
-    print render(data, filename, kw)
+    print(render(data, filename, kw))
 
 if __name__ == "__main__":
     main()
