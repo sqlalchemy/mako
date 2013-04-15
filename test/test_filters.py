@@ -39,6 +39,13 @@ class FilterTest(TemplateTest):
             "foo &lt;&#39;some bar&#39;&gt;"
         )
 
+    def test_entity(self):
+        t = Template("foo ${bar | entity}")
+        eq_(
+            flatten_result(t.render(bar="<'some bar'>")),
+            "foo &lt;'some bar'&gt;"
+        )
+
     @requires_python_2
     def test_quoting_non_unicode(self):
         t = Template("""

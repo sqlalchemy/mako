@@ -1,4 +1,8 @@
 0.8.1
+- [bug] Fixed regression where "entity" filter wasn't
+  converted for py3k properly (added tests.)
+  [ticket:214]
+
 - [bug] Fixed bug where mako-render script wasn't
   compatible with Py3k.  [ticket:212]
 

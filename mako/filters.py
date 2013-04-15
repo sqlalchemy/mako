@@ -26,13 +26,13 @@ xml_escapes = {
 
 def legacy_html_escape(s):
     """legacy HTML escape for non-unicode mode."""
-    s = s.replace("&", "&amp;") 
-    s = s.replace(">", "&gt;")  
-    s = s.replace("<", "&lt;")  
+    s = s.replace("&", "&amp;")
+    s = s.replace(">", "&gt;")
+    s = s.replace("<", "&lt;")
     s = s.replace('"', "&#34;")
     s = s.replace("'", "&#39;")
     return s
- 
+
 
 try:
     import markupsafe
@@ -80,7 +80,7 @@ def is_ascii_str(text):
 
 class XMLEntityEscaper(object):
     def __init__(self, codepoint2name, name2codepoint):
-        self.codepoint2entity = dict([(c, '&%s;' % n)
+        self.codepoint2entity = dict([(c, compat.text_type('&%s;' % n))
                                       for c, n in codepoint2name.items()])
         self.name2codepoint = name2codepoint
 
@@ -89,7 +89,7 @@ class XMLEntityEscaper(object):
 
         Only characters corresponding to a named entity are replaced.
         """
-        return str(text).translate(self.codepoint2entity)
+        return compat.text_type(text).translate(self.codepoint2entity)
 
     def __escape(self, m):
         codepoint = ord(m.group())
