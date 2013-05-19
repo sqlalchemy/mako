@@ -1,8 +1,0 @@
-syntax:regexp
-^build/
-^doc/build/output
-.pyc$
-.orig$
-Mako.egg-info
-easy-install.pth
-env.*/
