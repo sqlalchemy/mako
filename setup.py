@@ -9,6 +9,15 @@ v.close()
 
 readme = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
+markupsafe_installs = (
+            sys.version_info >= (2, 6) and sys.version_info < (3, 0)
+        ) or sys.version_info >= (3, 3)
+
+if markupsafe_installs:
+    install_requires = ['MarkupSafe>=0.9.2']
+else:
+    install_requires = []
+
 setup(name='Mako',
       version=VERSION,
       description="A super-fast templating language that borrows the \
@@ -31,13 +40,11 @@ setup(name='Mako',
       license='MIT',
       packages=find_packages('.', exclude=['examples*', 'test*']),
       scripts=['scripts/mako-render'],
-      tests_require = ['nose >= 0.11'],
-      test_suite = "nose.collector",
+      tests_require=['nose >= 0.11'],
+      test_suite="nose.collector",
       zip_safe=False,
-      install_requires=[
-          'MarkupSafe>=0.9.2',
-      ],
-      extras_require = {'beaker':['Beaker>=1.1']},
+      install_requires=install_requires,
+      extras_require={'beaker': ['Beaker>=1.1']},
       entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin

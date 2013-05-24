@@ -1,4 +1,9 @@
 0.8.1
+- [bug] Changed setup.py to skip installing markupsafe
+  if Python version is < 2.6 or is between 3.0 and
+  less than 3.3, as Markupsafe now only supports 2.6->2.X,
+  3.3->3.X. [ticket:216]
+
 - [bug] Fixed regression where "entity" filter wasn't
   converted for py3k properly (added tests.)
   [ticket:214]
