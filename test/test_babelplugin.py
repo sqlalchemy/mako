@@ -37,7 +37,6 @@ class ExtractMakoTestCase(TemplateTest):
             (71, '_', 'P.S. byebye', []),
             (77, '_', 'Top', []),
             (83, '_', 'foo', []),
-            (83, '_', 'baz', []),
             (85, '_', 'bar', [])
              ]
         self.assertEqual(expected, messages)
