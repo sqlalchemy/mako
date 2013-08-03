@@ -14,6 +14,9 @@
   avoiding TypeError when trying to produce partials.
   [ticket:207]
 
+- [bug] Fixed Py3K bug where a "lambda" expression was not
+  interpreted correctly within a template tag.  [ticket:190]
+
 0.8.1
 - [bug] Changed setup.py to skip installing markupsafe
   if Python version is < 2.6 or is between 3.0 and

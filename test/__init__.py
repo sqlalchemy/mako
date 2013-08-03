@@ -111,7 +111,7 @@ def requires_pygments_14(fn):
         version = pygments.__version__
     except:
         version = "0"
-    return skip_if(lambda: version < "1.4")(fn)
+    return skip_if(lambda: version < "1.4", "Requires pygments 1.4 or greater")(fn)
 
 def requires_no_pygments_exceptions(fn):
     def go(*arg, **kw):

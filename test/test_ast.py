@@ -316,6 +316,7 @@ import x as bar
                         "repr({'x':-1})", "repr(((1,2,3), (4,5,6)))",
                         "repr(1 and 2 and 3 and 4)",
                         "repr(True and False or 55)",
+                        "repr(lambda x, y: x+y)",
                         "repr(1 & 2 | 3)",
                         "repr(3//5)",
                         "repr(3^5)",
