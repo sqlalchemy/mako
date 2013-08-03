@@ -76,15 +76,7 @@ def extract_nodes(nodes, keywords, comment_tags, options):
         elif isinstance(node, parsetree.PageTag):
             code = node.body_decl.code
         elif isinstance(node, parsetree.CallNamespaceTag):
-            attribs = ', '.join(['%s=%s' % (
-                                    key,
-                                    repr(val)
-                                    if not val.startswith('${')
-                                    else val
-                                )
-                                    for key, val in node.attributes.items()])
-
-            code = '{%s}' % attribs
+            code = node.expression
             child_nodes = node.nodes
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:
