@@ -1,3 +1,11 @@
+0.9.0
+- [bug] Fixed the babel plugin to properly interpret ${} sections
+  inside of a "call" tag, i.e. <%self:some_tag attr="${_('foo')}"/>.
+  Code that's subject to babel escapes in here needs to be
+  specified as a Python expression, not a literal.  This change
+  is backwards incompatible vs. code that is relying upon a _('')
+  translation to be working within a call tag.
+
 0.8.1
 - [bug] Changed setup.py to skip installing markupsafe
   if Python version is < 2.6 or is between 3.0 and

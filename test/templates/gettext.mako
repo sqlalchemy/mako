@@ -87,3 +87,4 @@ ${_(u'bar')}
 </%self:block_tpl>
 
 </%def>
+
