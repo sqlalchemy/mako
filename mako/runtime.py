@@ -619,12 +619,12 @@ class ModuleNamespace(Namespace):
         if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
-        def get(key):
-            callable_ = getattr(self.module, key)
-            return compat.partial(callable_, self.context)
-        for k in dir(self.module):
-            if k[0] != '_':
-                yield (k, get(k))
+        for key in dir(self.module):
+            if key[0] != '_':
+                callable_ = getattr(self.module, key)
+                if compat.callable(callable_):
+                    yield key, compat.partial(callable_, self.context)
+
 
     def __getattr__(self, key):
         if key in self.callables:

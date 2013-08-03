@@ -9,6 +9,11 @@
 - [bug] The Babel plugin has been repaired to work on Python 3.
   [ticket:187]
 
+- [bug] Using <%namespace import="*" module="somemodule"/> now
+  skips over module elements that are not explcitly callable,
+  avoiding TypeError when trying to produce partials.
+  [ticket:207]
+
 0.8.1
 - [bug] Changed setup.py to skip installing markupsafe
   if Python version is < 2.6 or is between 3.0 and
