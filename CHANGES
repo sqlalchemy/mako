@@ -7,6 +7,7 @@
   translation to be working within a call tag.
 
 - [bug] The Babel plugin has been repaired to work on Python 3.
+  [ticket:187]
 
 0.8.1
 - [bug] Changed setup.py to skip installing markupsafe
