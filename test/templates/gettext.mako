@@ -40,7 +40,7 @@ top = gettext('Begin')
   ## TRANSLATOR: Good bye
   ${_('Goodbye')}
 </div>
- 
+
 <%def name="makerow(row=_('Babel'), count=1)">
     <!-- ${ungettext('hella', 'hellas', count)} -->
     % for i in range(count):
@@ -73,14 +73,14 @@ top = gettext('Begin')
 <div id="end">
   <a href="#top">
     ## TRANSLATOR: you won't see this either
- 
+
     ${_('Top')}
   </a>
 </div>
 
 <%def name="panel()">
 
-${_(u'foo')} <%self:block_tpl title="#123", name="_(u'baz')">
+${_(u'foo')} <%self:block_tpl title="#123", name="_('baz')" value="${_('hoho')}">
 
 ${_(u'bar')}
 

@@ -76,12 +76,15 @@ def extract_nodes(nodes, keywords, comment_tags, options):
         elif isinstance(node, parsetree.PageTag):
             code = node.body_decl.code
         elif isinstance(node, parsetree.CallNamespaceTag):
-            attribs = []
-            for key, val in node.attributes.items():
-                if not val.startswith('${'):
-                    val = "'%s'" % val
-                attribs.append('%s=%s' % (key, val))
-            code = '{%s}' % ', '.join(attribs)
+            attribs = ', '.join(['%s=%s' % (
+                                    key,
+                                    "'%s'" % val
+                                        if not val.startswith('${')
+                                        else val
+                                )
+                                    for key, val in node.attributes.items()])
+
+            code = '{%s}' % attribs
             child_nodes = node.nodes
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:
@@ -112,6 +115,7 @@ def extract_nodes(nodes, keywords, comment_tags, options):
 
         if not compat.py3k and isinstance(code, compat.text_type):
             code = code.encode('ascii', 'backslashreplace')
+
         code = StringIO(code)
         for lineno, funcname, messages, python_translator_comments \
                 in extract_python(code, keywords, comment_tags, options):
