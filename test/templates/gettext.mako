@@ -80,7 +80,7 @@ top = gettext('Begin')
 
 <%def name="panel()">
 
-${_(u'foo')} <%self:block_tpl title="#123", name="_('baz')" value="${_('hoho')}">
+${_(u'foo')} <%self:block_tpl title="#123", name="_('baz')" value="${_('hoho')}" something="hi'there" somethingelse='hi"there'>
 
 ${_(u'bar')}
 

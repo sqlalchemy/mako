@@ -3,9 +3,11 @@ from test import TemplateTest, template_base, skip_if
 
 try:
     import babel
-    from mako.ext.babelplugin import extract
 except:
     babel = None
+
+if babel is not None:
+    from mako.ext.babelplugin import extract
 
 import os
 

@@ -78,9 +78,9 @@ def extract_nodes(nodes, keywords, comment_tags, options):
         elif isinstance(node, parsetree.CallNamespaceTag):
             attribs = ', '.join(['%s=%s' % (
                                     key,
-                                    "'%s'" % val
-                                        if not val.startswith('${')
-                                        else val
+                                    repr(val)
+                                    if not val.startswith('${')
+                                    else val
                                 )
                                     for key, val in node.attributes.items()])
 
