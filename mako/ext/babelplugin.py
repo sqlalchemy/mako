@@ -113,10 +113,10 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             translator_comments = \
                 [comment[1] for comment in translator_comments]
 
-        if not compat.py3k and isinstance(code, compat.text_type):
+        if isinstance(code, compat.text_type):
             code = code.encode('ascii', 'backslashreplace')
 
-        code = StringIO(code)
+        code = compat.byte_buffer(code)
         for lineno, funcname, messages, python_translator_comments \
                 in extract_python(code, keywords, comment_tags, options):
             yield (node.lineno + (lineno - 1), funcname, messages,

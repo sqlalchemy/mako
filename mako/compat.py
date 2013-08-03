@@ -18,6 +18,8 @@ if py3k:
     binary_type = bytes
     text_type = str
 
+    from io import BytesIO as byte_buffer
+
     def u(s):
         return s
 
@@ -30,6 +32,9 @@ else:
         from cStringIO import StringIO
     except:
         from StringIO import StringIO
+
+    byte_buffer = StringIO
+
     from urllib import quote_plus, unquote_plus
     from htmlentitydefs import codepoint2name, name2codepoint
     string_types = basestring,
