@@ -14,7 +14,7 @@ from mako import util, ast, parsetree, filters, exceptions
 from mako import compat
 
 
-MAGIC_NUMBER = 8
+MAGIC_NUMBER = 9
 
 # names which are hardwired into the
 # template and are not accessed via the
@@ -548,7 +548,7 @@ class _GenerateRenderMethod(object):
         if not self.in_def and (
                                 len(self.identifiers.locally_assigned) > 0 or
                                 len(self.identifiers.argument_declared) > 0):
-            nameargs.insert(0, 'context.locals_(__M_locals)')
+            nameargs.insert(0, 'context._locals(__M_locals)')
         else:
             nameargs.insert(0, 'context')
         self.printer.writeline("def %s(%s):" % (funcname, ",".join(namedecls)))

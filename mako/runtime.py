@@ -58,8 +58,22 @@ class Context(object):
 
     @property
     def kwargs(self):
-        """Return the dictionary of keyword arguments associated with this
-        :class:`.Context`.
+        """Return the dictionary of top level keyword arguments associated
+        with this :class:`.Context`.
+
+        This dictionary only includes the top-level arguments passed to
+        :meth:`.Template.render`.  It does not include names produced within
+        the template execution such as local variable names or special names
+        such as ``self``, ``next``, etc.
+
+        The purpose of this dictionary is primarily for the case that
+        a :class:`.Template` accepts arguments via its ``<%page>`` tag,
+        which are normally expected to be passed via :meth:`.Template.render`,
+        except the template is being called in an inheritance context,
+        using the ``body()`` method.   :attr:`.Context.kwargs` can then be
+        used to propagate these arguments to the inheriting template::
+
+            ${next.body(**context.kwargs)}
 
         """
         return self._kwargs.copy()
@@ -144,11 +158,18 @@ class Context(object):
         c.caller_stack = self.caller_stack
         return c
 
-    def locals_(self, d):
+    def _locals(self, d):
         """Create a new :class:`.Context` with a copy of this
-        :class:`.Context`'s current state, updated with the given dictionary."""
+        :class:`.Context`'s current state,
+        updated with the given dictionary.
 
-        if len(d) == 0:
+        The :attr:`.Context.kwargs` collection remains
+        unaffected.
+
+
+        """
+
+        if not d:
             return self
         c = self._copy()
         c._data.update(d)
@@ -173,19 +194,22 @@ class CallerStack(list):
         return self.__bool__()
 
     def __bool__(self):
-        return self._get_caller() and True or False
+        return len(self) and self._get_caller() and True or False
 
     def _get_caller(self):
         # this method can be removed once
         # codegen MAGIC_NUMBER moves past 7
         return self[-1]
+
     def __getattr__(self, key):
         return getattr(self._get_caller(), key)
+
     def _push_frame(self):
         frame = self.nextcaller or None
         self.append(frame)
         self.nextcaller = None
         return frame
+
     def _pop_frame(self):
         self.nextcaller = self.pop()
 
@@ -721,10 +745,10 @@ def _inherit_from(context, uri, calling_uri):
     ih = self_ns
     while ih.inherits is not None:
         ih = ih.inherits
-    lclcontext = context.locals_({'next':ih})
+    lclcontext = context._locals({'next': ih})
     ih.inherits = TemplateNamespace("self:%s" % template.uri,
                                 lclcontext,
-                                template = template,
+                                template=template,
                                 populate_self=False)
     context._data['parent'] = lclcontext._data['local'] = ih.inherits
     callable_ = getattr(template.module, '_mako_inherit', None)

@@ -245,9 +245,9 @@ So above, the body might be called as:
 
     ${self.body(5, y=10, someval=15, delta=7)}
 
-The :class:`.Context` object also supplies a :attr:`~.Context.kwargs` accessor, for
-cases when you'd like to pass along whatever is in the context to
-a ``body()`` callable:
+The :class:`.Context` object also supplies a :attr:`~.Context.kwargs`
+accessor, for cases when you'd like to pass along the top level context
+arguments to a ``body()`` callable:
 
 .. sourcecode:: mako
 
