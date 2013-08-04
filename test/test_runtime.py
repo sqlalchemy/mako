@@ -2,7 +2,7 @@
 """
 from mako import runtime
 import unittest
-from . import eq_
+from test import eq_
 
 class ContextTest(unittest.TestCase):
     def test_locals_kwargs(self):

@@ -316,7 +316,8 @@ import x as bar
                         "repr({'x':-1})", "repr(((1,2,3), (4,5,6)))",
                         "repr(1 and 2 and 3 and 4)",
                         "repr(True and False or 55)",
-                        "repr(lambda x, y: x+y)",
+                        "repr(lambda x, y: (x + y))",
+                        "repr(lambda *arg, **kw: arg, kw)",
                         "repr(1 & 2 | 3)",
                         "repr(3//5)",
                         "repr(3^5)",
@@ -327,9 +328,12 @@ import x as bar
             local_dict = {}
             astnode = pyparser.parse(code)
             newcode = pyparser.ExpressionGenerator(astnode).value()
-            eq_(eval(code, local_dict),
-                eval(newcode, local_dict)
-            )
+            if "lambda" in code:
+                eq_(code, newcode)
+            else:
+                eq_(eval(code, local_dict),
+                    eval(newcode, local_dict)
+                )
 
 
 
