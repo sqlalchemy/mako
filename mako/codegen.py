@@ -188,7 +188,7 @@ class _GenerateRenderMethod(object):
         # module-level names, python code
         if self.compiler.generate_magic_comment and \
             self.compiler.source_encoding:
-            self.printer.writeline("# -*- encoding:%s -*-" %
+            self.printer.writeline("# -*- coding:%s -*-" %
                                     self.compiler.source_encoding)
 
         if self.compiler.future_imports:

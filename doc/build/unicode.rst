@@ -285,7 +285,7 @@ Python. For these users, assuming they're sticking with Python
 
 .. sourcecode:: python
 
-    # -*- encoding:utf-8 -*-
+    # -*- coding:utf-8 -*-
     from mako.template import Template
 
     t = Template("drôle de petite voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
@@ -299,7 +299,7 @@ these:
 
 .. sourcecode:: python
 
-    # -*- encoding:utf-8 -*-
+    # -*- coding:utf-8 -*-
     #  ...more generated code ...
 
     def render_body(context,**pageargs):
