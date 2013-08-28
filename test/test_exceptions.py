@@ -57,7 +57,7 @@ class ExceptionsTest(TemplateTest):
 
     @requires_pygments_14
     def test_utf8_html_error_template_pygments(self):
-        """test the html_error_template with a Template containing utf8
+        """test the html_error_template with a Template containing UTF-8
         chars"""
 
         if compat.py3k:
@@ -105,7 +105,7 @@ ${u'привет'}
 
     @requires_no_pygments_exceptions
     def test_utf8_html_error_template_no_pygments(self):
-        """test the html_error_template with a Template containing utf8
+        """test the html_error_template with a Template containing UTF-8
         chars"""
 
         if compat.py3k:
