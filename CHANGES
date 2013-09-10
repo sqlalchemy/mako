@@ -1,4 +1,7 @@
 0.9.1
+- [bug] Fixed an AST issue that was preventing correct operation
+  under alpha versions of Python 3.4.  Pullreq courtesy Zer0-.
+
 - [bug] Changed the format of the "source encoding" header output
   by the code generator to use the format ``# -*- coding:%s -*-``
   instead of ``# -*- encoding:%s -*-``; the former is more common
