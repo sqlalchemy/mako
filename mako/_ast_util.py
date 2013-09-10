@@ -659,6 +659,9 @@ class SourceGenerator(NodeVisitor):
     def visit_Name(self, node):
         self.write(node.id)
 
+    def visit_NameConstant(self, node):
+        self.write(str(node.value))
+
     def visit_arg(self, node):
         self.write(node.arg)
 
