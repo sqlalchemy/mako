@@ -11,8 +11,7 @@ module is used.
 """
 
 from mako import exceptions, util, compat
-from mako._ast_util import arg_stringname
-from mako.compat import StringIO
+from mako.compat import StringIO, arg_stringname
 import operator
 
 if compat.py3k:
@@ -39,6 +38,7 @@ except ImportError:
     _ast = None
     from compiler import parse as compiler_parse
     from compiler import visitor
+
 
 
 def parse(code, mode='exec', **exception_kwargs):

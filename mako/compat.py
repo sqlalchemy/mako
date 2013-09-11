@@ -155,3 +155,13 @@ def with_metaclass(meta, base=object):
     return meta("%sBase" % meta.__name__, (base,), {})
 ################################################
 
+
+def arg_stringname(func_arg):
+    """Gets the string name of a kwarg or vararg
+    In Python3.4 a function's args are
+    of _ast.arg type not _ast.name
+    """
+    if hasattr(func_arg, 'arg'):
+        return func_arg.arg
+    else:
+        return str(func_arg)

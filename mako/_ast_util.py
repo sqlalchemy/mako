@@ -31,7 +31,7 @@
     :license: Python License.
 """
 from _ast import *
-
+from mako.compat import arg_stringname
 
 BOOLOP_SYMBOLS = {
     And:        'and',
@@ -78,15 +78,6 @@ ALL_SYMBOLS.update(BINOP_SYMBOLS)
 ALL_SYMBOLS.update(CMPOP_SYMBOLS)
 ALL_SYMBOLS.update(UNARYOP_SYMBOLS)
 
-def arg_stringname(func_arg):
-    """Gets the string name of a kwarg or vararg
-    In Python3.4 a function's args are
-    of _ast.arg type not _ast.name
-    """
-    if hasattr(func_arg, 'arg'):
-        return func_arg.arg
-    else:
-        return str(func_arg)
 
 def parse(expr, filename='<unknown>', mode='exec'):
     """Parse an expression into an AST node."""

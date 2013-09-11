@@ -8,7 +8,7 @@
 code, as well as generating Python from AST nodes"""
 
 from mako import exceptions, pyparser, compat
-from mako._ast_util import arg_stringname
+from mako.compat import arg_stringname
 import re
 
 class PythonCode(object):
