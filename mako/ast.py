@@ -8,6 +8,7 @@
 code, as well as generating Python from AST nodes"""
 
 from mako import exceptions, pyparser, compat
+from mako._ast_util import arg_stringname
 import re
 
 class PythonCode(object):
@@ -126,10 +127,10 @@ class FunctionDecl(object):
         for arg in argnames:
             default = None
             if kwargs:
-                arg = "**" + arg
+                arg = "**" + arg_stringname(arg)
                 kwargs = False
             elif varargs:
-                arg = "*" + arg
+                arg = "*" + arg_stringname(arg)
                 varargs = False
             else:
                 default = len(defaults) and defaults.pop() or None
