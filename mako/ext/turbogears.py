@@ -47,7 +47,7 @@ class TGPlugin(object):
         return self.lookup.get_template(templatename)
 
     def render(self, info, format="html", fragment=False, template=None):
-        if isinstance(template, str if compat.py3k else basestring):
+        if isinstance(template, compat.string_types):
             template = self.load_template(template)
 
         # Load extra vars func if provided
