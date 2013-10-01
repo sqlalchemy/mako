@@ -155,6 +155,12 @@ class LexerTest(TemplateTest):
                       ControlLine('if', 'endif', True, (7, 1)),
                       Text('        ', (8, 1))]))
 
+    def test_old_multiline_comment(self):
+        template = """#*"""
+        node = Lexer(template).parse()
+        self._compare(node, TemplateNode({}, [Text('''#*''', (1, 1))]))
+
+
     def test_text_tag(self):
         template = \
             """

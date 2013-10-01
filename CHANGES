@@ -7,6 +7,9 @@
   instead of ``# -*- encoding:%s -*-``; the former is more common
   and compatible with emacs.  Courtesy Martin Geisler.
 
+- [bug] Fixed issue where an old lexer rule prevented a template line
+  which looked like "#*" from being correctly parsed.  [ticket:224]
+
 0.9.0
 - [bug] The Context.locals_() method becomes a private underscored
   method, as this method has a specific internal use. The purpose

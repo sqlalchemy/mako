@@ -345,8 +345,6 @@ class Lexer(object):
                  |
                  (?=\${)      # an expression
                  |
-                 (?=\#\*)     # multiline comment
-                 |
                  (?=</?[%&])  # a substitution or block or call start or end
                               # - don't consume
                  |
