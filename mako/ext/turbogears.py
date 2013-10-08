@@ -4,7 +4,8 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import re, inspect
+import inspect
+from mako import compat
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
@@ -46,7 +47,7 @@ class TGPlugin(object):
         return self.lookup.get_template(templatename)
 
     def render(self, info, format="html", fragment=False, template=None):
-        if isinstance(template, str):
+        if isinstance(template, compat.string_types):
             template = self.load_template(template)
 
         # Load extra vars func if provided
