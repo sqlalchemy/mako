@@ -1,4 +1,7 @@
 0.9.1
+- [bug] Fixed TGPlugin.render method to support unicode template
+  names in Py2K - courtesy Vladimir Magamedov.
+
 - [bug] Fixed an AST issue that was preventing correct operation
   under alpha versions of Python 3.4.  Pullreq courtesy Zer0-.
 
