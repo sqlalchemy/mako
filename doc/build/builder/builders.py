@@ -27,7 +27,8 @@ class MakoBridge(TemplateBridge):
             directories=builder.config.templates_path,
             imports=[
                 "from builder import util"
-            ]
+            ],
+            #format_exceptions=True,
         )
 
     def render(self, template, context):
@@ -37,7 +38,7 @@ class MakoBridge(TemplateBridge):
 
         # RTD layout
         if rtd:
-            # add variables if not present, such 
+            # add variables if not present, such
             # as if local test of READTHEDOCS variable
             if 'MEDIA_URL' not in context:
                 context['MEDIA_URL'] = "http://media.readthedocs.org/"
@@ -93,5 +94,4 @@ def setup(app):
     # lexer here so that the latest syntax is available
     app.add_lexer('mako', MakoLexer())
     app.add_config_value('site_base', "", True)
- 
- 
+
