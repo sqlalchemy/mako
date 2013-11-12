@@ -1,14 +1,14 @@
 ## coding: utf-8
 <%!
     local_script_files = []
-%>
-<%
-    css_files[:0] = [
+
+    default_css_files = [
         '_static/pygments.css',
         '_static/docs.css',
         '_static/site.css'
     ]
 %>
+
 <%doc>
     Structural elements are all prefixed with "docs-"
     to prevent conflicts when the structure is integrated into the
