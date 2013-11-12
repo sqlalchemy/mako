@@ -3,7 +3,7 @@
     local_script_files = []
 %>
 <%
-    css_files[0:] = [
+    css_files[:0] = [
         '_static/pygments.css',
         '_static/docs.css',
         '_static/site.css'
