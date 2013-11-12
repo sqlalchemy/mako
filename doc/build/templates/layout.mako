@@ -2,6 +2,13 @@
 <%!
     local_script_files = []
 %>
+<%
+    css_files[0:] = [
+        '_static/pygments.css',
+        '_static/docs.css',
+        '_static/site.css'
+    ]
+%>
 <%doc>
     Structural elements are all prefixed with "docs-"
     to prevent conflicts when the structure is integrated into the
@@ -39,9 +46,6 @@ withsidebar = bool(toc) and current_page_name != 'index'
 
 <%block name="headers">
     ${parent.headers()}
-
-    <link rel="stylesheet" href="${pathto('_static/pygments.css', 1)}" type="text/css" />
-    <link rel="stylesheet" href="${pathto('_static/docs.css', 1)}" type="text/css" />
 
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {

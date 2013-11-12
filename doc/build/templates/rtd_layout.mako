@@ -5,11 +5,7 @@
 
 <%block name="headers">
 
-<!-- begin iterate through sphinx environment css_files -->
-% for cssfile in css_files:
-    <link rel="stylesheet" href="${pathto(cssfile, 1)}" type="text/css" />
-% endfor
-<!-- end iterate through sphinx environment css_files -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700' rel='stylesheet' type='text/css'>
 
 <!-- RTD <head> via mako adapter -->
 <script type="text/javascript">
