@@ -1,4 +1,8 @@
 0.9.1
+- [bug] Fixed bug in Babel plugin where translator comments
+  would be lost if intervening text nodes were encountered.
+  Fix courtesy Ned Batchelder.  [ticket:225]
+
 - [bug] Fixed TGPlugin.render method to support unicode template
   names in Py2K - courtesy Vladimir Magamedov.
 
