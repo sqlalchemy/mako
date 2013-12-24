@@ -88,3 +88,12 @@ ${_(u'bar')}
 
 </%def>
 
+## TRANSLATOR: <p> tag is ok?
+<p>${_("Inside a p tag")}</p>
+
+## TRANSLATOR: also this
+<p>${even_with_other_code_first()} - ${_("Later in a p tag")}</p>
+
+## TRANSLATOR: we still ignore comments too far from the string
+
+<p>${_("No action at a distance.")}</p>

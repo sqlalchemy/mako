@@ -80,41 +80,37 @@ def extract_nodes(nodes, keywords, comment_tags, options):
             child_nodes = node.nodes
         elif isinstance(node, parsetree.ControlLine):
             if node.isend:
-                translator_comments = []
                 in_translator_comments = False
                 continue
             code = node.text
         elif isinstance(node, parsetree.Code):
-            # <% and <%! blocks would provide their own translator comments
-            translator_comments = []
             in_translator_comments = False
-
             code = node.code.code
         elif isinstance(node, parsetree.Expression):
             code = node.code.code
         else:
-            translator_comments = []
-            in_translator_comments = False
             continue
 
         # Comments don't apply unless they immediately preceed the message
         if translator_comments and \
                 translator_comments[-1][0] < node.lineno - 1:
             translator_comments = []
-        else:
-            translator_comments = \
-                [comment[1] for comment in translator_comments]
+
+        translator_strings = [comment[1] for comment in translator_comments]
 
         if isinstance(code, compat.text_type):
             code = code.encode('ascii', 'backslashreplace')
 
+        used_translator_comments = False
         code = compat.byte_buffer(code)
         for lineno, funcname, messages, python_translator_comments \
                 in extract_python(code, keywords, comment_tags, options):
             yield (node.lineno + (lineno - 1), funcname, messages,
-                   translator_comments + python_translator_comments)
+                   translator_strings + python_translator_comments)
+            used_translator_comments = True
 
-        translator_comments = []
+        if used_translator_comments:
+            translator_comments = []
         in_translator_comments = False
 
         if child_nodes:

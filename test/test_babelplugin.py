@@ -40,7 +40,10 @@ class ExtractMakoTestCase(TemplateTest):
             (77, '_', 'Top', []),
             (83, '_', 'foo', []),
             (83, '_', 'hoho', []),
-            (85, '_', 'bar', [])
+             (85, '_', 'bar', []),
+             (92, '_', 'Inside a p tag', ['TRANSLATOR: <p> tag is ok?']),
+             (95, '_', 'Later in a p tag', ['TRANSLATOR: also this']),
+             (99, '_', 'No action at a distance.', []),
              ]
         self.assertEqual(expected, messages)
 
