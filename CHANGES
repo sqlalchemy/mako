@@ -1,3 +1,13 @@
+0.9.2
+- [bug] A rework of the mako-render script allows the script to run
+  correctly when given a file pathname that is outside of the current
+  directory, e.g. ``mako-render ../some_template.mako``.  In this case,
+  the "template root" defaults to the directory in which the template
+  is located, instead of ".".  The script also accepts a new argument
+  ``--template-dir`` which can be specified multiple times to establish
+  template lookup directories.  Standard input for templates also works
+  now too.  Pull request #2 courtesy Derek Harland.
+
 0.9.1
 - [bug] Fixed bug in Babel plugin where translator comments
   would be lost if intervening text nodes were encountered.
