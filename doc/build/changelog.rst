@@ -2,13 +2,16 @@
 Changelog
 =========
 
+0.9
+===
+
 .. changelog::
     :version: 0.9.2
     :released:
 
     .. change::
         :tags: bug
-        :tickets: 2
+        :pullreq: bitbucket:2
 
       A rework of the mako-render script allows the script to run
       correctly when given a file pathname that is outside of the current
@@ -63,7 +66,7 @@ Changelog
 
 .. changelog::
     :version: 0.9.0
-    :released:
+    :released: Tue Aug 27 2013
 
     .. change::
         :tags: bug
@@ -107,6 +110,8 @@ Changelog
       interpreted correctly within a template tag; also
       fixed in Py2.4.
 
+0.8
+===
 
 .. changelog::
     :version: 0.8.1
@@ -197,6 +202,8 @@ Changelog
       with desired capabilities at the top of the generated
       template module.  Courtesy Ben Trofatter.
 
+0.7
+===
 
 .. changelog::
     :version: 0.7.3
@@ -358,6 +365,8 @@ Changelog
       Added Jinja2 to the example
       benchmark suite, courtesy Vincent Férotin
 
+Older Versions
+==============
 
 .. changelog::
     :version: 0.6.2
@@ -373,7 +382,7 @@ Changelog
 
 .. changelog::
     :version: 0.6.1
-    :released:
+    :released: Sat Jan 28 2012
 
     .. change::
         :tags: bug

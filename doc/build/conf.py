@@ -34,6 +34,14 @@ extensions = ['sphinx.ext.autodoc','sphinx.ext.intersphinx',
                 'changelog', 'sphinx_paramlinks',
                 'builder.builders']
 
+changelog_render_ticket = "https://bitbucket.org/zzzeek/mako/issue/%s/"
+
+changelog_render_pullreq = {
+    "bitbucket": "https://bitbucket.org/zzzeek/mako/pull-request/%s",
+    "default": "https://bitbucket.org/zzzeek/mako/pull-request/%s",
+    "github": "https://github.com/zzzeek/mako/pull/%s",
+}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
