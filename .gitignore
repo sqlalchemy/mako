@@ -1,5 +1,5 @@
-build/
-doc/build/output
+/build
+/doc/build/output
 *.pyc
 *.orig
 *.egg-info

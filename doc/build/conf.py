@@ -31,7 +31,8 @@ import mako
 #                'sphinx.ext.doctest', 'builder.builders']
 
 extensions = ['sphinx.ext.autodoc','sphinx.ext.intersphinx',
-                'sphinx.ext.doctest', 'builder.builders']
+                'changelog', 'sphinx_paramlinks',
+                'builder.builders']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']

@@ -13,6 +13,7 @@ Table of Contents
     filtering
     unicode
     caching
+    changelog
 
 Indices and Tables
 ------------------
