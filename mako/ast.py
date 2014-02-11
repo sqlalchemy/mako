@@ -169,7 +169,7 @@ class FunctionDecl(object):
 
     @property
     def allargnames(self):
-        return self.argnames + self.kwargnames
+        return tuple(self.argnames) + tuple(self.kwargnames)
 
 class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""

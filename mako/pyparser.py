@@ -379,8 +379,13 @@ else:
 
         def visitFunction(self, node, *args):
             self.listener.funcname = node.name
-            self.listener.argnames = node.argnames
+            self.listener.argnames = list(node.argnames)
+            if node.kwargs:
+                self.listener.kwargnames = [self.listener.argnames.pop()]
+            else:
+                self.listener.kwargnames = []
             self.listener.defaults = node.defaults
+            self.listener.kwdefaults = []
             self.listener.varargs = node.varargs
             self.listener.kwargs = node.kwargs
 
