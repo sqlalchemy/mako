@@ -10,6 +10,13 @@ Changelog
     :released:
 
     .. change::
+        :tags: feature, py3k
+        :pullreq: github:7
+
+      Support is added for Python 3 "keyword only" arguments, as used in
+      defs.  Pull request courtesy Eevee.
+
+    .. change::
         :tags: bug
         :pullreq: bitbucket:2
 
