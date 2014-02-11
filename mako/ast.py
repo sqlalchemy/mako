@@ -112,37 +112,64 @@ class FunctionDecl(object):
         if not allow_kwargs and self.kwargs:
             raise exceptions.CompileException(
                                 "'**%s' keyword argument not allowed here" %
-                                self.argnames[-1], **exception_kwargs)
+                                self.kwargnames[-1], **exception_kwargs)
 
-    def get_argument_expressions(self, include_defaults=True):
-        """return the argument declarations of this FunctionDecl as a printable
-        list."""
+    def get_argument_expressions(self, as_call=False):
+        """Return the argument declarations of this FunctionDecl as a printable
+        list.
+
+        By default the return value is appropriate for writing in a ``def``;
+        set `as_call` to true to build arguments to be passed to the function
+        instead (assuming locals with the same names as the arguments exist).
+        """
 
         namedecls = []
-        defaults = [d for d in self.defaults]
-        kwargs = self.kwargs
-        varargs = self.varargs
-        argnames = [f for f in self.argnames]
-        argnames.reverse()
-        for arg in argnames:
-            default = None
-            if kwargs:
-                arg = "**" + arg_stringname(arg)
-                kwargs = False
-            elif varargs:
-                arg = "*" + arg_stringname(arg)
-                varargs = False
+
+        # Build in reverse order, since defaults and slurpy args come last
+        argnames = self.argnames[::-1]
+        kwargnames = self.kwargnames[::-1]
+        defaults = self.defaults[::-1]
+        kwdefaults = self.kwdefaults[::-1]
+
+        # Named arguments
+        if self.kwargs:
+            namedecls.append("**" + kwargnames.pop(0))
+
+        for name in kwargnames:
+            # Keyword-only arguments must always be used by name, so even if
+            # this is a call, print out `foo=foo`
+            if as_call:
+                namedecls.append("%s=%s" % (name, name))
+            elif kwdefaults:
+                default = kwdefaults.pop(0)
+                if default is None:
+                    # The AST always gives kwargs a default, since you can do
+                    # `def foo(*, a=1, b, c=3)`
+                    namedecls.append(name)
+                else:
+                    namedecls.append("%s=%s" % (
+                        name, pyparser.ExpressionGenerator(default).value()))
             else:
-                default = len(defaults) and defaults.pop() or None
-            if include_defaults and default:
-                namedecls.insert(0, "%s=%s" %
-                            (arg,
-                            pyparser.ExpressionGenerator(default).value()
-                            )
-                        )
+                namedecls.append(name)
+
+        # Positional arguments
+        if self.varargs:
+            namedecls.append("*" + argnames.pop(0))
+
+        for name in argnames:
+            if as_call or not defaults:
+                namedecls.append(name)
             else:
-                namedecls.insert(0, arg)
+                default = defaults.pop(0)
+                namedecls.append("%s=%s" % (
+                    name, pyparser.ExpressionGenerator(default).value()))
+
+        namedecls.reverse()
         return namedecls
+
+    @property
+    def allargnames(self):
+        return self.argnames + self.kwargnames
 
 class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""

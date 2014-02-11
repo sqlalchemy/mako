@@ -543,7 +543,7 @@ class _GenerateRenderMethod(object):
         """write a locally-available callable referencing a top-level def"""
         funcname = node.funcname
         namedecls = node.get_argument_expressions()
-        nameargs = node.get_argument_expressions(include_defaults=False)
+        nameargs = node.get_argument_expressions(as_call=True)
 
         if not self.in_def and (
                                 len(self.identifiers.locally_assigned) > 0 or
@@ -864,7 +864,7 @@ class _GenerateRenderMethod(object):
         if node.is_anonymous:
             self.printer.writeline("%s()" % node.funcname)
         else:
-            nameargs = node.get_argument_expressions(include_defaults=False)
+            nameargs = node.get_argument_expressions(as_call=True)
             nameargs += ['**pageargs']
             self.printer.writeline("if 'parent' not in context._data or "
                                   "not hasattr(context._data['parent'], '%s'):"

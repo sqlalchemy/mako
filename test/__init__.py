@@ -96,6 +96,9 @@ def skip_if(predicate, reason=None):
         return function_named(maybe, fn_name)
     return decorate
 
+def requires_python_3(fn):
+    return skip_if(lambda: not py3k, "Requires Python 3.xx")(fn)
+
 def requires_python_2(fn):
     return skip_if(lambda: py3k, "Requires Python 2.xx")(fn)
 
