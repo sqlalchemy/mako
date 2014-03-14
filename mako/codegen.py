@@ -14,7 +14,7 @@ from mako import util, ast, parsetree, filters, exceptions
 from mako import compat
 
 
-MAGIC_NUMBER = 9
+MAGIC_NUMBER = 10
 
 # names which are hardwired into the
 # template and are not accessed via the
@@ -102,6 +102,8 @@ class _GenerateRenderMethod(object):
         self.last_source_line = -1
         self.compiler = compiler
         self.node = node
+        self.source_map = {}
+        self.boilerplate_map = []
         self.identifier_stack = [None]
         self.in_def = isinstance(node, (parsetree.DefTag, parsetree.BlockTag))
 
@@ -145,6 +147,27 @@ class _GenerateRenderMethod(object):
         if defs is not None:
             for node in defs:
                 _GenerateRenderMethod(printer, compiler, node)
+
+        if not self.in_def:
+            self.write_metadata_struct()
+
+    def write_metadata_struct(self):
+        self.source_map[self.printer.lineno] = self.last_source_line
+        struct = {
+            "filename": self.compiler.filename,
+            "uri": self.compiler.uri,
+            "source_encoding": self.compiler.source_encoding,
+            "line_map": self.source_map,
+            "boilerplate_lines": self.boilerplate_map
+        }
+        self.mark_boilerplate()
+        self.printer.writelines(
+            '"""',
+            '__M_BEGIN_METADATA',
+            compat.json.dumps(struct),
+            '__M_END_METADATA\n'
+            '"""'
+        )
 
     @property
     def identifiers(self):
@@ -232,7 +255,7 @@ class _GenerateRenderMethod(object):
                             [n.name for n in
                             main_identifiers.topleveldefs.values()]
                         )
-        self.printer.write("\n\n")
+        self.printer.write_blanks(2)
 
         if len(module_code):
             self.write_module_code(module_code)
@@ -251,6 +274,7 @@ class _GenerateRenderMethod(object):
 
         this could be the main render() method or that of a top-level def."""
 
+        self.mark_boilerplate()
         if self.in_def:
             decorator = node.decorator
             if decorator:
@@ -288,7 +312,7 @@ class _GenerateRenderMethod(object):
 
         self.write_def_finish(self.node, buffered, filtered, cached)
         self.printer.writeline(None)
-        self.printer.write("\n\n")
+        self.printer.write_blanks(2)
         if cached:
             self.write_cache_decorator(
                                 node, name,
@@ -305,6 +329,7 @@ class _GenerateRenderMethod(object):
     def write_inherit(self, node):
         """write the module-level inheritance-determination callable."""
 
+        self.mark_boilerplate()
         self.printer.writelines(
             "def _mako_inherit(template, context):",
                 "_mako_generate_namespaces(context)",
@@ -315,6 +340,7 @@ class _GenerateRenderMethod(object):
 
     def write_namespaces(self, namespaces):
         """write the module-level namespace-generating callable."""
+        self.mark_boilerplate()
         self.printer.writelines(
             "def _mako_get_namespace(context, name):",
                 "try:",
@@ -401,7 +427,7 @@ class _GenerateRenderMethod(object):
 
             self.printer.writeline(
                    "context.namespaces[(__name__, %s)] = ns" % repr(node.name))
-            self.printer.write("\n")
+            self.printer.write_blanks(1)
         if not len(namespaces):
             self.printer.writeline("pass")
         self.printer.writeline(None)
@@ -536,8 +562,11 @@ class _GenerateRenderMethod(object):
         """write a source comment containing the line number of the
         corresponding template line."""
         if self.last_source_line != node.lineno:
-            self.printer.writeline("# SOURCE LINE %d" % node.lineno)
+            self.source_map[self.printer.lineno] = node.lineno
             self.last_source_line = node.lineno
+
+    def mark_boilerplate(self):
+        self.boilerplate_map.append(self.printer.lineno)
 
     def write_def_decl(self, node, identifiers):
         """write a locally-available callable referencing a top-level def"""
@@ -606,6 +635,7 @@ class _GenerateRenderMethod(object):
         writes code to retrieve captured content, apply filters, send proper
         return value."""
 
+        self.mark_boilerplate()
         if not buffered and not cached and not filtered:
             self.printer.writeline("return ''")
             if callstack:
@@ -861,6 +891,7 @@ class _GenerateRenderMethod(object):
         pass
 
     def visitBlockTag(self, node):
+        self.mark_boilerplate()
         if node.is_anonymous:
             self.printer.writeline("%s()" % node.funcname)
         else:
@@ -930,6 +961,7 @@ class _GenerateRenderMethod(object):
             n.accept_visitor(self)
         self.identifier_stack.pop()
 
+        self.mark_boilerplate()
         self.write_def_finish(node, buffered, False, False, callstack=False)
         self.printer.writelines(
             None,

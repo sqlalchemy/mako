@@ -10,6 +10,17 @@ Changelog
     :released:
 
     .. change::
+        :tags: feature
+
+      Template modules now generate a JSON "metadata" structure at the bottom
+      of the source file which includes parseable information about the
+      templates' source file, encoding etc. as well as a mapping of module
+      source lines to template lines, thus replacing the "# SOURCE LINE"
+      markers throughout the source code.  The structure also indicates those
+      lines that are explicitly not part of the template's source; the goal
+      here is to allow integration with coverage tools.
+
+    .. change::
         :tags: feature, py3k
         :pullreq: github:7
 

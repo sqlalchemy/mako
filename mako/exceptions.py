@@ -167,14 +167,24 @@ class RichTraceback(object):
                                             None, None, None, None))
                     continue
 
-                template_ln = module_ln = 1
-                line_map = {}
-                for line in module_source.split("\n"):
-                    match = re.match(r'\s*# SOURCE LINE (\d+)', line)
-                    if match:
-                        template_ln = int(match.group(1))
-                    module_ln += 1
-                    line_map[module_ln] = template_ln
+                template_ln = 1
+
+                source_map = re.search(
+                                r"__M_BEGIN_METADATA(.+?)__M_END_METADATA",
+                                module_source, re.S).group(1)
+                source_map = compat.json.loads(source_map)
+                line_map = dict(
+                    (int(k), v) for k, v in source_map['line_map'].items()
+                )
+
+                for mod_line in reversed(sorted(line_map)):
+                    tmpl_line = line_map[mod_line]
+                    while mod_line > 0:
+                        mod_line -= 1
+                        if mod_line in line_map:
+                            break
+                        line_map[mod_line] = tmpl_line
+
                 template_lines = [line for line in
                                     template_source.split("\n")]
                 mods[filename] = (line_map, template_lines)

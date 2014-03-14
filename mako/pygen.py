@@ -26,6 +26,9 @@ class PythonPrinter(object):
         # the stream we are writing to
         self.stream = stream
 
+        # current line number
+        self.lineno = 0
+
         # a list of lines that represents a buffered "block" of code,
         # which can be later printed relative to an indent level
         self.line_buffer = []
@@ -34,8 +37,9 @@ class PythonPrinter(object):
 
         self._reset_multi_line_flags()
 
-    def write(self, text):
-        self.stream.write(text)
+    def write_blanks(self, num=1):
+        self.stream.write("\n" * num)
+        self.lineno += num
 
     def write_indented_block(self, block):
         """print a line or lines of python which already contain indentation.
@@ -94,6 +98,7 @@ class PythonPrinter(object):
 
         # write the line
         self.stream.write(self._indent_line(line) + "\n")
+        self.lineno += 1
 
         # see if this line should increase the indentation level.
         # note that a line can both decrase (before printing) and
@@ -213,11 +218,13 @@ class PythonPrinter(object):
         for entry in self.line_buffer:
             if self._in_multi_line(entry):
                 self.stream.write(entry + "\n")
+                self.lineno += 1
             else:
                 entry = entry.expandtabs()
                 if stripspace is None and re.search(r"^[ \t]*[^# \t]", entry):
                     stripspace = re.match(r"^([ \t]*)", entry).group(1)
                 self.stream.write(self._indent_line(entry, stripspace) + "\n")
+                self.lineno += 1
 
         self.line_buffer = []
         self._reset_multi_line_flags()

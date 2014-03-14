@@ -94,6 +94,11 @@ except:
             return func(*(args + fargs), **newkeywords)
         return newfunc
 
+if py26:
+    import json
+else:
+    import simplejson as json
+
 if not py25:
     def all(iterable):
         for i in iterable:

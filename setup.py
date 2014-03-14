@@ -13,10 +13,17 @@ markupsafe_installs = (
             sys.version_info >= (2, 6) and sys.version_info < (3, 0)
         ) or sys.version_info >= (3, 3)
 
+json_installs = (
+            sys.version_info < (2, 6)
+      )
+
+install_requires = []
+
 if markupsafe_installs:
-    install_requires = ['MarkupSafe>=0.9.2']
-else:
-    install_requires = []
+    install_requires.append('MarkupSafe>=0.9.2')
+
+if json_installs:
+      install_requires.append('simplejson')
 
 setup(name='Mako',
       version=VERSION,
