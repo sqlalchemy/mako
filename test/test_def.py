@@ -2,7 +2,7 @@ from mako.template import Template
 from mako import lookup
 from test import TemplateTest
 from test.util import flatten_result, result_lines
-from test import eq_, assert_raises
+from test import eq_, assert_raises, requires_python_3
 from mako import compat
 
 class DefTest(TemplateTest):
@@ -43,6 +43,19 @@ class DefTest(TemplateTest):
         eq_(
             template.render(variable='hi', a=5, b=6).strip(),
             """hello mycomp hi, 5, 6"""
+        )
+
+    @requires_python_3
+    def test_def_py3k_args(self):
+        template = Template("""
+        <%def name="kwonly(one, two, *three, four, five=5, **six)">
+            look at all these args: ${one} ${two} ${three[0]} ${four} ${five} ${six['seven']}
+        </%def>
+
+        ${kwonly('one', 'two', 'three', four='four', seven='seven')}""")
+        eq_(
+            template.render(one=1, two=2, three=(3,), six=6).strip(),
+            """look at all these args: one two three four 5 seven"""
         )
 
     def test_inter_def(self):

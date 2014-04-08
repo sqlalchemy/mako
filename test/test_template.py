@@ -13,6 +13,16 @@ from test import TemplateTest, eq_, template_base, module_base, \
     requires_python_26_or_greater, assert_raises, assert_raises_message, \
     requires_python_2
 
+class ctx(object):
+    def __init__(self, a, b):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *arg):
+        pass
+
 class EncodingTest(TemplateTest):
     def test_escapes_html_tags(self):
         from mako.exceptions import html_error_template
@@ -875,11 +885,12 @@ class ControlTest(TemplateTest):
     def test_blank_control_8(self):
         self._do_memory_test(
             """
-            % with open('x', 'w') as fp:
+            % with ctx('x', 'w') as fp:
             % endwith
             """,
             "",
-            filters=lambda s:s.strip()
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx}
         )
 
     def test_commented_blank_control_1(self):
@@ -973,12 +984,13 @@ class ControlTest(TemplateTest):
     def test_commented_blank_control_8(self):
         self._do_memory_test(
             """
-            % with open('x', 'w') as fp:
+            % with ctx('x', 'w') as fp:
             ## comment
             % endwith
             """,
             "",
-            filters=lambda s:s.strip()
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx}
         )
 
     def test_multiline_control(self):

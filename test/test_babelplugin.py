@@ -13,8 +13,8 @@ import os
 
 
 class ExtractMakoTestCase(TemplateTest):
-    @skip_if(lambda: not babel, 'babel not installed: skipping babelplugin test')
 
+    @skip_if(lambda: not babel, 'babel not installed: skipping babelplugin test')
     def test_extract(self):
         mako_tmpl = open(os.path.join(template_base, 'gettext.mako'))
         messages = list(extract(mako_tmpl, {'_': None, 'gettext': None,
@@ -40,7 +40,10 @@ class ExtractMakoTestCase(TemplateTest):
             (77, '_', 'Top', []),
             (83, '_', 'foo', []),
             (83, '_', 'hoho', []),
-            (85, '_', 'bar', [])
+             (85, '_', 'bar', []),
+             (92, '_', 'Inside a p tag', ['TRANSLATOR: <p> tag is ok?']),
+             (95, '_', 'Later in a p tag', ['TRANSLATOR: also this']),
+             (99, '_', 'No action at a distance.', []),
              ]
         self.assertEqual(expected, messages)
 

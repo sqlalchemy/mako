@@ -1,7 +1,7 @@
 import unittest
 
 from mako import ast, exceptions, pyparser, util, compat
-from test import eq_, requires_python_2
+from test import eq_, requires_python_2, requires_python_3
 
 exception_kwargs = {
     'source': '',
@@ -263,6 +263,8 @@ import x as bar
         eq_(parsed.funcname, 'foo')
         eq_(parsed.argnames,
             ['a', 'b', 'c', 'd', 'e', 'f'])
+        eq_(parsed.kwargnames,
+            [])
 
     def test_function_decl_2(self):
         """test getting the arguments from a function"""
@@ -270,7 +272,20 @@ import x as bar
         parsed = ast.FunctionDecl(code, **exception_kwargs)
         eq_(parsed.funcname, 'foo')
         eq_(parsed.argnames,
-            ['a', 'b', 'c', 'args', 'kwargs'])
+            ['a', 'b', 'c', 'args'])
+        eq_(parsed.kwargnames,
+            ['kwargs'])
+
+    @requires_python_3
+    def test_function_decl_3(self):
+        """test getting the arguments from a fancy py3k function"""
+        code = "def foo(a, b, *c, d, e, **f):pass"
+        parsed = ast.FunctionDecl(code, **exception_kwargs)
+        eq_(parsed.funcname, 'foo')
+        eq_(parsed.argnames,
+            ['a', 'b', 'c'])
+        eq_(parsed.kwargnames,
+            ['d', 'e', 'f'])
 
     def test_expr_generate(self):
         """test the round trip of expressions to AST back to python source"""

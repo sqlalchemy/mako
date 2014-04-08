@@ -35,8 +35,6 @@
     <div class="toolbar">
     <a href="${site_base}/">Home</a>
     &nbsp; | &nbsp;
-    <a href="${site_base}/trac">Trac</a>
-    &nbsp; | &nbsp;
     <a href="${site_base}/community.html">Community</a>
     &nbsp; | &nbsp;
     <a href="${pathto('index')}">Documentation</a>

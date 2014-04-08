@@ -3,6 +3,7 @@ import time
 
 py3k = sys.version_info >= (3, 0)
 py33 = sys.version_info >= (3, 3)
+py2k = sys.version_info < (3,)
 py26 = sys.version_info >= (2, 6)
 py25 = sys.version_info >= (2, 5)
 jython = sys.platform.startswith('java')

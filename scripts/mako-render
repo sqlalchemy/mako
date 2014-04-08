@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-def render(data, filename, kw):
+def render(data, kw, lookup_dirs):
     from mako.template import Template
     from mako.lookup import TemplateLookup
 
-    lookup = TemplateLookup(["."])
-    return Template(data, filename, lookup=lookup).render(**kw)
+    lookup = TemplateLookup(lookup_dirs)
+    return Template(data, lookup=lookup).render(**kw)
 
 def varsplit(var):
     if "=" not in var:
@@ -13,7 +13,7 @@ def varsplit(var):
     return var.split("=", 1)
 
 def main(argv=None):
-    from os.path import isfile
+    from os.path import isfile, dirname
     from sys import stdin
 
     if argv is None:
@@ -25,6 +25,12 @@ def main(argv=None):
     parser = OptionParser("usage: %prog [FILENAME]")
     parser.add_option("--var", default=[], action="append",
                   help="variable (can be used multiple times, use name=value)")
+    parser.add_option("--template-dir", default=[], action="append",
+                  help="Directory to use for template lookup (multiple "
+                       "directories may be provided). If not given then if the "
+                       "template is read from stdin, the value defaults to be "
+                       "the current directory, otherwise it defaults to be the "
+                       "parent directory of the file provided.")
 
     opts, args = parser.parse_args(argv[1:])
     if len(args) not in (0, 1):
@@ -32,15 +38,17 @@ def main(argv=None):
 
     if (len(args) == 0) or (args[0] == "-"):
         fo = stdin
+        lookup_dirs = opts.template_dir or ["."]
     else:
         filename = args[0]
         if not isfile(filename):
             raise SystemExit("error: can't find %s" % filename)
         fo = open(filename)
+        lookup_dirs = opts.template_dir or [dirname(filename)]
 
     kw = dict([varsplit(var) for var in opts.var])
     data = fo.read()
-    print(render(data, filename, kw))
+    print(render(data, kw, lookup_dirs=lookup_dirs))
 
 if __name__ == "__main__":
     main()
