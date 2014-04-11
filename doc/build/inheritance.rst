@@ -193,89 +193,6 @@ Where above an inheriting template can define ``<%block name="title">`` just onc
 used in the base template both in the ``<title>`` section as well as the ``<h2>``.
 
 
-A quick note about using ``<%block>`` with ``<%include>`` and ``<%inherit>``
-============================================================================
-
-``<%include>`` is a dynamic include, not a static include.   When ``<%include>`` is encountered, the given template is run as a full template in its own right, with it's own inheritance hierarchy (or not).   If this were a static include, a functionality that Mako does not support, it would be as though you had transcribed the source code from ``child.mako` into ``parent.mako``.
-
-One result of this behavior, is that the ``<%block>`` elements defined in an ``<%include>`` file will not be overridden -- rendering both the ``<%block>`` originally defined in the included file *and* the ``<%block>`` override defined in the inherited template.
-
- An ``<%include>`` doesn't bring the given template into the context in any special way, so it's not appropriate for so-called "partial" functionality.
-
- Any code that is intended to be reused should be pulled in using namespacing facilities, which also don't have access to the inheritance context.   The template that actually contains ``<%inherit>`` needs to host whatever else it pulls in, in terms of it's inherited context.
-
-This scenario is a common mistake , which results in both 'header' blocks being rendered for the ``child.mako`` document :
-
-.. sourcecode:: mako
-
-    ## partials.mako
-    <%block name="header">
-    	Global Header
-    </%block>
-
-    ## parent.mako
-    <%include file="partials.mako">
-
-    ## child.mako
-    <%inherit file="parent.mako">
-    <%block name="header">
-    	Custom Header
-    </%block>
-
-An acceptable approach to only render the 'Custom Header', is to simply declare the 'header' ``<%block>`` in ``parent.mako``.
-
-.. sourcecode:: mako
-
-    ## partials.mako
-    <%block name="header">
-    	Global Header
-    </%block>
-
-    ## parent.mako
-    <%block name="header">
-	    <%include file="partials.mako">
-    </%block>
-
-    ## child.mako
-    <%inherit file="parent.mako">
-    <%block name="header">
-    	Custom Header
-    </%block>
-
-
-
-This scenario is another common mistake , which results in both 'SectionA' blocks being rendered for the ``child.mako`` document :
-
-.. sourcecode:: mako
-
-    ## base.mako
-    ${self.body()}
-    <%block name="SectionA">
-    	base.mako
-    </%block>
-
-    ## parent.mako
-    <%inherit file="base.mako">
-    <%include file="child.mako">
-
-    ## child.mako
-    <%block name="SectionA">
-    	child.mako
-    </%block>
-
-A recommended approach to only render the 'SectionA' from `child.mako`, is to define the 'SectionA' block in `parent.mako` *and* use the ``<%namespace>`` functionality to call the particular block.
-
-.. sourcecode:: mako
-
-    ## parent.mako
-    <%inherit file="base.mako">
-    <%namespace name="child" file="child.mako">
-
-	<%block name="SectionA">
-		${child.SectionA()}
-	</%block>
-
-
 
 But what about Defs?
 ====================
@@ -578,6 +495,111 @@ thing is now:
     </html>
 
 and you're now a template inheritance ninja!
+
+Using ``<%include>`` with Template Inheritance
+==============================================
+
+A common source of confusion is the behavior of the ``<%include>`` tag,
+often in conjunction with its interaction within template inheritance.
+Key to understanding the ``<%include>`` tag is that it is a *dynamic*, e.g.
+runtime, include, and not a static include.   The ``<%include>`` is only processed
+as the template renders, and not at inheritance setup time.   When encountered,
+the referenced template is run fully as an entirely separate template with no
+linkage to any current inheritance structure.
+
+If the tag were on the other hand a *static* include, this would allow source
+within the included template to interact within the same inheritance context
+as the calling template, but currently Mako has no static include facility.
+
+In practice, this means that ``<%block>`` elements defined in an ``<%include>``
+file will not interact with corresponding ``<%block>`` elements in the calling
+template.
+
+A common mistake is along these lines:
+
+.. sourcecode:: mako
+
+    ## partials.mako
+    <%block name="header">
+        Global Header
+    </%block>
+
+    ## parent.mako
+    <%include file="partials.mako">
+
+    ## child.mako
+    <%inherit file="parent.mako">
+    <%block name="header">
+        Custom Header
+    </%block>
+
+Above, one might expect that the ``"header"`` block declared in ``child.mako``
+might be invoked, as a result of it overriding the same block present in
+``parent.mako`` via the include for ``partials.mako``.  But this is not the case.
+Instead, ``parent.mako`` will invoke ``partials.mako``, which then invokes
+``"header"`` in ``partials.mako``, and then is finished rendering.  Nothing
+from ``child.mako`` will render; there is no interaction between the ``"header"``
+block in ``child.mako`` and the ``"header"`` block in ``partials.mako``.
+
+Instead, ``parent.mako`` must explicitly state the inheritance structure.
+In order to call upon specific elements of ``partials.mako``, we will call upon
+it as a namespace:
+
+.. sourcecode:: mako
+
+    ## partials.mako
+    <%block name="header">
+        Global Header
+    </%block>
+
+    ## parent.mako
+    <%namespace name="partials" file="partials.mako"/>
+    <%block name="header">
+        ${partials.header()}
+    </%block>
+
+    ## child.mako
+    <%inherit file="parent.mako">
+    <%block name="header">
+        Custom Header
+    </%block>
+
+Where above, ``parent.mako`` states the inheritance structure that ``child.mako``
+is to participate within.  ``partials.mako`` only defines defs/blocks that can be
+used on a per-name basis.
+
+Another scenario is below, which results in both ``"SectionA"`` blocks being rendered for the ``child.mako`` document:
+
+.. sourcecode:: mako
+
+    ## base.mako
+    ${self.body()}
+    <%block name="SectionA">
+        base.mako
+    </%block>
+
+    ## parent.mako
+    <%inherit file="base.mako">
+    <%include file="child.mako">
+
+    ## child.mako
+    <%block name="SectionA">
+        child.mako
+    </%block>
+
+The resolution is similar; instead of using ``<%include>``, we call upon the blocks
+of ``child.mako`` using a namespace:
+
+.. sourcecode:: mako
+
+    ## parent.mako
+    <%inherit file="base.mako">
+    <%namespace name="child" file="child.mako">
+
+    <%block name="SectionA">
+        ${child.SectionA()}
+    </%block>
+
 
 .. _inheritance_attr:
 
