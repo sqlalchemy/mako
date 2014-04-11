@@ -48,7 +48,13 @@ def main(argv=None):
 
     kw = dict([varsplit(var) for var in opts.var])
     data = fo.read()
-    print(render(data, kw, lookup_dirs=lookup_dirs))
+
+    try:
+        print(render(data, kw, lookup_dirs=lookup_dirs))
+    except:
+        from mako import exceptions
+        print(exceptions.text_error_template().render(), file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
