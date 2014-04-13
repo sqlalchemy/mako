@@ -1,7 +1,8 @@
 import unittest
 
 from mako import ast, exceptions, pyparser, util, compat
-from test import eq_, requires_python_2, requires_python_3
+from test import eq_, requires_python_2, requires_python_3, \
+            requires_python_26_or_greater
 
 exception_kwargs = {
     'source': '',
@@ -221,6 +222,28 @@ t2 = lambda (x,y):(x+5, y+4)
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.declared_identifiers, set(['t1', 't2']))
         eq_(parsed.undeclared_identifiers, set())
+
+    @requires_python_26_or_greater
+    def test_locate_identifiers_16(self):
+        code = """
+try:
+    print(x)
+except Exception as e:
+    print(y)
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.undeclared_identifiers, set(['x', 'y', 'Exception']))
+
+    @requires_python_26_or_greater
+    def test_locate_identifiers_17(self):
+        code = """
+try:
+    print(x)
+except (Foo, Bar) as e:
+    print(y)
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.undeclared_identifiers, set(['x', 'y', 'Foo', 'Bar']))
 
     def test_no_global_imports(self):
         code = """
