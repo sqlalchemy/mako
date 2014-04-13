@@ -10,6 +10,14 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, py3k
+        :tickets: 227
+
+      Fixed bug in Python parsing logic which would fail on Python 3
+      when a "try/except" targeted a tuple of exception types, rather
+      than a single exception.
+
+    .. change::
         :tags: feature
         :pullreq: bitbucket:4
 

@@ -102,7 +102,7 @@ if _ast:
                 if node.name is not None:
                     self._add_declared(node.name)
                 if node.type is not None:
-                    self.listener.undeclared_identifiers.add(node.type.id)
+                    self.visit(node.type)
                 for statement in node.body:
                     self.visit(statement)
 
