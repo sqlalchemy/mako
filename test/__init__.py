@@ -2,7 +2,7 @@ from mako.template import Template
 import unittest
 import os
 from mako.compat import py3k, py26, py25
-from mako.util import function_named
+from mako.util import update_wrapper
 import re
 from mako.cache import CacheImpl, register_plugin
 from nose import SkipTest
@@ -93,7 +93,7 @@ def skip_if(predicate, reason=None):
                 raise SkipTest(msg)
             else:
                 return fn(*args, **kw)
-        return function_named(maybe, fn_name)
+        return update_wrapper(maybe, fn)
     return decorate
 
 def requires_python_3(fn):
@@ -124,7 +124,7 @@ def requires_no_pygments_exceptions(fn):
             return fn(*arg, **kw)
         finally:
             exceptions._install_highlighting()
-    return function_named(go, fn.__name__)
+    return update_wrapper(go, fn)
 
 class PlainCacheImpl(CacheImpl):
     """Simple memory cache impl so that tests which
