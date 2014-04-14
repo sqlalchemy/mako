@@ -8,7 +8,6 @@
 
 import traceback
 import sys
-import re
 from mako import util, compat
 
 class MakoException(Exception):
@@ -28,7 +27,7 @@ class CompileException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self,
                               message + _format_filepos(lineno, pos, filename))
-        self.lineno =lineno
+        self.lineno = lineno
         self.pos = pos
         self.filename = filename
         self.source = source
@@ -37,7 +36,7 @@ class SyntaxException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self,
                               message + _format_filepos(lineno, pos, filename))
-        self.lineno =lineno
+        self.lineno = lineno
         self.pos = pos
         self.filename = filename
         self.source = source
@@ -77,7 +76,6 @@ class RichTraceback(object):
         self.records = self._init(traceback)
 
         if isinstance(self.error, (CompileException, SyntaxException)):
-            import mako.template
             self.source = self.error.source
             self.lineno = self.error.lineno
             self._has_source = True
@@ -169,21 +167,10 @@ class RichTraceback(object):
 
                 template_ln = 1
 
-                source_map = re.search(
-                                r"__M_BEGIN_METADATA(.+?)__M_END_METADATA",
-                                module_source, re.S).group(1)
-                source_map = compat.json.loads(source_map)
-                line_map = dict(
-                    (int(k), v) for k, v in source_map['line_map'].items()
-                )
-
-                for mod_line in reversed(sorted(line_map)):
-                    tmpl_line = line_map[mod_line]
-                    while mod_line > 0:
-                        mod_line -= 1
-                        if mod_line in line_map:
-                            break
-                        line_map[mod_line] = tmpl_line
+                source_map = mako.template.ModuleInfo.\
+                                get_module_source_metadata(
+                                    module_source, full_line_map=True)
+                line_map = source_map['full_line_map']
 
                 template_lines = [line for line in
                                     template_source.split("\n")]
@@ -198,7 +185,7 @@ class RichTraceback(object):
                                 line, template_filename, template_ln,
                                 template_line, template_source))
         if not self.source:
-            for l in range(len(new_trcback)-1, 0, -1):
+            for l in range(len(new_trcback) - 1, 0, -1):
                 if new_trcback[l][5]:
                     self.source = new_trcback[l][7]
                     self.lineno = new_trcback[l][5]
