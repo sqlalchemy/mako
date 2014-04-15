@@ -11,15 +11,10 @@ import os
 from mako import compat
 import operator
 
-def function_named(fn, name):
-    """Return a function with a given __name__.
-
-    Will assign to __name__ and return the original function if possible on
-    the Python implementation, otherwise a new function will be constructed.
-
-    """
-    fn.__name__ = name
-    return fn
+def update_wrapper(decorated, fn):
+    decorated.__wrapped__ = fn
+    decorated.__name__ = fn.__name__
+    return decorated
 
 
 class PluginLoader(object):

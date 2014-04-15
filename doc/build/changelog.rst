@@ -10,6 +10,22 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, py3k
+        :tickets: 227
+
+      Fixed bug in Python parsing logic which would fail on Python 3
+      when a "try/except" targeted a tuple of exception types, rather
+      than a single exception.
+
+    .. change::
+        :tags: feature
+        :pullreq: bitbucket:4
+
+      The mako-render script will now catch exceptions and run them
+      into the text error handler, and exit with a non-zero exit code.
+      Pull request courtesy Derek Harland.
+
+    .. change::
         :tags: feature, py3k
         :pullreq: github:7
 
