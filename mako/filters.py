@@ -64,7 +64,7 @@ class Decode(object):
             if isinstance(x, compat.text_type):
                 return x
             elif not isinstance(x, compat.binary_type):
-                return compat.text_type(x)
+                return decode(str(x))
             else:
                 return compat.text_type(x, encoding=key)
         return decode

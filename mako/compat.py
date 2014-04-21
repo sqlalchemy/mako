@@ -24,6 +24,9 @@ if py3k:
     def u(s):
         return s
 
+    def b(s):
+        return s.encode("latin-1")
+
     def octal(lit):
         return eval("0o" + lit)
 
@@ -44,6 +47,9 @@ else:
 
     def u(s):
         return unicode(s, "utf-8")
+
+    def b(s):
+        return s
 
     def octal(lit):
         return eval("0" + lit)

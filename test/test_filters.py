@@ -109,6 +109,19 @@ class FilterTest(TemplateTest):
             u("some stuff.... 3")
         )
 
+    @requires_python_2
+    def test_encode_filter_non_str_we_return_bytes(self):
+        class Foo(object):
+            def __str__(self):
+                return compat.b("å")
+        t = Template("""# coding: utf-8
+            some stuff.... ${x}
+        """, default_filters=['decode.utf8'])
+        eq_(
+            t.render_unicode(x=Foo()).strip(),
+            u("some stuff.... å")
+        )
+
     def test_custom_default(self):
         t = Template("""
         <%!
