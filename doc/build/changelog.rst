@@ -10,6 +10,12 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, py3k
+
+      Fixed bug in ``decode.<encoding>`` filter where a non-string object
+      would not be correctly interpreted in Python 3.
+
+    .. change::
         :tags: feature
 
       Template modules now generate a JSON "metadata" structure at the bottom
