@@ -11,6 +11,12 @@ Changelog
 
     .. change::
         :tags: bug, py3k
+
+      Fixed bug in ``decode.<encoding>`` filter where a non-string object
+      would not be correctly interpreted in Python 3.
+
+    .. change::
+        :tags: bug, py3k
         :tickets: 227
 
       Fixed bug in Python parsing logic which would fail on Python 3
