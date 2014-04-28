@@ -39,7 +39,6 @@ setup(name='Mako',
       url='http://www.makotemplates.org/',
       license='MIT',
       packages=find_packages('.', exclude=['examples*', 'test*']),
-      scripts=['scripts/mako-render'],
       tests_require=['nose >= 0.11'],
       test_suite="nose.collector",
       zip_safe=False,
@@ -58,5 +57,8 @@ setup(name='Mako',
 
       [babel.extractors]
       mako = mako.ext.babelplugin:extract
+
+      [console_scripts]
+      mako-render = mako.cmd:cmdline
       """
 )

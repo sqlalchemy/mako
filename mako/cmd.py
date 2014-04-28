@@ -1,4 +1,8 @@
-#!/usr/bin/env python
+# mako/cmd.py
+# Copyright (C) 2006-2014 the Mako authors and contributors <see AUTHORS file>
+#
+# This module is part of Mako and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 def render(data, kw, lookup_dirs):
     from mako.template import Template
@@ -12,7 +16,9 @@ def varsplit(var):
         return (var, "")
     return var.split("=", 1)
 
-def main(argv=None):
+def cmdline(argv=None):
+    import pdb; pdb.set_trace()
+
     from os.path import isfile, dirname
     from sys import stdin
 
@@ -57,4 +63,4 @@ def main(argv=None):
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    cmdline()
