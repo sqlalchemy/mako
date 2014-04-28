@@ -596,6 +596,26 @@ class ModuleInfo(object):
         if module_filename:
             self._modules[module_filename] = self
 
+    @classmethod
+    def get_module_source_metadata(cls, module_source, full_line_map=False):
+        source_map = re.search(
+                        r"__M_BEGIN_METADATA(.+?)__M_END_METADATA",
+                        module_source, re.S).group(1)
+        source_map = compat.json.loads(source_map)
+        if full_line_map:
+            line_map = source_map['full_line_map'] = dict(
+                (int(k), v) for k, v in source_map['line_map'].items()
+            )
+
+            for mod_line in reversed(sorted(line_map)):
+                tmpl_line = line_map[mod_line]
+                while mod_line > 0:
+                    mod_line -= 1
+                    if mod_line in line_map:
+                        break
+                    line_map[mod_line] = tmpl_line
+        return source_map
+
     @property
     def code(self):
         if self.module_source is not None:

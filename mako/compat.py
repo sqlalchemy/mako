@@ -100,6 +100,7 @@ except:
         return newfunc
 
 all = all
+import json
 
 def exception_name(exc):
     return exc.__class__.__name__

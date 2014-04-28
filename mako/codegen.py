@@ -14,7 +14,7 @@ from mako import util, ast, parsetree, filters, exceptions
 from mako import compat
 
 
-MAGIC_NUMBER = 9
+MAGIC_NUMBER = 10
 
 # names which are hardwired into the
 # template and are not accessed via the
@@ -99,7 +99,6 @@ class _GenerateRenderMethod(object):
     """
     def __init__(self, printer, compiler, node):
         self.printer = printer
-        self.last_source_line = -1
         self.compiler = compiler
         self.node = node
         self.identifier_stack = [None]
@@ -145,6 +144,26 @@ class _GenerateRenderMethod(object):
         if defs is not None:
             for node in defs:
                 _GenerateRenderMethod(printer, compiler, node)
+
+        if not self.in_def:
+            self.write_metadata_struct()
+
+    def write_metadata_struct(self):
+        self.printer.source_map[self.printer.lineno] = self.printer.last_source_line
+        struct = {
+            "filename": self.compiler.filename,
+            "uri": self.compiler.uri,
+            "source_encoding": self.compiler.source_encoding,
+            "line_map": self.printer.source_map,
+            "boilerplate_lines": self.printer.boilerplate_map
+        }
+        self.printer.writelines(
+            '"""',
+            '__M_BEGIN_METADATA',
+            compat.json.dumps(struct),
+            '__M_END_METADATA\n'
+            '"""'
+        )
 
     @property
     def identifiers(self):
@@ -232,7 +251,7 @@ class _GenerateRenderMethod(object):
                             [n.name for n in
                             main_identifiers.topleveldefs.values()]
                         )
-        self.printer.write("\n\n")
+        self.printer.write_blanks(2)
 
         if len(module_code):
             self.write_module_code(module_code)
@@ -288,7 +307,7 @@ class _GenerateRenderMethod(object):
 
         self.write_def_finish(self.node, buffered, filtered, cached)
         self.printer.writeline(None)
-        self.printer.write("\n\n")
+        self.printer.write_blanks(2)
         if cached:
             self.write_cache_decorator(
                                 node, name,
@@ -299,7 +318,7 @@ class _GenerateRenderMethod(object):
         """write module-level template code, i.e. that which
         is enclosed in <%! %> tags in the template."""
         for n in module_code:
-            self.write_source_comment(n)
+            self.printer.start_source(n.lineno)
             self.printer.write_indented_block(n.text)
 
     def write_inherit(self, node):
@@ -330,7 +349,7 @@ class _GenerateRenderMethod(object):
         for node in namespaces.values():
             if 'import' in node.attributes:
                 self.compiler.has_ns_imports = True
-            self.write_source_comment(node)
+            self.printer.start_source(node.lineno)
             if len(node.nodes):
                 self.printer.writeline("def make_namespace():")
                 export = []
@@ -402,7 +421,7 @@ class _GenerateRenderMethod(object):
 
             self.printer.writeline(
                 "context.namespaces[(__name__, %s)] = ns" % repr(node.name))
-            self.printer.write("\n")
+            self.printer.write_blanks(1)
         if not len(namespaces):
             self.printer.writeline("pass")
         self.printer.writeline(None)
@@ -532,13 +551,6 @@ class _GenerateRenderMethod(object):
                         )
 
         self.printer.writeline("__M_writer = context.writer()")
-
-    def write_source_comment(self, node):
-        """write a source comment containing the line number of the
-        corresponding template line."""
-        if self.last_source_line != node.lineno:
-            self.printer.writeline("# SOURCE LINE %d" % node.lineno)
-            self.last_source_line = node.lineno
 
     def write_def_decl(self, node, identifiers):
         """write a locally-available callable referencing a top-level def"""
@@ -757,7 +769,7 @@ class _GenerateRenderMethod(object):
         return target
 
     def visitExpression(self, node):
-        self.write_source_comment(node)
+        self.printer.start_source(node.lineno)
         if len(node.escapes) or \
                 (
                     self.compiler.pagetag is not None and
@@ -779,7 +791,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("loop = __M_loop._exit()")
                 self.printer.writeline(None)
         else:
-            self.write_source_comment(node)
+            self.printer.start_source(node.lineno)
             if self.compiler.enable_loop and node.keyword == 'for':
                 text = mangle_mako_loop(node, self.printer)
             else:
@@ -801,7 +813,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline("pass")
 
     def visitText(self, node):
-        self.write_source_comment(node)
+        self.printer.start_source(node.lineno)
         self.printer.writeline("__M_writer(%s)" % repr(node.content))
 
     def visitTextTag(self, node):
@@ -827,7 +839,7 @@ class _GenerateRenderMethod(object):
 
     def visitCode(self, node):
         if not node.ismodule:
-            self.write_source_comment(node)
+            self.printer.start_source(node.lineno)
             self.printer.write_indented_block(node.text)
 
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
@@ -844,7 +856,7 @@ class _GenerateRenderMethod(object):
                     ','.join([repr(x) for x in node.declared_identifiers()]))
 
     def visitIncludeTag(self, node):
-        self.write_source_comment(node)
+        self.printer.start_source(node.lineno)
         args = node.attributes.get('args')
         if args:
             self.printer.writeline(
@@ -944,7 +956,7 @@ class _GenerateRenderMethod(object):
                 "runtime.Namespace('caller', context, "
                                 "callables=ccall(__M_caller))",
             "try:")
-        self.write_source_comment(node)
+        self.printer.start_source(node.lineno)
         self.printer.writelines(
                 "__M_writer(%s)" % self.create_filter_callable(
                                                     [], node.expression, True),

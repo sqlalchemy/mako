@@ -8,7 +8,6 @@
 
 import traceback
 import sys
-import re
 from mako import util, compat
 
 class MakoException(Exception):
@@ -77,7 +76,6 @@ class RichTraceback(object):
         self.records = self._init(traceback)
 
         if isinstance(self.error, (CompileException, SyntaxException)):
-            import mako.template
             self.source = self.error.source
             self.lineno = self.error.lineno
             self._has_source = True
@@ -167,14 +165,13 @@ class RichTraceback(object):
                                             None, None, None, None))
                     continue
 
-                template_ln = module_ln = 1
-                line_map = {}
-                for line in module_source.split("\n"):
-                    match = re.match(r'\s*# SOURCE LINE (\d+)', line)
-                    if match:
-                        template_ln = int(match.group(1))
-                    module_ln += 1
-                    line_map[module_ln] = template_ln
+                template_ln = 1
+
+                source_map = mako.template.ModuleInfo.\
+                                get_module_source_metadata(
+                                    module_source, full_line_map=True)
+                line_map = source_map['full_line_map']
+
                 template_lines = [line for line in
                                     template_source.split("\n")]
                 mods[filename] = (line_map, template_lines)
@@ -188,7 +185,7 @@ class RichTraceback(object):
                                 line, template_filename, template_ln,
                                 template_line, template_source))
         if not self.source:
-            for l in range(len(new_trcback)-1, 0, -1):
+            for l in range(len(new_trcback) - 1, 0, -1):
                 if new_trcback[l][5]:
                     self.source = new_trcback[l][7]
                     self.lineno = new_trcback[l][5]

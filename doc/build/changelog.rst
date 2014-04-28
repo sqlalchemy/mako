@@ -17,6 +17,23 @@ Changelog
       The source base is now targeted at Python 2.6 and forwards.
 
     .. change::
+        :tags: feature
+
+      Template modules now generate a JSON "metadata" structure at the bottom
+      of the source file which includes parseable information about the
+      templates' source file, encoding etc. as well as a mapping of module
+      source lines to template lines, thus replacing the "# SOURCE LINE"
+      markers throughout the source code.  The structure also indicates those
+      lines that are explicitly not part of the template's source; the goal
+      here is to allow better integration with coverage and other tools.
+
+    .. change::
+        :tags: bug, py3k
+
+      Fixed bug in ``decode.<encoding>`` filter where a non-string object
+      would not be correctly interpreted in Python 3.
+
+    .. change::
         :tags: bug, py3k
 
       Fixed bug in ``decode.<encoding>`` filter where a non-string object
@@ -48,13 +65,6 @@ Changelog
       Pull request courtesy Derek Harland.
 
     .. change::
-        :tags: feature, py3k
-        :pullreq: github:7
-
-      Support is added for Python 3 "keyword only" arguments, as used in
-      defs.  Pull request courtesy Eevee.
-
-    .. change::
         :tags: bug
         :pullreq: bitbucket:2
 
@@ -66,6 +76,14 @@ Changelog
       ``--template-dir`` which can be specified multiple times to establish
       template lookup directories.  Standard input for templates also works
       now too.  Pull request courtesy Derek Harland.
+
+    .. change::
+        :tags: feature, py3k
+        :pullreq: github:7
+
+      Support is added for Python 3 "keyword only" arguments, as used in
+      defs.  Pull request courtesy Eevee.
+
 
 0.9
 ===
