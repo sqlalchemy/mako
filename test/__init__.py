@@ -2,11 +2,12 @@ from mako.template import Template
 import unittest
 import os
 from mako.compat import py3k, py26, py25
+from mako import compat
 from mako.util import update_wrapper
 import re
 from mako.cache import CacheImpl, register_plugin
 from nose import SkipTest
-import sys
+import contextlib
 
 template_base = os.path.join(os.path.dirname(__file__), 'templates')
 module_base = os.path.join(template_base, 'modules')
@@ -61,24 +62,29 @@ def teardown():
     import shutil
     shutil.rmtree(module_base, True)
 
-def assert_raises(except_cls, callable_, *args, **kw):
+@contextlib.contextmanager
+def raises(except_cls, message=None):
     try:
-        callable_(*args, **kw)
+        yield
         success = False
-    except except_cls:
+    except except_cls as e:
+        if message:
+            assert re.search(message, compat.text_type(e), re.UNICODE), \
+                            "%r !~ %s" % (message, e)
+            print(compat.text_type(e).encode('utf-8'))
         success = True
 
     # assert outside the block so it works for AssertionError too !
     assert success, "Callable did not raise an exception"
 
+
+def assert_raises(except_cls, callable_, *args, **kw):
+    with raises(except_cls):
+        return callable_(*args, **kw)
+
 def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
-    try:
-        callable_(*args, **kwargs)
-        assert False, "Callable did not raise an exception"
-    except except_cls:
-        e = sys.exc_info()[1]
-        assert re.search(msg, str(e)), "%r !~ %s" % (msg, e)
-        print(str(e))
+    with raises(except_cls, msg):
+        return callable_(*args, **kwargs)
 
 def skip_if(predicate, reason=None):
     """Skip a test if predicate is true."""

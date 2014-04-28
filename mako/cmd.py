@@ -3,64 +3,60 @@
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
-
-def render(data, kw, lookup_dirs):
-    from mako.template import Template
-    from mako.lookup import TemplateLookup
-
-    lookup = TemplateLookup(lookup_dirs)
-    return Template(data, lookup=lookup).render(**kw)
+from argparse import ArgumentParser
+from os.path import isfile, dirname
+import sys
+from mako.template import Template
+from mako.lookup import TemplateLookup
+from mako import exceptions
 
 def varsplit(var):
     if "=" not in var:
         return (var, "")
     return var.split("=", 1)
 
+def _exit():
+    sys.stderr.write(exceptions.text_error_template().render())
+    sys.exit(1)
+
 def cmdline(argv=None):
-    import pdb; pdb.set_trace()
 
-    from os.path import isfile, dirname
-    from sys import stdin
-
-    if argv is None:
-        import sys
-        argv = sys.argv
-
-    from optparse import OptionParser
-
-    parser = OptionParser("usage: %prog [FILENAME]")
-    parser.add_option("--var", default=[], action="append",
+    parser = ArgumentParser("usage: %prog [FILENAME]")
+    parser.add_argument("--var", default=[], action="append",
                   help="variable (can be used multiple times, use name=value)")
-    parser.add_option("--template-dir", default=[], action="append",
+    parser.add_argument("--template-dir", default=[], action="append",
                   help="Directory to use for template lookup (multiple "
-                       "directories may be provided). If not given then if the "
-                       "template is read from stdin, the value defaults to be "
-                       "the current directory, otherwise it defaults to be the "
-                       "parent directory of the file provided.")
+                    "directories may be provided). If not given then if the "
+                    "template is read from stdin, the value defaults to be "
+                    "the current directory, otherwise it defaults to be the "
+                    "parent directory of the file provided.")
+    parser.add_argument('input', nargs='?', default='-')
 
-    opts, args = parser.parse_args(argv[1:])
-    if len(args) not in (0, 1):
-        parser.error("wrong number of arguments")  # Will exit
-
-    if (len(args) == 0) or (args[0] == "-"):
-        fo = stdin
-        lookup_dirs = opts.template_dir or ["."]
+    options = parser.parse_args(argv)
+    if options.input == '-':
+        lookup_dirs = options.template_dir or ["."]
+        lookup = TemplateLookup(lookup_dirs)
+        try:
+            template = Template(sys.stdin.read(), lookup=lookup)
+        except:
+            _exit()
     else:
-        filename = args[0]
+        filename = options.input
         if not isfile(filename):
             raise SystemExit("error: can't find %s" % filename)
-        fo = open(filename)
-        lookup_dirs = opts.template_dir or [dirname(filename)]
+        lookup_dirs = options.template_dir or [dirname(filename)]
+        lookup = TemplateLookup(lookup_dirs)
+        try:
+            template = Template(filename=filename, lookup=lookup)
+        except:
+            _exit()
 
-    kw = dict([varsplit(var) for var in opts.var])
-    data = fo.read()
-
+    kw = dict([varsplit(var) for var in options.var])
     try:
-        print(render(data, kw, lookup_dirs=lookup_dirs))
+        print(template.render(**kw))
     except:
-        from mako import exceptions
-        print(exceptions.text_error_template().render(), file=sys.stderr)
-        sys.exit(1)
+        _exit()
+
 
 if __name__ == "__main__":
     cmdline()

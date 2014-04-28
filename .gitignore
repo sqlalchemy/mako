@@ -1,4 +1,6 @@
 /build
+/dist
+/.coverage
 /doc/build/output
 *.pyc
 *.orig

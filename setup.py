@@ -18,6 +18,11 @@ if markupsafe_installs:
 else:
     install_requires = []
 
+try:
+    import argparse
+except ImportError:
+    install_requires.append('argparse')
+
 setup(name='Mako',
       version=VERSION,
       description="A super-fast templating language that borrows the \
@@ -39,7 +44,7 @@ setup(name='Mako',
       url='http://www.makotemplates.org/',
       license='MIT',
       packages=find_packages('.', exclude=['examples*', 'test*']),
-      tests_require=['nose >= 0.11'],
+      tests_require=['nose >= 0.11', 'mock'],
       test_suite="nose.collector",
       zip_safe=False,
       install_requires=install_requires,
