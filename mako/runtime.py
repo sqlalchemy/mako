@@ -9,9 +9,7 @@ Namespace, and various helper functions."""
 
 from mako import exceptions, util, compat
 from mako.compat import compat_builtins
-import inspect
 import sys
-import collections
 
 
 class Context(object):
@@ -132,9 +130,7 @@ class Context(object):
     def get(self, key, default=None):
         """Return a value from this :class:`.Context`."""
 
-        return self._data.get(key,
-                compat_builtins.__dict__.get(key, default)
-                )
+        return self._data.get(key, compat_builtins.__dict__.get(key, default))
 
     def write(self, string):
         """Write a string to this :class:`.Context` object's
@@ -474,8 +470,8 @@ class Namespace(object):
     def get_template(self, uri):
         """Return a :class:`.Template` from the given ``uri``.
 
-        The ``uri`` resolution is relative to the ``uri`` of this :class:`.Namespace`
-        object's :class:`.Template`.
+        The ``uri`` resolution is relative to the ``uri`` of this
+        :class:`.Namespace` object's :class:`.Template`.
 
         """
         return _lookup_template(self.context, uri, self._templateuri)
@@ -673,7 +669,7 @@ def supports_caller(func):
 
     """
 
-    def wrap_stackframe(context,  *args, **kwargs):
+    def wrap_stackframe(context, *args, **kwargs):
         context.caller_stack._push_frame()
         try:
             return func(context, *args, **kwargs)
@@ -691,8 +687,8 @@ def capture(context, callable_, *args, **kwargs):
 
     if not compat.callable(callable_):
         raise exceptions.RuntimeException(
-                           "capture() function expects a callable as "
-                           "its argument (i.e. capture(func, *args, **kwargs))"
+                        "capture() function expects a callable as "
+                        "its argument (i.e. capture(func, *args, **kwargs))"
                         )
     context._push_buffer()
     try:
@@ -853,7 +849,6 @@ def _exec_template(callable_, context, args=None, kwargs=None):
     template = context._with_template
     if template is not None and \
             (template.format_exceptions or template.error_handler):
-        error = None
         try:
             callable_(context, *args, **kwargs)
         except Exception:
@@ -872,7 +867,8 @@ def _render_error(template, context, error):
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:
-            context._buffer_stack[:] = [util.FastEncodingBuffer(as_unicode=True)]
+            context._buffer_stack[:] = [
+                                    util.FastEncodingBuffer(as_unicode=True)]
         else:
             context._buffer_stack[:] = [util.FastEncodingBuffer(
                                             error_template.output_encoding,

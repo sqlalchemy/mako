@@ -5,5 +5,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 
-__version__ = '0.9.2'
+__version__ = '1.0.0'
+
+
 

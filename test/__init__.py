@@ -1,7 +1,7 @@
 from mako.template import Template
 import unittest
 import os
-from mako.compat import py3k, py26, py25
+from mako.compat import py3k, py26
 from mako import compat
 from mako.util import update_wrapper
 import re
@@ -110,9 +110,6 @@ def requires_python_2(fn):
 
 def requires_python_26_or_greater(fn):
     return skip_if(lambda: not py26, "Requires Python 2.6 or greater")(fn)
-
-def requires_python_25_or_greater(fn):
-    return skip_if(lambda: not py25, "Requires Python 2.5 or greater")(fn)
 
 def requires_pygments_14(fn):
     try:

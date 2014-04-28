@@ -5,7 +5,6 @@ py3k = sys.version_info >= (3, 0)
 py33 = sys.version_info >= (3, 3)
 py2k = sys.version_info < (3,)
 py26 = sys.version_info >= (2, 6)
-py25 = sys.version_info >= (2, 5)
 jython = sys.platform.startswith('java')
 win32 = sys.platform.startswith('win')
 pypy = hasattr(sys, 'pypy_version_info')
@@ -100,23 +99,10 @@ except:
             return func(*(args + fargs), **newkeywords)
         return newfunc
 
-if not py25:
-    def all(iterable):
-        for i in iterable:
-            if not i:
-                return False
-        return True
+all = all
 
-    def exception_name(exc):
-        try:
-            return exc.__class__.__name__
-        except AttributeError:
-            return exc.__name__
-else:
-    all = all
-
-    def exception_name(exc):
-        return exc.__class__.__name__
+def exception_name(exc):
+    return exc.__class__.__name__
 
 try:
     from inspect import CO_VARKEYWORDS, CO_VARARGS

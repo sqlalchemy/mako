@@ -80,7 +80,7 @@ class PythonPrinter(object):
             ):
 
             if self.indent > 0:
-                self.indent -=1
+                self.indent -= 1
                 # if the indent_detail stack is empty, the user
                 # probably put extra closures - the resulting
                 # module wont compile.
@@ -108,7 +108,7 @@ class PythonPrinter(object):
             if match:
                 # its a "compound" keyword, so we will check for "unindentors"
                 indentor = match.group(1)
-                self.indent +=1
+                self.indent += 1
                 self.indent_detail.append(indentor)
             else:
                 indentor = None
@@ -265,7 +265,7 @@ def adjust_whitespace(text):
 
         return start_state
 
-    def _indent_line(line, stripspace = ''):
+    def _indent_line(line, stripspace=''):
         return re.sub(r"^%s" % stripspace, '', line)
 
     lines = []

@@ -28,7 +28,7 @@ class CompileException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self,
                               message + _format_filepos(lineno, pos, filename))
-        self.lineno =lineno
+        self.lineno = lineno
         self.pos = pos
         self.filename = filename
         self.source = source
@@ -37,7 +37,7 @@ class SyntaxException(MakoException):
     def __init__(self, message, source, lineno, pos, filename):
         MakoException.__init__(self,
                               message + _format_filepos(lineno, pos, filename))
-        self.lineno =lineno
+        self.lineno = lineno
         self.pos = pos
         self.filename = filename
         self.source = source
@@ -260,10 +260,11 @@ def html_error_template():
     filenames, line numbers and code for that of the originating source
     template, as applicable.
 
-    The template's default ``encoding_errors`` value is ``'htmlentityreplace'``. The
-    template has two options. With the ``full`` option disabled, only a section of
-    an HTML document is returned. With the ``css`` option disabled, the default
-    stylesheet won't be included.
+    The template's default ``encoding_errors`` value is
+    ``'htmlentityreplace'``. The template has two options. With the
+    ``full`` option disabled, only a section of an HTML document is
+    returned. With the ``css`` option disabled, the default stylesheet
+    won't be included.
 
     """
     import mako.template

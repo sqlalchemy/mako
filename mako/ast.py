@@ -8,7 +8,6 @@
 code, as well as generating Python from AST nodes"""
 
 from mako import exceptions, pyparser, compat
-from mako.compat import arg_stringname
 import re
 
 class PythonCode(object):
@@ -107,8 +106,8 @@ class FunctionDecl(object):
         f.visit(expr)
         if not hasattr(self, 'funcname'):
             raise exceptions.CompileException(
-                              "Code '%s' is not a function declaration" % code,
-                              **exception_kwargs)
+                            "Code '%s' is not a function declaration" % code,
+                            **exception_kwargs)
         if not allow_kwargs and self.kwargs:
             raise exceptions.CompileException(
                                 "'**%s' keyword argument not allowed here" %

@@ -9,6 +9,9 @@ v.close()
 
 readme = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
+if sys.version_info < (2, 6):
+    raise Exception("Mako requires Python 2.6 or higher.")
+
 markupsafe_installs = (
             sys.version_info >= (2, 6) and sys.version_info < (3, 0)
         ) or sys.version_info >= (3, 3)
@@ -48,7 +51,7 @@ setup(name='Mako',
       test_suite="nose.collector",
       zip_safe=False,
       install_requires=install_requires,
-      extras_require={'beaker': ['Beaker>=1.1']},
+      extras_require={},
       entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin

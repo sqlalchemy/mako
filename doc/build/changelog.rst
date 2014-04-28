@@ -2,12 +2,19 @@
 Changelog
 =========
 
-0.9
+1.0
 ===
 
 .. changelog::
-    :version: 0.9.2
+    :version: 1.0.0
     :released:
+
+    .. change::
+        :tags: general
+
+      Compatibility changes; in order to modernize the codebase, Mako
+      is now dropping support for Python 2.4 and Python 2.5 altogether.
+      The source base is now targeted at Python 2.6 and forwards.
 
     .. change::
         :tags: bug, py3k
@@ -22,6 +29,15 @@ Changelog
       Fixed bug in Python parsing logic which would fail on Python 3
       when a "try/except" targeted a tuple of exception types, rather
       than a single exception.
+
+    .. change::
+        :tags: feature
+        :pullreq: bitbucket:5
+
+      mako-render is now implemented as a setuptools entrypoint script;
+      a standalone mako.cmd.cmdline() callable is now available, and the
+      system also uses argparse now instead of optparse.  Pull request
+      courtesy Derek Harland.
 
     .. change::
         :tags: feature
@@ -50,6 +66,9 @@ Changelog
       ``--template-dir`` which can be specified multiple times to establish
       template lookup directories.  Standard input for templates also works
       now too.  Pull request courtesy Derek Harland.
+
+0.9
+===
 
 .. changelog::
     :version: 0.9.1

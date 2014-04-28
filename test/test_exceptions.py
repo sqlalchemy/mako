@@ -7,8 +7,7 @@ from mako.lookup import TemplateLookup
 from mako.compat import u
 from test.util import result_lines
 from test import TemplateTest
-from test import requires_pygments_14, requires_no_pygments_exceptions, \
-    requires_python_25_or_greater
+from test import requires_pygments_14, requires_no_pygments_exceptions
 
 class ExceptionsTest(TemplateTest):
     def test_html_error_template(self):
@@ -156,7 +155,6 @@ ${u'привет'}
             html_error = exceptions.html_error_template().render()
             assert "RuntimeError: test" in str(html_error)
 
-    @requires_python_25_or_greater
     def test_py_utf8_html_error_template(self):
         try:
             foo = u('日本')
@@ -264,7 +262,6 @@ ${foobar}
                 result_lines(l.get_template("foo.html").render().decode('utf-8'))
 
 
-    @requires_python_25_or_greater
     def test_custom_tback(self):
         try:
             raise RuntimeError("error 1")
