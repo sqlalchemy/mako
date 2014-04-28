@@ -1,7 +1,7 @@
 from mako.template import Template
 import unittest
 import os
-from mako.compat import py3k, py26
+from mako.compat import py3k, py26, py33
 from mako import compat
 from mako.util import update_wrapper
 import re
@@ -61,6 +61,11 @@ def eq_(a, b, msg=None):
 def teardown():
     import shutil
     shutil.rmtree(module_base, True)
+
+if py33:
+    from unittest import mock
+else:
+    import mock
 
 @contextlib.contextmanager
 def raises(except_cls, message=None):

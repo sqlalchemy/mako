@@ -1,8 +1,7 @@
 from __future__ import with_statement
 from contextlib import contextmanager
-from test import TemplateTest, eq_, raises, template_base
+from test import TemplateTest, eq_, raises, template_base, mock
 import os
-import mock
 from mako.cmd import cmdline
 
 class CmdTest(TemplateTest):

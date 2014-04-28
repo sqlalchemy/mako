@@ -99,6 +99,7 @@ except:
             return func(*(args + fargs), **newkeywords)
         return newfunc
 
+
 all = all
 import json
 
