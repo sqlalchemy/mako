@@ -48,6 +48,10 @@ def url_escape(string):
     string = string.encode("utf8")
     return quote_plus(string)
 
+def legacy_url_escape(string):
+    # convert into a list of octets
+    return quote_plus(string)
+
 def url_unescape(string):
     text = unquote_plus(string)
     if not is_ascii_str(text):
@@ -193,4 +197,5 @@ if compat.py3k:
 
 NON_UNICODE_ESCAPES = DEFAULT_ESCAPES.copy()
 NON_UNICODE_ESCAPES['h'] = 'filters.legacy_html_escape'
+NON_UNICODE_ESCAPES['u'] = 'filters.legacy_url_escape'
 
