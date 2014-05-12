@@ -10,6 +10,15 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, py2k, filters
+        :pullreq: bitbucket:7
+
+      Added an html_escape filter that works in "non unicode" mode.
+      Previously, when using ``disable_unicode=True``, the ``u`` filter
+      would fail to handle non-ASCII bytes properly.  Pull request
+      courtesy George Xie.
+
+    .. change::
         :tags: general
 
       Compatibility changes; in order to modernize the codebase, Mako
