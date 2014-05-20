@@ -602,9 +602,11 @@ class ModuleInfo(object):
                         r"__M_BEGIN_METADATA(.+?)__M_END_METADATA",
                         module_source, re.S).group(1)
         source_map = compat.json.loads(source_map)
+        source_map['line_map'] = dict((int(k), int(v))
+                                    for k, v in source_map['line_map'].items())
         if full_line_map:
             line_map = source_map['full_line_map'] = dict(
-                (int(k), v) for k, v in source_map['line_map'].items()
+                (k, v) for k, v in source_map['line_map'].items()
             )
 
             for mod_line in reversed(sorted(line_map)):
