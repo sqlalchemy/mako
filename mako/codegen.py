@@ -276,6 +276,7 @@ class _GenerateRenderMethod(object):
                 self.printer.writeline(
                                 "@runtime._decorate_toplevel(%s)" % decorator)
 
+        self.printer.start_source(node.lineno)
         self.printer.writelines(
             "def %s(%s):" % (name, ','.join(args)),
                 # push new frame, assign current frame to __M_caller

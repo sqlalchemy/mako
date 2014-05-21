@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mako.template import Template, ModuleTemplate
+from mako.template import Template, ModuleTemplate, ModuleInfo
 from mako.lookup import TemplateLookup
 from mako.ext.preprocessors import convert_comments
 from mako import exceptions, runtime
@@ -12,6 +12,7 @@ from mako.compat import u
 from test import TemplateTest, eq_, template_base, module_base, \
     requires_python_26_or_greater, assert_raises, assert_raises_message, \
     requires_python_2
+import unittest
 
 class ctx(object):
     def __init__(self, a, b):
@@ -1235,6 +1236,31 @@ class ModuleTemplateTest(TemplateTest):
             "This is base.", "0", "1", "2", "3", "4"
         ]
 
+class TestTemplateAPI(unittest.TestCase):
+    def test_metadata(self):
+        t = Template("""
+Text
+Text
+% if bar:
+    ${expression}
+% endif
+
+<%include file='bar'/>
+
+""", uri="/some/template")
+        eq_(
+            ModuleInfo.get_module_source_metadata(t.code, full_line_map=True),
+            {
+                'source_encoding': 'ascii',
+                'uri': '/some/template',
+                'filename': None,
+                'boilerplate_lines': [1, 21],
+                'full_line_map': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 4, 5, 5, 5, 7, 8, 8,
+                                8, 8, 8, 8, 8],
+                'line_map': {34: 8, 21: 1, 22: 4, 23: 5, 26: 7, 27: 8}
+            }
+        )
 
 class PreprocessTest(TemplateTest):
     def test_old_comments(self):

@@ -176,7 +176,8 @@ class RichTraceback(object):
                                     template_source.split("\n")]
                 mods[filename] = (line_map, template_lines)
 
-            template_ln = line_map[lineno]
+            template_ln = line_map[lineno - 1]
+
             if template_ln <= len(template_lines):
                 template_line = template_lines[template_ln - 1]
             else:

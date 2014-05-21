@@ -27,7 +27,7 @@ class PythonPrinter(object):
         self.stream = stream
 
         # current line number
-        self.lineno = 0
+        self.lineno = 1
 
         # a list of lines that represents a buffered "block" of code,
         # which can be later printed relative to an indent level
@@ -39,9 +39,9 @@ class PythonPrinter(object):
 
         # marker for template source lines; this
         # is part of source/template line mapping
-        self.last_source_line = -1
+        self.last_source_line = 0
 
-        self.last_boilerplate_line = -1
+        self.last_boilerplate_line = 0
 
         # mapping of generated python lines to template
         # source lines

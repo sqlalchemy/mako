@@ -605,17 +605,14 @@ class ModuleInfo(object):
         source_map['line_map'] = dict((int(k), int(v))
                                     for k, v in source_map['line_map'].items())
         if full_line_map:
-            line_map = source_map['full_line_map'] = dict(
-                (k, v) for k, v in source_map['line_map'].items()
-            )
+            f_line_map = source_map['full_line_map'] = []
+            line_map = source_map['line_map']
 
-            for mod_line in reversed(sorted(line_map)):
-                tmpl_line = line_map[mod_line]
-                while mod_line > 0:
-                    mod_line -= 1
-                    if mod_line in line_map:
-                        break
-                    line_map[mod_line] = tmpl_line
+            curr_templ_line = 1
+            for mod_line in range(1, max(line_map)):
+                if mod_line in line_map:
+                    curr_templ_line = line_map[mod_line]
+                f_line_map.append(curr_templ_line)
         return source_map
 
     @property
