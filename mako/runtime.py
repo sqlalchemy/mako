@@ -852,25 +852,18 @@ def _exec_template(callable_, context, args=None, kwargs=None):
         try:
             callable_(context, *args, **kwargs)
         except Exception:
-            _render_error(template, context, compat.exception_as(), sys.exc_info())
+            _render_error(template, context, compat.exception_as())
         except:
             e = sys.exc_info()[0]
             _render_error(template, context, e)
     else:
         callable_(context, *args, **kwargs)
 
-def _render_error(template, context, error, exc_info=None):
+def _render_error(template, context, error):
     if template.error_handler:
         result = template.error_handler(context, error)
         if not result:
-            if exc_info:
-                t, v, tb = exc_info
-                if sys.version_info[0] <= 2:
-                    exec('raise v, None, tb.tb_next')
-                else:
-                    raise v.with_traceback(tb.tb_next)
-            else:
-                raise error
+            compat.reraise(*sys.exc_info())
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:
