@@ -10,6 +10,15 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, py2k
+        :pullreq: bitbucket:8
+
+      Improved the error re-raise operation when a custom
+      :paramref:`.Template.error_handler` is used that does not handle
+      the exception; the original stack trace etc. is now preserved.
+      Pull request courtesy Manfred Haltner.
+
+    .. change::
         :tags: bug, py2k, filters
         :pullreq: bitbucket:7
 
