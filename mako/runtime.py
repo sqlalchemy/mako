@@ -863,7 +863,7 @@ def _render_error(template, context, error):
     if template.error_handler:
         result = template.error_handler(context, error)
         if not result:
-            raise error
+            compat.reraise(*sys.exc_info())
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:

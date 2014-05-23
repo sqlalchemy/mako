@@ -68,6 +68,18 @@ else:
             fp.close()
 
 
+if py3k:
+    def reraise(tp, value, tb=None, cause=None):
+        if cause is not None:
+            value.__cause__ = cause
+        if value.__traceback__ is not tb:
+            raise value.with_traceback(tb)
+        raise value
+else:
+    exec("def reraise(tp, value, tb=None, cause=None):\n"
+            "    raise tp, value, tb\n")
+
+
 def exception_as():
     return sys.exc_info()[1]
 
