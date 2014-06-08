@@ -7,7 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.0
-    :released:
+    :released: Sun Jun 8 2014
 
     .. change::
         :tags: bug, py2k
