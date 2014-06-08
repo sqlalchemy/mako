@@ -1251,15 +1251,44 @@ Text
         eq_(
             ModuleInfo.get_module_source_metadata(t.code, full_line_map=True),
             {
+                'full_line_map': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+                                    0, 0, 0, 0, 0, 0, 1, 4, 5, 5, 5, 7, 8,
+                                    8, 8, 8, 8, 8, 8],
                 'source_encoding': 'ascii',
-                'uri': '/some/template',
                 'filename': None,
-                'boilerplate_lines': [1, 21],
-                'full_line_map': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                1, 1, 1, 1, 1, 1, 1, 4, 5, 5, 5, 7, 8, 8,
-                                8, 8, 8, 8, 8],
-                'line_map': {34: 8, 21: 1, 22: 4, 23: 5, 26: 7, 27: 8}
+                'line_map': {34: 28, 14: 0, 21: 1, 22: 4, 23: 5, 24: 5,
+                                    25: 5, 26: 7, 27: 8, 28: 8},
+                'uri': '/some/template'
             }
+
+        )
+
+    def test_metadata_two(self):
+        t = Template("""
+Text
+Text
+% if bar:
+    ${expression}
+% endif
+
+    <%block name="foo">
+        hi block
+    </%block>
+
+
+""", uri="/some/template")
+        eq_(
+            ModuleInfo.get_module_source_metadata(t.code, full_line_map=True),
+            {
+                'full_line_map': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                            0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 5, 5, 5, 7, 7, 7,
+                            7, 7, 10, 10, 10, 10, 10, 10, 8, 8, 8, 8, 8,
+                            8, 8, 8, 8, 8, 8, 8],
+                'source_encoding': 'ascii',
+                'filename': None,
+                'line_map': {33: 10, 39: 8, 45: 8, 14: 0, 51: 45, 23: 1,
+                                24: 4, 25: 5, 26: 5, 27: 5, 28: 7},
+                'uri': '/some/template'}
         )
 
 class PreprocessTest(TemplateTest):

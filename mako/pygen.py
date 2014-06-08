@@ -37,31 +37,16 @@ class PythonPrinter(object):
 
         self._reset_multi_line_flags()
 
-        # marker for template source lines; this
-        # is part of source/template line mapping
-        self.last_source_line = 0
-
-        self.last_boilerplate_line = 0
-
         # mapping of generated python lines to template
         # source lines
         self.source_map = {}
 
-        # list of "boilerplate" lines, these are lines
-        # that precede/follow a set of template source-mapped lines
-        self.boilerplate_map = []
-
-
     def _update_lineno(self, num):
-        if self.last_boilerplate_line <= self.last_source_line:
-            self.boilerplate_map.append(self.lineno)
-            self.last_boilerplate_line = self.lineno
         self.lineno += num
 
     def start_source(self, lineno):
-        if self.last_source_line != lineno:
+        if self.lineno not in self.source_map:
             self.source_map[self.lineno] = lineno
-            self.last_source_line = lineno
 
     def write_blanks(self, num):
         self.stream.write("\n" * num)
@@ -75,6 +60,7 @@ class PythonPrinter(object):
         self.in_indent_lines = False
         for l in re.split(r'\r?\n', block):
             self.line_buffer.append(l)
+            self._update_lineno(1)
 
     def writelines(self, *lines):
         """print a series of lines of python."""
@@ -124,7 +110,7 @@ class PythonPrinter(object):
 
         # write the line
         self.stream.write(self._indent_line(line) + "\n")
-        self._update_lineno(1)
+        self._update_lineno(len(line.split("\n")))
 
         # see if this line should increase the indentation level.
         # note that a line can both decrase (before printing) and
@@ -244,13 +230,11 @@ class PythonPrinter(object):
         for entry in self.line_buffer:
             if self._in_multi_line(entry):
                 self.stream.write(entry + "\n")
-                self._update_lineno(1)
             else:
                 entry = entry.expandtabs()
                 if stripspace is None and re.search(r"^[ \t]*[^# \t]", entry):
                     stripspace = re.match(r"^([ \t]*)", entry).group(1)
                 self.stream.write(self._indent_line(entry, stripspace) + "\n")
-                self._update_lineno(1)
 
         self.line_buffer = []
         self._reset_multi_line_flags()

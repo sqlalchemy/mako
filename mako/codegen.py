@@ -149,13 +149,13 @@ class _GenerateRenderMethod(object):
             self.write_metadata_struct()
 
     def write_metadata_struct(self):
-        self.printer.source_map[self.printer.lineno] = self.printer.last_source_line
+        self.printer.source_map[self.printer.lineno] = \
+                    max(self.printer.source_map)
         struct = {
             "filename": self.compiler.filename,
             "uri": self.compiler.uri,
             "source_encoding": self.compiler.source_encoding,
             "line_map": self.printer.source_map,
-            "boilerplate_lines": self.printer.boilerplate_map
         }
         self.printer.writelines(
             '"""',
