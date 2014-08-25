@@ -66,6 +66,9 @@ setup(name='Mako',
       [babel.extractors]
       mako = mako.ext.babelplugin:extract
 
+      [lingua.extractors]
+      mako = mako.ext.linguaplugin:LinguaMakoExtractor
+
       [console_scripts]
       mako-render = mako.cmd:cmdline
       """
