@@ -1,7 +1,7 @@
-import io
-import mock
-import unittest
+import os
 from mako.ext.linguaplugin import LinguaMakoExtractor
+from lingua.extractors import register_extractors
+from .. import TemplateTest, template_base
 
 
 class MockOptions:
@@ -9,11 +9,35 @@ class MockOptions:
     domain = None
 
 
-class Test_LinguaMakoExtractor(unittest.TestCase):
-    def test_parse_python_expression(self):
-        plugin = LinguaMakoExtractor()
-        plugin.options = MockOptions()
-        plugin.filename = 'dummy.mako'
-        input = io.BytesIO(b'<p>${_("Message")}</p>')
-        messages = list(plugin.process_file(input))
-        self.assertEqual(len(messages), 1)
+class ExtractMakoTestCase(TemplateTest):
+    def test_extract(self):
+        register_extractors()
+        plugin = LinguaMakoExtractor({'comment-tags': 'TRANSLATOR'})
+        messages = list(plugin(os.path.join(template_base, 'gettext.mako'), MockOptions()))
+        msgids = [(m.msgid, m.msgid_plural) for m in messages]
+        self.assertEqual(
+                msgids,
+                [
+                    ('Page arg 1', None),
+                    ('Page arg 2', None),
+                    ('Begin', None),
+                    ('Hi there!', None),
+                    ('Hello', None),
+                    ('Welcome', None),
+                    ('Yo', None),
+                    ('The', None),
+                    ('bunny', 'bunnies'),
+                    ('Goodbye', None),
+                    ('Babel', None),
+                    ('hella', 'hellas'),
+                    ('The', None),
+                    ('bunny', 'bunnies'),
+                    ('Goodbye, really!', None),
+                    ('P.S. byebye', None),
+                    ('Top', None),
+                    (u'foo', None),
+                    ('hoho', None),
+                    (u'bar', None),
+                    ('Inside a p tag', None),
+                    ('Later in a p tag', None),
+                    ('No action at a distance.', None)])

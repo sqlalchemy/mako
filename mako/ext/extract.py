@@ -1,3 +1,4 @@
+import re
 from mako import compat
 from mako import lexer
 from mako import parsetree
@@ -13,6 +14,7 @@ class MessageExtractor(object):
     def extract_nodes(self, nodes):
         translator_comments = []
         in_translator_comments = False
+        comment_tags = filter(None, re.split(r'\s+', self.config['comment-tags']))
 
         for node in nodes:
             child_nodes = None
@@ -26,7 +28,7 @@ class MessageExtractor(object):
                 if in_translator_comments:
                     translator_comments.extend(self._split_comment(node.lineno, value))
                     continue
-                for comment_tag in self.comment_tags:
+                for comment_tag in comment_tags:
                     if value.startswith(comment_tag):
                         in_translator_comments = True
                         translator_comments.extend(self._split_comment(node.lineno,
