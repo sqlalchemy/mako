@@ -15,6 +15,6 @@ def convert_comments(text):
     example:
  
     from mako.ext.preprocessors import convert_comments
-    t = Template(..., preprocessor=preprocess_comments)"""
+    t = Template(..., preprocessor=convert_comments)"""
     return re.sub(r'(?<=\n)\s*#[^#]', "##", text)
 
