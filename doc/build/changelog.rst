@@ -6,6 +6,16 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.1
+
+    .. change::
+        :tags: bug, py3k
+        :pullreq: bitbucket:11
+
+      Modernized the examples/wsgi/run_wsgi.py file for Py3k. 
+      Pull requset courtesy Cody Taylor.
+
+.. changelog::
     :version: 1.0.0
     :released: Sun Jun 8 2014
 
