@@ -18,7 +18,7 @@ lookup = TemplateLookup(
              module_directory='./modules',
              # even better would be to use 'charset' in start_response
              output_encoding='ascii',
-             ending_errors='replace'
+             encoding_errors='replace'
          )
 
 def serve(environ, start_response):
