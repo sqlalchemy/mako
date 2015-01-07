@@ -139,8 +139,8 @@ object. This is a :class:`.Template` subclass which the parent
         </%def>
     """)
 
-    print template.get_def("hi").render(name="ed")
-    print template.get_def("bye").render(name="ed")
+    print(template.get_def("hi").render(name="ed"))
+    print(template.get_def("bye").render(name="ed"))
 
 Defs within Defs
 ----------------
