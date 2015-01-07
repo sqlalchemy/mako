@@ -20,7 +20,7 @@ the :class:`.Template` class:
     from mako.template import Template
 
     mytemplate = Template("hello world!")
-    print mytemplate.render()
+    print(mytemplate.render())
 
 Above, the text argument to :class:`.Template` is **compiled** into a
 Python module representation. This module contains a function
@@ -41,7 +41,7 @@ method:
     from mako.template import Template
 
     mytemplate = Template("hello, ${name}!")
-    print mytemplate.render(name="jack")
+    print(mytemplate.render(name="jack"))
 
 The :meth:`~.Template.render` method calls upon Mako to create a
 :class:`.Context` object, which stores all the variable names accessible
@@ -59,7 +59,7 @@ render with it, using the :meth:`~.Template.render_context` method:
     buf = StringIO()
     ctx = Context(buf, name="jack")
     mytemplate.render_context(ctx)
-    print buf.getvalue()
+    print(buf.getvalue())
 
 Using File-Based Templates
 ==========================
@@ -72,7 +72,7 @@ using the ``filename`` keyword argument:
     from mako.template import Template
 
     mytemplate = Template(filename='/docs/mytmpl.txt')
-    print mytemplate.render()
+    print(mytemplate.render())
 
 For improved performance, a :class:`.Template` which is loaded from a
 file can also cache the source code to its generated module on
@@ -85,7 +85,7 @@ the template:
     from mako.template import Template
 
     mytemplate = Template(filename='/docs/mytmpl.txt', module_directory='/tmp/mako_modules')
-    print mytemplate.render()
+    print(mytemplate.render())
 
 When the above code is rendered, a file
 ``/tmp/mako_modules/docs/mytmpl.txt.py`` is created containing the
@@ -138,7 +138,7 @@ desired template:
 
     def serve_template(templatename, **kwargs):
         mytemplate = mylookup.get_template(templatename)
-        print mytemplate.render(**kwargs)
+        print(mytemplate.render(**kwargs))
 
 In the example above, we create a :class:`.TemplateLookup` which will
 look for templates in the ``/docs`` directory, and will store
@@ -206,7 +206,7 @@ output in any Python supported codec:
     mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8', encoding_errors='replace')
 
     mytemplate = mylookup.get_template("foo.txt")
-    print mytemplate.render()
+    print(mytemplate.render())
 
 When using Python 3, the :meth:`~.Template.render` method will return a ``bytes``
 object, **if** ``output_encoding`` is set. Otherwise it returns a
@@ -218,14 +218,14 @@ Python 3 a ``string``:
 
 .. sourcecode:: python
 
-    print mytemplate.render_unicode()
+    print(mytemplate.render_unicode())
 
 The above method disregards the output encoding keyword
 argument; you can encode yourself by saying:
 
 .. sourcecode:: python
 
-    print mytemplate.render_unicode().encode('utf-8', 'replace')
+    print(mytemplate.render_unicode().encode('utf-8', 'replace'))
 
 Note that Mako's ability to return data in any encoding and/or
 ``unicode`` implies that the underlying output stream of the
@@ -264,9 +264,9 @@ Usage of these handlers usually looks like:
 
     try:
         template = lookup.get_template(uri)
-        print template.render()
+        print(template.render())
     except:
-        print exceptions.text_error_template().render()
+        print(exceptions.text_error_template().render())
 
 Or for the HTML render function:
 
@@ -276,9 +276,9 @@ Or for the HTML render function:
 
     try:
         template = lookup.get_template(uri)
-        print template.render()
+        print(template.render())
     except:
-        print exceptions.html_error_template().render()
+        print(exceptions.html_error_template().render())
 
 The :func:`.html_error_template` template accepts two options:
 specifying ``full=False`` causes only a section of an HTML
@@ -289,7 +289,7 @@ E.g.:
 
 .. sourcecode:: python
 
-    print exceptions.html_error_template().render(full=False)
+    print(exceptions.html_error_template().render(full=False))
 
 The HTML render function is also available built-in to
 :class:`.Template` using the ``format_exceptions`` flag. In this case, any
@@ -300,7 +300,7 @@ will result in the output being substituted with the output of
 .. sourcecode:: python
 
     template = Template(filename="/foo/bar", format_exceptions=True)
-    print template.render()
+    print(template.render())
 
 Note that the compile stage of the above template occurs when
 you construct the :class:`.Template` itself, and no output stream is
@@ -324,13 +324,13 @@ which describes its general API:
 
     try:
         template = lookup.get_template(uri)
-        print template.render()
+        print(template.render())
     except:
         traceback = RichTraceback()
         for (filename, lineno, function, line) in traceback.traceback:
-            print "File %s, line %s, in %s" % (filename, lineno, function)
-            print line, "\n"
-        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+            print("File %s, line %s, in %s" % (filename, lineno, function))
+            print(line, "\n")
+        print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
 
 Common Framework Integrations
 =============================
