@@ -229,7 +229,7 @@ supported codec:
     mylookup = TemplateLookup(directories=['/docs'], output_encoding='utf-8', encoding_errors='replace')
 
     mytemplate = mylookup.get_template("foo.txt")
-    print mytemplate.render()
+    print(mytemplate.render())
 
 :meth:`~.Template.render` will return a ``bytes`` object in Python 3 if an output
 encoding is specified. By default it performs no encoding and
@@ -240,14 +240,14 @@ returns a native string.
 
 .. sourcecode:: python
 
-    print mytemplate.render_unicode()
+    print(mytemplate.render_unicode())
 
 The above method disgards the output encoding keyword argument;
 you can encode yourself by saying:
 
 .. sourcecode:: python
 
-    print mytemplate.render_unicode().encode('utf-8', 'replace')
+    print(mytemplate.render_unicode().encode('utf-8', 'replace'))
 
 Buffer Selection
 ----------------
@@ -289,7 +289,7 @@ Python. For these users, assuming they're sticking with Python
     from mako.template import Template
 
     t = Template("drôle de petite voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
-    print t.code
+    print(t.code)
 
 The ``disable_unicode`` mode is strictly a Python 2 thing. It is
 not supported at all in Python 3.
