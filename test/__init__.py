@@ -6,7 +6,12 @@ from mako import compat
 from mako.util import update_wrapper
 import re
 from mako.cache import CacheImpl, register_plugin
-from nose import SkipTest
+
+try:
+    from nose import SkipTest
+except ImportError:
+    from unittest import SkipTest
+
 import contextlib
 
 template_base = os.path.join(os.path.dirname(__file__), 'templates')

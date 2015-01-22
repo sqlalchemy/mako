@@ -4,16 +4,16 @@ from mako import lookup
 import shutil, unittest, os, time
 from test.util import result_lines
 from test import TemplateTest, template_base, module_base
-from test import eq_
+from test import eq_, SkipTest
 
 try:
     import beaker
     import beaker.cache
 except:
-    from nose import SkipTest
     raise SkipTest("Beaker is required for these tests.")
 
 from mako.cache import register_plugin, CacheImpl
+
 
 class MockCacheImpl(CacheImpl):
     realcacheimpl = None
