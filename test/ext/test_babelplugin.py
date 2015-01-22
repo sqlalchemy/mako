@@ -4,7 +4,7 @@ import unittest
 from .. import TemplateTest, template_base, skip_if
 
 try:
-    import babel
+    import babel.messages.extract as babel
 except:
     babel = None
 
