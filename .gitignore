@@ -5,3 +5,10 @@
 *.pyc
 *.orig
 *.egg-info
+*.sw[opq]
+
+/.Python
+/bin
+/include
+/lib
+/man

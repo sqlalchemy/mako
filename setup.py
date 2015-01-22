@@ -47,7 +47,7 @@ setup(name='Mako',
       url='http://www.makotemplates.org/',
       license='MIT',
       packages=find_packages('.', exclude=['examples*', 'test*']),
-      tests_require=['nose >= 0.11', 'mock'],
+      tests_require=['nose >= 0.11', 'mock', 'Babel', 'lingua >= 3.2'],
       test_suite="nose.collector",
       zip_safe=False,
       install_requires=install_requires,
@@ -65,6 +65,9 @@ setup(name='Mako',
 
       [babel.extractors]
       mako = mako.ext.babelplugin:extract
+
+      [lingua.extractors]
+      mako = mako.ext.linguaplugin:LinguaMakoExtractor
 
       [console_scripts]
       mako-render = mako.cmd:cmdline

@@ -1,20 +1,34 @@
-
-from test import TemplateTest, template_base, skip_if
-
-try:
-    import babel
-except:
-    babel = None
-
-if babel is not None:
-    from mako.ext.babelplugin import extract
-
+import io
 import os
+import unittest
+from mako.ext.babelplugin import extract
+from .. import TemplateTest, template_base
+
+
+class Test_extract(unittest.TestCase):
+    def test_parse_python_expression(self):
+        input = io.BytesIO(b'<p>${_("Message")}</p>')
+        messages = list(extract(input, ['_'], [], {}))
+        self.assertEqual(messages, [(1, '_', u'Message', [])])
+
+    def test_python_gettext_call(self):
+        input = io.BytesIO(b'<p>${_("Message")}</p>')
+        messages = list(extract(input, ['_'], [], {}))
+        self.assertEqual(messages, [(1, '_', u'Message', [])])
+
+    def test_translator_comment(self):
+        input = io.BytesIO(b'''
+        <p>
+          ## TRANSLATORS: This is a comment.
+          ${_("Message")}
+        </p>''')
+        messages = list(extract(input, ['_'], ['TRANSLATORS:'], {}))
+        self.assertEqual(
+                messages,
+                [(4, '_', u'Message', [u'TRANSLATORS: This is a comment.'])])
 
 
 class ExtractMakoTestCase(TemplateTest):
-
-    @skip_if(lambda: not babel, 'babel not installed: skipping babelplugin test')
     def test_extract(self):
         mako_tmpl = open(os.path.join(template_base, 'gettext.mako'))
         messages = list(extract(mako_tmpl, {'_': None, 'gettext': None,
@@ -46,4 +60,3 @@ class ExtractMakoTestCase(TemplateTest):
              (99, '_', 'No action at a distance.', []),
              ]
         self.assertEqual(expected, messages)
-
