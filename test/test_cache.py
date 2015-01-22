@@ -1,18 +1,39 @@
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import lookup
-import shutil, unittest, os, time
+import time
 from test.util import result_lines
-from test import TemplateTest, template_base, module_base
+from test import TemplateTest, module_base
 from test import eq_, SkipTest
 
-try:
+
+from mako.ext import beaker_cache
+
+if beaker_cache.has_beaker:
     import beaker
-    import beaker.cache
-except:
-    raise SkipTest("Beaker is required for these tests.")
 
 from mako.cache import register_plugin, CacheImpl
+
+
+class SimpleBackend(object):
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, key, **kw):
+        return self.cache[key]
+
+    def invalidate(self, key, **kw):
+        self.cache.pop(key, None)
+
+    def put(self, key, value, **kw):
+        self.cache[key] = value
+
+    def get_or_create(self, key, creation_function, **kw):
+        if key in self.cache:
+            return self.cache[key]
+        else:
+            self.cache[key] = value = creation_function()
+            return value
 
 
 class MockCacheImpl(CacheImpl):
@@ -20,82 +41,54 @@ class MockCacheImpl(CacheImpl):
 
     def __init__(self, cache):
         self.cache = cache
-        use_beaker = self.cache.\
-                    template.cache_args.\
-                    get('use_beaker', True)
-        if use_beaker:
-            self.realcacheimpl = cache._load_impl("beaker")
+
+    def set_backend(self, cache, backend):
+        if backend == 'simple':
+            self.realcacheimpl = SimpleBackend()
+        else:
+            self.realcacheimpl = cache._load_impl(backend)
+
+    def _setup_kwargs(self, kw):
+        self.kwargs = kw.copy()
+        self.kwargs.pop('regions', None)
+        self.kwargs.pop('manager', None)
+        if self.kwargs.get('region') != 'myregion':
+            self.kwargs.pop('region', None)
 
     def get_or_create(self, key, creation_function, **kw):
         self.key = key
-        self.kwargs = kw.copy()
-        if self.realcacheimpl:
-            return self.realcacheimpl.\
-                    get_or_create(key, creation_function, **kw)
-        else:
-            return creation_function()
+        self._setup_kwargs(kw)
+        return self.realcacheimpl.\
+            get_or_create(key, creation_function, **kw)
 
     def put(self, key, value, **kw):
         self.key = key
-        self.kwargs = kw.copy()
-        if self.realcacheimpl:
-            self.realcacheimpl.put(key, value, **kw)
+        self._setup_kwargs(kw)
+        self.realcacheimpl.put(key, value, **kw)
 
     def get(self, key, **kw):
         self.key = key
-        self.kwargs = kw.copy()
-        if self.realcacheimpl:
-            return self.realcacheimpl.get(key, **kw)
+        self._setup_kwargs(kw)
+        return self.realcacheimpl.get(key, **kw)
 
     def invalidate(self, key, **kw):
         self.key = key
-        self.kwargs = kw.copy()
-        if self.realcacheimpl:
-            self.realcacheimpl.invalidate(key, **kw)
+        self._setup_kwargs(kw)
+        self.realcacheimpl.invalidate(key, **kw)
 
 
 register_plugin("mock", __name__, "MockCacheImpl")
 
-class BeakerCacheTest(TemplateTest):
-    def _regions(self):
-        return beaker.cache.CacheManager(
-            cache_regions = {
-                'short':{
-                    'expire':1,
-                    'type':'memory'
-                },
-                'long':{
-                    'expire':60,
-                    'type':'memory'
-                }
-            }
-        )
-
-    def test_region(self):
-        t = Template("""
-            <%block name="foo" cached="True" cache_region="short">
-                short term ${x}
-            </%block>
-            <%block name="bar" cached="True" cache_region="long">
-                long term ${x}
-            </%block>
-            <%block name="lala">
-                none ${x}
-            </%block>
-        """, cache_args={"manager":self._regions()})
-
-        r1 = result_lines(t.render(x=5))
-        time.sleep(2)
-        r2 = result_lines(t.render(x=6))
-        r3 = result_lines(t.render(x=7))
-        eq_(r1, ["short term 5", "long term 5", "none 5"])
-        eq_(r2, ["short term 6", "long term 5", "none 6"])
-        eq_(r3, ["short term 6", "long term 5", "none 7"])
 
 class CacheTest(TemplateTest):
-    def _install_mock_cache(self, template):
+
+    real_backend = 'simple'
+
+    def _install_mock_cache(self, template, implname=None):
         template.cache_impl = 'mock'
-        return template.cache.impl
+        impl = template.cache.impl
+        impl.set_backend(template.cache, implname or self.real_backend)
+        return impl
 
     def test_def(self):
         t = Template("""
@@ -135,7 +128,7 @@ class CacheTest(TemplateTest):
             ${foo()}
             callcount: ${callcount}
         """, cache_enabled=False)
-        m = self._install_mock_cache(t)
+        self._install_mock_cache(t)
 
         eq_(t.render().strip(), "callcount: [2]")
 
@@ -219,7 +212,6 @@ class CacheTest(TemplateTest):
         )
         eq_(m.key, "thekey")
 
-
     def test_dynamic_key_with_funcargs(self):
         t = Template("""
             <%def name="foo(num=5)" cached="True" cache_key="foo_${str(num)}">
@@ -235,7 +227,8 @@ class CacheTest(TemplateTest):
         assert m.key == "foo_5"
 
         t = Template("""
-            <%def name="foo(*args, **kwargs)" cached="True" cache_key="foo_${kwargs['bar']}">
+            <%def name="foo(*args, **kwargs)" cached="True"
+             cache_key="foo_${kwargs['bar']}">
              hi
             </%def>
 
@@ -254,7 +247,6 @@ class CacheTest(TemplateTest):
         t.render()
         assert result_lines(t.render()) == ['hi']
         assert m.key == "foo_hi"
-
 
     def test_dynamic_key_with_imports(self):
         lookup = TemplateLookup()
@@ -283,7 +275,7 @@ class CacheTest(TemplateTest):
 
     def test_fileargs_implicit(self):
         l = lookup.TemplateLookup(module_directory=module_base)
-        l.put_string("test","""
+        l.put_string("test", """
                 <%!
                     callcount = [0]
                 %>
@@ -307,7 +299,7 @@ class CacheTest(TemplateTest):
             'this is foo',
             'callcount: [1]',
         ]
-        eq_(m.kwargs, {'type':'dbm'})
+        eq_(m.kwargs, {'type': 'dbm'})
 
     def test_fileargs_deftag(self):
         t = Template("""
@@ -333,7 +325,7 @@ class CacheTest(TemplateTest):
             'this is foo',
             'callcount: [1]',
         ]
-        assert m.kwargs == {'type':'file','dir':module_base}
+        assert m.kwargs == {'type': 'file', 'dir': module_base}
 
     def test_fileargs_pagetag(self):
         t = Template("""
@@ -360,11 +352,12 @@ class CacheTest(TemplateTest):
             'this is foo',
             'callcount: [1]',
         ]
-        eq_(m.kwargs, {'dir':module_base, 'type':'dbm'})
+        eq_(m.kwargs, {'dir': module_base, 'type': 'dbm'})
 
     def test_args_complete(self):
         t = Template("""
-        <%%def name="foo()" cached="True" cache_timeout="30" cache_dir="%s" cache_type="file" cache_key='somekey'>
+        <%%def name="foo()" cached="True" cache_timeout="30" cache_dir="%s"
+         cache_type="file" cache_key='somekey'>
             this is foo
         </%%def>
 
@@ -372,19 +365,20 @@ class CacheTest(TemplateTest):
 """ % module_base)
         m = self._install_mock_cache(t)
         t.render()
-        eq_(m.kwargs, {'dir':module_base, 'type':'file', 'timeout':30})
+        eq_(m.kwargs, {'dir': module_base, 'type': 'file', 'timeout': 30})
 
         t2 = Template("""
-        <%%page cached="True" cache_timeout="30" cache_dir="%s" cache_type="file" cache_key='somekey'/>
+        <%%page cached="True" cache_timeout="30" cache_dir="%s"
+         cache_type="file" cache_key='somekey'/>
         hi
         """ % module_base)
         m = self._install_mock_cache(t2)
         t2.render()
-        eq_(m.kwargs, {'dir':module_base, 'type':'file', 'timeout':30})
+        eq_(m.kwargs, {'dir': module_base, 'type': 'file', 'timeout': 30})
 
     def test_fileargs_lookup(self):
         l = lookup.TemplateLookup(cache_dir=module_base, cache_type='file')
-        l.put_string("test","""
+        l.put_string("test", """
                 <%!
                     callcount = [0]
                 %>
@@ -409,7 +403,7 @@ class CacheTest(TemplateTest):
             'this is foo',
             'callcount: [1]',
         ]
-        eq_(m.kwargs, {'dir':module_base, 'type':'file'})
+        eq_(m.kwargs, {'dir': module_base, 'type': 'file'})
 
     def test_buffered(self):
         t = Template("""
@@ -423,7 +417,11 @@ class CacheTest(TemplateTest):
             this is a test
         </%def>
         """, buffer_filters=["a"])
-        assert result_lines(t.render()) == ["this is a this is a test", "this is a this is a test"]
+        self._install_mock_cache(t)
+        eq_(
+            result_lines(t.render()),
+            ["this is a this is a test", "this is a this is a test"]
+        )
 
     def test_load_from_expired(self):
         """test that the cache callable can be called safely after the
@@ -432,29 +430,16 @@ class CacheTest(TemplateTest):
         """
         t = Template("""
         ${foo()}
-        <%def name="foo()" cached="True" cache_timeout="2">
+        <%def name="foo()" cached="True" cache_timeout="1">
             foo
         </%def>
         """)
+        self._install_mock_cache(t)
 
         x1 = t.render()
-        time.sleep(3)
+        time.sleep(1.2)
         x2 = t.render()
         assert x1.strip() == x2.strip() == "foo"
-
-    def test_cache_uses_current_context(self):
-        t = Template("""
-        ${foo()}
-        <%def name="foo()" cached="True" cache_timeout="2">
-            foo: ${x}
-        </%def>
-        """)
-
-        x1 = t.render(x=1)
-        time.sleep(3)
-        x2 = t.render(x=2)
-        eq_(x1.strip(), "foo: 1")
-        eq_(x2.strip(), "foo: 2")
 
     def test_namespace_access(self):
         t = Template("""
@@ -470,7 +455,11 @@ class CacheTest(TemplateTest):
                 foo(4)
             %>
         """)
-        assert result_lines(t.render()) == ['foo: 1', 'foo: 1', 'foo: 3', 'foo: 3']
+        self._install_mock_cache(t)
+        eq_(
+            result_lines(t.render()),
+            ['foo: 1', 'foo: 1', 'foo: 3', 'foo: 3']
+        )
 
     def test_lookup(self):
         l = TemplateLookup(cache_impl='mock')
@@ -479,6 +468,7 @@ class CacheTest(TemplateTest):
             ${y}
         """)
         t = l.get_template("x")
+        self._install_mock_cache(t)
         assert result_lines(t.render(y=5)) == ["5"]
         assert result_lines(t.render(y=7)) == ["5"]
         assert isinstance(t.cache.impl, MockCacheImpl)
@@ -494,6 +484,7 @@ class CacheTest(TemplateTest):
             </%%def>
             ${foo()} ${bar()}
         """ % module_base)
+        self._install_mock_cache(t)
         assert result_lines(t.render(x=1)) == ["foo: 1", "bar: 1"]
         assert result_lines(t.render(x=2)) == ["foo: 1", "bar: 1"]
         t.cache.invalidate_def('foo')
@@ -506,6 +497,7 @@ class CacheTest(TemplateTest):
 
             page: ${x}
         """ % module_base)
+        self._install_mock_cache(t)
         assert result_lines(t.render(x=1)) == ["page: 1"]
         assert result_lines(t.render(x=2)) == ["page: 1"]
         t.cache.invalidate_body()
@@ -518,29 +510,38 @@ class CacheTest(TemplateTest):
                     cache_timeout="50" cache_foo="foob">
             </%def>
             ${foo()}
-        """, cache_args={'use_beaker':False})
-        m = self._install_mock_cache(t)
+        """)
+        m = self._install_mock_cache(t, 'simple')
         t.render()
-        eq_(m.kwargs, {'use_beaker':False,'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(
+            m.kwargs,
+            {'region': 'myregion',
+             'timeout': 50, 'foo': 'foob'})
 
     def test_custom_args_block(self):
         t = Template("""
             <%block name="foo" cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob">
             </%block>
-        """, cache_args={'use_beaker':False})
-        m = self._install_mock_cache(t)
+        """)
+        m = self._install_mock_cache(t, "simple")
         t.render()
-        eq_(m.kwargs, {'use_beaker':False, 'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(
+            m.kwargs,
+            {'region': 'myregion',
+             'timeout': 50, 'foo': 'foob'})
 
     def test_custom_args_page(self):
         t = Template("""
             <%page cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob"/>
-        """, cache_args={'use_beaker':False})
-        m = self._install_mock_cache(t)
+        """)
+        m = self._install_mock_cache(t, "simple")
         t.render()
-        eq_(m.kwargs, {'use_beaker':False, 'region':'myregion', 'timeout':50, 'foo':'foob'})
+        eq_(
+            m.kwargs,
+            {'region': 'myregion',
+             'timeout': 50, 'foo': 'foob'})
 
     def test_pass_context(self):
         t = Template("""
@@ -555,3 +556,107 @@ class CacheTest(TemplateTest):
         assert 'context' in m.kwargs
         assert m.kwargs['context'].get('x') == 'bar'
 
+
+class RealBackendTest(object):
+    def test_cache_uses_current_context(self):
+        t = Template("""
+        ${foo()}
+        <%def name="foo()" cached="True" cache_timeout="1">
+            foo: ${x}
+        </%def>
+        """)
+        self._install_mock_cache(t)
+
+        x1 = t.render(x=1)
+        time.sleep(1.2)
+        x2 = t.render(x=2)
+        eq_(x1.strip(), "foo: 1")
+        eq_(x2.strip(), "foo: 2")
+
+    def test_region(self):
+        t = Template(
+            """
+            <%block name="foo" cached="True" cache_region="short">
+                short term ${x}
+            </%block>
+            <%block name="bar" cached="True" cache_region="long">
+                long term ${x}
+            </%block>
+            <%block name="lala">
+                none ${x}
+            </%block>
+        """)
+
+        self._install_mock_cache(t)
+        r1 = result_lines(t.render(x=5))
+        time.sleep(1.2)
+        r2 = result_lines(t.render(x=6))
+        r3 = result_lines(t.render(x=7))
+        eq_(r1, ["short term 5", "long term 5", "none 5"])
+        eq_(r2, ["short term 6", "long term 5", "none 6"])
+        eq_(r3, ["short term 6", "long term 5", "none 7"])
+
+
+class BeakerCacheTest(RealBackendTest, CacheTest):
+    real_backend = 'beaker'
+
+    def setUp(self):
+        if not beaker_cache.has_beaker:
+            raise SkipTest("Beaker is required for these tests.")
+
+    def _install_mock_cache(self, template, implname=None):
+        template.cache_args['manager'] = self._regions()
+        impl = super(BeakerCacheTest, self)._install_mock_cache(
+            template, implname)
+        return impl
+
+    def _regions(self):
+        return beaker.cache.CacheManager(
+            cache_regions={
+                'short': {
+                    'expire': 1,
+                    'type': 'memory'
+                },
+                'long': {
+                    'expire': 60,
+                    'type': 'memory'
+                }
+            }
+        )
+
+
+class DogpileCacheTest(RealBackendTest, CacheTest):
+    real_backend = 'dogpile.cache'
+
+    def setUp(self):
+        try:
+            import dogpile.cache  # noqa
+        except ImportError:
+            raise SkipTest("dogpile.cache is required to run these tests")
+
+    def _install_mock_cache(self, template, implname=None):
+        template.cache_args['regions'] = self._regions()
+        template.cache_args.setdefault('region', 'short')
+        impl = super(DogpileCacheTest, self)._install_mock_cache(
+            template, implname)
+        return impl
+
+    def _regions(self):
+        from dogpile.cache import make_region
+
+        my_regions = {
+            "short": make_region().configure(
+                "dogpile.cache.memory",
+                expiration_time=1
+            ),
+            "long": make_region().configure(
+                "dogpile.cache.memory",
+                expiration_time=60
+            ),
+            "myregion": make_region().configure(
+                "dogpile.cache.memory",
+                expiration_time=60
+                )
+        }
+
+        return my_regions

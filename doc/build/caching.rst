@@ -20,9 +20,15 @@ method will return content directly from the cache. When the
 :class:`.Template` object itself falls out of scope, its corresponding
 cache is garbage collected along with the template.
 
-By default, caching requires that the `Beaker <http://beaker.readthedocs.org/>`_ package be installed on the
-system, however the mechanism of caching can be customized to use
-any third party or user defined system -- see :ref:`cache_plugins`.
+The caching system requires that a cache backend be installed; this
+includes either the `Beaker <http://beaker.readthedocs.org/>`_ package
+or the `dogpile.cache <http://dogpilecache.readthedocs.org>`_, as well as
+any other third-party caching libraries that feature Mako integration.
+
+By default, caching will attempt to make use of Beaker.
+To use dogpile.cache, the
+``cache_impl`` argument must be set; see this argument in the
+section :ref:`cache_arguments`.
 
 In addition to being available on the ``<%page>`` tag, the caching flag and all
 its options can be used with the ``<%def>`` tag as well:
@@ -40,6 +46,9 @@ its options can be used with the ``<%def>`` tag as well:
     <%block cached="True" cache_timeout="60">
         other text
     </%block>
+
+
+.. _cache_arguments:
 
 Cache Arguments
 ===============
@@ -88,28 +97,13 @@ caching can be configured using these arguments:
                       )
 
 * ``cache_impl`` - The string name of the cache backend
-  to use.   This defaults to ``'beaker'``, which has historically
-  been the only cache backend supported by Mako.
-
-  .. versionadded:: 0.6.0
-
-  For example, here's how to use the upcoming
-  `dogpile.cache <http://dogpilecache.readthedocs.org>`_
-  backend:
-
-  .. sourcecode:: python
-
-      lookup = TemplateLookup(
-                      directories='/path/to/templates',
-                      cache_impl = 'dogpile.cache',
-                      cache_args = {'regions':my_dogpile_regions}
-                      )
+  to use.   This defaults to ``'beaker'``, indicating
+  that the 'beaker' backend will be used.
 
 * ``cache_args`` - A dictionary of cache parameters that
   will be consumed by the cache backend.   See
-  :ref:`beaker_backend` for examples.
+  :ref:`beaker_backend` and :ref:`dogpile.cache_backend` for examples.
 
-  .. versionadded:: 0.6.0
 
 Backend-Specific Cache Arguments
 --------------------------------

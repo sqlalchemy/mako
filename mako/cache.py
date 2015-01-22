@@ -88,9 +88,10 @@ class Cache(object):
         if not self.template.cache_enabled:
             return creation_function()
 
-        return self.impl.get_or_create(key,
-                        creation_function,
-                        **self._get_cache_kw(kw, context))
+        return self.impl.get_or_create(
+            key,
+            creation_function,
+            **self._get_cache_kw(kw, context))
 
     def set(self, key, value, **kw):
         """Place a value in the cache.
@@ -177,6 +178,7 @@ class Cache(object):
             tmpl_kw = tmpl_kw.copy()
             tmpl_kw.setdefault('context', context)
         return tmpl_kw
+
 
 class CacheImpl(object):
     """Provide a cache implementation for use by :class:`.Cache`."""
