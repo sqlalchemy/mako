@@ -7,6 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.1
+    :released: Thu Jan 22 2015
 
     .. change::
         :tags: feature
