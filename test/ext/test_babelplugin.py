@@ -2,6 +2,7 @@ import io
 import os
 import unittest
 from .. import TemplateTest, template_base, skip_if
+from mako import compat
 
 try:
     import babel.messages.extract as babel
@@ -21,27 +22,28 @@ def skip():
 class Test_extract(unittest.TestCase):
     @skip()
     def test_parse_python_expression(self):
-        input = io.BytesIO(b'<p>${_("Message")}</p>')
+        input = io.BytesIO(compat.b('<p>${_("Message")}</p>'))
         messages = list(extract(input, ['_'], [], {}))
-        self.assertEqual(messages, [(1, '_', u'Message', [])])
+        self.assertEqual(messages, [(1, '_', compat.u('Message'), [])])
 
     @skip()
     def test_python_gettext_call(self):
-        input = io.BytesIO(b'<p>${_("Message")}</p>')
+        input = io.BytesIO(compat.b('<p>${_("Message")}</p>'))
         messages = list(extract(input, ['_'], [], {}))
-        self.assertEqual(messages, [(1, '_', u'Message', [])])
+        self.assertEqual(messages, [(1, '_', compat.u('Message'), [])])
 
     @skip()
     def test_translator_comment(self):
-        input = io.BytesIO(b'''
+        input = io.BytesIO(compat.b('''
         <p>
           ## TRANSLATORS: This is a comment.
           ${_("Message")}
-        </p>''')
+        </p>'''))
         messages = list(extract(input, ['_'], ['TRANSLATORS:'], {}))
         self.assertEqual(
             messages,
-            [(4, '_', u'Message', [u'TRANSLATORS: This is a comment.'])])
+            [(4, '_', compat.u('Message'),
+                [compat.u('TRANSLATORS: This is a comment.')])])
 
 
 class ExtractMakoTestCase(TemplateTest):
@@ -64,13 +66,13 @@ class ExtractMakoTestCase(TemplateTest):
              (41, '_', 'Goodbye', ['TRANSLATOR: Good bye']),
              (44, '_', 'Babel', []),
              (45, 'ungettext', ('hella', 'hellas', None), []),
-            (62, '_', 'The', ['TRANSLATOR: Ensure so and', 'so, thanks']),
-            (62, 'ungettext', ('bunny', 'bunnies', None), []),
-            (68, '_', 'Goodbye, really!', ['TRANSLATOR: HTML comment']),
-            (71, '_', 'P.S. byebye', []),
-            (77, '_', 'Top', []),
-            (83, '_', 'foo', []),
-            (83, '_', 'hoho', []),
+             (62, '_', 'The', ['TRANSLATOR: Ensure so and', 'so, thanks']),
+             (62, 'ungettext', ('bunny', 'bunnies', None), []),
+             (68, '_', 'Goodbye, really!', ['TRANSLATOR: HTML comment']),
+             (71, '_', 'P.S. byebye', []),
+             (77, '_', 'Top', []),
+             (83, '_', 'foo', []),
+             (83, '_', 'hoho', []),
              (85, '_', 'bar', []),
              (92, '_', 'Inside a p tag', ['TRANSLATOR: <p> tag is ok?']),
              (95, '_', 'Later in a p tag', ['TRANSLATOR: also this']),
