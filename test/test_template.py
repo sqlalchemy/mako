@@ -1117,7 +1117,7 @@ class ModuleDirTest(TemplateTest):
         eq_(
             canary,
             [os.path.join(module_base, "modtest.html.py"),
-            os.path.join(module_base, "subdir/modtest.html.py")]
+            os.path.join(module_base, "subdir", "modtest.html.py")]
         )
 
 class FilenameToURITest(TemplateTest):
