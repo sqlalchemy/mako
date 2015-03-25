@@ -228,6 +228,7 @@ class Undefined(object):
         return False
 
 UNDEFINED = Undefined()
+STOP_RENDERING = ""
 
 class LoopStack(object):
     """a stack for LoopContexts that implements the context manager protocol

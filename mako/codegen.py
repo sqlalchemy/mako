@@ -19,7 +19,7 @@ MAGIC_NUMBER = 10
 # names which are hardwired into the
 # template and are not accessed via the
 # context itself
-RESERVED_NAMES = set(['context', 'loop', 'UNDEFINED'])
+RESERVED_NAMES = set(['context', 'loop', 'UNDEFINED', 'STOP_RENDERING'])
 
 def compile(node,
                 uri,
@@ -215,6 +215,7 @@ class _GenerateRenderMethod(object):
                                    (", ".join(self.compiler.future_imports),))
         self.printer.writeline("from mako import runtime, filters, cache")
         self.printer.writeline("UNDEFINED = runtime.UNDEFINED")
+        self.printer.writeline("STOP_RENDERING = runtime.STOP_RENDERING")
         self.printer.writeline("__M_dict_builtin = dict")
         self.printer.writeline("__M_locals_builtin = locals")
         self.printer.writeline("_magic_number = %r" % MAGIC_NUMBER)

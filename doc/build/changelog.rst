@@ -6,6 +6,18 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.2
+
+    .. change::
+        :tags: feature
+        :tickets: 236
+
+      Added STOP_RENDERING keyword for returning/exiting from a
+      template early. Previously the docs suggested a bare
+      ``return``, but this could cause ``None`` to appear in the
+      rendered template result.
+
+.. changelog::
     :version: 1.0.1
     :released: Thu Jan 22 2015
 

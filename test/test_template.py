@@ -757,9 +757,22 @@ class UndefinedVarsTest(TemplateTest):
             ['t is: T', 'a,b,c']
         )
 
+class StopRenderingTest(TemplateTest):
+    def test_return_in_template(self):
+        t = Template("""
+           Line one
+           <% return STOP_RENDERING %>
+           Line Three
+        """, strict_undefined=True)
+
+        eq_(
+            result_lines(t.render()),
+            ['Line one']
+        )
+
 class ReservedNameTest(TemplateTest):
     def test_names_on_context(self):
-        for name in ('context', 'loop', 'UNDEFINED'):
+        for name in ('context', 'loop', 'UNDEFINED', 'STOP_RENDERING'):
             assert_raises_message(
                 exceptions.NameConflictError,
                 r"Reserved words passed to render\(\): %s" % name,
@@ -767,7 +780,7 @@ class ReservedNameTest(TemplateTest):
             )
 
     def test_names_in_template(self):
-        for name in ('context', 'loop', 'UNDEFINED'):
+        for name in ('context', 'loop', 'UNDEFINED', 'STOP_RENDERING'):
             assert_raises_message(
                 exceptions.NameConflictError,
                 r"Reserved words declared in template: %s" % name,

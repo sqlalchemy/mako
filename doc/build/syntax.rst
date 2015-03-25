@@ -443,19 +443,19 @@ Mako:
         <%def name="x()">${x}</%def>
     </%text>
 
-Returning Early from a Template
-===============================
+Exiting Early from a Template
+=============================
 
 Sometimes you want to stop processing a template or ``<%def>``
 method in the middle and just use the text you've accumulated so
-far. You can use a ``return`` statement inside a Python
-block to do that.
+far. You can ``return`` the ``STOP_RENDERING`` value inside a Python
+block to exit the current rendering process.
 
 .. sourcecode:: mako
 
     % if not len(records):
         No records found.
-        <% return %>
+        <% return STOP_RENDERING %>
     % endif
 
 Or perhaps:
@@ -464,6 +464,15 @@ Or perhaps:
 
     <%
         if not len(records):
-            return
+            return STOP_RENDERING
     %>
+
+In older versions, return an empty string instead to avoid having
+``None`` in your rendered template:
+
+.. sourcecode:: mako
+
+    <% return '' %>
+
+.. versionadded:: 1.0.2
 
