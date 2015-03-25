@@ -12,10 +12,15 @@ Changelog
         :tags: feature
         :tickets: 236
 
-      Added STOP_RENDERING keyword for returning/exiting from a
-      template early. Previously the docs suggested a bare
+      Added ``STOP_RENDERING`` keyword for returning/exiting from a
+      template early, which is a synonym for an empty string ``""``.
+      Previously, the docs suggested a bare
       ``return``, but this could cause ``None`` to appear in the
       rendered template result.
+
+      .. seealso::
+
+        :ref:`syntax_exiting_early`
 
 .. changelog::
     :version: 1.0.1

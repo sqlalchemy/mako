@@ -212,7 +212,7 @@ pure-Python functions you might want to declare:
     %>
 
 Any number of ``<%! %>`` blocks can be declared anywhere in a
-template; they will be rendered in the resulting module 
+template; they will be rendered in the resulting module
 in a single contiguous block above all render callables,
 in the order in which they appear in the source template.
 
@@ -443,13 +443,19 @@ Mako:
         <%def name="x()">${x}</%def>
     </%text>
 
+.. _syntax_exiting_early:
+
 Exiting Early from a Template
 =============================
 
 Sometimes you want to stop processing a template or ``<%def>``
 method in the middle and just use the text you've accumulated so
-far. You can ``return`` the ``STOP_RENDERING`` value inside a Python
-block to exit the current rendering process.
+far.  This is accomplished by using ``return`` statement inside
+a Python block.   It's a good idea for the ``return`` statement
+to return an empty string, which prevents the Python default return
+value of ``None`` from being rendered by the template.  This
+return value is for semantic purposes provided in templates via
+the ``STOP_RENDERING`` symbol:
 
 .. sourcecode:: mako
 
@@ -467,12 +473,14 @@ Or perhaps:
             return STOP_RENDERING
     %>
 
-In older versions, return an empty string instead to avoid having
-``None`` in your rendered template:
+In older versions of Mako, an empty string can be substituted for
+the ``STOP_RENDERING`` symbol:
 
 .. sourcecode:: mako
 
     <% return '' %>
 
-.. versionadded:: 1.0.2
+.. versionadded:: 1.0.2 - added the ``STOP_RENDERING`` symbol which serves
+   as a semantic identifier for the empty string ``""`` used by a
+   Python ``return`` statement.
 
