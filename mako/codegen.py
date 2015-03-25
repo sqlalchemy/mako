@@ -19,7 +19,8 @@ MAGIC_NUMBER = 10
 # names which are hardwired into the
 # template and are not accessed via the
 # context itself
-RESERVED_NAMES = set(['context', 'loop', 'UNDEFINED', 'STOP_RENDERING'])
+TOPLEVEL_DECLARED = set(["UNDEFINED", "STOP_RENDERING"])
+RESERVED_NAMES = set(['context', 'loop']).union(TOPLEVEL_DECLARED)
 
 def compile(node,
                 uri,
@@ -243,7 +244,7 @@ class _GenerateRenderMethod(object):
         module_identifiers.topleveldefs = \
             module_identifiers.topleveldefs.\
                 union(main_identifiers.topleveldefs)
-        module_identifiers.declared.add("UNDEFINED")
+        module_identifiers.declared.update(TOPLEVEL_DECLARED)
         if impcode:
             module_identifiers.declared.update(impcode.declared_identifiers)
 
