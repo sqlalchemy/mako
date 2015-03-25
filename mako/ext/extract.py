@@ -5,6 +5,7 @@ from mako import parsetree
 
 
 class MessageExtractor(object):
+
     def process_file(self, fileobj):
         template_node = lexer.Lexer(
             fileobj.read(),

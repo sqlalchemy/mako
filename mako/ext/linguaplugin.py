@@ -7,6 +7,7 @@ from mako import compat
 
 
 class LinguaMakoExtractor(Extractor, MessageExtractor):
+
     '''Mako templates'''
     extensions = ['.mako']
     default_config = {

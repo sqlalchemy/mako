@@ -30,7 +30,7 @@ if py3k:
         return eval("0o" + lit)
 
 else:
-    import __builtin__ as compat_builtins
+    import __builtin__ as compat_builtins  # noqa
     try:
         from cStringIO import StringIO
     except:
@@ -38,14 +38,14 @@ else:
 
     byte_buffer = StringIO
 
-    from urllib import quote_plus, unquote_plus
-    from htmlentitydefs import codepoint2name, name2codepoint
-    string_types = basestring,
+    from urllib import quote_plus, unquote_plus  # noqa
+    from htmlentitydefs import codepoint2name, name2codepoint  # noqa
+    string_types = basestring,  # noqa
     binary_type = str
-    text_type = unicode
+    text_type = unicode  # noqa
 
     def u(s):
-        return unicode(s, "utf-8")
+        return unicode(s, "utf-8")  # noqa
 
     def b(s):
         return s
@@ -56,10 +56,12 @@ else:
 
 if py33:
     from importlib import machinery
+
     def load_module(module_id, path):
         return machinery.SourceFileLoader(module_id, path).load_module()
 else:
     import imp
+
     def load_module(module_id, path):
         fp = open(path, 'rb')
         try:
@@ -77,7 +79,7 @@ if py3k:
         raise value
 else:
     exec("def reraise(tp, value, tb=None, cause=None):\n"
-            "    raise tp, value, tb\n")
+         "    raise tp, value, tb\n")
 
 
 def exception_as():
@@ -90,11 +92,11 @@ try:
     else:
         import thread
 except ImportError:
-    import dummy_threading as threading
+    import dummy_threading as threading  # noqa
     if py3k:
         import _dummy_thread as thread
     else:
-        import dummy_thread as thread
+        import dummy_thread as thread  # noqa
 
 if win32 or jython:
     time_func = time.clock
@@ -113,13 +115,15 @@ except:
 
 
 all = all
-import json
+import json  # noqa
+
 
 def exception_name(exc):
     return exc.__class__.__name__
 
 try:
     from inspect import CO_VARKEYWORDS, CO_VARARGS
+
     def inspect_func_args(fn):
         if py3k:
             co = fn.__code__
@@ -144,6 +148,7 @@ try:
             return args, varargs, varkw, fn.func_defaults
 except ImportError:
     import inspect
+
     def inspect_func_args(fn):
         return inspect.getargspec(fn)
 

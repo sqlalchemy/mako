@@ -9,7 +9,9 @@ from mako import compat
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
+
 class TGPlugin(object):
+
     """TurboGears compatible Template Plugin."""
 
     def __init__(self, extra_vars_func=None, options=None, extension='mak'):
@@ -41,7 +43,7 @@ class TGPlugin(object):
         # Translate TG dot notation to normal / template path
         if '/' not in templatename:
             templatename = '/' + templatename.replace('.', '/') + '.' +\
-                    self.extension
+                self.extension
 
         # Lookup template
         return self.lookup.get_template(templatename)
@@ -55,4 +57,3 @@ class TGPlugin(object):
             info.update(self.extra_vars_func())
 
         return template.render(**info)
-
