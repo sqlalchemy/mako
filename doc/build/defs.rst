@@ -216,7 +216,7 @@ modules, you can define arbitrarily nestable tags right in your
 templates.
 
 To achieve this, the target def is invoked using the form
-``<%namepacename:defname>`` instead of the normal ``${}``
+``<%namespacename:defname>`` instead of the normal ``${}``
 syntax. This syntax, introduced in Mako 0.2.3, is functionally
 equivalent to another tag known as ``%call``, which takes the form
 ``<%call expr='namespacename.defname(args)'>``. While ``%call``
