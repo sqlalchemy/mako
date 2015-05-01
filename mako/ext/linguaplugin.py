@@ -26,6 +26,10 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
     def process_python(self, code, code_lineno, translator_strings):
         source = code.getvalue().strip()
         if source.endswith(compat.b(':')):
+            if source == 'else:':
+                source = compat.b('if 1:') # Replace "else" with "if 1"
+            elif source.startswith('elif'):
+                source = source[2:] # Replace "elif" with "if"
             source += compat.b(' pass')
             code = io.BytesIO(source)
         for msg in self.python_extractor(
