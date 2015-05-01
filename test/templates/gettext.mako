@@ -97,3 +97,13 @@ ${_(u'bar')}
 ## TRANSLATOR: we still ignore comments too far from the string
 
 <p>${_("No action at a distance.")}</p>
+
+## TRANSLATOR: this block should be ignored during extraction
+
+% if 1==1:
+<p>One is one!</p>
+% elif 1==2:
+<p>One is two!</p>
+% else:
+<p>How much is one?</p>
+% endif
