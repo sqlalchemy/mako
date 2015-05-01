@@ -33,7 +33,7 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
             source += compat.b(' pass')
             code = io.BytesIO(source)
         for msg in self.python_extractor(
-                self.filename, self.options, code, code_lineno - 1):
+                self.filename, self.options, code, code_lineno):
             if translator_strings:
                 msg = Message(msg.msgctxt, msg.msgid, msg.msgid_plural,
                               msg.flags,
