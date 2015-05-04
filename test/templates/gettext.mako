@@ -98,7 +98,7 @@ ${_(u'bar')}
 
 <p>${_("No action at a distance.")}</p>
 
-## TRANSLATOR: these blocks should be ignored during extraction
+## TRANSLATOR: nothing to extract from these blocks
 
 % if 1==1:
 <p>One is one!</p>
@@ -117,3 +117,11 @@ ${_(u'bar')}
 % while random.randint(1,6) != 6:
 <p>Not 6!</p>
 % endwhile
+
+## TRANSLATOR: for now, try/except blocks are ignored
+
+% try:
+<% 1/0 %>
+% except:
+<p>Failed!</p>
+% endtry
