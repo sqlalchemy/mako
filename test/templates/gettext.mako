@@ -98,7 +98,7 @@ ${_(u'bar')}
 
 <p>${_("No action at a distance.")}</p>
 
-## TRANSLATOR: this block should be ignored during extraction
+## TRANSLATOR: these blocks should be ignored during extraction
 
 % if 1==1:
 <p>One is one!</p>
@@ -107,3 +107,13 @@ ${_(u'bar')}
 % else:
 <p>How much is one?</p>
 % endif
+
+% for i in range(10):
+<p>${i} squared is ${i*i}</p>
+% else:
+<p>Done with squares!</p>
+% endfor
+
+% while random.randint(1,6) != 6:
+<p>Not 6!</p>
+% endwhile
