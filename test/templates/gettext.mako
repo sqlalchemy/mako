@@ -125,3 +125,6 @@ ${_(u'bar')}
 % except:
 <p>Failed!</p>
 % endtry
+
+## TRANSLATOR: this should not cause a parse error
+${ 1 }

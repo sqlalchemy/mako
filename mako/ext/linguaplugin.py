@@ -31,7 +31,7 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
             elif source.startswith(compat.b('elif')):
                 source = source[2:] # Replace "elif" with "if"
             source += compat.b('pass')
-            code = io.BytesIO(source)
+        code = io.BytesIO(source)
         for msg in self.python_extractor(
                 self.filename, self.options, code, code_lineno -1):
             if translator_strings:
