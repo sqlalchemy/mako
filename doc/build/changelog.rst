@@ -9,6 +9,15 @@ Changelog
     :version: 1.0.2
 
     .. change::
+        :tags: bug
+        :pullreq: bitbucket:18
+
+      Update the Lingua translation extraction plugin to correctly
+      handle templates mixing Python control statements (such as if,
+      for and while) with template fragments. Pull request courtesy
+      Laurent Daverio.
+
+    .. change::
         :tags: feature
         :tickets: 236
 
