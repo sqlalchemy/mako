@@ -19,14 +19,6 @@
     <div id="wrap">
     <div class="rightbar">
 
-    % if toolbar:
-    <div id="gittip_nav">
-    <iframe style="border: 0; margin: 0; padding: 0;"
-    src="https://www.gittip.com/zzzeek/widget.html"
-    width="48pt" height="20pt"></iframe>
-    </div>
-    % endif
-
     <div class="slogan">
     Hyperfast and lightweight templating for the Python platform.
     </div>
