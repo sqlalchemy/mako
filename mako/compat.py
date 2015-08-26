@@ -10,6 +10,27 @@ win32 = sys.platform.startswith('win')
 pypy = hasattr(sys, 'pypy_version_info')
 
 if py3k:
+    # create a "getargspec" from getfullargspec(), which is not deprecated
+    # in Py3K; getargspec() has started to emit warnings as of Py3.5.
+    # As of Py3.4, now they are trying to move from getfullargspec()
+    # to "signature()", but getfullargspec() is not deprecated, so stick
+    # with that for now.
+
+    import collections
+    ArgSpec = collections.namedtuple(
+        "ArgSpec",
+        ["args", "varargs", "keywords", "defaults"])
+    from inspect import getfullargspec as inspect_getfullargspec
+
+    def inspect_getargspec(func):
+        return ArgSpec(
+            *inspect_getfullargspec(func)[0:4]
+        )
+else:
+    from inspect import getargspec as inspect_getargspec  # noqa
+
+
+if py3k:
     from io import StringIO
     import builtins as compat_builtins
     from urllib.parse import quote_plus, unquote_plus

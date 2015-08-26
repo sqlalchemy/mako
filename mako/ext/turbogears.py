@@ -4,7 +4,6 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import inspect
 from mako import compat
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -32,7 +31,7 @@ class TGPlugin(object):
         self.tmpl_options = {}
         # transfer lookup args to template args, based on those available
         # in getargspec
-        for kw in inspect.getargspec(Template.__init__)[0]:
+        for kw in compat.inspect_getargspec(Template.__init__)[0]:
             if kw in lookup_options:
                 self.tmpl_options[kw] = lookup_options[kw]
 

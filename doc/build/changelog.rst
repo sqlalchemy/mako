@@ -9,6 +9,15 @@ Changelog
     :version: 1.0.2
 
     .. change::
+        :tags: bug, py3k
+        :tickets: 250
+
+      Repair some calls within the ast module that no longer work on Python3.5;
+      additionally replace the use of ``inspect.getargspec()`` under
+      Python 3 (seems to be called from the TG plugin) to avoid deprecation
+      warnings.
+
+    .. change::
         :tags: bug
         :pullreq: bitbucket:18
 
