@@ -7,6 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.2
+    :released: Wed Aug 26 2015
 
     .. change::
         :tags: bug, installation
