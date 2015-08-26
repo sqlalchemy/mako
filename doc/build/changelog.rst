@@ -9,6 +9,17 @@ Changelog
     :version: 1.0.2
 
     .. change::
+        :tags: bug, installation
+        :tickets: 249
+
+      The "universal wheel" marker is removed from setup.cfg, because
+      our setup.py currently makes use of conditional dependencies.
+      In :ticket:`249`, the discussion is ongoing on how to correct our
+      setup.cfg / setup.py fully so that we can handle the per-version
+      dependency changes while still maintaining optimal wheel settings,
+      so this issue is not yet fully resolved.
+
+    .. change::
         :tags: bug, py3k
         :tickets: 250
 
