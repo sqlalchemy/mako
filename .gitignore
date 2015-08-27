@@ -12,3 +12,6 @@
 /include
 /lib
 /man
+
+.tox/
+.cache/
