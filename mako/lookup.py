@@ -248,6 +248,9 @@ class TemplateLookup(TemplateCollection):
         except KeyError:
             u = re.sub(r'^\/+', '', uri)
             for dir in self.directories:
+                # make sure the path seperators are posix - os.altsep is empty
+                # on POSIX and cannot be used.
+                dir = dir.replace(os.path.sep, posixpath.sep)
                 srcfile = posixpath.normpath(posixpath.join(dir, u))
                 if os.path.isfile(srcfile):
                     return self._load(srcfile, uri)
