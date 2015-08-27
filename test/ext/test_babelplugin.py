@@ -6,11 +6,10 @@ from mako import compat
 
 try:
     import babel.messages.extract as babel
-except:
-    babel = None
-
-if babel is not None:
     from mako.ext.babelplugin import extract
+    
+except ImportError:
+    babel = None
 
 
 def skip():
