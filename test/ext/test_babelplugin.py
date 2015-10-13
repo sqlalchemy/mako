@@ -78,3 +78,16 @@ class ExtractMakoTestCase(TemplateTest):
              (99, '_', 'No action at a distance.', []),
              ]
         self.assertEqual(expected, messages)
+
+    @skip()
+    def test_extract_utf8(self):
+        mako_tmpl = open(os.path.join(template_base, 'gettext_utf8.mako'), 'rb')
+        message = next(extract(mako_tmpl, {'_', None}, [], {'encoding': 'utf-8'}))
+        assert message == (1, '_', u'K\xf6ln', [])
+
+    @skip()
+    def test_extract_cp1251(self):
+        mako_tmpl = open(os.path.join(template_base, 'gettext_cp1251.mako'), 'rb')
+        message = next(extract(mako_tmpl, {'_', None}, [], {'encoding': 'cp1251'}))
+        # "test" in Rusian. File encoding is cp1251 (aka "windows-1251")
+        assert message == (1, '_', u'\u0442\u0435\u0441\u0442', [])
