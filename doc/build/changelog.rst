@@ -6,6 +6,17 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.3
+
+    .. change::
+        :tags: bug, babel
+        :pullreq: bitbucket:21
+
+      Fixed an issue where the Babel plugin would not handle a translation
+      symbol that contained non-ascii characters.  Pull request courtesy
+      Roman Imankulov.
+
+.. changelog::
     :version: 1.0.2
     :released: Wed Aug 26 2015
 
