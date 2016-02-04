@@ -477,9 +477,10 @@ more text
             ])
         )
 
-        template = """
+        template = r"""
 
             ${hello + '''heres '{|}' text | | }''' | escape1}
+            ${'Tricky string: ' + '\\\"\\\'|\\'}
         """
         nodes = Lexer(template).parse()
         self._compare(
@@ -488,7 +489,10 @@ more text
                 Text('\n\n            ', (1, 1)),
                 Expression("hello + '''heres '{|}' text | | }''' ",
                                 ['escape1'], (3, 13)),
-                Text('\n        ', (3, 62))
+                Text('\n            ', (3, 62)),
+                Expression(r"""'Tricky string: ' + '\\\"\\\'|\\'""",
+                                [], (4, 13)),
+                Text('\n        ', (4, 49))
             ])
         )
 
@@ -586,6 +590,15 @@ print('''
                       [Text('before ', (1, 1)),
                       Expression(" {'key': 'value'} ", [], (1, 8)),
                       Text(' after', (1, 29))]))
+
+    def test_tricky_code_6(self):
+        template = \
+            """before ${ (0x5302 | 0x0400) } after"""
+        nodes = Lexer(template).parse()
+        self._compare(nodes, TemplateNode({},
+                      [Text('before ', (1, 1)),
+                      Expression(" (0x5302 | 0x0400) ", [], (1, 8)),
+                      Text(' after', (1, 30))]))
 
     def test_control_lines(self):
         template = \
