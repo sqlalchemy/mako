@@ -10,6 +10,16 @@ Changelog
     :released:
 
     .. change::
+        :tags: bug, lexer
+        :pullreq: github:19
+
+      Major improvements to lexing of intricate Python sections which may
+      contain complex backslash sequences, as well as support for the bitwise
+      operator (e.g. pipe symbol) inside of expression sections distinct
+      from the Mako "filter" operator, provided the operator is enclosed
+      within parentheses or brackets.  Pull request courtesy Daniel Martin.
+
+    .. change::
         :tags: feature
         :pullreq: bitbucket:16
 
