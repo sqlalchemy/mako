@@ -91,9 +91,7 @@ ${u'привет'}
                 assert "".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
             else:
-                assert '<pre>3</pre></div></td><td class="code">'\
-                        '<div class="syntax-highlighted"><pre><span '\
-                        'class="cp">${</span><span class="s">u&#39;'\
+                assert 'u&#39;'\
                         '&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;'\
                         '&#39;</span><span class="cp">}</span>'.encode(
                                 sys.getdefaultencoding(),
@@ -188,12 +186,8 @@ ${foobar}
         ${self.body()}
         """)
 
-        assert '<div class="sourceline"><table class="syntax-highlightedtable">'\
-                '<tr><td class="linenos"><div class="linenodiv"><pre>3</pre>'\
-                '</div></td><td class="code"><div class="syntax-highlighted">'\
-                '<pre><span class="err">$</span><span class="p">{</span>'\
-                '<span class="n">foobar</span><span class="p">}</span>' in \
-            result_lines(l.get_template("foo.html").render_unicode())
+        assert '<div class="sourceline"><table class="syntax-highlightedtable">' in \
+            l.get_template("foo.html").render_unicode()
 
     @requires_no_pygments_exceptions
     def test_format_exceptions_no_pygments(self):
@@ -223,24 +217,12 @@ ${foobar}
             l.put_string("foo.html", """# -*- coding: utf-8 -*-\n${u'привет' + foobar}""")
 
         if compat.py3k:
-            assert '<table class="error syntax-highlightedtable"><tr><td '\
-                    'class="linenos"><div class="linenodiv"><pre>2</pre>'\
-                    '</div></td><td class="code"><div class="error '\
-                    'syntax-highlighted"><pre><span class="cp">${</span>'\
-                    '<span class="s">&#39;привет&#39;</span> <span class="o">+</span> '\
-                    '<span class="n">foobar</span><span class="cp">}</span>'\
-                    '<span class="x"></span>' in \
-                result_lines(l.get_template("foo.html").render().decode('utf-8'))
+            assert '&#39;привет&#39;</span>' in \
+                l.get_template("foo.html").render().decode('utf-8')
         else:
-            assert '<table class="error syntax-highlightedtable"><tr><td '\
-                    'class="linenos"><div class="linenodiv"><pre>2</pre>'\
-                    '</div></td><td class="code"><div class="error '\
-                    'syntax-highlighted"><pre><span class="cp">${</span>'\
-                    '<span class="s">u&#39;&#x43F;&#x440;&#x438;&#x432;'\
-                    '&#x435;&#x442;&#39;</span> <span class="o">+</span> '\
-                    '<span class="n">foobar</span><span class="cp">}</span>'\
-                    '<span class="x"></span>' in \
-                result_lines(l.get_template("foo.html").render().decode('utf-8'))
+            assert 'u&#39;&#x43F;&#x440;&#x438;&#x432;'\
+                    '&#x435;&#x442;&#39;</span>' in \
+                l.get_template("foo.html").render().decode('utf-8')
 
     @requires_no_pygments_exceptions
     def test_utf8_format_exceptions_no_pygments(self):
