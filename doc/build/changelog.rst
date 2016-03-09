@@ -6,6 +6,9 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.4
+
+.. changelog::
     :version: 1.0.3
     :released: Tue Oct 27 2015
 
