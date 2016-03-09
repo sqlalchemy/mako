@@ -5,7 +5,7 @@ import time
 from test.util import result_lines
 from test import TemplateTest, module_base
 from test import eq_, SkipTest
-
+from mako.compat import py27
 
 from mako.ext import beaker_cache
 
@@ -603,6 +603,8 @@ class BeakerCacheTest(RealBackendTest, CacheTest):
     def setUp(self):
         if not beaker_cache.has_beaker:
             raise SkipTest("Beaker is required for these tests.")
+        if not py27:
+            raise SkipTest("newer beakers not working w/ py26")
 
     def _install_mock_cache(self, template, implname=None):
         template.cache_args['manager'] = self._regions()
