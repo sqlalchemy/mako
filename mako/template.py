@@ -475,6 +475,10 @@ class Template(object):
 
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
 
+    def list_defs(self):
+        """returns a list of defs in the template"""
+        return [i[7:] for i in dir(self.module) if i[:7] == 'render_']
+        
     def _get_def_callable(self, name):
         return getattr(self.module, "render_%s" % name)
 

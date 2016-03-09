@@ -123,6 +123,41 @@ class DefTest(TemplateTest):
                         filters=flatten_result,
                         template_args={'q': 5, 'zq': 'test'})
 
+    def test_def_operations(self):
+        """test get/list/has def"""
+
+        template = Template("""
+
+            this is the body
+
+            <%def name="a()">
+                this is a
+            </%def>
+
+            <%def name="b(x, y)">
+                this is b, ${x} ${y}
+            </%def>
+
+        """)
+
+        assert template.get_def("a")
+        assert template.get_def("b")
+        assert_raises(AttributeError,
+                      template.get_def,
+                      ("c")
+                      )
+
+        assert template.has_def("a")
+        assert template.has_def("b")
+        assert not template.has_def("c")
+
+        defs = template.list_defs()
+        assert "a" in defs
+        assert "b" in defs
+        assert "body" in defs
+        assert "c" not in defs
+
+
 class ScopeTest(TemplateTest):
     """test scoping rules.  The key is, enclosing
     scope always takes precedence over contextual scope."""
