@@ -8,6 +8,9 @@ Changelog
 .. changelog::
     :version: 1.0.4
 
+    Added new method :meth:`.Template.list_defs`.   Pull request courtesy
+    Jonathan Vanasco.
+
 .. changelog::
     :version: 1.0.3
     :released: Tue Oct 27 2015
