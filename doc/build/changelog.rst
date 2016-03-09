@@ -7,9 +7,14 @@ Changelog
 
 .. changelog::
     :version: 1.0.4
+    :released:
 
-    Added new method :meth:`.Template.list_defs`.   Pull request courtesy
-    Jonathan Vanasco.
+    .. change::
+        :tags: feature
+        :pullreq: bitbucket:16
+
+      Added new method :meth:`.Template.list_defs`.   Pull request courtesy
+      Jonathan Vanasco.
 
 .. changelog::
     :version: 1.0.3
