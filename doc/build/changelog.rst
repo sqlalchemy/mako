@@ -10,6 +10,13 @@ Changelog
     :released:
 
     .. change::
+        :tags: feature, test
+
+      The default test runner is now py.test.  Running "python setup.py test"
+      will make use of py.test instead of nose.  nose still works as a test
+      runner as well, however.
+
+    .. change::
         :tags: bug, lexer
         :pullreq: github:19
 

@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 import os
 import re
 import sys
@@ -13,8 +14,8 @@ if sys.version_info < (2, 6):
     raise Exception("Mako requires Python 2.6 or higher.")
 
 markupsafe_installs = (
-            sys.version_info >= (2, 6) and sys.version_info < (3, 0)
-        ) or sys.version_info >= (3, 3)
+    sys.version_info >= (2, 6) and sys.version_info < (3, 0)
+) or sys.version_info >= (3, 3)
 
 install_requires = []
 
@@ -25,6 +26,26 @@ try:
     import argparse
 except ImportError:
     install_requires.append('argparse')
+
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
 
 setup(name='Mako',
       version=VERSION,
@@ -47,8 +68,8 @@ setup(name='Mako',
       url='http://www.makotemplates.org/',
       license='MIT',
       packages=find_packages('.', exclude=['examples*', 'test*']),
-      tests_require=['nose >= 0.11', 'mock'],
-      test_suite="nose.collector",
+      tests_require=['pytest', 'mock'],
+      cmdclass={'test': PyTest},
       zip_safe=False,
       install_requires=install_requires,
       extras_require={},
