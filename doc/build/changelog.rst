@@ -7,7 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.4
-    :released:
+    :released: Thu Mar 10 2016
 
     .. change::
         :tags: feature, test
