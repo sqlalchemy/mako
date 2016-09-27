@@ -21,7 +21,7 @@
         numcols = 1
         numitems = 0
     %>
-% for entryname, (links, subitems) in entries:
+% for entryname, (links, subitems, dummy) in entries:
 
 <dt>
     % if links:
