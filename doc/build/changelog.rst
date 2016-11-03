@@ -6,6 +6,15 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.5
+
+    .. change::
+        :tags: bug
+
+      Updated the Sphinx documentation builder to work with recent
+      versions of Sphinx.
+
+.. changelog::
     :version: 1.0.4
     :released: Thu Mar 10 2016
 
