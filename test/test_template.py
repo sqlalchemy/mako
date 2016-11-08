@@ -613,6 +613,21 @@ class IncludeTest(TemplateTest):
         """)
         assert flatten_result(lookup.get_template("c").render()) == "bar: calling bar this is a"
 
+    def test_include_error_handler(self):
+        def handle(context, error):
+            context.write('include error')
+            return True
+
+        lookup = TemplateLookup(include_error_handler=handle)
+        lookup.put_string("a", """
+            this is a.
+            <%include file="b"/>
+        """)
+        lookup.put_string("b", """
+            this is b ${1/0} end.
+        """)
+        assert flatten_result(lookup.get_template("a").render()) == "this is a. this is b include error"
+
 class UndefinedVarsTest(TemplateTest):
     def test_undefined(self):
         t = Template("""

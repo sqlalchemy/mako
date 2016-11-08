@@ -8,6 +8,15 @@ Changelog
 .. changelog::
     :version: 1.0.6
 
+    .. change::
+        :tags: feature
+
+      Added new parameter :paramref:`.Template.include_error_handler` .
+      This works like :paramref:`.Template.error_handler` but indicates the
+      handler should take place when this template is included within another
+      template via the ``<%include>`` tag.  Pull request courtesy
+      Huayi Zhang.
+
 .. changelog::
     :version: 1.0.5
     :released: Wed Nov 2 2016
