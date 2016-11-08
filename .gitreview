@@ -1,0 +1,4 @@
+[gerrit]
+host=gerrit.sqlalchemy.org
+project=zzzeek/mako
+defaultbranch=master
