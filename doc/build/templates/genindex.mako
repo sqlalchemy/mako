@@ -21,7 +21,7 @@
         numcols = 1
         numitems = 0
     %>
-% for entryname, (links, subitems, dummy) in entries:
+% for entryname, (links, subitems) in [(a, b[0:2]) for a, b in entries]:
 
 <dt>
     % if links:
@@ -36,7 +36,7 @@
 
     % if subitems:
     <dd><dl>
-      % for subentryname, subentrylinks in subitems:
+      % for subentryname, subentrylinks in subitems[0:2]:
       <dt><a href="${subentrylinks[0][1]}">${subentryname|h}</a>
               % for j, (unknown, link) in enumerate(subentrylinks[1:]):
                   <a href="${link}">[${j}]</a>
