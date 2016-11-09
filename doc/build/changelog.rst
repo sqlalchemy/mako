@@ -7,6 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.6
+    :released: Wed Nov 9 2016
 
     .. change::
         :tags: feature
