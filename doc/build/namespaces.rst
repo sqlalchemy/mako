@@ -399,7 +399,7 @@ in the ``<%! %>`` of a template.
 
 
 Above, the file ``library.mako`` declares an attribute ``includes`` inside its global ``<%! %>`` section.
-``index.mako`` includes this template using the ``<%namespace>`` tag.  The base template ``base.mako``, which is the inherited parent of ``index.mako`` and is reponsible for layout, then locates this attribute and iterates through its contents to produce the includes that are specific to ``library.mako``.
+``index.mako`` includes this template using the ``<%namespace>`` tag.  The base template ``base.mako``, which is the inherited parent of ``index.mako`` and is responsible for layout, then locates this attribute and iterates through its contents to produce the includes that are specific to ``library.mako``.
 
 Version Two - Use a specific named def
 -----------------------------------------

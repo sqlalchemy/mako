@@ -1570,7 +1570,7 @@ Older Versions
         :tags: bugfixes
         :tickets: 69
 
-      fixed codegen bug which occured when using <%page>
+      fixed codegen bug which occurred when using <%page>
       level caching, combined with an expression-based
       cache_key, combined with the usage of <%namespace
       import="*"/> - fixed lexer exceptions not cleaning up
