@@ -91,7 +91,7 @@ ${u'привет'}
                 assert "".encode(sys.getdefaultencoding(),
                                         'htmlentityreplace') in html_error
             else:
-                assert 'u&#39;'\
+                assert '&#39;'\
                         '&#x43F;&#x440;&#x438;&#x432;&#x435;&#x442;'\
                         '&#39;</span><span class="cp">}</span>'.encode(
                                 sys.getdefaultencoding(),
@@ -220,7 +220,7 @@ ${foobar}
             assert '&#39;привет&#39;</span>' in \
                 l.get_template("foo.html").render().decode('utf-8')
         else:
-            assert 'u&#39;&#x43F;&#x440;&#x438;&#x432;'\
+            assert '&#39;&#x43F;&#x440;&#x438;&#x432;'\
                     '&#x435;&#x442;&#39;</span>' in \
                 l.get_template("foo.html").render().decode('utf-8')
 
