@@ -8,6 +8,14 @@ Changelog
 .. changelog::
     :version: 1.0.7
 
+    .. change::
+        :tags: bug
+
+     Changed the "print" in the mako-render command to
+     sys.stdout.write(), avoiding the extra newline at the end
+     of the template output.  Pull request courtesy
+     Yves Chevallier.
+
 .. changelog::
     :version: 1.0.6
     :released: Wed Nov 9 2016
