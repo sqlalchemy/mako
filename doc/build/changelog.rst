@@ -7,6 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.7
+    :released: Thu Jul 13 2017
 
     .. change::
         :tags: bug
