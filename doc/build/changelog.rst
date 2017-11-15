@@ -6,6 +6,16 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.8
+
+    .. change::
+        :tags: feature
+        :tickets: 271
+
+     Added ``--output-encoding`` flag to the mako-render script.
+     Pull request courtesy lacsaP.
+
+.. changelog::
     :version: 1.0.7
     :released: Thu Jul 13 2017
 
