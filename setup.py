@@ -71,6 +71,7 @@ setup(name='Mako',
       tests_require=['pytest', 'mock'],
       cmdclass={'test': PyTest},
       zip_safe=False,
+      python_requires='>=2.6',
       install_requires=install_requires,
       extras_require={},
       entry_points="""

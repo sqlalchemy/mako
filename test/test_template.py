@@ -10,8 +10,7 @@ import os
 from test.util import flatten_result, result_lines
 from mako.compat import u
 from test import TemplateTest, eq_, template_base, module_base, \
-    requires_python_26_or_greater, assert_raises, assert_raises_message, \
-    requires_python_2
+    assert_raises, assert_raises_message, requires_python_2
 import unittest
 
 class ctx(object):
@@ -910,7 +909,6 @@ class ControlTest(TemplateTest):
             filters=lambda s:s.strip()
         )
 
-    @requires_python_26_or_greater
     def test_blank_control_8(self):
         self._do_memory_test(
             """
@@ -1009,7 +1007,6 @@ class ControlTest(TemplateTest):
             filters=lambda s:s.strip()
         )
 
-    @requires_python_26_or_greater
     def test_commented_blank_control_8(self):
         self._do_memory_test(
             """
