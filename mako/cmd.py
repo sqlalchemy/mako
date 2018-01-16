@@ -24,7 +24,7 @@ def _exit():
 
 def cmdline(argv=None):
 
-    parser = ArgumentParser("usage: %prog [FILENAME]")
+    parser = ArgumentParser()
     parser.add_argument(
         "--var", default=[], action="append",
         help="variable (can be used multiple times, use name=value)")

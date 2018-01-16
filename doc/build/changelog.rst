@@ -15,6 +15,12 @@ Changelog
      Added ``--output-encoding`` flag to the mako-render script.
      Pull request courtesy lacsaP.
 
+    .. change::
+        :tags: bug
+
+    Removed unnecessary "usage" prefix from mako-render script.
+    Pull request courtesy Hugo.
+
 .. changelog::
     :version: 1.0.7
     :released: Thu Jul 13 2017
