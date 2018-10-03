@@ -30,8 +30,9 @@ import mako
 #extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
 #                'sphinx.ext.doctest', 'builder.builders']
 
-extensions = ['sphinx.ext.autodoc',
-                'changelog', 'sphinx_paramlinks', 'zzzeeksphinx']
+extensions = ['sphinx.ext.autodoc','sphinx.ext.intersphinx',
+                'changelog', 'sphinx_paramlinks',
+                'builder.builders']
 
 changelog_render_ticket = "https://bitbucket.org/zzzeek/mako/issue/%s/"
 
@@ -46,13 +47,12 @@ templates_path = ['templates']
 
 nitpicky = True
 
-
-site_base = os.environ.get("RTD_SITE_BASE", "http://www.makotemplates.org")
-site_adapter_template = "docs_adapter.mako"
-site_adapter_py = "docs_adapter.py"
+site_base = "http://www.makotemplates.org"
 
 # The suffix of source filenames.
 source_suffix = '.rst'
+
+template_bridge = "builder.builders.MakoBridge"
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -112,7 +112,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'zsmako'
+html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -290,3 +290,7 @@ epub_copyright = u'Mako authors'
 # Allow duplicate toc entries.
 #epub_tocdup = True
 
+intersphinx_mapping = {
+    'dogpilecache':('http://dogpilecache.readthedocs.org/en/latest', None),
+    'beaker':('http://beaker.readthedocs.org/en/latest',None),
+}
