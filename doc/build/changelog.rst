@@ -79,7 +79,6 @@ Changelog
 
     .. change::
         :tags: feature
-        :pullreq: bitbucket:16
 
       Added new method :meth:`.Template.list_defs`.   Pull request courtesy
       Jonathan Vanasco.
@@ -90,7 +89,6 @@ Changelog
 
     .. change::
         :tags: bug, babel
-        :pullreq: bitbucket:21
 
       Fixed an issue where the Babel plugin would not handle a translation
       symbol that contained non-ascii characters.  Pull request courtesy
@@ -122,7 +120,6 @@ Changelog
 
     .. change::
         :tags: bug
-        :pullreq: bitbucket:18
 
       Update the Lingua translation extraction plugin to correctly
       handle templates mixing Python control statements (such as if,
@@ -149,14 +146,12 @@ Changelog
 
     .. change::
         :tags: feature
-        :pullreq: bitbucket:9
 
       Added support for Lingua, a translation extraction system as an
       alternative to Babel.  Pull request courtesy Wichert Akkerman.
 
     .. change::
         :tags: bug, py3k
-        :pullreq: bitbucket:11
 
       Modernized the examples/wsgi/run_wsgi.py file for Py3k.
       Pull requset courtesy Cody Taylor.
@@ -167,7 +162,6 @@ Changelog
 
     .. change::
         :tags: bug, py2k
-        :pullreq: bitbucket:8
 
       Improved the error re-raise operation when a custom
       :paramref:`.Template.error_handler` is used that does not handle
@@ -176,7 +170,6 @@ Changelog
 
     .. change::
         :tags: bug, py2k, filters
-        :pullreq: bitbucket:7
 
       Added an html_escape filter that works in "non unicode" mode.
       Previously, when using ``disable_unicode=True``, the ``u`` filter
@@ -217,7 +210,6 @@ Changelog
 
     .. change::
         :tags: feature
-        :pullreq: bitbucket:5
 
       mako-render is now implemented as a setuptools entrypoint script;
       a standalone mako.cmd.cmdline() callable is now available, and the
@@ -226,7 +218,6 @@ Changelog
 
     .. change::
         :tags: feature
-        :pullreq: bitbucket:4
 
       The mako-render script will now catch exceptions and run them
       into the text error handler, and exit with a non-zero exit code.
@@ -234,7 +225,6 @@ Changelog
 
     .. change::
         :tags: bug
-        :pullreq: bitbucket:2
 
       A rework of the mako-render script allows the script to run
       correctly when given a file pathname that is outside of the current

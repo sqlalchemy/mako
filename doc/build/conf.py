@@ -33,12 +33,11 @@ import mako
 extensions = ['sphinx.ext.autodoc',
                 'changelog', 'sphinx_paramlinks', 'zzzeeksphinx']
 
-changelog_render_ticket = "https://bitbucket.org/zzzeek/mako/issue/%s/"
+changelog_render_ticket = "https://github.com/sqlalchemy/mako/issues/%s"
 
 changelog_render_pullreq = {
-    "bitbucket": "https://bitbucket.org/zzzeek/mako/pull-request/%s",
-    "default": "https://bitbucket.org/zzzeek/mako/pull-request/%s",
-    "github": "https://github.com/zzzeek/mako/pull/%s",
+    "default": "https://github.com/sqlalchemy/mako/pull/%s",
+    "github": "https://github.com/sqlalchemy/mako/pull/%s",
 }
 
 # Add any paths that contain templates here, relative to this directory.
