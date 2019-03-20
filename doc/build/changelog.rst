@@ -7,6 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.8
+    :released: Wed Mar 20 2019
 
     .. change::
         :tags: bug
