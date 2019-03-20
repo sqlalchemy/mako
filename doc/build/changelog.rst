@@ -9,6 +9,13 @@ Changelog
     :version: 1.0.8
 
     .. change::
+        :tags: bug
+        :tickets: 281
+
+     Fixed an element in the AST Python generator which changed
+     for Python 3.8, causing expression generation to fail.
+
+    .. change::
         :tags: feature
         :tickets: 271
 
