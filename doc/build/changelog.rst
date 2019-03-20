@@ -26,8 +26,8 @@ Changelog
     .. change::
         :tags: bug
 
-    Removed unnecessary "usage" prefix from mako-render script.
-    Pull request courtesy Hugo.
+     Removed unnecessary "usage" prefix from mako-render script.
+     Pull request courtesy Hugo.
 
 .. changelog::
     :version: 1.0.7
