@@ -84,8 +84,8 @@ using another ``%`` marker with the tag "``end<name>``", where
 The ``%`` can appear anywhere on the line as long as no text
 precedes it; indentation is not significant. The full range of
 Python "colon" expressions are allowed here, including
-``if``/``elif``/``else``, ``while``, ``for``, and even ``def``, although
-Mako has a built-in tag for defs which is more full-featured.
+``if``/``elif``/``else``, ``while``, ``for``, ``with``, and even ``def``,
+although Mako has a built-in tag for defs which is more full-featured.
 
 .. sourcecode:: mako
 
