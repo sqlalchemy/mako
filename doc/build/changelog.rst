@@ -9,6 +9,16 @@ Changelog
     :version: 1.0.9
     :include_notes_from: unreleased
 
+    .. change::
+        :tags: bug
+        :tickets: 287
+
+     Further corrected the previous fix for :ticket:`287` as it relied upon
+     an attribute that is monkeypatched by Python's ``ast`` module for some
+     reason, which fails if ``ast`` hasn't been imported; the correct
+     attribute ``Constant.value`` is now used.   Also note the issue
+     was mis-numbered in the previous changelog note.
+
 .. changelog::
     :version: 1.0.8
     :released: Wed Mar 20 2019
@@ -16,7 +26,7 @@ Changelog
 
     .. change::
         :tags: bug
-        :tickets: 281
+        :tickets: 287
 
      Fixed an element in the AST Python generator which changed
      for Python 3.8, causing expression generation to fail.
