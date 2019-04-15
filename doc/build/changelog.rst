@@ -7,7 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.9
-    :include_notes_from: unreleased
+    :released: Mon Apr 15 2019
 
     .. change::
         :tags: bug
