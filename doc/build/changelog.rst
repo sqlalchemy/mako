@@ -6,6 +6,10 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.0.11
+    :include_notes_from: unreleased
+
+.. changelog::
     :version: 1.0.10
     :released: Fri May 10 2019
 
