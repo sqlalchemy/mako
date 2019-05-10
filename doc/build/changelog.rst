@@ -7,7 +7,7 @@ Changelog
 
 .. changelog::
     :version: 1.0.10
-    :include_notes_from: unreleased
+    :released: Fri May 10 2019
 
     .. change::
         :tags: bug, py3k
