@@ -243,6 +243,15 @@ ${foobar}
                    '&#x442;&#39; + foobar}' in \
                 result_lines(l.get_template("foo.html").render().decode('utf-8'))
 
+    def test_mod_no_encoding(self):
+
+        mod = __import__("test.foo.mod_no_encoding").foo.mod_no_encoding
+        try:
+           mod.run()
+        except:
+            t, v, tback = sys.exc_info()
+            html_error = exceptions.html_error_template().\
+                        render_unicode(error=v, traceback=tback)
 
     def test_custom_tback(self):
         try:

@@ -9,6 +9,15 @@ Changelog
     :version: 1.0.10
     :include_notes_from: unreleased
 
+    .. change::
+        :tags: bug, py3k
+        :tickets: 293
+
+     Added a default encoding of "utf-8" when the :class:`.RichTraceback`
+     object retrieves Python source lines from a Python traceback; as these
+     are bytes in Python 3 they need to be decoded so that they can be
+     formatted in the template.
+
 .. changelog::
     :version: 1.0.9
     :released: Mon Apr 15 2019
