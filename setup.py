@@ -54,6 +54,7 @@ setup(name='Mako',
       long_description=readme,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
+          'License :: OSI Approved :: MIT License',
           'Environment :: Web Environment',
           'Intended Audience :: Developers',
           'Programming Language :: Python',
