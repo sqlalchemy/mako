@@ -1,7 +1,6 @@
 """Provide a :class:`.CacheImpl` for the Beaker caching system."""
 
 from mako import exceptions
-
 from mako.cache import CacheImpl
 
 try:
@@ -27,36 +26,37 @@ class BeakerCacheImpl(CacheImpl):
     def __init__(self, cache):
         if not has_beaker:
             raise exceptions.RuntimeException(
-                "Can't initialize Beaker plugin; Beaker is not installed.")
+                "Can't initialize Beaker plugin; Beaker is not installed."
+            )
         global _beaker_cache
         if _beaker_cache is None:
-            if 'manager' in cache.template.cache_args:
-                _beaker_cache = cache.template.cache_args['manager']
+            if "manager" in cache.template.cache_args:
+                _beaker_cache = cache.template.cache_args["manager"]
             else:
                 _beaker_cache = beaker_cache.CacheManager()
         super(BeakerCacheImpl, self).__init__(cache)
 
     def _get_cache(self, **kw):
-        expiretime = kw.pop('timeout', None)
-        if 'dir' in kw:
-            kw['data_dir'] = kw.pop('dir')
+        expiretime = kw.pop("timeout", None)
+        if "dir" in kw:
+            kw["data_dir"] = kw.pop("dir")
         elif self.cache.template.module_directory:
-            kw['data_dir'] = self.cache.template.module_directory
+            kw["data_dir"] = self.cache.template.module_directory
 
-        if 'manager' in kw:
-            kw.pop('manager')
+        if "manager" in kw:
+            kw.pop("manager")
 
-        if kw.get('type') == 'memcached':
-            kw['type'] = 'ext:memcached'
+        if kw.get("type") == "memcached":
+            kw["type"] = "ext:memcached"
 
-        if 'region' in kw:
-            region = kw.pop('region')
+        if "region" in kw:
+            region = kw.pop("region")
             cache = _beaker_cache.get_cache_region(self.cache.id, region, **kw)
         else:
             cache = _beaker_cache.get_cache(self.cache.id, **kw)
-        cache_args = {'starttime': self.cache.starttime}
+        cache_args = {"starttime": self.cache.starttime}
         if expiretime:
-            cache_args['expiretime'] = expiretime
+            cache_args["expiretime"] = expiretime
         return cache, cache_args
 
     def get_or_create(self, key, creation_function, **kw):

@@ -1,14 +1,20 @@
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
 import os
 import re
 import sys
 
-v = open(os.path.join(os.path.dirname(__file__), 'mako', '__init__.py'))
-VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
+from setuptools import find_packages
+from setuptools import setup
+from setuptools.command.test import test as TestCommand
+
+v = open(os.path.join(os.path.dirname(__file__), "mako", "__init__.py"))
+VERSION = (
+    re.compile(r".*__version__ = [\"'](.*?)[\"']", re.S)
+    .match(v.read())
+    .group(1)
+)
 v.close()
 
-readme = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
+readme = open(os.path.join(os.path.dirname(__file__), "README.rst")).read()
 
 if sys.version_info < (2, 6):
     raise Exception("Mako requires Python 2.6 or higher.")
@@ -20,16 +26,16 @@ markupsafe_installs = (
 install_requires = []
 
 if markupsafe_installs:
-    install_requires.append('MarkupSafe>=0.9.2')
+    install_requires.append("MarkupSafe>=0.9.2")
 
 try:
-    import argparse
+    import argparse  # noqa
 except ImportError:
-    install_requires.append('argparse')
+    install_requires.append("argparse")
 
 
 class PyTest(TestCommand):
-    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
@@ -43,39 +49,41 @@ class PyTest(TestCommand):
     def run_tests(self):
         # import here, cause outside the eggs aren't loaded
         import pytest
+
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
 
-setup(name='Mako',
-      version=VERSION,
-      description="A super-fast templating language that borrows the \
+setup(
+    name="Mako",
+    version=VERSION,
+    description="A super-fast templating language that borrows the \
  best ideas from the existing templating languages.",
-      long_description=readme,
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'License :: OSI Approved :: MIT License',
-          'Environment :: Web Environment',
-          'Intended Audience :: Developers',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3',
-          "Programming Language :: Python :: Implementation :: CPython",
-          "Programming Language :: Python :: Implementation :: PyPy",
-          'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-      ],
-      keywords='templates',
-      author='Mike Bayer',
-      author_email='mike@zzzcomputing.com',
-      url='https://www.makotemplates.org/',
-      license='MIT',
-      packages=find_packages('.', exclude=['examples*', 'test*']),
-      tests_require=['pytest', 'mock'],
-      cmdclass={'test': PyTest},
-      zip_safe=False,
-      python_requires='>=2.6',
-      install_requires=install_requires,
-      extras_require={},
-      entry_points="""
+    long_description=readme,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: MIT License",
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    ],
+    keywords="templates",
+    author="Mike Bayer",
+    author_email="mike@zzzcomputing.com",
+    url="https://www.makotemplates.org/",
+    license="MIT",
+    packages=find_packages(".", exclude=["examples*", "test*"]),
+    tests_require=["pytest", "mock"],
+    cmdclass={"test": PyTest},
+    zip_safe=False,
+    python_requires=">=2.6",
+    install_requires=install_requires,
+    extras_require={},
+    entry_points="""
       [python.templating.engines]
       mako = mako.ext.turbogears:TGPlugin
 
@@ -94,5 +102,5 @@ setup(name='Mako',
 
       [console_scripts]
       mako-render = mako.cmd:cmdline
-      """
+      """,
 )

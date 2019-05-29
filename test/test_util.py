@@ -2,9 +2,15 @@
 
 import os
 import unittest
-from mako import util, exceptions, compat
-from test import eq_, skip_if, assert_raises_message
+
+from mako import compat
+from mako import exceptions
+from mako import util
 from mako.compat import u
+from test import assert_raises_message
+from test import eq_
+from test import skip_if
+
 
 class UtilTest(unittest.TestCase):
     def test_fast_buffer_write(self):
@@ -24,22 +30,22 @@ class UtilTest(unittest.TestCase):
 
     def test_fast_buffer_encoded(self):
         s = u("drôl m’a rée « S’il")
-        buf = util.FastEncodingBuffer(encoding='utf-8')
+        buf = util.FastEncodingBuffer(encoding="utf-8")
         buf.write(s[0:10])
         buf.write(s[10:])
-        q = buf.getvalue()
-        eq_(buf.getvalue(), s.encode('utf-8'))
+        eq_(buf.getvalue(), s.encode("utf-8"))
 
     def test_read_file(self):
-        fn = os.path.join(os.path.dirname(__file__), 'test_util.py')
-        data = util.read_file(fn, 'rb')
-        assert 'test_util' in str(data)  # str() for py3k
+        fn = os.path.join(os.path.dirname(__file__), "test_util.py")
+        data = util.read_file(fn, "rb")
+        assert "test_util" in str(data)  # str() for py3k
 
     @skip_if(lambda: compat.pypy, "Pypy does this differently")
     def test_load_module(self):
-        fn = os.path.join(os.path.dirname(__file__), 'test_util.py')
-        module = compat.load_module('mako.template', fn)
+        fn = os.path.join(os.path.dirname(__file__), "test_util.py")
+        module = compat.load_module("mako.template", fn)
         import mako.template
+
         self.assertEqual(module, mako.template)
 
     def test_load_plugin_failure(self):
@@ -47,5 +53,6 @@ class UtilTest(unittest.TestCase):
         assert_raises_message(
             exceptions.RuntimeException,
             "Can't load plugin fakegroup fake",
-            loader.load, "fake"
+            loader.load,
+            "fake",
         )
