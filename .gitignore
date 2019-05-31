@@ -6,12 +6,10 @@
 *.orig
 *.egg-info
 *.sw[opq]
-
 /.Python
 /bin
 /include
 /lib
 /man
-
 .tox/
 .cache/
