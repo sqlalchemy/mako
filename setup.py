@@ -75,6 +75,10 @@ setup(
     author="Mike Bayer",
     author_email="mike@zzzcomputing.com",
     url="https://www.makotemplates.org/",
+    project_urls={
+        "Documentation": "https://docs.makotemplates.org",
+        "Issue Tracker": "https://github.com/sqlalchemy/mako"
+    },
     license="MIT",
     packages=find_packages(".", exclude=["examples*", "test*"]),
     tests_require=["pytest", "mock"],
