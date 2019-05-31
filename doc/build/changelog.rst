@@ -7,7 +7,13 @@ Changelog
 
 .. changelog::
     :version: 1.0.11
-    :include_notes_from: unreleased
+    :released: Fri May 31 2019
+
+    .. change::
+        :tags: change
+
+        Updated for additional project metadata in setup.py.   Additionally,
+        the code has been reformatted using Black and zimports.
 
 .. changelog::
     :version: 1.0.10
