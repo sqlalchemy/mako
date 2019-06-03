@@ -195,10 +195,15 @@ ${u'привет'}
             html_error = exceptions.html_error_template().render()
             if compat.py3k:
                 assert "RuntimeError: test" in html_error.decode("utf-8")
-                assert "foo = u(&quot;日本&quot;)" in html_error.decode("utf-8")
+                assert "foo = u(&quot;日本&quot;)" in html_error.decode(
+                    "utf-8"
+                ) or "foo = u(&#34;日本&#34;)" in html_error.decode("utf-8")
             else:
                 assert "RuntimeError: test" in html_error
-                assert "foo = u(&quot;&#x65E5;&#x672C;&quot;)" in html_error
+                assert (
+                    "foo = u(&quot;&#x65E5;&#x672C;&quot;)" in html_error
+                    or "foo = u(&#34;&#x65E5;&#x672C;&#34;)" in html_error
+                )
 
     def test_py_unicode_error_html_error_template(self):
         try:
@@ -328,7 +333,7 @@ ${foobar}
     def test_custom_tback(self):
         try:
             raise RuntimeError("error 1")
-            foo("bar")   # noqa
+            foo("bar")  # noqa
         except:
             t, v, tback = sys.exc_info()
 
@@ -341,7 +346,10 @@ ${foobar}
 
         # obfuscate the text so that this text
         # isn't in the 'wrong' exception
-        assert "".join(reversed(");touq&rab;touq&(oof")) in html_error
+        assert (
+            "".join(reversed(");touq&rab;touq&(oof")) in html_error
+            or "".join(reversed(");43#&rab;43#&(oof")) in html_error
+        )
 
     def test_tback_no_trace_from_py_file(self):
         try:
