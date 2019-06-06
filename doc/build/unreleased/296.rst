@@ -1,7 +1,0 @@
-.. change::
-    :tags: bug, py3k
-    :tickets: 296
-
-    Fixed regression where import refactors in Mako 1.0.11 caused broken
-    imports on Python 3.8.
-

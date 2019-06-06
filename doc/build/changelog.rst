@@ -7,7 +7,15 @@ Changelog
 
 .. changelog::
     :version: 1.0.12
-    :include_notes_from: unreleased
+    :released: Wed Jun 5 2019
+
+    .. change::
+        :tags: bug, py3k
+        :tickets: 296
+
+        Fixed regression where import refactors in Mako 1.0.11 caused broken
+        imports on Python 3.8.
+
 
 .. changelog::
     :version: 1.0.11
