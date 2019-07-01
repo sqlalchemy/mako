@@ -383,3 +383,51 @@ ${foobar}
             "local variable &#39;y&#39; referenced before assignment"
             in html_error
         )
+
+    def test_code_block_line_number(self):
+        l = TemplateLookup()
+        l.put_string(
+            "foo.html",
+            """
+<%
+msg = "Something went wrong."
+raise RuntimeError(msg)  # This is the line.
+%>
+            """,
+        )
+        t = l.get_template("foo.html")
+        try:
+            t.render()
+            assert False
+        except:
+            text_error = exceptions.text_error_template().render_unicode()
+            assert 'File "foo_html", line 4, in render_body' in text_error
+            assert "raise RuntimeError(msg)  # This is the line." in text_error
+        else:
+            assert False
+
+    def test_module_block_line_number(self):
+        l = TemplateLookup()
+        l.put_string(
+            "foo.html",
+            """
+<%!
+def foo():
+    msg = "Something went wrong."
+    raise RuntimeError(msg)  # This is the line.
+%>
+${foo()}
+            """,
+        )
+        t = l.get_template("foo.html")
+        try:
+            t.render()
+            assert False
+        except:
+            text_error = exceptions.text_error_template().render_unicode()
+            sys.stderr.write(text_error)
+            assert 'File "foo_html", line 7, in render_body' in text_error
+            assert 'File "foo_html", line 5, in foo' in text_error
+            assert "raise RuntimeError(msg)  # This is the line." in text_error
+        else:
+            assert False

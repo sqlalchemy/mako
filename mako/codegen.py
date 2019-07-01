@@ -354,8 +354,7 @@ class _GenerateRenderMethod(object):
         """write module-level template code, i.e. that which
         is enclosed in <%! %> tags in the template."""
         for n in module_code:
-            self.printer.start_source(n.lineno)
-            self.printer.write_indented_block(n.text)
+            self.printer.write_indented_block(n.text, starting_lineno=n.lineno)
 
     def write_inherit(self, node):
         """write the module-level inheritance-determination callable."""
@@ -896,8 +895,9 @@ class _GenerateRenderMethod(object):
 
     def visitCode(self, node):
         if not node.ismodule:
-            self.printer.start_source(node.lineno)
-            self.printer.write_indented_block(node.text)
+            self.printer.write_indented_block(
+                node.text, starting_lineno=node.lineno
+            )
 
             if not self.in_def and len(self.identifiers.locally_assigned) > 0:
                 # if we are the "template" def, fudge locally
