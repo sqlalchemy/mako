@@ -398,10 +398,9 @@ raise RuntimeError(msg)  # This is the line.
         t = l.get_template("foo.html")
         try:
             t.render()
-            assert False
         except:
             text_error = exceptions.text_error_template().render_unicode()
-            assert 'File "foo_html", line 4, in render_body' in text_error
+            assert 'File "foo.html", line 4, in render_body' in text_error
             assert "raise RuntimeError(msg)  # This is the line." in text_error
         else:
             assert False
@@ -422,12 +421,51 @@ ${foo()}
         t = l.get_template("foo.html")
         try:
             t.render()
-            assert False
         except:
             text_error = exceptions.text_error_template().render_unicode()
-            sys.stderr.write(text_error)
-            assert 'File "foo_html", line 7, in render_body' in text_error
-            assert 'File "foo_html", line 5, in foo' in text_error
+            assert 'File "foo.html", line 7, in render_body' in text_error
+            assert 'File "foo.html", line 5, in foo' in text_error
             assert "raise RuntimeError(msg)  # This is the line." in text_error
+        else:
+            assert False
+
+    def test_alternating_file_names(self):
+        l = TemplateLookup()
+        l.put_string(
+            "base.html",
+            """
+<%!
+def broken():
+    raise RuntimeError("Something went wrong.")
+%> body starts here
+<%block name="foo">
+    ${broken()}
+</%block>
+            """,
+        )
+        l.put_string(
+            "foo.html",
+            """
+<%inherit file="base.html"/>
+<%block name="foo">
+    ${parent.foo()}
+</%block>
+            """,
+        )
+        t = l.get_template("foo.html")
+        try:
+            t.render()
+        except:
+            text_error = exceptions.text_error_template().render_unicode()
+            assert """
+  File "base.html", line 5, in render_body
+    %> body starts here
+  File "foo.html", line 4, in render_foo
+    ${parent.foo()}
+  File "base.html", line 7, in render_foo
+    ${broken()}
+  File "base.html", line 4, in broken
+    raise RuntimeError("Something went wrong.")
+""" in text_error
         else:
             assert False
