@@ -169,6 +169,20 @@ will render ``myexpression`` with no filtering of any kind, and:
 
 will render ``myexpression`` using the ``trim`` filter only.
 
+Including the ``n`` filter in a ``<%page>`` tag will only disable
+``default_filters``. In effect this makes the filters from the tag replace
+default filters instead of adding to them. For example:
+
+.. sourcecode:: mako
+
+    <%page expression_filter="n, json.dumps"/>
+    data = {a: ${123}, b: ${"123"}};
+
+will suppress turning the values into strings using the default filter, so that
+``json.dumps`` (which requires ``imports=["import json"]`` or something
+equivalent) can take the value type into account, formatting numbers as numeric
+literals and strings as string literals.
+
 Filtering Defs and Blocks
 =========================
 
