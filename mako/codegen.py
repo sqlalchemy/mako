@@ -802,7 +802,7 @@ class _GenerateRenderMethod(object):
             if is_expression:
                 if self.compiler.pagetag:
                     args = self.compiler.pagetag.filter_args.args + args
-                if self.compiler.default_filters:
+                if self.compiler.default_filters and "n" not in args:
                     args = self.compiler.default_filters + args
         for e in args:
             # if filter given as a function, get just the identifier portion

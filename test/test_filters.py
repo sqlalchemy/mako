@@ -294,6 +294,17 @@ class FilterTest(TemplateTest):
         )
         assert t.render().strip() == "&lt;tag&gt;this is html&lt;/tag&gt;"
 
+    def test_global_json(self):
+        t = Template(
+            """
+<%!
+import json
+%><%page expression_filter="n, json.dumps"/>
+data = {a: ${123}, b: ${"123"}};
+        """
+        )
+        assert t.render().strip() == """data = {a: 123, b: "123"};"""
+
     def test_non_expression(self):
         t = Template(
             """
