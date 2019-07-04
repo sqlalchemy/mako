@@ -271,8 +271,17 @@ Currently, only one ``<%page>`` tag gets used per template, the
 rest get ignored. While this will be improved in a future
 release, for now make sure you have only one ``<%page>`` tag
 defined in your template, else you may not get the results you
-want. The details of what ``<%page>`` is used for are described
-further in :ref:`namespaces_body` as well as :ref:`caching_toplevel`.
+want.  Further details on what ``<%page>`` is used for are described
+in the following sections:
+
+* :ref:`namespaces_body` - ``<%page>`` is used to define template-level
+  arguments and defaults
+
+* :ref:`expression_filtering` - expression filters can be applied to all
+  expressions throughout a template using the ``<%page>`` tag
+
+* :ref:`caching_toplevel` - options to control template-level caching
+  may be applied in the ``<%page>`` tag.
 
 ``<%include>``
 --------------

@@ -4,6 +4,8 @@
 Filtering and Buffering
 =======================
 
+.. _expression_filtering:
+
 Expression Filtering
 ====================
 
