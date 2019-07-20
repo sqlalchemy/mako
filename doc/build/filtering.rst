@@ -187,6 +187,8 @@ will suppress turning the values into strings using the default filter, so that
 equivalent) can take the value type into account, formatting numbers as numeric
 literals and strings as string literals.
 
+.. versionadded:: 1.0.14 The ``n`` filter can now be used in the ``<%page>`` tag.
+
 Filtering Defs and Blocks
 =========================
 
