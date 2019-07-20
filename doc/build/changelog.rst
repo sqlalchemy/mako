@@ -7,7 +7,31 @@ Changelog
 
 .. changelog::
     :version: 1.0.14
-    :include_notes_from: unreleased
+    :released: Sat Jul 20 2019
+
+    .. change::
+        :tags: feature, template
+
+        The ``n`` filter is now supported in the ``<%page>`` tag.  This allows a
+        template to omit the default expression filters throughout a whole
+        template, for those cases where a template-wide filter needs to have
+        default filtering disabled.  Pull request courtesy Martin von Gagern.
+
+        .. seealso::
+
+            :ref:`expression_filtering_nfilter`
+
+
+
+    .. change::
+        :tags: bug, exceptions
+
+        Fixed issue where the correct file URI would not be shown in the
+        template-formatted exception traceback if the template filename were not
+        known.  Additionally fixes an issue where stale filenames would be
+        displayed if a stack trace alternated between different templates.  Pull
+        request courtesy Martin von Gagern.
+
 
 .. changelog::
     :version: 1.0.13
