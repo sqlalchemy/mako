@@ -6,7 +6,6 @@
 
 import json  # noqa
 import sys
-import time
 
 py3k = sys.version_info >= (3, 0)
 py33 = sys.version_info >= (3, 3)
@@ -140,11 +139,6 @@ except ImportError:
         import _dummy_thread as thread
     else:
         import dummy_thread as thread  # noqa
-
-if win32 or jython:
-    time_func = time.clock
-else:
-    time_func = time.time
 
 try:
     from functools import partial
