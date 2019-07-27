@@ -6,7 +6,6 @@ import unittest
 from mako import compat
 from mako.cache import CacheImpl
 from mako.cache import register_plugin
-from mako.compat import py33
 from mako.compat import py3k
 from mako.template import Template
 from mako.util import update_wrapper
@@ -106,7 +105,7 @@ def teardown():
     shutil.rmtree(module_base, True)
 
 
-if py33:
+if py3k:
     from unittest import mock  # noqa
 else:
     import mock  # noqa

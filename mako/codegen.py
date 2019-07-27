@@ -7,6 +7,7 @@
 """provides functionality for rendering a parsetree constructing into module
 source code."""
 
+import json
 import re
 import time
 
@@ -176,7 +177,7 @@ class _GenerateRenderMethod(object):
         self.printer.writelines(
             '"""',
             "__M_BEGIN_METADATA",
-            compat.json.dumps(struct),
+            json.dumps(struct),
             "__M_END_METADATA\n" '"""',
         )
 

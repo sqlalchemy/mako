@@ -7,6 +7,7 @@
 """Provides the Template class, a facade for parsing, generating and executing
 template strings, as well as template runtime operations."""
 
+import json
 import os
 import re
 import shutil
@@ -659,7 +660,7 @@ class ModuleInfo(object):
         source_map = re.search(
             r"__M_BEGIN_METADATA(.+?)__M_END_METADATA", module_source, re.S
         ).group(1)
-        source_map = compat.json.loads(source_map)
+        source_map = json.loads(source_map)
         source_map["line_map"] = dict(
             (int(k), int(v)) for k, v in source_map["line_map"].items()
         )

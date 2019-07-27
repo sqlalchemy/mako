@@ -14,24 +14,9 @@ VERSION = (
 )
 v.close()
 
-readme = open(os.path.join(os.path.dirname(__file__), "README.rst")).read()
+readme = os.path.join(os.path.dirname(__file__), "README.rst")
 
-if sys.version_info < (2, 6):
-    raise Exception("Mako requires Python 2.6 or higher.")
-
-markupsafe_installs = (
-    sys.version_info >= (2, 6) and sys.version_info < (3, 0)
-) or sys.version_info >= (3, 3)
-
-install_requires = []
-
-if markupsafe_installs:
-    install_requires.append("MarkupSafe>=0.9.2")
-
-try:
-    import argparse  # noqa
-except ImportError:
-    install_requires.append("argparse")
+install_requires = ["MarkupSafe>=0.9.2"]
 
 
 class PyTest(TestCommand):
@@ -59,7 +44,8 @@ setup(
     version=VERSION,
     description="A super-fast templating language that borrows the \
  best ideas from the existing templating languages.",
-    long_description=readme,
+    long_description=open(readme).read(),
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
@@ -77,14 +63,13 @@ setup(
     url="https://www.makotemplates.org/",
     project_urls={
         "Documentation": "https://docs.makotemplates.org",
-        "Issue Tracker": "https://github.com/sqlalchemy/mako"
+        "Issue Tracker": "https://github.com/sqlalchemy/mako",
     },
     license="MIT",
     packages=find_packages(".", exclude=["examples*", "test*"]),
     tests_require=["pytest", "mock"],
     cmdclass={"test": PyTest},
     zip_safe=False,
-    python_requires=">=2.6",
     install_requires=install_requires,
     extras_require={},
     entry_points="""
