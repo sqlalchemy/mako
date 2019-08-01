@@ -1,9 +1,0 @@
-.. change::
-    :tags: bug, py3k
-    :tickets: 295
-
-    Replaced usage of ``inspect.getfullargspec()`` with the vendored version
-    used by SQLAlchemy, Alembic to avoid future deprecation warnings.  Also
-    cleans up an additional version of the same function that's apparently
-    been floating around for some time.
-

@@ -1,8 +1,0 @@
-.. change::
-    :tags: bug, py3k, windows
-    :tickets: 301
-
-    Replaced usage of time.clock() on windows as well as time.time() elsewhere
-    for microsecond timestamps with timeit.default_timer(), as time.clock() is
-    being removed in Python 3.8.   Pull request courtesy Christoph Reiter.
-

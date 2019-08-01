@@ -8,7 +8,57 @@ Changelog
 
 .. changelog::
     :version: 1.1.0
-    :include_notes_from: unreleased
+    :released: Thu Aug 1 2019
+
+    .. change::
+        :tags: bug, py3k, windows
+        :tickets: 301
+
+        Replaced usage of time.clock() on windows as well as time.time() elsewhere
+        for microsecond timestamps with timeit.default_timer(), as time.clock() is
+        being removed in Python 3.8.   Pull request courtesy Christoph Reiter.
+
+
+    .. change::
+        :tags: bug, py3k
+        :tickets: 295
+
+        Replaced usage of ``inspect.getfullargspec()`` with the vendored version
+        used by SQLAlchemy, Alembic to avoid future deprecation warnings.  Also
+        cleans up an additional version of the same function that's apparently
+        been floating around for some time.
+
+
+    .. change::
+        :tags: changed, setup
+        :tickets: 303
+
+        Removed the "python setup.py test" feature in favor of a straight run of
+        "tox".   Per Pypa / pytest developers, "setup.py" commands are in general
+        headed towards deprecation in favor of tox.  The tox.ini script has been
+        updated such that running "tox" with no arguments will perform a single run
+        of the test suite against the default installed Python interpreter.
+
+        .. seealso::
+
+            https://github.com/pypa/setuptools/issues/1684
+
+            https://github.com/pytest-dev/pytest/issues/5534
+
+    .. change::
+        :tags: changed, py3k, installer
+        :tickets: 249
+
+        Mako 1.1 now supports Python versions:
+
+        * 2.7
+        * 3.4 and higher
+
+        This includes that setup.py no longer includes any conditionals, allowing
+        for a pure Python wheel build, however this is not necessarily part of the
+        Pypi release process as of yet.  The test suite also raises for Python
+        deprecation warnings.
+
 
 1.0
 ===
