@@ -1,5 +1,5 @@
 .. change::
-    :tags: change, py3k, installer
+    :tags: changed, py3k, installer
     :tickets: 249
 
     Mako 1.1 now supports Python versions:
