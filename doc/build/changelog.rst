@@ -1,3 +1,4 @@
+
 =========
 Changelog
 =========
@@ -1023,7 +1024,7 @@ Older Versions
         :tags:
         :tickets: 148
 
-      Fixed missing **extra collection in
+      Fixed missing \**extra collection in
       setup.py which prevented setup.py
       from running 2to3 on install.
 
@@ -1276,7 +1277,7 @@ Older Versions
       The <%page args> tag can now be used in a base
       inheriting template - the full set of render()
       arguments are passed down through the inherits
-      chain.  Undeclared arguments go into **pageargs
+      chain.  Undeclared arguments go into \**pageargs
       as usual.
 
     .. change::
@@ -1631,16 +1632,16 @@ Older Versions
 
       added "attr" accessor to namespaces. Returns
       attributes configured as module level attributes, i.e.
-      within <%! %> sections.  i.e.:
+      within <%! %> sections.  i.e.::
 
-      # somefile.html
-      <%!
-          foo = 27
-      %>
+        # somefile.html
+        <%!
+            foo = 27
+        %>
 
-      # some other template
-      <%namespace name="myns" file="somefile.html"/>
-      ${myns.attr.foo}
+        # some other template
+        <%namespace name="myns" file="somefile.html"/>
+        ${myns.attr.foo}
 
       The slight backwards incompatibility here is, you
       can't have namespace defs named "attr" since the
@@ -2034,7 +2035,7 @@ Older Versions
         :tickets:
 
       <%include> plus arguments is also programmatically available via
-      self.include_file(<filename>, **kwargs)
+      self.include_file(<filename>, \**kwargs)
 
     .. change::
         :tags:
