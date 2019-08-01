@@ -27,7 +27,7 @@ class UseTox(TestCommand):
 
     def run_tests(self):
         sys.stderr.write(
-            "%s%spython setup.py test is deprecated by pypa.  Please invoke "
+            "%s%spython setup.py test is deprecated by PyPA.  Please invoke "
             "'tox' with no arguments for a basic test run.\n%s"
             % (self.COLOR_SEQ % self.RED, self.BOLD_SEQ, self.RESET_SEQ)
         )
