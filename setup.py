@@ -77,12 +77,20 @@ setup(
       css+mako = mako.ext.pygmentplugin:MakoCssLexer
 
       [babel.extractors]
-      mako = mako.ext.babelplugin:extract
+      mako = mako.ext.babelplugin:extract [babel]
 
       [lingua.extractors]
-      mako = mako.ext.linguaplugin:LinguaMakoExtractor
+      mako = mako.ext.linguaplugin:LinguaMakoExtractor [lingua]
 
       [console_scripts]
       mako-render = mako.cmd:cmdline
       """,
+    extras_require={
+        'babel': [
+            'Babel',
+        ],
+        'lingua': [
+            'lingua',
+        ],
+    },
 )
