@@ -257,9 +257,12 @@ def parse_encoding(fp):
         m = _PYTHON_MAGIC_COMMENT_re.match(line1.decode("ascii", "ignore"))
         if not m:
             try:
-                import parser
+                try:
+                    from ast import parse
+                except ImportError:
+                    from parser import suite as parse
 
-                parser.suite(line1.decode("ascii", "ignore"))
+                parse(line1.decode("ascii", "ignore"))
             except (ImportError, SyntaxError):
                 # Either it's a real syntax error, in which case the source
                 # is not valid python source, or line2 is a continuation of
