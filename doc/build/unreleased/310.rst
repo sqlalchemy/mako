@@ -1,0 +1,10 @@
+.. change::
+    :tags: bug, py3k
+    :tickets: 310
+
+    Replaced usage of the long-superseded "parser.suite" module in the
+    mako.util package for parsing the python magic encoding comment with the
+    "ast.parse" function introduced many years ago in Python 2.5, as
+    "parser.suite" is emitting deprecation warnings in Python 3.9.
+
+
