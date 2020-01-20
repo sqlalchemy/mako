@@ -32,6 +32,7 @@ def _as_unicode(arg):
     else:
         return arg
 
+
 Node = None
 TemplateNode = None
 ControlLine = None
@@ -56,7 +57,7 @@ PageTag = None
 for cls in list(parsetree.__dict__.values()):
     if isinstance(cls, type) and issubclass(cls, parsetree.Node):
         clsname = cls.__name__
-        exec(
+        exec (
             (
                 """
 class %s(object):
@@ -247,7 +248,7 @@ class LexerTest(TemplateTest):
                                 " % more code\n            "
                                 "<%illegal compionent>/></>\n"
                                 '            <%def name="laal()">def</%def>'
-                                '\n\n\n        ',
+                                "\n\n\n        ",
                                 (6, 16),
                             )
                         ],

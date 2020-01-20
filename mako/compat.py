@@ -127,7 +127,7 @@ if py3k:
 
 
 else:
-    exec(
+    exec (
         "def reraise(tp, value, tb=None, cause=None):\n"
         "    raise tp, value, tb\n"
     )

@@ -10,6 +10,12 @@ Changelog
     :version: 1.1.2
     :include_notes_from: unreleased
 
+    .. change::
+        :tags: bug, setup
+
+        Standardized `README.rst` to other projects; migrated `black` config to
+        a `pyproject.toml` file
+
 .. changelog::
     :version: 1.1.1
     :released: Mon Jan 20 2020

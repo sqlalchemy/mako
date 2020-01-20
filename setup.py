@@ -85,12 +85,5 @@ setup(
       [console_scripts]
       mako-render = mako.cmd:cmdline
       """,
-    extras_require={
-        'babel': [
-            'Babel',
-        ],
-        'lingua': [
-            'lingua',
-        ],
-    },
+    extras_require={"babel": ["Babel",], "lingua": ["lingua",],},
 )

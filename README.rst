@@ -44,9 +44,33 @@ Documentation
 
 See documentation for Mako at https://docs.makotemplates.org/en/latest/
 
-License
-========
 
-Mako is licensed under an MIT-style license (see LICENSE).
+The SQLAlchemy Project
+======================
+
+Mako is part of the `SQLAlchemy Project <https://www.sqlalchemy.org>`_ and
+adheres to the same standards and conventions as the core project.
+
+Development / Bug reporting / Pull requests
+___________________________________________
+
+Please refer to the
+`SQLAlchemy Community Guide <https://www.sqlalchemy.org/develop.html>`_ for
+guidelines on coding and participating in this project.
+
+Code of Conduct
+_______________
+
+Above all, SQLAlchemy places great emphasis on polite, thoughtful, and
+constructive communication between users and developers.
+Please see our current Code of Conduct at
+`Code of Conduct <https://www.sqlalchemy.org/codeofconduct.html>`_.
+
+License
+=======
+
+Mako is distributed under the `MIT license
+<https://opensource.org/licenses/MIT>`_.
+
 Other incorporated projects may be licensed under different licenses.
 All licenses allow for non-commercial and commercial use.

@@ -744,7 +744,7 @@ def _compile_text(template, text, filename):
     code = compile(source, cid, "exec")
 
     # this exec() works for 2.4->3.3.
-    exec(code, module.__dict__, module.__dict__)
+    exec (code, module.__dict__, module.__dict__)
     return (source, module)
 
 
