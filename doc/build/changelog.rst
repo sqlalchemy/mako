@@ -8,7 +8,29 @@ Changelog
 
 .. changelog::
     :version: 1.1.1
-    :include_notes_from: unreleased
+    :released: Mon Jan 20 2020
+
+    .. change::
+        :tags: bug, py3k
+        :tickets: 310
+
+        Replaced usage of the long-superseded "parser.suite" module in the
+        mako.util package for parsing the python magic encoding comment with the
+        "ast.parse" function introduced many years ago in Python 2.5, as
+        "parser.suite" is emitting deprecation warnings in Python 3.9.
+
+
+
+    .. change::
+        :tags: bug, ext
+        :tickets: 304
+
+        Added "babel" and "lingua" dependency entries to the setuptools entrypoints
+        for the babel and lingua extensions, so that pkg_resources can check that
+        these extra dependencies are available, raising an informative
+        exception if not.  Pull request courtesy sinoroc.
+
+
 
 .. changelog::
     :version: 1.1.0
