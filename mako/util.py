@@ -383,6 +383,7 @@ def read_file(path, mode="rb"):
     fp = open(path, mode)
     try:
         data = fp.read()
+        fp.close()          # after a succesful read, the file is not closed
         return data
     finally:
         fp.close()
