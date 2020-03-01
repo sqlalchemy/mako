@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.1.2
-    :include_notes_from: unreleased
+    :released: Sun Mar 1 2020
+
+    .. change::
+        :tags: feature, commands
+        :tickets: 283
+
+        Added --output-file argument to the Mako command line runner, which allows
+        a specific output file to be selected.  Pull request courtesy Björn
+        Dahlgren.
 
 .. changelog::
     :version: 1.1.1
