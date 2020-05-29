@@ -8,7 +8,16 @@ Changelog
 
 .. changelog::
     :version: 1.1.3
-    :include_notes_from: unreleased
+    :released: Fri May 29 2020
+
+    .. change::
+        :tags: bug, templates
+        :tickets: 267
+
+        The default template encoding is now utf-8.  Previously, the encoding was
+        "ascii", which was standard throughout Python 2.   This allows that
+        "magic encoding comment" for utf-8 templates is no longer required.
+
 
 .. changelog::
     :version: 1.1.2
