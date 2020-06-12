@@ -7,9 +7,9 @@ import unittest
 from mako import compat
 from mako import exceptions
 from mako import util
-from test import assert_raises_message
-from test import eq_
-from test import skip_if
+from .util.assertions import assert_raises_message
+from .util.assertions import eq_
+from .util.exclusions import skip_if
 
 
 class UtilTest(unittest.TestCase):

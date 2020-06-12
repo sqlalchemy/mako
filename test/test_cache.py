@@ -7,10 +7,10 @@ from mako.cache import register_plugin
 from mako.ext import beaker_cache
 from mako.lookup import TemplateLookup
 from mako.template import Template
-from test import eq_
-from test import module_base
-from test import TemplateTest
-from test.util import result_lines
+from .util.assertions import eq_
+from .util.fixtures import module_base
+from .util.fixtures import TemplateTest
+from .util.helpers import result_lines
 
 if beaker_cache.has_beaker:
     import beaker

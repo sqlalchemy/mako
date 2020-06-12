@@ -1,9 +1,11 @@
+from mako import exceptions
 from mako import lookup
 from mako.template import Template
-from test import eq_
-from test import TemplateTest
-from test.util import flatten_result
-from test.util import result_lines
+from .util.assertions import assert_raises_message_with_given_cause
+from .util.assertions import eq_
+from .util.fixtures import TemplateTest
+from .util.helpers import flatten_result
+from .util.helpers import result_lines
 
 
 class NamespaceTest(TemplateTest):
@@ -994,3 +996,35 @@ class NamespaceTest(TemplateTest):
             "this is lala",
             "this is foo",
         ]
+
+    def test_nonexistent_namespace_uri(self):
+        collection = lookup.TemplateLookup()
+        collection.put_string(
+            "main.html",
+            """
+            <%namespace name="defs" file="eefs.html"/>
+
+            this is main.  ${defs.def1("hi")}
+            ${defs.def2("there")}
+""",
+        )
+
+        collection.put_string(
+            "defs.html",
+            """
+        <%def name="def1(s)">
+            def1: ${s}
+        </%def>
+
+        <%def name="def2(x)">
+            def2: ${x}
+        </%def>
+""",
+        )
+
+        assert_raises_message_with_given_cause(
+            exceptions.TemplateLookupException,
+            "Can't locate template for uri 'eefs.html",
+            exceptions.TopLevelLookupException,
+            collection.get_template("main.html").render,
+        )

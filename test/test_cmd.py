@@ -1,12 +1,12 @@
 from contextlib import contextmanager
 import os
+from unittest import mock
 
 from mako.cmd import cmdline
-from test import eq_
-from test import mock
-from test import raises
-from test import template_base
-from test import TemplateTest
+from .util.assertions import eq_
+from .util.assertions import raises
+from .util.fixtures import template_base
+from .util.fixtures import TemplateTest
 
 
 class CmdTest(TemplateTest):

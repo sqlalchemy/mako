@@ -3,7 +3,7 @@ import unittest
 
 from mako.pygen import adjust_whitespace
 from mako.pygen import PythonPrinter
-from test import eq_
+from .util.assertions import eq_
 
 
 class GeneratePythonTest(unittest.TestCase):

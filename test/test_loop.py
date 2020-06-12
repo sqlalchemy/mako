@@ -7,9 +7,9 @@ from mako.lookup import TemplateLookup
 from mako.runtime import LoopContext
 from mako.runtime import LoopStack
 from mako.template import Template
-from test import assert_raises_message
-from test import TemplateTest
-from test.util import flatten_result
+from .util.assertions import assert_raises_message
+from .util.fixtures import TemplateTest
+from .util.helpers import flatten_result
 
 
 class TestLoop(unittest.TestCase):

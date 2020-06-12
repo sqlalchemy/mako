@@ -3,7 +3,7 @@
 import unittest
 
 from mako import runtime
-from test import eq_
+from .util.assertions import eq_
 
 
 class ContextTest(unittest.TestCase):

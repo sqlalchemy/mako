@@ -241,7 +241,7 @@ class TemplateLookup(TemplateCollection):
                 return self._check(uri, self._collection[uri])
             else:
                 return self._collection[uri]
-        except KeyError:
+        except KeyError as e:
             u = re.sub(r"^\/+", "", uri)
             for dir_ in self.directories:
                 # make sure the path seperators are posix - os.altsep is empty
@@ -252,8 +252,8 @@ class TemplateLookup(TemplateCollection):
                     return self._load(srcfile, uri)
             else:
                 raise exceptions.TopLevelLookupException(
-                    "Cant locate template for uri %r" % uri
-                )
+                    "Can't locate template for uri %r" % uri
+                ) from e
 
     def adjust_uri(self, uri, relativeto):
         """Adjust the given ``uri`` based on the given relative URI."""
@@ -337,11 +337,11 @@ class TemplateLookup(TemplateCollection):
                 return template
             self._collection.pop(uri, None)
             return self._load(template.filename, uri)
-        except OSError:
+        except OSError as e:
             self._collection.pop(uri, None)
             raise exceptions.TemplateLookupException(
-                "Cant locate template for uri %r" % uri
-            )
+                "Can't locate template for uri %r" % uri
+            ) from e
 
     def put_string(self, uri, text):
         """Place a new :class:`.Template` object into this

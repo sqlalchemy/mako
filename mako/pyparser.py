@@ -34,7 +34,7 @@ def parse(code, mode="exec", **exception_kwargs):
 
     try:
         return _ast_util.parse(code, "<unknown>", mode)
-    except Exception:
+    except Exception as e:
         raise exceptions.SyntaxException(
             "(%s) %s (%r)"
             % (
@@ -43,7 +43,7 @@ def parse(code, mode="exec", **exception_kwargs):
                 code[0:50],
             ),
             **exception_kwargs,
-        )
+        ) from e
 
 
 class FindIdentifiers(_ast_util.NodeVisitor):

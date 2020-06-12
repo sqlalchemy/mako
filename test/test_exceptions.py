@@ -4,10 +4,10 @@ import sys
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
-from test import requires_no_pygments_exceptions
-from test import requires_pygments_14
-from test import TemplateTest
-from test.util import result_lines
+from .util.exclusions import requires_no_pygments_exceptions
+from .util.exclusions import requires_pygments_14
+from .util.fixtures import TemplateTest
+from .util.helpers import result_lines
 
 
 class ExceptionsTest(TemplateTest):

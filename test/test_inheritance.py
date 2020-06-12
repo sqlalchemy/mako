@@ -1,7 +1,7 @@
 import unittest
 
 from mako import lookup
-from test.util import result_lines
+from .util.helpers import result_lines
 
 
 class InheritanceTest(unittest.TestCase):

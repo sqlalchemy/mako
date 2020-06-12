@@ -3,10 +3,10 @@
 import unittest
 
 from mako.template import Template
-from test import eq_
-from test import TemplateTest
-from test.util import flatten_result
-from test.util import result_lines
+from .util.assertions import eq_
+from .util.fixtures import TemplateTest
+from .util.helpers import flatten_result
+from .util.helpers import result_lines
 
 
 class FilterTest(TemplateTest):

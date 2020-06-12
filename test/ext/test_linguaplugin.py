@@ -1,8 +1,8 @@
 import os
 
-from .. import skip_if
-from .. import template_base
-from .. import TemplateTest
+from ..util.exclusions import skip_if
+from ..util.fixtures import template_base
+from ..util.fixtures import TemplateTest
 
 try:
     import lingua

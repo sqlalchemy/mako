@@ -835,8 +835,10 @@ def _lookup_template(context, uri, relativeto):
     uri = lookup.adjust_uri(uri, relativeto)
     try:
         return lookup.get_template(uri)
-    except exceptions.TopLevelLookupException:
-        raise exceptions.TemplateLookupException(str(compat.exception_as()))
+    except exceptions.TopLevelLookupException as e:
+        raise exceptions.TemplateLookupException(
+            str(compat.exception_as())
+        ) from e
 
 
 def _populate_self_namespace(context, template, self_ns=None):

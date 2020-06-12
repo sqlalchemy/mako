@@ -3,7 +3,7 @@ import unittest
 from mako import ast
 from mako import exceptions
 from mako import pyparser
-from test import eq_
+from .util.assertions import eq_
 
 exception_kwargs = {"source": "", "lineno": 0, "pos": 0, "filename": ""}
 

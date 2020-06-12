@@ -6,10 +6,10 @@ from mako import parsetree
 from mako import util
 from mako.lexer import Lexer
 from mako.template import Template
-from test import assert_raises_message
-from test import eq_
-from test import TemplateTest
-from test.util import flatten_result
+from .util.assertions import assert_raises_message
+from .util.assertions import eq_
+from .util.fixtures import TemplateTest
+from .util.helpers import flatten_result
 
 # create fake parsetree classes which are constructed
 # exactly as the repr() of a real parsetree object.

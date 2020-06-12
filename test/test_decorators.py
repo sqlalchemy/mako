@@ -1,7 +1,7 @@
 import unittest
 
 from mako.template import Template
-from test.util import flatten_result
+from .util.helpers import flatten_result
 
 
 class DecoratorTest(unittest.TestCase):
