@@ -10,6 +10,7 @@ import re
 import stat
 
 from mako import exceptions
+from mako import compat
 from mako import util
 from mako.template import Template
 
@@ -249,7 +250,7 @@ class TemplateLookup(TemplateCollection):
                 return self._check(uri, self._collection[uri])
             else:
                 return self._collection[uri]
-        except KeyError:
+        except KeyError as e:
             u = re.sub(r"^\/+", "", uri)
             for dir_ in self.directories:
                 # make sure the path seperators are posix - os.altsep is empty
@@ -259,8 +260,12 @@ class TemplateLookup(TemplateCollection):
                 if os.path.isfile(srcfile):
                     return self._load(srcfile, uri)
             else:
-                raise exceptions.TopLevelLookupException(
-                    "Cant locate template for uri %r" % uri
+                compat.reraise(
+                    exceptions.TopLevelLookupException,
+                    exceptions.TopLevelLookupException(
+                        "Cant locate template for uri %r" % uri
+                    ),
+                    cause=e
                 )
 
     def adjust_uri(self, uri, relativeto):
@@ -347,10 +352,14 @@ class TemplateLookup(TemplateCollection):
                 return self._load(template.filename, uri)
             else:
                 return template
-        except OSError:
+        except OSError as e:
             self._collection.pop(uri, None)
-            raise exceptions.TemplateLookupException(
-                "Cant locate template for uri %r" % uri
+            compat.reraise(
+                exceptions.TemplateLookupException,
+                exceptions.TemplateLookupException(
+                    "Cant locate template for uri %r" % uri
+                ),
+                cause=e
             )
 
     def put_string(self, uri, text):
