@@ -346,7 +346,7 @@ class Tag(compat.with_metaclass(_TagMeta, Node)):
             elif key in nonexpressions:
                 if re.search(r"\${.+?}", self.attributes[key]):
                     raise exceptions.CompileException(
-                        "Attibute '%s' in tag '%s' does not allow embedded "
+                        "Attribute '%s' in tag '%s' does not allow embedded "
                         "expressions" % (key, self.keyword),
                         **self.exception_kwargs
                     )
