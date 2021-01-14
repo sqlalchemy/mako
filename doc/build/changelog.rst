@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.1.4
-    :include_notes_from: unreleased
+    :released: Thu Jan 14 2021
+
+    .. change::
+        :tags: bug, py3k
+        :tickets: 328
+
+        Fixed Python deprecation issues related to module importing, as well as
+        file access within the Lingua plugin, for deprecated APIs that began to
+        emit warnings under Python 3.10.  Pull request courtesy Petr Viktorin.
 
 .. changelog::
     :version: 1.1.3
