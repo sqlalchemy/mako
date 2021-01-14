@@ -7,6 +7,10 @@ Changelog
 ===
 
 .. changelog::
+    :version: 1.1.5
+    :include_notes_from: unreleased
+
+.. changelog::
     :version: 1.1.4
     :released: Thu Jan 14 2021
 
