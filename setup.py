@@ -16,7 +16,7 @@ v.close()
 
 readme = os.path.join(os.path.dirname(__file__), "README.rst")
 
-install_requires = ["MarkupSafe>=0.9.2"]
+install_requires = ["MarkupSafe>=0.9.2", "setuptools"]
 
 
 class UseTox(TestCommand):
