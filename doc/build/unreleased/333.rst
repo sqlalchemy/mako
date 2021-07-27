@@ -1,0 +1,12 @@
+.. change::
+    :tags: debugging
+    :tickets: 333
+
+    If a template is opened with incompatible encoding (such as unicode text but
+    no UTF-8 identification on PY2, or potential encoding mismatches on PY3),
+    an exception such as UnicodeDecodeError will be raised that notes the
+    offending character position - however no line is identified.
+
+    This scenario will now return a `mako.exceptions.RuntimeException` which
+    includes the exact line as debug information, alongside the original
+    exception.
