@@ -166,7 +166,24 @@ class FastEncodingBuffer(object):
                 self.encoding, self.errors
             )
         else:
-            return self.delim.join(self.data)
+            try:
+                return self.delim.join(self.data)
+            except:
+                # these exceptions are usually because of an encoding issue
+                # the standard exception is vague because it happens within a
+                # line but does not show the exact line.
+                try:
+                    for idx in range(0, len(self.data)):
+                        _content = self.delim.join(list(self.data)[0:idx+1])
+                    # this should never happen
+                    return _content
+                except Exception as exc:
+                    from mako import exceptions
+                    raise exceptions.RuntimeException(
+                        "Exception raised on template line %s:" % (idx),
+                        exc
+                    )
+                    raise
 
 
 class LRUCache(dict):

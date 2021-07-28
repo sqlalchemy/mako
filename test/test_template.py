@@ -569,9 +569,14 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
         template = self._file_template(
             "chs_utf8.html", output_encoding=None, disable_unicode=True
         )
-        self.assertRaises(
-            UnicodeDecodeError, template.render_unicode, name="毛泽东"
-        )
+
+        with self.assertRaises(exceptions.RuntimeException) as cm:
+           template.render_unicode(name="毛泽东")
+
+        the_exception = cm.exception
+        self.assertEqual(len(the_exception.args), 2)
+        self.assertEqual(the_exception.args[0], "Exception raised on template line 3:")
+        self.assertIsInstance(the_exception.args[1], UnicodeDecodeError)
 
         template = Template(
             "${'Alors vous imaginez ma surprise, au lever"
