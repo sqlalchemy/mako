@@ -108,8 +108,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
     def _expand_tuples(self, args):
         for arg in args:
             if isinstance(arg, _ast.Tuple):
-                for n in arg.elts:
-                    yield n
+                yield from arg.elts
             else:
                 yield arg
 
@@ -170,15 +169,15 @@ class FindIdentifiers(_ast_util.NodeVisitor):
         for name in node.names:
             if name.asname is not None:
                 self._add_declared(name.asname)
+            elif name.name == "*":
+                raise exceptions.CompileException(
+                    "'import *' is not supported, since all identifier "
+                    "names must be explicitly declared.  Please use the "
+                    "form 'from <modulename> import <name1>, <name2>, "
+                    "...' instead.",
+                    **self.exception_kwargs
+                )
             else:
-                if name.name == "*":
-                    raise exceptions.CompileException(
-                        "'import *' is not supported, since all identifier "
-                        "names must be explicitly declared.  Please use the "
-                        "form 'from <modulename> import <name1>, <name2>, "
-                        "...' instead.",
-                        **self.exception_kwargs
-                    )
                 self._add_declared(name.name)
 
 
@@ -225,10 +224,7 @@ class ParseFunc(_ast_util.NodeVisitor):
         self.listener.argnames = argnames
         self.listener.defaults = node.args.defaults  # ast
         self.listener.kwargnames = kwargnames
-        if compat.py2k:
-            self.listener.kwdefaults = []
-        else:
-            self.listener.kwdefaults = node.args.kw_defaults
+        self.listener.kwdefaults = [] if compat.py2k else node.args.kw_defaults
         self.listener.varargs = node.args.vararg
         self.listener.kwargs = node.args.kwarg
 

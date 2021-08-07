@@ -267,7 +267,7 @@ class Template(object):
         preprocessor=None,
         lexer_cls=None,
         include_error_handler=None,
-    ):
+    ):  # sourcery no-metrics
         if uri:
             self.module_id = re.sub(r"\W", "_", uri)
             self.uri = uri
@@ -387,11 +387,7 @@ class Template(object):
     ):
         self.cache_impl = cache_impl
         self.cache_enabled = cache_enabled
-        if cache_args:
-            self.cache_args = cache_args
-        else:
-            self.cache_args = {}
-
+        self.cache_args = cache_args or {}
         # transfer deprecated cache_* args
         if cache_type:
             self.cache_args["type"] = cache_type
@@ -658,9 +654,10 @@ class ModuleInfo(object):
             r"__M_BEGIN_METADATA(.+?)__M_END_METADATA", module_source, re.S
         ).group(1)
         source_map = json.loads(source_map)
-        source_map["line_map"] = dict(
-            (int(k), int(v)) for k, v in source_map["line_map"].items()
-        )
+        source_map["line_map"] = {
+            int(k): int(v) for k, v in source_map["line_map"].items()
+        }
+
         if full_line_map:
             f_line_map = source_map["full_line_map"] = []
             line_map = source_map["line_map"]
@@ -681,21 +678,21 @@ class ModuleInfo(object):
 
     @property
     def source(self):
-        if self.template_source is not None:
-            if self.module._source_encoding and not isinstance(
-                self.template_source, compat.text_type
-            ):
-                return self.template_source.decode(
-                    self.module._source_encoding
-                )
-            else:
-                return self.template_source
-        else:
+        if self.template_source is None:
             data = util.read_file(self.template_filename)
             if self.module._source_encoding:
                 return data.decode(self.module._source_encoding)
             else:
                 return data
+
+        elif self.module._source_encoding and not isinstance(
+                self.template_source, compat.text_type
+            ):
+            return self.template_source.decode(
+                self.module._source_encoding
+            )
+        else:
+            return self.template_source
 
 
 def _compile(template, text, filename, generate_magic_comment):

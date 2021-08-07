@@ -30,18 +30,17 @@ class PluginLoader(object):
     def load(self, name):
         if name in self.impls:
             return self.impls[name]()
+        import pkg_resources
+
+        for impl in pkg_resources.iter_entry_points(self.group, name):
+            self.impls[name] = impl.load
+            return impl.load()
         else:
-            import pkg_resources
+            from mako import exceptions
 
-            for impl in pkg_resources.iter_entry_points(self.group, name):
-                self.impls[name] = impl.load
-                return impl.load()
-            else:
-                from mako import exceptions
-
-                raise exceptions.RuntimeException(
-                    "Can't load plugin %s %s" % (self.group, name)
-                )
+            raise exceptions.RuntimeException(
+                "Can't load plugin %s %s" % (self.group, name)
+            )
 
     def register(self, name, modulepath, objname):
         def load():
@@ -148,10 +147,7 @@ class FastEncodingBuffer(object):
     def __init__(self, encoding=None, errors="strict", as_unicode=False):
         self.data = collections.deque()
         self.encoding = encoding
-        if as_unicode:
-            self.delim = compat.u("")
-        else:
-            self.delim = ""
+        self.delim = compat.u("") if as_unicode else ""
         self.as_unicode = as_unicode
         self.errors = errors
         self.write = self.data.append
@@ -203,9 +199,8 @@ class LRUCache(dict):
     def setdefault(self, key, value):
         if key in self:
             return self[key]
-        else:
-            self[key] = value
-            return value
+        self[key] = value
+        return value
 
     def __setitem__(self, key, value):
         item = dict.get(self, key)
@@ -295,7 +290,7 @@ def sorted_dict_repr(d):
     """
     keys = list(d.keys())
     keys.sort()
-    return "{" + ", ".join(["%r: %r" % (k, d[k]) for k in keys]) + "}"
+    return "{" + ", ".join("%r: %r" % (k, d[k]) for k in keys) + "}"
 
 
 def restore__ast(_ast):
@@ -382,8 +377,7 @@ mako in baz not in mako""",
 def read_file(path, mode="rb"):
     fp = open(path, mode)
     try:
-        data = fp.read()
-        return data
+        return fp.read()
     finally:
         fp.close()
 

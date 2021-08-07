@@ -96,18 +96,20 @@ class PythonPrinter(object):
         is_comment = line and len(line) and line[0] == "#"
 
         # see if this line should decrease the indentation level
-        if not is_comment and (not hastext or self._is_unindentor(line)):
-
-            if self.indent > 0:
-                self.indent -= 1
-                # if the indent_detail stack is empty, the user
-                # probably put extra closures - the resulting
-                # module wont compile.
-                if len(self.indent_detail) == 0:
-                    raise exceptions.SyntaxException(
-                        "Too many whitespace closures"
-                    )
-                self.indent_detail.pop()
+        if (
+            not is_comment
+            and (not hastext or self._is_unindentor(line))
+            and self.indent > 0
+        ):
+            self.indent -= 1
+            # if the indent_detail stack is empty, the user
+            # probably put extra closures - the resulting
+            # module wont compile.
+            if len(self.indent_detail) == 0:
+                raise exceptions.SyntaxException(
+                    "Too many whitespace closures"
+                )
+            self.indent_detail.pop()
 
         if line is None:
             return
@@ -167,13 +169,7 @@ class PythonPrinter(object):
         # if the current line doesnt have one of the "unindentor" keywords,
         # return False
         match = re.match(r"^\s*(else|elif|except|finally).*\:", line)
-        if not match:
-            return False
-
-        # whitespace matches up, we have a compound indentor,
-        # and this line has an unindentor, this
-        # is probably good enough
-        return True
+        return bool(match)
 
         # should we decide that its not good enough, heres
         # more stuff to check.
@@ -218,11 +214,7 @@ class PythonPrinter(object):
 
         current_state = self.backslashed or self.triplequoted
 
-        if re.search(r"\\$", line):
-            self.backslashed = True
-        else:
-            self.backslashed = False
-
+        self.backslashed = bool(re.search(r"\\$", line))
         triples = len(re.findall(r"\"\"\"|\'\'\'", line))
         if triples == 1 or triples % 2 != 0:
             self.triplequoted = not self.triplequoted

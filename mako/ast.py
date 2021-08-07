@@ -97,7 +97,7 @@ class PythonFragment(PythonCode):
             code = code + "pass"
         elif keyword == "try":
             code = code + "pass\nexcept:pass"
-        elif keyword == "elif" or keyword == "else":
+        elif keyword in ["elif", "else"]:
             code = "if False:pass\n" + code + "pass"
         elif keyword == "except":
             code = "try:pass\n" + code + "pass"

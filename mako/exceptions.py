@@ -172,15 +172,11 @@ class RichTraceback(object):
                     # A normal .py file (not a Template)
                     if not compat.py3k:
                         try:
-                            fp = open(filename, "rb")
-                            encoding = util.parse_encoding(fp)
-                            fp.close()
+                            with open(filename, "rb") as fp:
+                                encoding = util.parse_encoding(fp)
                         except IOError:
                             encoding = None
-                        if encoding:
-                            line = line.decode(encoding)
-                        else:
-                            line = line.decode("ascii", "replace")
+                        line = line.decode(encoding) if encoding else line.decode("ascii", "replace")
                     new_trcback.append(
                         (
                             filename,
@@ -235,14 +231,12 @@ class RichTraceback(object):
             else:
                 if new_trcback:
                     try:
-                        # A normal .py file (not a Template)
-                        fp = open(new_trcback[-1][0], "rb")
-                        encoding = util.parse_encoding(fp)
-                        if compat.py3k and not encoding:
-                            encoding = "utf-8"
-                        fp.seek(0)
-                        self.source = fp.read()
-                        fp.close()
+                        with open(new_trcback[-1][0], "rb") as fp:
+                            encoding = util.parse_encoding(fp)
+                            if compat.py3k and not encoding:
+                                encoding = "utf-8"
+                            fp.seek(0)
+                            self.source = fp.read()
                         if encoding:
                             self.source = self.source.decode(encoding)
                     except IOError:

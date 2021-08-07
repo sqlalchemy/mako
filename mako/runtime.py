@@ -482,15 +482,14 @@ class Namespace(object):
         key = (self, uri)
         if key in self.context.namespaces:
             return self.context.namespaces[key]
-        else:
-            ns = TemplateNamespace(
-                uri,
-                self.context._copy(),
-                templateuri=uri,
-                calling_uri=self._templateuri,
-            )
-            self.context.namespaces[key] = ns
-            return ns
+        ns = TemplateNamespace(
+            uri,
+            self.context._copy(),
+            templateuri=uri,
+            calling_uri=self._templateuri,
+        )
+        self.context.namespaces[key] = ns
+        return ns
 
     def get_template(self, uri):
         """Return a :class:`.Template` from the given ``uri``.
