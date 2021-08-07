@@ -267,7 +267,7 @@ class Template(object):
         preprocessor=None,
         lexer_cls=None,
         include_error_handler=None,
-    ):  # sourcery no-metrics
+    ):
         if uri:
             self.module_id = re.sub(r"\W", "_", uri)
             self.uri = uri
@@ -686,8 +686,8 @@ class ModuleInfo(object):
                 return data
 
         elif self.module._source_encoding and not isinstance(
-                self.template_source, compat.text_type
-            ):
+            self.template_source, compat.text_type
+        ):
             return self.template_source.decode(
                 self.module._source_encoding
             )
