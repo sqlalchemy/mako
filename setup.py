@@ -6,14 +6,12 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
-v = open(os.path.join(os.path.dirname(__file__), "mako", "__init__.py"))
-VERSION = (
-    re.compile(r".*__version__ = [\"'](.*?)[\"']", re.S)
-    .match(v.read())
-    .group(1)
-)
-v.close()
-
+with open(os.path.join(os.path.dirname(__file__), "mako", "__init__.py")) as v:
+    VERSION = (
+        re.compile(r".*__version__ = [\"'](.*?)[\"']", re.S)
+        .match(v.read())
+        .group(1)
+    )
 readme = os.path.join(os.path.dirname(__file__), "README.rst")
 
 install_requires = ["MarkupSafe>=0.9.2"]
