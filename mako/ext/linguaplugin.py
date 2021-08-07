@@ -31,8 +31,7 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
         else:
             must_close = False
         try:
-            for message in self.process_file(fileobj):
-                yield message
+            yield from self.process_file(fileobj)
         finally:
             if must_close:
                 fileobj.close()
