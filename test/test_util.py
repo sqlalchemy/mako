@@ -43,14 +43,14 @@ class UtilTest(unittest.TestCase):
 
     @skip_if(lambda: compat.pypy, "Pypy does this differently")
     def test_load_module(self):
-        fn = os.path.join(os.path.dirname(__file__), "test_util.py")
-        sys.modules.pop("mako.template")
-        module = compat.load_module("mako.template", fn)
-        self.assertNotIn("mako.template", sys.modules)
-        self.assertIn("UtilTest", dir(module))
-        import mako.template
+        path = os.path.join(os.path.dirname(__file__), "module_to_import.py")
+        some_module = compat.load_module("test.module_to_import", path)
 
-        self.assertNotEqual(module, mako.template)
+        self.assertNotIn("test.module_to_import", sys.modules)
+        self.assertIn("some_function", dir(some_module))
+        import test.module_to_import
+
+        self.assertNotEqual(some_module, test.module_to_import)
 
     def test_load_plugin_failure(self):
         loader = util.PluginLoader("fakegroup")
