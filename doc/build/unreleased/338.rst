@@ -1,8 +1,0 @@
-.. change::
-    :tags: bug, tests
-    :tickets: 338
-
-    Fixed some issues with running the test suite which would be revealed by
-    running tests in random order.
-
-
