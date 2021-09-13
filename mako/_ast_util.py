@@ -104,7 +104,7 @@ def iter_fields(node):
             pass
 
 
-class NodeVisitor(object):
+class NodeVisitor:
 
     """
     Walks the abstract syntax tree and call visitor functions for every node

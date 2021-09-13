@@ -11,7 +11,7 @@ import re
 from mako import exceptions
 
 
-class PythonPrinter(object):
+class PythonPrinter:
     def __init__(self, stream):
         # indentation counter
         self.indent = 0

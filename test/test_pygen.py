@@ -1,6 +1,6 @@
+from io import StringIO
 import unittest
 
-from mako.compat import StringIO
 from mako.pygen import adjust_whitespace
 from mako.pygen import PythonPrinter
 from test import eq_

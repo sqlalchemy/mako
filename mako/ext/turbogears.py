@@ -9,7 +9,7 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 
 
-class TGPlugin(object):
+class TGPlugin:
 
     """TurboGears compatible Template Plugin."""
 
@@ -51,7 +51,7 @@ class TGPlugin(object):
     def render(
         self, info, format="html", fragment=False, template=None  # noqa
     ):
-        if isinstance(template, compat.string_types):
+        if isinstance(template, str):
             template = self.load_template(template)
 
         # Load extra vars func if provided

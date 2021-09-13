@@ -62,16 +62,7 @@ the storage format for strings.
 
 The "pass through encoded data" scheme is what template
 languages like Cheetah and earlier versions of Myghty do by
-default. Mako as of version 0.2 also supports this mode of
-operation when using Python 2, using the ``disable_unicode=True``
-flag. However, when using Mako in its default mode of
-unicode-aware, it requires explicitness when dealing with
-non-ASCII encodings. Additionally, if you ever need to handle
-unicode strings and other kinds of encoding conversions more
-intelligently, the usage of raw byte-strings quickly becomes a
-nightmare, since you are sending the Python interpreter
-collections of bytes for which it can make no intelligent
-decisions with regards to encoding. In Python 3 Mako only allows
+default. In Python 3 Mako only allows 
 usage of native, unicode strings.
 
 In normal Mako operation, all parsed template constructs and
@@ -255,82 +246,5 @@ which cannot handle encoding of non-ASCII ``unicode`` objects
 buffering. Otherwise, a custom Mako class called
 ``FastEncodingBuffer`` is used, which essentially is a super
 dumbed-down version of ``StringIO`` that gathers all strings into
-a list and uses ``u''.join(elements)`` to produce the final output
+a list and uses ``''.join(elements)`` to produce the final output
 -- it's markedly faster than ``StringIO``.
-
-.. _unicode_disabled:
-
-Saying to Heck with It: Disabling the Usage of Unicode Entirely
-===============================================================
-
-Some segments of Mako's userbase choose to make no usage of
-Unicode whatsoever, and instead would prefer the "pass through"
-approach; all string expressions in their templates return
-encoded byte-strings, and they would like these strings to pass
-right through. The only advantage to this approach is that
-templates need not use ``u""`` for literal strings; there's an
-arguable speed improvement as well since raw byte-strings
-generally perform slightly faster than unicode objects in
-Python. For these users, assuming they're sticking with Python
-2, they can hit the ``disable_unicode=True`` flag as so:
-
-.. sourcecode:: python
-
-    # -*- coding:utf-8 -*-
-    from mako.template import Template
-
-    t = Template("drôle de petite voix m’a réveillé.", disable_unicode=True, input_encoding='utf-8')
-    print(t.code)
-
-The ``disable_unicode`` mode is strictly a Python 2 thing. It is
-not supported at all in Python 3.
-
-The generated module source code will contain elements like
-these:
-
-.. sourcecode:: python
-
-    # -*- coding:utf-8 -*-
-    #  ...more generated code ...
-
-    def render_body(context,**pageargs):
-        context.caller_stack.push_frame()
-        try:
-            __M_locals = dict(pageargs=pageargs)
-            # SOURCE LINE 1
-            context.write('dr\xc3\xb4le de petite voix m\xe2\x80\x99a r\xc3\xa9veill\xc3\xa9.')
-            return ''
-        finally:
-            context.caller_stack.pop_frame()
-
-Where above that the string literal used within :meth:`.Context.write`
-is a regular byte-string.
-
-When ``disable_unicode=True`` is turned on, the ``default_filters``
-argument which normally defaults to ``["unicode"]`` now defaults
-to ``["str"]`` instead. Setting ``default_filters`` to the empty list
-``[]`` can remove the overhead of the ``str`` call. Also, in this
-mode you **cannot** safely call :meth:`~.Template.render_unicode` -- you'll get
-unicode/decode errors.
-
-The ``h`` filter (HTML escape) uses a less performant pure Python
-escape function in non-unicode mode. This because
-MarkupSafe only supports Python unicode objects for non-ASCII
-strings.
-
-.. versionchanged:: 0.3.4
-   In prior versions, it used ``cgi.escape()``, which has been replaced
-   with a function that also escapes single quotes.
-
-Rules for using ``disable_unicode=True``
-----------------------------------------
-
-* Don't use this mode unless you really, really want to and you
-  absolutely understand what you're doing.
-* Don't use this option just because you don't want to learn to
-  use Unicode properly; we aren't supporting user issues in this
-  mode of operation. We will however offer generous help for the
-  vast majority of users who stick to the Unicode program.
-* Python 3 is unicode by default, and the flag is not available
-  when running on Python 3.
-

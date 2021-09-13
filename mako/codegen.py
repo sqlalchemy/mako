@@ -39,20 +39,12 @@ def compile(  # noqa
     future_imports=None,
     source_encoding=None,
     generate_magic_comment=True,
-    disable_unicode=False,
     strict_undefined=False,
     enable_loop=True,
     reserved_names=frozenset(),
 ):
     """Generate module source code given a parsetree node,
       uri, and optional source filename"""
-
-    # if on Py2K, push the "source_encoding" string to be
-    # a bytestring itself, as we will be embedding it into
-    # the generated source and we don't want to coerce the
-    # result into a unicode object, in "disable_unicode" mode
-    if not compat.py3k and isinstance(source_encoding, compat.text_type):
-        source_encoding = source_encoding.encode(source_encoding)
 
     buf = util.FastEncodingBuffer()
 
@@ -68,7 +60,6 @@ def compile(  # noqa
             future_imports,
             source_encoding,
             generate_magic_comment,
-            disable_unicode,
             strict_undefined,
             enable_loop,
             reserved_names,
@@ -78,7 +69,7 @@ def compile(  # noqa
     return buf.getvalue()
 
 
-class _CompileContext(object):
+class _CompileContext:
     def __init__(
         self,
         uri,
@@ -89,7 +80,6 @@ class _CompileContext(object):
         future_imports,
         source_encoding,
         generate_magic_comment,
-        disable_unicode,
         strict_undefined,
         enable_loop,
         reserved_names,
@@ -102,13 +92,12 @@ class _CompileContext(object):
         self.future_imports = future_imports
         self.source_encoding = source_encoding
         self.generate_magic_comment = generate_magic_comment
-        self.disable_unicode = disable_unicode
         self.strict_undefined = strict_undefined
         self.enable_loop = enable_loop
         self.reserved_names = reserved_names
 
 
-class _GenerateRenderMethod(object):
+class _GenerateRenderMethod:
 
     """A template visitor object which generates the
        full module source for a template.
@@ -196,7 +185,7 @@ class _GenerateRenderMethod(object):
 
         self.compiler.pagetag = None
 
-        class FindTopLevel(object):
+        class FindTopLevel:
             def visitInheritTag(s, node):
                 inherit.append(node)
 
@@ -392,7 +381,7 @@ class _GenerateRenderMethod(object):
                 identifiers = self.compiler.identifiers.branch(node)
                 self.in_def = True
 
-                class NSDefVisitor(object):
+                class NSDefVisitor:
                     def visitDefTag(s, node):
                         s.visitDefOrBase(node)
 
@@ -794,8 +783,6 @@ class _GenerateRenderMethod(object):
         def locate_encode(name):
             if re.match(r"decode\..+", name):
                 return "filters." + name
-            elif self.compiler.disable_unicode:
-                return filters.NON_UNICODE_ESCAPES.get(name, name)
             else:
                 return filters.DEFAULT_ESCAPES.get(name, name)
 
@@ -969,7 +956,7 @@ class _GenerateRenderMethod(object):
 
         self.identifier_stack.append(body_identifiers)
 
-        class DefVisitor(object):
+        class DefVisitor:
             def visitDefTag(s, node):
                 s.visitDefOrBase(node)
 
@@ -1025,7 +1012,7 @@ class _GenerateRenderMethod(object):
         )
 
 
-class _Identifiers(object):
+class _Identifiers:
 
     """tracks the status of identifier names as template code is rendered."""
 
@@ -1293,7 +1280,7 @@ def mangle_mako_loop(node, printer):
     return text
 
 
-class LoopVariable(object):
+class LoopVariable:
 
     """A node visitor which looks for the name 'loop' within undeclared
     identifiers."""

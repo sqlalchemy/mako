@@ -9,7 +9,6 @@
 import codecs
 import re
 
-from mako import compat
 from mako import exceptions
 from mako import parsetree
 from mako.pygen import adjust_whitespace
@@ -17,12 +16,11 @@ from mako.pygen import adjust_whitespace
 _regexp_cache = {}
 
 
-class Lexer(object):
+class Lexer:
     def __init__(
         self,
         text,
         filename=None,
-        disable_unicode=False,
         input_encoding=None,
         preprocessor=None,
     ):
@@ -36,13 +34,7 @@ class Lexer(object):
         self.tag = []
         self.control_line = []
         self.ternary_stack = []
-        self.disable_unicode = disable_unicode
         self.encoding = input_encoding
-
-        if compat.py3k and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "Mako for Python 3 does not " "support disabling Unicode"
-            )
 
         if preprocessor is None:
             self.preprocessor = []
@@ -199,7 +191,7 @@ class Lexer(object):
            or raw if decode_raw=False
 
         """
-        if isinstance(text, compat.text_type):
+        if isinstance(text, str):
             m = self._coding_re.match(text)
             encoding = m and m.group(1) or known_encoding or "utf-8"
             return encoding, text
@@ -241,7 +233,7 @@ class Lexer(object):
 
     def parse(self):
         self.encoding, self.text = self.decode_raw_stream(
-            self.text, not self.disable_unicode, self.encoding, self.filename
+            self.text, True, self.encoding, self.filename
         )
 
         for preproc in self.preprocessor:

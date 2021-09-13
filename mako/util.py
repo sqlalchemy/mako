@@ -3,8 +3,6 @@
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
-from __future__ import absolute_import
-
 from ast import parse
 import codecs
 import collections
@@ -22,7 +20,7 @@ def update_wrapper(decorated, fn):
     return decorated
 
 
-class PluginLoader(object):
+class PluginLoader:
     def __init__(self, group):
         self.group = group
         self.impls = {}
@@ -76,7 +74,7 @@ def to_list(x, default=None):
         return x
 
 
-class memoized_property(object):
+class memoized_property:
 
     """A read-only @property that is only evaluated once."""
 
@@ -92,7 +90,7 @@ class memoized_property(object):
         return result
 
 
-class memoized_instancemethod(object):
+class memoized_instancemethod:
 
     """Decorate a method memoize its return value.
 
@@ -140,19 +138,15 @@ class SetLikeDict(dict):
         return x
 
 
-class FastEncodingBuffer(object):
+class FastEncodingBuffer:
 
     """a very rudimentary buffer that is faster than StringIO,
-    but doesn't crash on unicode data like cStringIO."""
+    and supports unicode data."""
 
-    def __init__(self, encoding=None, errors="strict", as_unicode=False):
+    def __init__(self, encoding=None, errors="strict"):
         self.data = collections.deque()
         self.encoding = encoding
-        if as_unicode:
-            self.delim = compat.u("")
-        else:
-            self.delim = ""
-        self.as_unicode = as_unicode
+        self.delim = ""
         self.errors = errors
         self.write = self.data.append
 
@@ -179,7 +173,7 @@ class LRUCache(dict):
     is inexact.
     """
 
-    class _Item(object):
+    class _Item:
         def __init__(self, key, value):
             self.key = key
             self.value = value
@@ -308,7 +302,7 @@ def restore__ast(_ast):
     m = compile(
         """\
 def foo(): pass
-class Bar(object): pass
+class Bar: pass
 if False: pass
 baz = 'mako'
 1 + 2 - 3 * 4 / 5

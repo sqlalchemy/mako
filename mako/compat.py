@@ -5,13 +5,10 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import collections
+from importlib import util
 import inspect
 import sys
 
-py3k = sys.version_info >= (3, 0)
-py2k = sys.version_info < (3,)
-py27 = sys.version_info >= (2, 7)
-jython = sys.platform.startswith("java")
 win32 = sys.platform.startswith("win")
 pypy = hasattr(sys, "pypy_version_info")
 
@@ -34,7 +31,7 @@ def inspect_getargspec(func):
 
     nargs = co.co_argcount
     names = co.co_varnames
-    nkwargs = co.co_kwonlyargcount if py3k else 0
+    nkwargs = co.co_kwonlyargcount
     args = list(names[:nargs])
 
     nargs += nkwargs
@@ -49,99 +46,23 @@ def inspect_getargspec(func):
     return ArgSpec(args, varargs, varkw, func.__defaults__)
 
 
-if py3k:
-    from io import StringIO
-    import builtins as compat_builtins
-    from urllib.parse import quote_plus, unquote_plus
-    from html.entities import codepoint2name, name2codepoint
-
-    string_types = (str,)
-    binary_type = bytes
-    text_type = str
-
-    from io import BytesIO as byte_buffer
-
-    def u(s):
-        return s
-
-    def b(s):
-        return s.encode("latin-1")
-
-    def octal(lit):
-        return eval("0o" + lit)
+def octal(lit):
+    return eval("0o" + lit)
 
 
-else:
-    import __builtin__ as compat_builtins  # noqa
-
-    try:
-        from cStringIO import StringIO
-    except:
-        from StringIO import StringIO
-
-    byte_buffer = StringIO
-
-    from urllib import quote_plus, unquote_plus  # noqa
-    from htmlentitydefs import codepoint2name, name2codepoint  # noqa
-
-    string_types = (basestring,)  # noqa
-    binary_type = str
-    text_type = unicode  # noqa
-
-    def u(s):
-        return unicode(s, "utf-8")  # noqa
-
-    def b(s):
-        return s
-
-    def octal(lit):
-        return eval("0" + lit)
+def load_module(module_id, path):
+    spec = util.spec_from_file_location(module_id, path)
+    module = util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-if py3k:
-    from importlib import machinery, util
-
-    if hasattr(util, 'module_from_spec'):
-        # Python 3.5+
-        def load_module(module_id, path):
-            spec = util.spec_from_file_location(module_id, path)
-            module = util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    else:
-        def load_module(module_id, path):
-            module = machinery.SourceFileLoader(module_id, path).load_module()
-            del sys.modules[module_id]
-            return module
-
-else:
-    import imp
-
-    def load_module(module_id, path):
-        fp = open(path, "rb")
-        try:
-            module = imp.load_source(module_id, path, fp)
-            del sys.modules[module_id]
-            return module
-        finally:
-            fp.close()
-
-
-if py3k:
-
-    def reraise(tp, value, tb=None, cause=None):
-        if cause is not None:
-            value.__cause__ = cause
-        if value.__traceback__ is not tb:
-            raise value.with_traceback(tb)
-        raise value
-
-
-else:
-    exec(
-        "def reraise(tp, value, tb=None, cause=None):\n"
-        "    raise tp, value, tb\n"
-    )
+def reraise(tp, value, tb=None, cause=None):
+    if cause is not None:
+        value.__cause__ = cause
+    if value.__traceback__ is not tb:
+        raise value.with_traceback(tb)
+    raise value
 
 
 def exception_as():

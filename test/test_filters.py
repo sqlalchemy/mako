@@ -2,11 +2,8 @@
 
 import unittest
 
-from mako import compat
-from mako.compat import u
 from mako.template import Template
 from test import eq_
-from test import requires_python_2
 from test import TemplateTest
 from test.util import flatten_result
 from test.util import result_lines
@@ -88,36 +85,6 @@ class FilterTest(TemplateTest):
             "foo &lt;'some bar'&gt;",
         )
 
-    @requires_python_2
-    def test_quoting_non_unicode(self):
-        t = Template(
-            """
-            foo ${bar | h}
-        """,
-            disable_unicode=True,
-            output_encoding=None,
-        )
-
-        eq_(
-            flatten_result(t.render(bar="<'привет'>")),
-            "foo &lt;&#39;привет&#39;&gt;",
-        )
-
-    @requires_python_2
-    def test_url_escaping_non_unicode(self):
-        t = Template(
-            """
-            http://example.com/?bar=${bar | u}&v=1
-        """,
-            disable_unicode=True,
-            output_encoding=None,
-        )
-
-        eq_(
-            flatten_result(t.render(bar="酒吧bar")),
-            "http://example.com/?bar=%E9%85%92%E5%90%A7bar&v=1",
-        )
-
     def test_def(self):
         t = Template(
             """
@@ -176,8 +143,8 @@ class FilterTest(TemplateTest):
             default_filters=["decode.utf8"],
         )
         eq_(
-            t.render_unicode(x=u("voix m’a réveillé")).strip(),
-            u("some stuff.... voix m’a réveillé"),
+            t.render_unicode(x="voix m’a réveillé").strip(),
+            "some stuff.... voix m’a réveillé",
         )
 
     def test_encode_filter_non_str(self):
@@ -187,21 +154,7 @@ class FilterTest(TemplateTest):
         """,
             default_filters=["decode.utf8"],
         )
-        eq_(t.render_unicode(x=3).strip(), u("some stuff.... 3"))
-
-    @requires_python_2
-    def test_encode_filter_non_str_we_return_bytes(self):
-        class Foo(object):
-            def __str__(self):
-                return compat.b("å")
-
-        t = Template(
-            """# coding: utf-8
-            some stuff.... ${x}
-        """,
-            default_filters=["decode.utf8"],
-        )
-        eq_(t.render_unicode(x=Foo()).strip(), u("some stuff.... å"))
+        eq_(t.render_unicode(x=3).strip(), "some stuff.... 3")
 
     def test_custom_default(self):
         t = Template(
@@ -347,7 +300,7 @@ data = {a: ${123}, b: ${"123"}};
         t = Template(
             """
         <%!
-            class Foo(object):
+            class Foo:
                 foo = True
                 def __str__(self):
                     return "this is a"

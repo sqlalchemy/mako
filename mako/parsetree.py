@@ -15,7 +15,7 @@ from mako import filters
 from mako import util
 
 
-class Node(object):
+class Node:
 
     """base class for a Node in the parse tree."""
 

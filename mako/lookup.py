@@ -19,7 +19,7 @@ except:
     import dummy_threading as threading
 
 
-class TemplateCollection(object):
+class TemplateCollection:
 
     """Represent a collection of :class:`.Template` objects,
     identifiable via URI.
@@ -161,7 +161,6 @@ class TemplateLookup(TemplateCollection):
         collection_size=-1,
         format_exceptions=False,
         error_handler=None,
-        disable_unicode=False,
         bytestring_passthrough=False,
         output_encoding=None,
         encoding_errors="strict",
@@ -207,7 +206,6 @@ class TemplateLookup(TemplateCollection):
             "format_exceptions": format_exceptions,
             "error_handler": error_handler,
             "include_error_handler": include_error_handler,
-            "disable_unicode": disable_unicode,
             "bytestring_passthrough": bytestring_passthrough,
             "output_encoding": output_encoding,
             "cache_impl": cache_impl,

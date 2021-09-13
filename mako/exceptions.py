@@ -68,7 +68,7 @@ class TopLevelLookupException(TemplateLookupException):
     pass
 
 
-class RichTraceback(object):
+class RichTraceback:
 
     """Pull the current exception from the ``sys`` traceback and extracts
     Mako-specific template information.
@@ -106,7 +106,7 @@ class RichTraceback(object):
     def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
-            self.message = compat.text_type(self.error)
+            self.message = str(self.error)
         except UnicodeError:
             try:
                 self.message = str(self.error)
@@ -114,8 +114,8 @@ class RichTraceback(object):
                 # Fallback to args as neither unicode nor
                 # str(Exception(u'\xe6')) work in Python < 2.6
                 self.message = self.error.args[0]
-        if not isinstance(self.message, compat.text_type):
-            self.message = compat.text_type(self.message, "ascii", "replace")
+        if not isinstance(self.message, str):
+            self.message = str(self.message, "ascii", "replace")
 
     def _get_reformatted_records(self, records):
         for rec in records:
@@ -170,17 +170,6 @@ class RichTraceback(object):
                     )
                 except KeyError:
                     # A normal .py file (not a Template)
-                    if not compat.py3k:
-                        try:
-                            fp = open(filename, "rb")
-                            encoding = util.parse_encoding(fp)
-                            fp.close()
-                        except IOError:
-                            encoding = None
-                        if encoding:
-                            line = line.decode(encoding)
-                        else:
-                            line = line.decode("ascii", "replace")
                     new_trcback.append(
                         (
                             filename,
@@ -238,7 +227,7 @@ class RichTraceback(object):
                         # A normal .py file (not a Template)
                         fp = open(new_trcback[-1][0], "rb")
                         encoding = util.parse_encoding(fp)
-                        if compat.py3k and not encoding:
+                        if not encoding:
                             encoding = "utf-8"
                         fp.seek(0)
                         self.source = fp.read()

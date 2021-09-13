@@ -13,3 +13,4 @@
 /man
 .tox/
 .cache/
+.vscode

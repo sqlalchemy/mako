@@ -9,12 +9,11 @@ code, as well as generating Python from AST nodes"""
 
 import re
 
-from mako import compat
 from mako import exceptions
 from mako import pyparser
 
 
-class PythonCode(object):
+class PythonCode:
 
     """represents information about a string containing Python code"""
 
@@ -39,7 +38,7 @@ class PythonCode(object):
         # - AST is less likely to break with version changes
         # (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
-        if isinstance(code, compat.string_types):
+        if isinstance(code, str):
             expr = pyparser.parse(code.lstrip(), "exec", **exception_kwargs)
         else:
             expr = code
@@ -48,7 +47,7 @@ class PythonCode(object):
         f.visit(expr)
 
 
-class ArgumentList(object):
+class ArgumentList:
 
     """parses a fragment of code as a comma-separated list of expressions"""
 
@@ -57,7 +56,7 @@ class ArgumentList(object):
         self.args = []
         self.declared_identifiers = set()
         self.undeclared_identifiers = set()
-        if isinstance(code, compat.string_types):
+        if isinstance(code, str):
             if re.match(r"\S", code) and not re.match(r",\s*$", code):
                 # if theres text and no trailing comma, insure its parsed
                 # as a tuple by adding a trailing comma
@@ -111,7 +110,7 @@ class PythonFragment(PythonCode):
         super(PythonFragment, self).__init__(code, **exception_kwargs)
 
 
-class FunctionDecl(object):
+class FunctionDecl:
 
     """function declaration"""
 

@@ -25,12 +25,11 @@ def repr_arg(x):
 
 
 def _as_unicode(arg):
-    if isinstance(arg, compat.string_types):
-        return compat.text_type(arg)
-    elif isinstance(arg, dict):
-        return dict((_as_unicode(k), _as_unicode(v)) for k, v in arg.items())
+    if isinstance(arg, dict):
+        return dict((k, _as_unicode(v)) for k, v in arg.items())
     else:
         return arg
+
 
 Node = None
 TemplateNode = None
@@ -59,7 +58,7 @@ for cls in list(parsetree.__dict__.values()):
         exec(
             (
                 """
-class %s(object):
+class %s:
     def __init__(self, *args):
         self.args = [_as_unicode(arg) for arg in args]
     def __repr__(self):
@@ -247,7 +246,7 @@ class LexerTest(TemplateTest):
                                 " % more code\n            "
                                 "<%illegal compionent>/></>\n"
                                 '            <%def name="laal()">def</%def>'
-                                '\n\n\n        ',
+                                "\n\n\n        ",
                                 (6, 16),
                             )
                         ],
@@ -515,10 +514,8 @@ class LexerTest(TemplateTest):
             ),
         )
 
-    if compat.py3k:
-
-        def test_code(self):
-            template = """text
+    def test_code(self):
+        template = """text
     <%
         print("hi")
         for x in range(1,5):
@@ -529,59 +526,25 @@ more text
         import foo
     %>
 """
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode(
-                    {},
-                    [
-                        Text("text\n    ", (1, 1)),
-                        Code(
-                            '\nprint("hi")\nfor x in range(1,5):\n    '
-                            "print(x)\n    \n",
-                            False,
-                            (2, 5),
-                        ),
-                        Text("\nmore text\n    ", (6, 7)),
-                        Code("\nimport foo\n    \n", True, (8, 5)),
-                        Text("\n", (10, 7)),
-                    ],
-                ),
-            )
-
-    else:
-
-        def test_code(self):
-            template = """text
-    <%
-        print "hi"
-        for x in range(1,5):
-            print x
-    %>
-more text
-    <%!
-        import foo
-    %>
-"""
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode(
-                    {},
-                    [
-                        Text("text\n    ", (1, 1)),
-                        Code(
-                            '\nprint "hi"\nfor x in range(1,5):\n    '
-                            "print x\n    \n",
-                            False,
-                            (2, 5),
-                        ),
-                        Text("\nmore text\n    ", (6, 7)),
-                        Code("\nimport foo\n    \n", True, (8, 5)),
-                        Text("\n", (10, 7)),
-                    ],
-                ),
-            )
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode(
+                {},
+                [
+                    Text("text\n    ", (1, 1)),
+                    Code(
+                        '\nprint("hi")\nfor x in range(1,5):\n    '
+                        "print(x)\n    \n",
+                        False,
+                        (2, 5),
+                    ),
+                    Text("\nmore text\n    ", (6, 7)),
+                    Code("\nimport foo\n    \n", True, (8, 5)),
+                    Text("\n", (10, 7)),
+                ],
+            ),
+        )
 
     def test_code_and_tags(self):
         template = """
@@ -741,20 +704,11 @@ more text
         )
 
     def test_tricky_code(self):
-        if compat.py3k:
-            template = """<% print('hi %>') %>"""
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode({}, [Code("print('hi %>') \n", False, (1, 1))]),
-            )
-        else:
-            template = """<% print 'hi %>' %>"""
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode({}, [Code("print 'hi %>' \n", False, (1, 1))]),
-            )
+        template = """<% print('hi %>') %>"""
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes, TemplateNode({}, [Code("print('hi %>') \n", False, (1, 1))])
+        )
 
     def test_tricky_code_2(self):
         template = """<%
@@ -780,77 +734,42 @@ more text
             ),
         )
 
-    if compat.py3k:
-
-        def test_tricky_code_3(self):
-            template = """<%
-            print('hi')
-            # this is a comment
-            # another comment
-            x = 7 # someone's '''comment
-            print('''
-        there
-        ''')
-            # someone else's comment
+    def test_tricky_code_3(self):
+        template = """<%
+        print('hi')
+        # this is a comment
+        # another comment
+        x = 7 # someone's '''comment
+        print('''
+    there
+    ''')
+        # someone else's comment
 %> '''and now some text '''"""
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode(
-                    {},
-                    [
-                        Code(
-                            """
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode(
+                {},
+                [
+                    Code(
+                        """
 print('hi')
 # this is a comment
 # another comment
 x = 7 # someone's '''comment
 print('''
-        there
-        ''')
+    there
+    ''')
 # someone else's comment
 
 """,
-                            False,
-                            (1, 1),
-                        ),
-                        Text(" '''and now some text '''", (10, 3)),
-                    ],
-                ),
-            )
-
-    else:
-
-        def test_tricky_code_3(self):
-            template = """<%
-            print 'hi'
-            # this is a comment
-            # another comment
-            x = 7 # someone's '''comment
-            print '''
-        there
-        '''
-            # someone else's comment
-%> '''and now some text '''"""
-            nodes = Lexer(template).parse()
-            self._compare(
-                nodes,
-                TemplateNode(
-                    {},
-                    [
-                        Code(
-                            """\nprint 'hi'\n# this is a comment\n"""
-                            """# another comment\nx = 7 """
-                            """# someone's '''comment\nprint '''\n        """
-                            """there\n        '''\n# someone else's """
-                            """comment\n\n""",
-                            False,
-                            (1, 1),
-                        ),
-                        Text(" '''and now some text '''", (10, 3)),
-                    ],
-                ),
-            )
+                        False,
+                        (1, 1),
+                    ),
+                    Text(" '''and now some text '''", (10, 3)),
+                ],
+            ),
+        )
 
     def test_tricky_code_4(self):
         template = """<% foo = "\\"\\\\" %>"""

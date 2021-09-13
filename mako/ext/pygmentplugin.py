@@ -25,8 +25,6 @@ from pygments.token import Other
 from pygments.token import String
 from pygments.token import Text
 
-from mako import compat
-
 
 class MakoLexer(RegexLexer):
     name = "Mako"
@@ -144,10 +142,7 @@ pygments_html_formatter = HtmlFormatter(
 
 def syntax_highlight(filename="", language=None):
     mako_lexer = MakoLexer()
-    if compat.py3k:
-        python_lexer = Python3Lexer()
-    else:
-        python_lexer = PythonLexer()
+    python_lexer = Python3Lexer()
     if filename.startswith("memory:") or language == "mako":
         return lambda string: highlight(
             string, mako_lexer, pygments_html_formatter

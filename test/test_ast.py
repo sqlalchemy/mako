@@ -1,12 +1,9 @@
 import unittest
 
 from mako import ast
-from mako import compat
 from mako import exceptions
 from mako import pyparser
 from test import eq_
-from test import requires_python_2
-from test import requires_python_3
 
 exception_kwargs = {"source": "", "lineno": 0, "pos": 0, "filename": ""}
 
@@ -132,7 +129,7 @@ import foo.bar
 
     def test_locate_identifiers_8(self):
         code = """
-class Hi(object):
+class Hi:
     foo = 7
     def hoho(self):
         x = 5
@@ -187,7 +184,7 @@ def foo():
     def test_locate_identifiers_13(self):
         code = """
 def foo():
-    class Bat(object):
+    class Bat:
         pass
     Bat
 """
@@ -198,7 +195,7 @@ def foo():
     def test_locate_identifiers_14(self):
         code = """
 def foo():
-    class Bat(object):
+    class Bat:
         pass
     Bat
 
@@ -207,18 +204,6 @@ print(Bat)
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.declared_identifiers, set(["foo"]))
         eq_(parsed.undeclared_identifiers, set(["Bat"]))
-
-    @requires_python_2
-    def test_locate_identifiers_15(self):
-        code = """
-def t1((x,y)):
-    return x+5, y+4
-
-t2 = lambda (x,y):(x+5, y+4)
-"""
-        parsed = ast.PythonCode(code, **exception_kwargs)
-        eq_(parsed.declared_identifiers, set(["t1", "t2"]))
-        eq_(parsed.undeclared_identifiers, set())
 
     def test_locate_identifiers_16(self):
         code = """
@@ -259,14 +244,9 @@ import x as bar
 
         parsed = ast.PythonFragment("try:", **exception_kwargs)
 
-        if compat.py3k:
-            parsed = ast.PythonFragment(
-                "except MyException as e:", **exception_kwargs
-            )
-        else:
-            parsed = ast.PythonFragment(
-                "except MyException, e:", **exception_kwargs
-            )
+        parsed = ast.PythonFragment(
+            "except MyException as e:", **exception_kwargs
+        )
         eq_(parsed.declared_identifiers, set(["e"]))
         eq_(parsed.undeclared_identifiers, set(["MyException"]))
 
@@ -299,7 +279,6 @@ import x as bar
         eq_(parsed.argnames, ["a", "b", "c", "args"])
         eq_(parsed.kwargnames, ["kwargs"])
 
-    @requires_python_3
     def test_function_decl_3(self):
         """test getting the arguments from a fancy py3k function"""
         code = "def foo(a, b, *c, d, e, **f):pass"
@@ -313,7 +292,7 @@ import x as bar
         x = 1
         y = 2
 
-        class F(object):
+        class F:
             def bar(self, a, b):
                 return a + b
 

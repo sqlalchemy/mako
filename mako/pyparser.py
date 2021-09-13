@@ -20,20 +20,12 @@ from mako import exceptions
 from mako import util
 from mako.compat import arg_stringname
 
-if compat.py3k:
-    # words that cannot be assigned to (notably
-    # smaller than the total keys in __builtins__)
-    reserved = set(["True", "False", "None", "print"])
+# words that cannot be assigned to (notably
+# smaller than the total keys in __builtins__)
+reserved = set(["True", "False", "None", "print"])
 
-    # the "id" attribute on a function node
-    arg_id = operator.attrgetter("arg")
-else:
-    # words that cannot be assigned to (notably
-    # smaller than the total keys in __builtins__)
-    reserved = set(["True", "False", "None"])
-
-    # the "id" attribute on a function node
-    arg_id = operator.attrgetter("id")
+# the "id" attribute on a function node
+arg_id = operator.attrgetter("arg")
 
 util.restore__ast(_ast)
 
@@ -85,18 +77,16 @@ class FindIdentifiers(_ast_util.NodeVisitor):
             self.visit(n)
         self.in_assign_targets = in_a
 
-    if compat.py3k:
+    # ExceptHandler is in Python 2, but this block only works in
+    # Python 3 (and is required there)
 
-        # ExceptHandler is in Python 2, but this block only works in
-        # Python 3 (and is required there)
-
-        def visit_ExceptHandler(self, node):
-            if node.name is not None:
-                self._add_declared(node.name)
-            if node.type is not None:
-                self.visit(node.type)
-            for statement in node.body:
-                self.visit(statement)
+    def visit_ExceptHandler(self, node):
+        if node.name is not None:
+            self._add_declared(node.name)
+        if node.type is not None:
+            self.visit(node.type)
+        for statement in node.body:
+            self.visit(statement)
 
     def visit_Lambda(self, node, *args):
         self._visit_function(node, True)
@@ -215,25 +205,18 @@ class ParseFunc(_ast_util.NodeVisitor):
         if node.args.vararg:
             argnames.append(arg_stringname(node.args.vararg))
 
-        if compat.py2k:
-            # kw-only args don't exist in Python 2
-            kwargnames = []
-        else:
-            kwargnames = [arg_id(arg) for arg in node.args.kwonlyargs]
+        kwargnames = [arg_id(arg) for arg in node.args.kwonlyargs]
         if node.args.kwarg:
             kwargnames.append(arg_stringname(node.args.kwarg))
         self.listener.argnames = argnames
         self.listener.defaults = node.args.defaults  # ast
         self.listener.kwargnames = kwargnames
-        if compat.py2k:
-            self.listener.kwdefaults = []
-        else:
-            self.listener.kwdefaults = node.args.kw_defaults
+        self.listener.kwdefaults = node.args.kw_defaults
         self.listener.varargs = node.args.vararg
         self.listener.kwargs = node.args.kwarg
 
 
-class ExpressionGenerator(object):
+class ExpressionGenerator:
     def __init__(self, astnode):
         self.generator = _ast_util.SourceGenerator(" " * 4)
         self.generator.visit(astnode)
