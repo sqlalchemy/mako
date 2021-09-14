@@ -231,6 +231,7 @@ class RichTraceback(object):
             else:
                 if new_trcback:
                     try:
+                        # A normal .py file (not a Template)
                         with open(new_trcback[-1][0], "rb") as fp:
                             encoding = util.parse_encoding(fp)
                             if compat.py3k and not encoding:
