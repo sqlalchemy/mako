@@ -169,6 +169,9 @@ class PythonPrinter(object):
         # if the current line doesnt have one of the "unindentor" keywords,
         # return False
         match = re.match(r"^\s*(else|elif|except|finally).*\:", line)
+        # whitespace matches up, we have a compound indentor,
+        # and this line has an unindentor, this
+        # is probably good enough
         return bool(match)
 
         # should we decide that its not good enough, heres
