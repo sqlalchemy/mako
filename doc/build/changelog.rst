@@ -7,8 +7,21 @@ Changelog
 ===
 
 .. changelog::
-    :version: 1.1.5
+    :version: 1.1.6
     :include_notes_from: unreleased
+
+.. changelog::
+    :version: 1.1.5
+    :released: Fri Aug 20 2021
+
+    .. change::
+        :tags: bug, tests
+        :tickets: 338
+
+        Fixed some issues with running the test suite which would be revealed by
+        running tests in random order.
+
+
 
 .. changelog::
     :version: 1.1.4
