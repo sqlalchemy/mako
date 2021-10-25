@@ -4,7 +4,6 @@ import unittest
 from mako import lookup
 from mako.cache import CacheImpl
 from mako.cache import register_plugin
-from mako.compat import py27
 from mako.ext import beaker_cache
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -17,7 +16,7 @@ if beaker_cache.has_beaker:
     import beaker
 
 
-class SimpleBackend(object):
+class SimpleBackend:
     def __init__(self):
         self.cache = {}
 
@@ -601,7 +600,7 @@ class CacheTest(TemplateTest):
         assert m.kwargs["context"].get("x") == "bar"
 
 
-class RealBackendTest(object):
+class RealBackendTest:
     def test_cache_uses_current_context(self):
         t = Template(
             """
@@ -650,8 +649,6 @@ class BeakerCacheTest(RealBackendTest, CacheTest):
     def setUp(self):
         if not beaker_cache.has_beaker:
             raise unittest.SkipTest("Beaker is required for these tests.")
-        if not py27:
-            raise unittest.SkipTest("newer beakers not working w/ py26")
 
     def _install_mock_cache(self, template, implname=None):
         template.cache_args["manager"] = self._regions()

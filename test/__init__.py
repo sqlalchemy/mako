@@ -2,11 +2,10 @@ import contextlib
 import os
 import re
 import unittest
+from unittest import mock  # noqa
 
-from mako import compat
 from mako.cache import CacheImpl
 from mako.cache import register_plugin
-from mako.compat import py3k
 from mako.template import Template
 from mako.util import update_wrapper
 
@@ -23,11 +22,9 @@ class TemplateTest(unittest.TestCase):
 
     def _file_path(self, filename):
         name, ext = os.path.splitext(filename)
-
-        if py3k:
-            py3k_path = os.path.join(template_base, name + "_py3k" + ext)
-            if os.path.exists(py3k_path):
-                return py3k_path
+        py3k_path = os.path.join(template_base, name + "_py3k" + ext)
+        if os.path.exists(py3k_path):
+            return py3k_path
 
         return os.path.join(template_base, filename)
 
@@ -38,7 +35,7 @@ class TemplateTest(unittest.TestCase):
         filters=None,
         unicode_=True,
         template_args=None,
-        **kw
+        **kw,
     ):
         t1 = self._file_template(filename, **kw)
         self._do_test(
@@ -56,7 +53,7 @@ class TemplateTest(unittest.TestCase):
         filters=None,
         unicode_=True,
         template_args=None,
-        **kw
+        **kw,
     ):
         t1 = Template(text=source, **kw)
         self._do_test(
@@ -98,12 +95,6 @@ def teardown():
     shutil.rmtree(module_base, True)
 
 
-if py3k:
-    from unittest import mock  # noqa
-else:
-    import mock  # noqa
-
-
 @contextlib.contextmanager
 def raises(except_cls, message=None):
     try:
@@ -112,9 +103,9 @@ def raises(except_cls, message=None):
     except except_cls as e:
         if message:
             assert re.search(
-                message, compat.text_type(e), re.UNICODE
+                message, str(e), re.UNICODE
             ), "%r !~ %s" % (message, e)
-            print(compat.text_type(e).encode("utf-8"))
+            print(str(e).encode("utf-8"))
         success = True
 
     # assert outside the block so it works for AssertionError too !
@@ -148,14 +139,6 @@ def skip_if(predicate, reason=None):
         return update_wrapper(maybe, fn)
 
     return decorate
-
-
-def requires_python_3(fn):
-    return skip_if(lambda: not py3k, "Requires Python 3.xx")(fn)
-
-
-def requires_python_2(fn):
-    return skip_if(lambda: py3k, "Requires Python 2.xx")(fn)
 
 
 def requires_pygments_14(fn):

@@ -1,5 +1,5 @@
 # mako/cmd.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -85,7 +85,7 @@ def cmdline(argv=None):
         except:
             _exit()
 
-    kw = dict([varsplit(var) for var in options.var])
+    kw = dict(varsplit(var) for var in options.var)
     try:
         rendered = template.render(**kw)
     except:

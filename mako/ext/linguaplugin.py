@@ -1,5 +1,5 @@
 # ext/linguaplugin.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -10,14 +10,13 @@ from lingua.extractors import Extractor
 from lingua.extractors import get_extractor
 from lingua.extractors import Message
 
-from mako import compat
 from mako.ext.extract import MessageExtractor
 
 
 class LinguaMakoExtractor(Extractor, MessageExtractor):
-
     """Mako templates"""
 
+    use_bytes = False
     extensions = [".mako"]
     default_config = {"encoding": "utf-8", "comment-tags": ""}
 
@@ -26,7 +25,7 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
         self.filename = filename
         self.python_extractor = get_extractor("x.py")
         if fileobj is None:
-            fileobj = open(filename, "rb")
+            fileobj = open(filename, "r")
             must_close = True
         else:
             must_close = False
@@ -38,16 +37,13 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
 
     def process_python(self, code, code_lineno, translator_strings):
         source = code.getvalue().strip()
-        if source.endswith(compat.b(":")):
-            if source in (
-                compat.b("try:"),
-                compat.b("else:"),
-            ) or source.startswith(compat.b("except")):
-                source = compat.b("")  # Ignore try/except and else
-            elif source.startswith(compat.b("elif")):
+        if source.endswith(":"):
+            if source in ("try:", "else:") or source.startswith("except"):
+                source = ""  # Ignore try/except and else
+            elif source.startswith("elif"):
                 source = source[2:]  # Replace "elif" with "if"
-            source += compat.b("pass")
-        code = io.BytesIO(source)
+            source += "pass"
+        code = io.StringIO(source)
         for msg in self.python_extractor(
             self.filename, self.options, code, code_lineno - 1
         ):
@@ -57,7 +53,7 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
                     msg.msgid,
                     msg.msgid_plural,
                     msg.flags,
-                    compat.u(" ").join(translator_strings + [msg.comment]),
+                    " ".join(translator_strings + [msg.comment]),
                     msg.tcomment,
                     msg.location,
                 )

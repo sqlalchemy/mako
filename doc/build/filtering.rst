@@ -101,9 +101,7 @@ In addition to the ``expression_filter`` argument, the
 :class:`.TemplateLookup` can specify filtering for all expression tags
 at the programmatic level. This array-based argument, when given
 its default argument of ``None``, will be internally set to
-``["unicode"]`` (or ``["str"]`` on Python 3), except when
-``disable_unicode=True`` is set in which case it defaults to
-``["str"]``:
+``["unicode"]`` (or ``["str"]`` on Python 3):
 
 .. sourcecode:: python
 

@@ -28,20 +28,10 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cgi import escape
-import os
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 import sys
 import timeit
 
-def u(stringlit):
-    if sys.version_info >= (3,):
-        return stringlit
-    else:
-        return stringlit.decode('latin1')
 
 __all__ = ['mako', 'mako_inheritance', 'jinja2', 'jinja2_inheritance',
             'cheetah', 'django', 'myghty', 'genshi', 'kid']
@@ -50,7 +40,6 @@ __all__ = ['mako', 'mako_inheritance', 'jinja2', 'jinja2_inheritance',
 TITLE = 'Just a test'
 USER = 'joe'
 ITEMS = ['Number %d' % num for num in range(1, 15)]
-U_ITEMS = [u(item) for item in ITEMS]
 
 def genshi(dirname, verbose=False):
     from genshi.template import TemplateLoader
@@ -79,11 +68,10 @@ def myghty(dirname, verbose=False):
 def mako(dirname, verbose=False):
     from mako.template import Template
     from mako.lookup import TemplateLookup
-    disable_unicode = (sys.version_info < (3,))
-    lookup = TemplateLookup(directories=[dirname], filesystem_checks=False, disable_unicode=disable_unicode)
+    lookup = TemplateLookup(directories=[dirname], filesystem_checks=False)
     template = lookup.get_template('template.html')
     def render():
-        return template.render(title=TITLE, user=USER, list_items=U_ITEMS)
+        return template.render(title=TITLE, user=USER, list_items=ITEMS)
     if verbose:
         print(template.code + " " + render())
     return render
@@ -94,7 +82,7 @@ def jinja2(dirname, verbose=False):
     env = Environment(loader=FileSystemLoader(dirname))
     template = env.get_template('template.html')
     def render():
-        return template.render(title=TITLE, user=USER, list_items=U_ITEMS)
+        return template.render(title=TITLE, user=USER, list_items=ITEMS)
     if verbose:
         print(render())
     return render
@@ -106,7 +94,7 @@ def cheetah(dirname, verbose=False):
     template = Template(file=filename)
     def render():
         template.__dict__.update({'title': TITLE, 'user': USER,
-                                  'list_items': U_ITEMS})
+                                  'list_items': ITEMS})
         return template.respond()
 
     if verbose:

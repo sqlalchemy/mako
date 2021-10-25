@@ -1,4 +1,3 @@
-from mako import compat
 from mako.ext.turbogears import TGPlugin
 from test import template_base
 from test import TemplateTest
@@ -48,5 +47,5 @@ class TestTGPlugin(TemplateTest):
             "this is index"
         ]
         assert result_lines(
-            tl.render({}, template=compat.u("/index.html"))
+            tl.render({}, template=("/index.html"))
         ) == ["this is index"]

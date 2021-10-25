@@ -1,5 +1,5 @@
 # ext/pygmentplugin.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -24,8 +24,6 @@ from pygments.token import Operator
 from pygments.token import Other
 from pygments.token import String
 from pygments.token import Text
-
-from mako import compat
 
 
 class MakoLexer(RegexLexer):
@@ -144,7 +142,7 @@ pygments_html_formatter = HtmlFormatter(
 
 def syntax_highlight(filename="", language=None):
     mako_lexer = MakoLexer()
-    python_lexer = Python3Lexer() if compat.py3k else PythonLexer()
+    python_lexer = Python3Lexer()
     if filename.startswith("memory:") or language == "mako":
         return lambda string: highlight(
             string, mako_lexer, pygments_html_formatter

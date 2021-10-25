@@ -17,6 +17,7 @@ if lingua is not None:
 class MockOptions:
     keywords = []
     domain = None
+    comment_tag = True
 
 
 def skip():

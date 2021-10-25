@@ -2,7 +2,6 @@ import io
 import os
 import unittest
 
-from mako import compat
 from .. import skip_if
 from .. import template_base
 from .. import TemplateTest
@@ -24,26 +23,24 @@ def skip():
 class Test_extract(unittest.TestCase):
     @skip()
     def test_parse_python_expression(self):
-        input_ = io.BytesIO(compat.b('<p>${_("Message")}</p>'))
+        input_ = io.BytesIO(b'<p>${_("Message")}</p>')
         messages = list(extract(input_, ["_"], [], {}))
-        self.assertEqual(messages, [(1, "_", compat.u("Message"), [])])
+        self.assertEqual(messages, [(1, "_", ("Message"), [])])
 
     @skip()
     def test_python_gettext_call(self):
-        input_ = io.BytesIO(compat.b('<p>${_("Message")}</p>'))
+        input_ = io.BytesIO(b'<p>${_("Message")}</p>')
         messages = list(extract(input_, ["_"], [], {}))
-        self.assertEqual(messages, [(1, "_", compat.u("Message"), [])])
+        self.assertEqual(messages, [(1, "_", ("Message"), [])])
 
     @skip()
     def test_translator_comment(self):
         input_ = io.BytesIO(
-            compat.b(
-                """
+            b"""
         <p>
           ## TRANSLATORS: This is a comment.
           ${_("Message")}
         </p>"""
-            )
         )
         messages = list(extract(input_, ["_"], ["TRANSLATORS:"], {}))
         self.assertEqual(
@@ -52,8 +49,8 @@ class Test_extract(unittest.TestCase):
                 (
                     4,
                     "_",
-                    compat.u("Message"),
-                    [compat.u("TRANSLATORS: This is a comment.")],
+                    ("Message"),
+                    [("TRANSLATORS: This is a comment.")],
                 )
             ],
         )

@@ -1,5 +1,5 @@
 # mako/lexer.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -9,7 +9,6 @@
 import codecs
 import re
 
-from mako import compat
 from mako import exceptions
 from mako import parsetree
 from mako.pygen import adjust_whitespace
@@ -17,14 +16,9 @@ from mako.pygen import adjust_whitespace
 _regexp_cache = {}
 
 
-class Lexer(object):
+class Lexer:
     def __init__(
-        self,
-        text,
-        filename=None,
-        disable_unicode=False,
-        input_encoding=None,
-        preprocessor=None,
+        self, text, filename=None, input_encoding=None, preprocessor=None
     ):
         self.text = text
         self.filename = filename
@@ -36,13 +30,7 @@ class Lexer(object):
         self.tag = []
         self.control_line = []
         self.ternary_stack = []
-        self.disable_unicode = disable_unicode
         self.encoding = input_encoding
-
-        if compat.py3k and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "Mako for Python 3 does not " "support disabling Unicode"
-            )
 
         if preprocessor is None:
             self.preprocessor = []
@@ -185,7 +173,7 @@ class Lexer(object):
                 raise exceptions.SyntaxException(
                     "Keyword '%s' not a legal ternary for keyword '%s'"
                     % (node.keyword, self.control_line[-1].keyword),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
 
     _coding_re = re.compile(r"#.*coding[:=]\s*([-\w.]+).*\r?\n")
@@ -196,7 +184,7 @@ class Lexer(object):
            or raw if decode_raw=False
 
         """
-        if isinstance(text, compat.text_type):
+        if isinstance(text, str):
             m = self._coding_re.match(text)
             encoding = m and m.group(1) or known_encoding or "utf-8"
             return encoding, text
@@ -234,7 +222,7 @@ class Lexer(object):
 
     def parse(self):
         self.encoding, self.text = self.decode_raw_stream(
-            self.text, not self.disable_unicode, self.encoding, self.filename
+            self.text, True, self.encoding, self.filename
         )
 
         for preproc in self.preprocessor:
@@ -269,12 +257,13 @@ class Lexer(object):
 
             if self.match_position > self.textlength:
                 break
-            raise exceptions.CompileException("assertion failed")
+            # TODO: no coverage here
+            raise exceptions.MakoException("assertion failed")
 
         if len(self.tag):
             raise exceptions.SyntaxException(
                 "Unclosed tag: <%%%s>" % self.tag[-1].keyword,
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
         if len(self.control_line):
             raise exceptions.SyntaxException(
@@ -340,13 +329,13 @@ class Lexer(object):
                 raise exceptions.SyntaxException(
                     "Closing tag without opening tag: </%%%s>"
                     % match.group(1),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             elif self.tag[-1].keyword != match.group(1):
                 raise exceptions.SyntaxException(
                     "Closing tag </%%%s> does not match tag: <%%%s>"
                     % (match.group(1), self.tag[-1].keyword),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             self.tag.pop()
             return True

@@ -1,5 +1,5 @@
 # mako/template.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -25,7 +25,7 @@ from mako import util
 from mako.lexer import Lexer
 
 
-class Template(object):
+class Template:
 
     r"""Represents a compiled template.
 
@@ -52,17 +52,6 @@ class Template(object):
      creation of default expression filters that let the output
      of return-valued ``%def``\ s "opt out" of that filtering via
      passing special attributes or objects.
-
-    :param bytestring_passthrough: When ``True``, and ``output_encoding`` is
-     set to ``None``, and :meth:`.Template.render` is used to render,
-     the `StringIO` or `cStringIO` buffer will be used instead of the
-     default "fast" buffer.   This allows raw bytestrings in the
-     output stream, such as in expressions, to pass straight
-     through to the buffer.  This flag is forced
-     to ``True`` if ``disable_unicode`` is also configured.
-
-     .. versionadded:: 0.4
-        Added to provide the same behavior as that of the previous series.
 
     :param cache_args: Dictionary of cache configuration arguments that
      will be passed to the :class:`.CacheImpl`.   See :ref:`caching_toplevel`.
@@ -93,9 +82,6 @@ class Template(object):
 
     :param default_filters: List of string filter names that will
      be applied to all expressions.  See :ref:`filtering_default_filters`.
-
-    :param disable_unicode: Disables all awareness of Python Unicode
-     objects.  See :ref:`unicode_disabled`.
 
     :param enable_loop: When ``True``, enable the ``loop`` context variable.
      This can be set to ``False`` to support templates that may
@@ -255,9 +241,7 @@ class Template(object):
         cache_url=None,
         module_filename=None,
         input_encoding=None,
-        disable_unicode=False,
         module_writer=None,
-        bytestring_passthrough=False,
         default_filters=None,
         buffer_filters=(),
         strict_undefined=False,
@@ -294,26 +278,12 @@ class Template(object):
         self.input_encoding = input_encoding
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
-        self.disable_unicode = disable_unicode
-        self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.enable_loop = enable_loop
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
 
-        if compat.py3k and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "Mako for Python 3 does not " "support disabling Unicode"
-            )
-        elif output_encoding and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "output_encoding must be set to "
-                "None when disable_unicode is used."
-            )
         if default_filters is None:
-            if compat.py3k or self.disable_unicode:
-                self.default_filters = ["str"]
-            else:
-                self.default_filters = ["unicode"]
+            self.default_filters = ["str"]
         else:
             self.default_filters = default_filters
         self.buffer_filters = buffer_filters
@@ -459,7 +429,7 @@ class Template(object):
 
         If the template specifies an output encoding, the string
         will be encoded accordingly, else the output is raw (raw
-        output uses `cStringIO` and can't handle multibyte
+        output uses `StringIO` and can't handle multibyte
         characters). A :class:`.Context` object is created corresponding
         to the given data. Arguments that are explicitly declared
         by this template's internal rendering method are also
@@ -537,8 +507,6 @@ class ModuleTemplate(Template):
         template_source=None,
         output_encoding=None,
         encoding_errors="strict",
-        disable_unicode=False,
-        bytestring_passthrough=False,
         format_exceptions=False,
         error_handler=None,
         lookup=None,
@@ -555,19 +523,7 @@ class ModuleTemplate(Template):
         self.input_encoding = module._source_encoding
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
-        self.disable_unicode = disable_unicode
-        self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.enable_loop = module._enable_loop
-
-        if compat.py3k and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "Mako for Python 3 does not " "support disabling Unicode"
-            )
-        elif output_encoding and disable_unicode:
-            raise exceptions.UnsupportedError(
-                "output_encoding must be set to "
-                "None when disable_unicode is used."
-            )
 
         self.module = module
         self.filename = template_filename
@@ -612,13 +568,12 @@ class DefTemplate(Template):
         self.include_error_handler = parent.include_error_handler
         self.enable_loop = parent.enable_loop
         self.lookup = parent.lookup
-        self.bytestring_passthrough = parent.bytestring_passthrough
 
     def get_def(self, name):
         return self.parent.get_def(name)
 
 
-class ModuleInfo(object):
+class ModuleInfo:
 
     """Stores information about a module currently loaded into
     memory, provides reverse lookups of template source, module
@@ -657,7 +612,6 @@ class ModuleInfo(object):
         source_map["line_map"] = {
             int(k): int(v) for k, v in source_map["line_map"].items()
         }
-
         if full_line_map:
             f_line_map = source_map["full_line_map"] = []
             line_map = source_map["line_map"]
@@ -699,7 +653,6 @@ def _compile(template, text, filename, generate_magic_comment):
     lexer = template.lexer_cls(
         text,
         filename,
-        disable_unicode=template.disable_unicode,
         input_encoding=template.input_encoding,
         preprocessor=template.preprocessor,
     )
@@ -714,7 +667,6 @@ def _compile(template, text, filename, generate_magic_comment):
         future_imports=template.future_imports,
         source_encoding=lexer.encoding,
         generate_magic_comment=generate_magic_comment,
-        disable_unicode=template.disable_unicode,
         strict_undefined=template.strict_undefined,
         enable_loop=template.enable_loop,
         reserved_names=template.reserved_names,
@@ -725,15 +677,10 @@ def _compile(template, text, filename, generate_magic_comment):
 def _compile_text(template, text, filename):
     identifier = template.module_id
     source, lexer = _compile(
-        template,
-        text,
-        filename,
-        generate_magic_comment=template.disable_unicode,
+        template, text, filename, generate_magic_comment=False
     )
 
     cid = identifier
-    if not compat.py3k and isinstance(cid, compat.text_type):
-        cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, "exec")
 
@@ -747,7 +694,7 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
         template, text, filename, generate_magic_comment=True
     )
 
-    if isinstance(source, compat.text_type):
+    if isinstance(source, str):
         source = source.encode(lexer.encoding or "ascii")
 
     if module_writer:
@@ -764,10 +711,7 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
 
 
 def _get_module_info_from_callable(callable_):
-    if compat.py3k:
-        return _get_module_info(callable_.__globals__["__name__"])
-    else:
-        return _get_module_info(callable_.func_globals["__name__"])
+    return _get_module_info(callable_.__globals__["__name__"])
 
 
 def _get_module_info(filename):

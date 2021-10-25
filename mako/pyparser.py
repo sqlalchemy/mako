@@ -1,5 +1,5 @@
 # mako/pyparser.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -18,22 +18,13 @@ from mako import _ast_util
 from mako import compat
 from mako import exceptions
 from mako import util
-from mako.compat import arg_stringname
 
-if compat.py3k:
-    # words that cannot be assigned to (notably
-    # smaller than the total keys in __builtins__)
-    reserved = set(["True", "False", "None", "print"])
+# words that cannot be assigned to (notably
+# smaller than the total keys in __builtins__)
+reserved = {"True", "False", "None", "print"}
 
-    # the "id" attribute on a function node
-    arg_id = operator.attrgetter("arg")
-else:
-    # words that cannot be assigned to (notably
-    # smaller than the total keys in __builtins__)
-    reserved = set(["True", "False", "None"])
-
-    # the "id" attribute on a function node
-    arg_id = operator.attrgetter("id")
+# the "id" attribute on a function node
+arg_id = operator.attrgetter("arg")
 
 util.restore__ast(_ast)
 
@@ -51,7 +42,7 @@ def parse(code, mode="exec", **exception_kwargs):
                 compat.exception_as(),
                 code[0:50],
             ),
-            **exception_kwargs
+            **exception_kwargs,
         )
 
 
@@ -85,18 +76,13 @@ class FindIdentifiers(_ast_util.NodeVisitor):
             self.visit(n)
         self.in_assign_targets = in_a
 
-    if compat.py3k:
-
-        # ExceptHandler is in Python 2, but this block only works in
-        # Python 3 (and is required there)
-
-        def visit_ExceptHandler(self, node):
-            if node.name is not None:
-                self._add_declared(node.name)
-            if node.type is not None:
-                self.visit(node.type)
-            for statement in node.body:
-                self.visit(statement)
+    def visit_ExceptHandler(self, node):
+        if node.name is not None:
+            self._add_declared(node.name)
+        if node.type is not None:
+            self.visit(node.type)
+        for statement in node.body:
+            self.visit(statement)
 
     def visit_Lambda(self, node, *args):
         self._visit_function(node, True)
@@ -212,24 +198,20 @@ class ParseFunc(_ast_util.NodeVisitor):
 
         argnames = [arg_id(arg) for arg in node.args.args]
         if node.args.vararg:
-            argnames.append(arg_stringname(node.args.vararg))
+            argnames.append(node.args.vararg.arg)
 
-        if compat.py2k:
-            # kw-only args don't exist in Python 2
-            kwargnames = []
-        else:
-            kwargnames = [arg_id(arg) for arg in node.args.kwonlyargs]
+        kwargnames = [arg_id(arg) for arg in node.args.kwonlyargs]
         if node.args.kwarg:
-            kwargnames.append(arg_stringname(node.args.kwarg))
+            kwargnames.append(node.args.kwarg.arg)
         self.listener.argnames = argnames
         self.listener.defaults = node.args.defaults  # ast
         self.listener.kwargnames = kwargnames
-        self.listener.kwdefaults = [] if compat.py2k else node.args.kw_defaults
+        self.listener.kwdefaults = node.args.kw_defaults
         self.listener.varargs = node.args.vararg
         self.listener.kwargs = node.args.kwarg
 
 
-class ExpressionGenerator(object):
+class ExpressionGenerator:
     def __init__(self, astnode):
         self.generator = _ast_util.SourceGenerator(" " * 4)
         self.generator.visit(astnode)
