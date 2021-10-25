@@ -1,5 +1,5 @@
 # mako/lookup.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,15 +8,11 @@ import os
 import posixpath
 import re
 import stat
+import threading
 
 from mako import exceptions
 from mako import util
 from mako.template import Template
-
-try:
-    import threading
-except:
-    import dummy_threading as threading
 
 
 class TemplateCollection:
@@ -161,7 +157,6 @@ class TemplateLookup(TemplateCollection):
         collection_size=-1,
         format_exceptions=False,
         error_handler=None,
-        bytestring_passthrough=False,
         output_encoding=None,
         encoding_errors="strict",
         cache_args=None,
@@ -206,7 +201,6 @@ class TemplateLookup(TemplateCollection):
             "format_exceptions": format_exceptions,
             "error_handler": error_handler,
             "include_error_handler": include_error_handler,
-            "bytestring_passthrough": bytestring_passthrough,
             "output_encoding": output_encoding,
             "cache_impl": cache_impl,
             "encoding_errors": encoding_errors,
@@ -322,7 +316,7 @@ class TemplateLookup(TemplateCollection):
                     filename=posixpath.normpath(filename),
                     lookup=self,
                     module_filename=module_filename,
-                    **self.template_args
+                    **self.template_args,
                 )
                 return template
             except:

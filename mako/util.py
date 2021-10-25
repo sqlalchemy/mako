@@ -1,5 +1,5 @@
 # mako/util.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -10,8 +10,6 @@ import operator
 import os
 import re
 import timeit
-
-from mako import compat
 
 
 def update_wrapper(decorated, fn):
@@ -59,7 +57,7 @@ def verify_directory(dir_):
     while not os.path.exists(dir_):
         try:
             tries += 1
-            os.makedirs(dir_, compat.octal("0775"))
+            os.makedirs(dir_, 0o755)
         except:
             if tries > 5:
                 raise

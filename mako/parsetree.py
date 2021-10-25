@@ -1,5 +1,5 @@
 # mako/parsetree.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -9,7 +9,6 @@
 import re
 
 from mako import ast
-from mako import compat
 from mako import exceptions
 from mako import filters
 from mako import util
@@ -108,9 +107,9 @@ class ControlLine(Node):
         for this ControlLine"""
 
         return keyword in {
-            "if": set(["else", "elif"]),
-            "try": set(["except", "finally"]),
-            "for": set(["else"]),
+            "if": {"else", "elif"},
+            "try": {"except", "finally"},
+            "for": {"else"},
         }.get(self.keyword, [])
 
     def __repr__(self):
@@ -123,7 +122,6 @@ class ControlLine(Node):
 
 
 class Text(Node):
-
     """defines plain text in the template."""
 
     def __init__(self, content, **kwargs):
@@ -135,7 +133,6 @@ class Text(Node):
 
 
 class Code(Node):
-
     """defines a Python code block, either inline or module level.
 
     e.g.::
@@ -173,7 +170,6 @@ class Code(Node):
 
 
 class Comment(Node):
-
     """defines a comment line.
 
     # this is a comment
@@ -189,7 +185,6 @@ class Comment(Node):
 
 
 class Expression(Node):
-
     """defines an inline expression.
 
     ${x+y}
@@ -210,7 +205,7 @@ class Expression(Node):
         # TODO: make the "filter" shortcut list configurable at parse/gen time
         return self.code.undeclared_identifiers.union(
             self.escapes_code.undeclared_identifiers.difference(
-                set(filters.DEFAULT_ESCAPES.keys())
+                filters.DEFAULT_ESCAPES
             )
         ).difference(self.code.declared_identifiers)
 
@@ -223,7 +218,6 @@ class Expression(Node):
 
 
 class _TagMeta(type):
-
     """metaclass to allow Tag to produce a subclass according to
     its keyword"""
 
@@ -254,7 +248,7 @@ class _TagMeta(type):
         return type.__call__(cls, keyword, attributes, **kwargs)
 
 
-class Tag(compat.with_metaclass(_TagMeta, Node)):
+class Tag(Node, metaclass=_TagMeta):
     """abstract base class for tags.
 
     e.g.::
@@ -276,7 +270,7 @@ class Tag(compat.with_metaclass(_TagMeta, Node)):
         expressions,
         nonexpressions,
         required,
-        **kwargs
+        **kwargs,
     ):
         r"""construct a new Tag instance.
 
@@ -306,7 +300,7 @@ class Tag(compat.with_metaclass(_TagMeta, Node)):
             raise exceptions.CompileException(
                 "Missing attribute(s): %s"
                 % ",".join([repr(m) for m in missing]),
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
         self.parent = None
         self.nodes = []
@@ -348,14 +342,14 @@ class Tag(compat.with_metaclass(_TagMeta, Node)):
                     raise exceptions.CompileException(
                         "Attibute '%s' in tag '%s' does not allow embedded "
                         "expressions" % (key, self.keyword),
-                        **self.exception_kwargs
+                        **self.exception_kwargs,
                     )
                 self.parsed_attributes[key] = repr(self.attributes[key])
             else:
                 raise exceptions.CompileException(
                     "Invalid attribute for tag '%s': '%s'"
                     % (self.keyword, key),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
         self.expression_undeclared_identifiers = undeclared_identifiers
 
@@ -385,7 +379,7 @@ class IncludeTag(Tag):
             ("file", "import", "args"),
             (),
             ("file",),
-            **kwargs
+            **kwargs,
         )
         self.page_args = ast.PythonCode(
             "__DUMMY(%s)" % attributes.get("args", ""), **self.exception_kwargs
@@ -396,7 +390,7 @@ class IncludeTag(Tag):
 
     def undeclared_identifiers(self):
         identifiers = self.page_args.undeclared_identifiers.difference(
-            set(["__DUMMY"])
+            {"__DUMMY"}
         ).difference(self.page_args.declared_identifiers)
         return identifiers.union(
             super(IncludeTag, self).undeclared_identifiers()
@@ -413,7 +407,7 @@ class NamespaceTag(Tag):
             ("file",),
             ("name", "inheritable", "import", "module"),
             (),
-            **kwargs
+            **kwargs,
         )
 
         self.name = attributes.get("name", "__anon_%s" % hex(abs(id(self))))
@@ -421,12 +415,12 @@ class NamespaceTag(Tag):
             raise exceptions.CompileException(
                 "'name' and/or 'import' attributes are required "
                 "for <%namespace>",
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
         if "file" in attributes and "module" in attributes:
             raise exceptions.CompileException(
                 "<%namespace> may only have one of 'file' or 'module'",
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
 
     def declared_identifiers(self):
@@ -464,7 +458,7 @@ class DefTag(Tag):
             expressions,
             ("name", "filter", "decorator"),
             ("name",),
-            **kwargs
+            **kwargs,
         )
         name = attributes["name"]
         if re.match(r"^[\w_]+$", name):
@@ -527,13 +521,13 @@ class BlockTag(Tag):
             expressions,
             ("name", "filter", "decorator"),
             (),
-            **kwargs
+            **kwargs,
         )
         name = attributes.get("name")
         if name and not re.match(r"^[\w_]+$", name):
             raise exceptions.CompileException(
                 "%block may not specify an argument signature",
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
         if not name and attributes.get("args", None):
             raise exceptions.CompileException(
@@ -603,7 +597,7 @@ class CallNamespaceTag(Tag):
             tuple(attributes.keys()) + ("args",),
             (),
             (),
-            **kwargs
+            **kwargs,
         )
 
         self.expression = "%s.%s(%s)" % (

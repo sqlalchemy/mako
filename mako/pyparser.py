@@ -1,5 +1,5 @@
 # mako/pyparser.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -18,11 +18,10 @@ from mako import _ast_util
 from mako import compat
 from mako import exceptions
 from mako import util
-from mako.compat import arg_stringname
 
 # words that cannot be assigned to (notably
 # smaller than the total keys in __builtins__)
-reserved = set(["True", "False", "None", "print"])
+reserved = {"True", "False", "None", "print"}
 
 # the "id" attribute on a function node
 arg_id = operator.attrgetter("arg")
@@ -43,7 +42,7 @@ def parse(code, mode="exec", **exception_kwargs):
                 compat.exception_as(),
                 code[0:50],
             ),
-            **exception_kwargs
+            **exception_kwargs,
         )
 
 
@@ -76,9 +75,6 @@ class FindIdentifiers(_ast_util.NodeVisitor):
         for n in node.targets:
             self.visit(n)
         self.in_assign_targets = in_a
-
-    # ExceptHandler is in Python 2, but this block only works in
-    # Python 3 (and is required there)
 
     def visit_ExceptHandler(self, node):
         if node.name is not None:
@@ -167,7 +163,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
                         "names must be explicitly declared.  Please use the "
                         "form 'from <modulename> import <name1>, <name2>, "
                         "...' instead.",
-                        **self.exception_kwargs
+                        **self.exception_kwargs,
                     )
                 self._add_declared(name.name)
 
@@ -203,11 +199,11 @@ class ParseFunc(_ast_util.NodeVisitor):
 
         argnames = [arg_id(arg) for arg in node.args.args]
         if node.args.vararg:
-            argnames.append(arg_stringname(node.args.vararg))
+            argnames.append(node.args.vararg.arg)
 
         kwargnames = [arg_id(arg) for arg in node.args.kwonlyargs]
         if node.args.kwarg:
-            kwargnames.append(arg_stringname(node.args.kwarg))
+            kwargnames.append(node.args.kwarg.arg)
         self.listener.argnames = argnames
         self.listener.defaults = node.args.defaults  # ast
         self.listener.kwargnames = kwargnames

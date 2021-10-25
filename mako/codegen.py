@@ -1,5 +1,5 @@
 # mako/codegen.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -12,7 +12,6 @@ import re
 import time
 
 from mako import ast
-from mako import compat
 from mako import exceptions
 from mako import filters
 from mako import parsetree
@@ -25,8 +24,8 @@ MAGIC_NUMBER = 10
 # names which are hardwired into the
 # template and are not accessed via the
 # context itself
-TOPLEVEL_DECLARED = set(["UNDEFINED", "STOP_RENDERING"])
-RESERVED_NAMES = set(["context", "loop"]).union(TOPLEVEL_DECLARED)
+TOPLEVEL_DECLARED = {"UNDEFINED", "STOP_RENDERING"}
+RESERVED_NAMES = {"context", "loop"}.union(TOPLEVEL_DECLARED)
 
 
 def compile(  # noqa
@@ -393,7 +392,7 @@ class _GenerateRenderMethod:
                             raise exceptions.CompileException(
                                 "Can't put anonymous blocks inside "
                                 "<%namespace>",
-                                **node.exception_kwargs
+                                **node.exception_kwargs,
                             )
                         self.write_inline_def(node, identifiers, nested=False)
                         export.append(node.funcname)
@@ -470,7 +469,7 @@ class _GenerateRenderMethod:
         """
 
         # collection of all defs available to us in this scope
-        comp_idents = dict([(c.funcname, c) for c in identifiers.defs])
+        comp_idents = {c.funcname: c for c in identifiers.defs}
         to_write = set()
 
         # write "context.get()" for all variables we are going to
@@ -846,11 +845,11 @@ class _GenerateRenderMethod:
             #          and end control lines, and
             #    3) any control line with no content other than comments
             if not children or (
-                compat.all(
+                all(
                     isinstance(c, (parsetree.Comment, parsetree.ControlLine))
                     for c in children
                 )
-                and compat.all(
+                and all(
                     (node.is_ternary(c.keyword) or c.isend)
                     for c in children
                     if isinstance(c, parsetree.ControlLine)
@@ -1157,7 +1156,7 @@ class _Identifiers:
             raise exceptions.CompileException(
                 "%%def or %%block named '%s' already "
                 "exists in this template." % node.funcname,
-                **node.exception_kwargs
+                **node.exception_kwargs,
             )
 
     def visitDefTag(self, node):
@@ -1187,7 +1186,7 @@ class _Identifiers:
                 raise exceptions.CompileException(
                     "Named block '%s' not allowed inside of def '%s'"
                     % (node.name, self.node.name),
-                    **node.exception_kwargs
+                    **node.exception_kwargs,
                 )
             elif isinstance(
                 self.node, (parsetree.CallTag, parsetree.CallNamespaceTag)
@@ -1195,7 +1194,7 @@ class _Identifiers:
                 raise exceptions.CompileException(
                     "Named block '%s' not allowed inside of <%%call> tag"
                     % (node.name,),
-                    **node.exception_kwargs
+                    **node.exception_kwargs,
                 )
 
         for ident in node.undeclared_identifiers():

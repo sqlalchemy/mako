@@ -1,5 +1,5 @@
 # mako/pygen.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -104,7 +104,8 @@ class PythonPrinter:
                 # probably put extra closures - the resulting
                 # module wont compile.
                 if len(self.indent_detail) == 0:
-                    raise exceptions.SyntaxException(
+                    # TODO: no coverage here
+                    raise exceptions.MakoException(
                         "Too many whitespace closures"
                     )
                 self.indent_detail.pop()

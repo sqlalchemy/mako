@@ -1,5 +1,5 @@
 # mako/template.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -52,16 +52,6 @@ class Template:
      creation of default expression filters that let the output
      of return-valued ``%def``\ s "opt out" of that filtering via
      passing special attributes or objects.
-
-    :param bytestring_passthrough: When ``True``, and ``output_encoding`` is
-     set to ``None``, and :meth:`.Template.render` is used to render,
-     the `StringIO` buffer will be used instead of the
-     default "fast" buffer.   This allows raw bytestrings in the
-     output stream, such as in expressions, to pass straight
-     through to the buffer.
-
-     .. versionadded:: 0.4
-        Added to provide the same behavior as that of the previous series.
 
     :param cache_args: Dictionary of cache configuration arguments that
      will be passed to the :class:`.CacheImpl`.   See :ref:`caching_toplevel`.
@@ -252,7 +242,6 @@ class Template:
         module_filename=None,
         input_encoding=None,
         module_writer=None,
-        bytestring_passthrough=False,
         default_filters=None,
         buffer_filters=(),
         strict_undefined=False,
@@ -289,7 +278,6 @@ class Template:
         self.input_encoding = input_encoding
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
-        self.bytestring_passthrough = bytestring_passthrough
         self.enable_loop = enable_loop
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
@@ -523,7 +511,6 @@ class ModuleTemplate(Template):
         template_source=None,
         output_encoding=None,
         encoding_errors="strict",
-        bytestring_passthrough=False,
         format_exceptions=False,
         error_handler=None,
         lookup=None,
@@ -540,7 +527,6 @@ class ModuleTemplate(Template):
         self.input_encoding = module._source_encoding
         self.output_encoding = output_encoding
         self.encoding_errors = encoding_errors
-        self.bytestring_passthrough = bytestring_passthrough
         self.enable_loop = module._enable_loop
 
         self.module = module
@@ -586,7 +572,6 @@ class DefTemplate(Template):
         self.include_error_handler = parent.include_error_handler
         self.enable_loop = parent.enable_loop
         self.lookup = parent.lookup
-        self.bytestring_passthrough = parent.bytestring_passthrough
 
     def get_def(self, name):
         return self.parent.get_def(name)
@@ -628,9 +613,9 @@ class ModuleInfo:
             r"__M_BEGIN_METADATA(.+?)__M_END_METADATA", module_source, re.S
         ).group(1)
         source_map = json.loads(source_map)
-        source_map["line_map"] = dict(
-            (int(k), int(v)) for k, v in source_map["line_map"].items()
-        )
+        source_map["line_map"] = {
+            int(k): int(v) for k, v in source_map["line_map"].items()
+        }
         if full_line_map:
             f_line_map = source_map["full_line_map"] = []
             line_map = source_map["line_map"]
@@ -696,10 +681,7 @@ def _compile(template, text, filename, generate_magic_comment):
 def _compile_text(template, text, filename):
     identifier = template.module_id
     source, lexer = _compile(
-        template,
-        text,
-        filename,
-        generate_magic_comment=False,
+        template, text, filename, generate_magic_comment=False
     )
 
     cid = identifier

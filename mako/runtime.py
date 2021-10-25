@@ -9,7 +9,6 @@ Namespace, and various helper functions."""
 
 import builtins
 import functools
-from io import StringIO
 import sys
 
 from mako import compat
@@ -391,7 +390,7 @@ class Namespace:
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.__name__, c) for c in callables])
+            self.callables = {c.__name__: c for c in callables}
 
     callables = ()
 
@@ -575,7 +574,7 @@ class TemplateNamespace(Namespace):
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.__name__, c) for c in callables])
+            self.callables = {c.__name__: c for c in callables}
 
         if templateuri is not None:
             self.template = _lookup_template(context, templateuri, calling_uri)
@@ -667,7 +666,7 @@ class ModuleNamespace(Namespace):
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.__name__, c) for c in callables])
+            self.callables = {c.__name__: c for c in callables}
 
         mod = __import__(module)
         for token in module.split(".")[1:]:
@@ -791,7 +790,7 @@ def _include_file(context, uri, calling_uri, **kwargs):
         except Exception:
             result = template.include_error_handler(ctx, compat.exception_as())
             if not result:
-                compat.reraise(*sys.exc_info())
+                raise
     else:
         callable_(ctx, **kwargs)
 
@@ -864,12 +863,9 @@ def _render(template, callable_, args, data, as_unicode=False):
 
     if as_unicode:
         buf = util.FastEncodingBuffer()
-    elif template.bytestring_passthrough:
-        buf = StringIO()
     else:
         buf = util.FastEncodingBuffer(
-            encoding=template.output_encoding,
-            errors=template.encoding_errors,
+            encoding=template.output_encoding, errors=template.encoding_errors
         )
     context = Context(buf, **data)
     context._outputting_as_unicode = as_unicode
@@ -880,7 +876,7 @@ def _render(template, callable_, args, data, as_unicode=False):
         callable_,
         context,
         *args,
-        **_kwargs_for_callable(callable_, data)
+        **_kwargs_for_callable(callable_, data),
     )
     return context._pop_buffer().getvalue()
 
@@ -951,13 +947,15 @@ def _render_error(template, context, error):
     if template.error_handler:
         result = template.error_handler(context, error)
         if not result:
-            compat.reraise(*sys.exc_info())
+            tp, value, tb = sys.exc_info()
+            if value and tb:
+                raise value.with_traceback(tb)
+            else:
+                raise error
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:
-            context._buffer_stack[:] = [
-                util.FastEncodingBuffer()
-            ]
+            context._buffer_stack[:] = [util.FastEncodingBuffer()]
         else:
             context._buffer_stack[:] = [
                 util.FastEncodingBuffer(
