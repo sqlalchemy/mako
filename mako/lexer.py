@@ -80,10 +80,6 @@ class Lexer:
                 cp -= 1
             self.matched_charpos = mp - cp
             self.lineno += len(lines)
-                # print "MATCHED:", match.group(0), "LINE START:",
-                # self.matched_lineno, "LINE END:", self.lineno
-        # print "MATCH:", regexp, "\n", self.text[mp : mp + 15], \
-        #          (match and "TRUE" or "FALSE")
         return match
 
     def parse_until_text(self, watch_nesting, *text):

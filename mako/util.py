@@ -370,11 +370,8 @@ mako in baz not in mako""",
 
 
 def read_file(path, mode="rb"):
-    fp = open(path, mode)
-    try:
+    with open(path, mode) as fp:
         return fp.read()
-    finally:
-        fp.close()
 
 
 def read_python_file(path):
