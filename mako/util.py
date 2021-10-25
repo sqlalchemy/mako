@@ -11,6 +11,8 @@ import os
 import re
 import timeit
 
+from .compat import importlib_metadata_get
+
 
 def update_wrapper(decorated, fn):
     decorated.__wrapped__ = fn
@@ -26,17 +28,17 @@ class PluginLoader:
     def load(self, name):
         if name in self.impls:
             return self.impls[name]()
-        import pkg_resources
 
-        for impl in pkg_resources.iter_entry_points(self.group, name):
-            self.impls[name] = impl.load
-            return impl.load()
-        else:
-            from mako import exceptions
+        for impl in importlib_metadata_get(self.group):
+            if impl.name == name:
+                self.impls[name] = impl.load
+                return impl.load()
 
-            raise exceptions.RuntimeException(
-                "Can't load plugin %s %s" % (self.group, name)
-            )
+        from mako import exceptions
+
+        raise exceptions.RuntimeException(
+            "Can't load plugin %s %s" % (self.group, name)
+        )
 
     def register(self, name, modulepath, objname):
         def load():

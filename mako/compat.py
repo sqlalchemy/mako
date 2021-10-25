@@ -11,6 +11,7 @@ import sys
 
 win32 = sys.platform.startswith("win")
 pypy = hasattr(sys, "pypy_version_info")
+py38 = sys.version_info >= (3, 8)
 
 ArgSpec = collections.namedtuple(
     "ArgSpec", ["args", "varargs", "keywords", "defaults"]
@@ -59,3 +60,17 @@ def exception_as():
 
 def exception_name(exc):
     return exc.__class__.__name__
+
+
+if py38:
+    from importlib import metadata as importlib_metadata
+else:
+    import importlib_metadata  # noqa
+
+
+def importlib_metadata_get(group):
+    ep = importlib_metadata.entry_points()
+    if hasattr(ep, "select"):
+        return ep.select(group=group)
+    else:
+        return ep.get(group, ())
