@@ -136,11 +136,7 @@ class _GenerateRenderMethod:
                 args = ["**pageargs"]
                 cached = False
             buffered = filtered = False
-        if args is None:
-            args = ["context"]
-        else:
-            args = [a for a in ["context"] + args]
-
+        args = ["context"] if args is None else [a for a in ["context"] + args]
         self.write_render_callable(
             pagetag or node, name, args, buffered, filtered, cached
         )
@@ -317,14 +313,15 @@ class _GenerateRenderMethod:
             or len(self.identifiers.argument_declared) > 0
         ):
             self.printer.writeline(
-                "__M_locals = __M_dict_builtin(%s)"
-                % ",".join(
-                    [
+                (
+                    "__M_locals = __M_dict_builtin(%s)"
+                    % ",".join(
                         "%s=%s" % (x, x)
                         for x in self.identifiers.argument_declared
-                    ]
+                    )
                 )
             )
+
 
         self.write_variable_declares(self.identifiers, toplevel=True)
 
@@ -524,54 +521,50 @@ class _GenerateRenderMethod:
         for ident in to_write:
             if ident in comp_idents:
                 comp = comp_idents[ident]
-                if comp.is_block:
-                    if not comp.is_anonymous:
-                        self.write_def_decl(comp, identifiers)
-                    else:
-                        self.write_inline_def(comp, identifiers, nested=True)
+                if (
+                    comp.is_block
+                    and not comp.is_anonymous
+                    or not comp.is_block
+                    and comp.is_root()
+                ):
+                    self.write_def_decl(comp, identifiers)
                 else:
-                    if comp.is_root():
-                        self.write_def_decl(comp, identifiers)
-                    else:
-                        self.write_inline_def(comp, identifiers, nested=True)
-
+                    self.write_inline_def(comp, identifiers, nested=True)
             elif ident in self.compiler.namespaces:
                 self.printer.writeline(
                     "%s = _mako_get_namespace(context, %r)" % (ident, ident)
                 )
-            else:
-                if getattr(self.compiler, "has_ns_imports", False):
-                    if self.compiler.strict_undefined:
-                        self.printer.writelines(
-                            "%s = _import_ns.get(%r, UNDEFINED)"
-                            % (ident, ident),
-                            "if %s is UNDEFINED:" % ident,
-                            "try:",
-                            "%s = context[%r]" % (ident, ident),
-                            "except KeyError:",
-                            "raise NameError(\"'%s' is not defined\")" % ident,
-                            None,
-                            None,
-                        )
-                    else:
-                        self.printer.writeline(
-                            "%s = _import_ns.get"
-                            "(%r, context.get(%r, UNDEFINED))"
-                            % (ident, ident, ident)
-                        )
+            elif getattr(self.compiler, "has_ns_imports", False):
+                if self.compiler.strict_undefined:
+                    self.printer.writelines(
+                        "%s = _import_ns.get(%r, UNDEFINED)"
+                        % (ident, ident),
+                        "if %s is UNDEFINED:" % ident,
+                        "try:",
+                        "%s = context[%r]" % (ident, ident),
+                        "except KeyError:",
+                        "raise NameError(\"'%s' is not defined\")" % ident,
+                        None,
+                        None,
+                    )
                 else:
-                    if self.compiler.strict_undefined:
-                        self.printer.writelines(
-                            "try:",
-                            "%s = context[%r]" % (ident, ident),
-                            "except KeyError:",
-                            "raise NameError(\"'%s' is not defined\")" % ident,
-                            None,
-                        )
-                    else:
-                        self.printer.writeline(
-                            "%s = context.get(%r, UNDEFINED)" % (ident, ident)
-                        )
+                    self.printer.writeline(
+                        "%s = _import_ns.get"
+                        "(%r, context.get(%r, UNDEFINED))"
+                        % (ident, ident, ident)
+                    )
+            elif self.compiler.strict_undefined:
+                self.printer.writelines(
+                    "try:",
+                    "%s = context[%r]" % (ident, ident),
+                    "except KeyError:",
+                    "raise NameError(\"'%s' is not defined\")" % ident,
+                    None,
+                )
+            else:
+                self.printer.writeline(
+                    "%s = context.get(%r, UNDEFINED)" % (ident, ident)
+                )
 
         self.printer.writeline("__M_writer = context.writer()")
 
@@ -758,17 +751,17 @@ class _GenerateRenderMethod:
             self.printer.writelines("return " + s, None)
         else:
             self.printer.writelines(
-                "__M_writer(context.get('local')."
-                "cache._ctx_get_or_create("
-                "%s, lambda:__M_%s(%s), context, %s__M_defname=%r))"
-                % (
-                    cachekey,
-                    name,
-                    ",".join(pass_args),
-                    "".join(
-                        ["%s=%s, " % (k, v) for k, v in cache_args.items()]
-                    ),
-                    name,
+                (
+                    "__M_writer(context.get('local')."
+                    "cache._ctx_get_or_create("
+                    "%s, lambda:__M_%s(%s), context, %s__M_defname=%r))"
+                    % (
+                        cachekey,
+                        name,
+                        ",".join(pass_args),
+                        "".join("%s=%s, " % (k, v) for k, v in cache_args.items()),
+                        name,
+                    )
                 ),
                 "return ''",
                 None,
@@ -895,10 +888,12 @@ class _GenerateRenderMethod:
                     "__M_locals_builtin_stored = __M_locals_builtin()"
                 )
                 self.printer.writeline(
-                    "__M_locals.update(__M_dict_builtin([(__M_key,"
-                    " __M_locals_builtin_stored[__M_key]) for __M_key in"
-                    " [%s] if __M_key in __M_locals_builtin_stored]))"
-                    % ",".join([repr(x) for x in node.declared_identifiers()])
+                    (
+                        "__M_locals.update(__M_dict_builtin([(__M_key,"
+                        " __M_locals_builtin_stored[__M_key]) for __M_key in"
+                        " [%s] if __M_key in __M_locals_builtin_stored]))"
+                        % ",".join(repr(x) for x in node.declared_identifiers())
+                    )
                 )
 
     def visitIncludeTag(self, node):
@@ -1016,35 +1011,34 @@ class _Identifiers:
     """tracks the status of identifier names as template code is rendered."""
 
     def __init__(self, compiler, node=None, parent=None, nested=False):
-        if parent is not None:
+        if (
+            parent is not None
+            and isinstance(node, parsetree.NamespaceTag)
+            or parent is None
+        ):
             # if we are the branch created in write_namespaces(),
             # we don't share any context from the main body().
-            if isinstance(node, parsetree.NamespaceTag):
-                self.declared = set()
-                self.topleveldefs = util.SetLikeDict()
-            else:
-                # things that have already been declared
-                # in an enclosing namespace (i.e. names we can just use)
-                self.declared = (
-                    set(parent.declared)
-                    .union([c.name for c in parent.closuredefs.values()])
-                    .union(parent.locally_declared)
-                    .union(parent.argument_declared)
-                )
-
-                # if these identifiers correspond to a "nested"
-                # scope, it means whatever the parent identifiers
-                # had as undeclared will have been declared by that parent,
-                # and therefore we have them in our scope.
-                if nested:
-                    self.declared = self.declared.union(parent.undeclared)
-
-                # top level defs that are available
-                self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
-        else:
             self.declared = set()
             self.topleveldefs = util.SetLikeDict()
+        else:
+            # things that have already been declared
+            # in an enclosing namespace (i.e. names we can just use)
+            self.declared = (
+                set(parent.declared)
+                .union([c.name for c in parent.closuredefs.values()])
+                .union(parent.locally_declared)
+                .union(parent.argument_declared)
+            )
 
+            # if these identifiers correspond to a "nested"
+            # scope, it means whatever the parent identifiers
+            # had as undeclared will have been declared by that parent,
+            # and therefore we have them in our scope.
+            if nested:
+                self.declared = self.declared.union(parent.undeclared)
+
+            # top level defs that are available
+            self.topleveldefs = util.SetLikeDict(**parent.topleveldefs)
         self.compiler = compiler
 
         # things within this level that are referenced before they
@@ -1262,21 +1256,18 @@ def mangle_mako_loop(node, printer):
     """
     loop_variable = LoopVariable()
     node.accept_visitor(loop_variable)
-    if loop_variable.detected:
-        node.nodes[-1].has_loop_context = True
-        match = _FOR_LOOP.match(node.text)
-        if match:
-            printer.writelines(
-                "loop = __M_loop._enter(%s)" % match.group(2),
-                "try:"
-                # 'with __M_loop(%s) as loop:' % match.group(2)
-            )
-            text = "for %s in loop:" % match.group(1)
-        else:
-            raise SyntaxError("Couldn't apply loop context: %s" % node.text)
-    else:
-        text = node.text
-    return text
+    if not loop_variable.detected:
+        return node.text
+    node.nodes[-1].has_loop_context = True
+    match = _FOR_LOOP.match(node.text)
+    if not match:
+        raise SyntaxError("Couldn't apply loop context: %s" % node.text)
+    printer.writelines(
+        "loop = __M_loop._enter(%s)" % match.group(2),
+        "try:"
+        # 'with __M_loop(%s) as loop:' % match.group(2)
+    )
+    return "for %s in loop:" % match.group(1)
 
 
 class LoopVariable:

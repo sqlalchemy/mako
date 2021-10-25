@@ -131,11 +131,11 @@ def skip_if(predicate, reason=None):
         fn_name = fn.__name__
 
         def maybe(*args, **kw):
-            if predicate():
-                msg = "'%s' skipped: %s" % (fn_name, reason)
-                raise unittest.SkipTest(msg)
-            else:
+            if not predicate():
                 return fn(*args, **kw)
+
+            msg = "'%s' skipped: %s" % (fn_name, reason)
+            raise unittest.SkipTest(msg)
 
         return update_wrapper(maybe, fn)
 
@@ -178,9 +178,8 @@ class PlainCacheImpl(CacheImpl):
     def get_or_create(self, key, creation_function, **kw):
         if key in self.data:
             return self.data[key]
-        else:
-            self.data[key] = data = creation_function(**kw)
-            return data
+        self.data[key] = data = creation_function(**kw)
+        return data
 
     def put(self, key, value, **kw):
         self.data[key] = value

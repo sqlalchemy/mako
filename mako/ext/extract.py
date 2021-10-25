@@ -101,11 +101,7 @@ class MessageExtractor:
             # input string of the input is non-ascii)
             # Also, because we added it, we have to subtract one from
             # node.lineno
-            if self.use_bytes:
-                code = BytesIO(b"\n" + code)
-            else:
-                code = StringIO("\n" + code)
-
+            code = BytesIO(b"\n" + code) if self.use_bytes else StringIO("\n" + code)
             for message in self.process_python(
                 code, node.lineno - 1, translator_strings
             ):

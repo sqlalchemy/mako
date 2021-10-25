@@ -39,10 +39,7 @@ def inspect_getargspec(func):
     if co.co_flags & inspect.CO_VARARGS:
         varargs = co.co_varnames[nargs]
         nargs = nargs + 1
-    varkw = None
-    if co.co_flags & inspect.CO_VARKEYWORDS:
-        varkw = co.co_varnames[nargs]
-
+    varkw = co.co_varnames[nargs] if co.co_flags & inspect.CO_VARKEYWORDS else None
     return ArgSpec(args, varargs, varkw, func.__defaults__)
 
 
