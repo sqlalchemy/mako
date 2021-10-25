@@ -107,9 +107,7 @@ class PythonPrinter:
             # module wont compile.
             if len(self.indent_detail) == 0:
                 # TODO: no coverage here
-                raise exceptions.MakoException(
-                    "Too many whitespace closures"
-                )
+                raise exceptions.MakoException("Too many whitespace closures")
             self.indent_detail.pop()
 
         if line is None:

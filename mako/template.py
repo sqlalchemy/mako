@@ -483,17 +483,17 @@ class ModuleTemplate(Template):
 
     """A Template which is constructed given an existing Python module.
 
-       e.g.::
+    e.g.::
 
-            t = Template("this is a template")
-            f = file("mymodule.py", "w")
-            f.write(t.code)
-            f.close()
+         t = Template("this is a template")
+         f = file("mymodule.py", "w")
+         f.write(t.code)
+         f.close()
 
-            import mymodule
+         import mymodule
 
-            t = ModuleTemplate(mymodule)
-            print(t.render())
+         t = ModuleTemplate(mymodule)
+         print(t.render())
 
     """
 
@@ -579,7 +579,7 @@ class ModuleInfo:
     memory, provides reverse lookups of template source, module
     source code based on a module's identifier.
 
-     """
+    """
 
     _modules = weakref.WeakValueDictionary()
 
@@ -642,9 +642,7 @@ class ModuleInfo:
         elif self.module._source_encoding and not isinstance(
             self.template_source, str
         ):
-            return self.template_source.decode(
-                self.module._source_encoding
-            )
+            return self.template_source.decode(self.module._source_encoding)
         else:
             return self.template_source
 

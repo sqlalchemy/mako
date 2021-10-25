@@ -30,7 +30,7 @@ class TemplateCollection:
     :class:`.TemplateCollection` is an abstract class,
     with the usual default implementation being :class:`.TemplateLookup`.
 
-     """
+    """
 
     def has_template(self, uri):
         """Return ``True`` if this :class:`.TemplateLookup` is
@@ -64,7 +64,7 @@ class TemplateCollection:
 
     def filename_to_uri(self, uri, filename):
         """Convert the given ``filename`` to a URI relative to
-           this :class:`.TemplateCollection`."""
+        this :class:`.TemplateCollection`."""
 
         return uri
 
@@ -274,7 +274,7 @@ class TemplateLookup(TemplateCollection):
 
     def filename_to_uri(self, filename):
         """Convert the given ``filename`` to a URI relative to
-           this :class:`.TemplateCollection`."""
+        this :class:`.TemplateCollection`."""
 
         try:
             return self._uri_cache[filename]
@@ -285,7 +285,7 @@ class TemplateLookup(TemplateCollection):
 
     def _relativeize(self, filename):
         """Return the portion of a filename that is 'relative'
-           to the directories in this lookup.
+        to the directories in this lookup.
 
         """
 

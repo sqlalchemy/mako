@@ -161,7 +161,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
                     "names must be explicitly declared.  Please use the "
                     "form 'from <modulename> import <name1>, <name2>, "
                     "...' instead.",
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             else:
                 self._add_declared(name.name)

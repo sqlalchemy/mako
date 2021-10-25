@@ -77,13 +77,12 @@ ${'привет'}
         except exceptions.CompileException:
             html_error = exceptions.html_error_template().render()
             assert (
-                (
-                    "CompileException: Fragment &#39;if 2 == 2: /an "
-                    "error&#39; is not a partial control statement "
-                    "at line: 2 char: 1"
-                ).encode(sys.getdefaultencoding(), "htmlentityreplace")
-                in html_error
-            )
+                "CompileException: Fragment &#39;if 2 == 2: /an "
+                "error&#39; is not a partial control statement "
+                "at line: 2 char: 1"
+            ).encode(
+                sys.getdefaultencoding(), "htmlentityreplace"
+            ) in html_error
 
             assert (
                 "".encode(sys.getdefaultencoding(), "htmlentityreplace")
@@ -111,13 +110,12 @@ ${'привет'}
         except exceptions.CompileException:
             html_error = exceptions.html_error_template().render()
             assert (
-                (
-                    "CompileException: Fragment &#39;if 2 == 2: /an "
-                    "error&#39; is not a partial control statement "
-                    "at line: 2 char: 1"
-                ).encode(sys.getdefaultencoding(), "htmlentityreplace")
-                in html_error
-            )
+                "CompileException: Fragment &#39;if 2 == 2: /an "
+                "error&#39; is not a partial control statement "
+                "at line: 2 char: 1"
+            ).encode(
+                sys.getdefaultencoding(), "htmlentityreplace"
+            ) in html_error
             assert (
                 "${&#39;привет&#39;}".encode(
                     sys.getdefaultencoding(), "htmlentityreplace"
@@ -154,9 +152,7 @@ ${'привет'}
             raise RuntimeError("日本")
         except:
             html_error = exceptions.html_error_template().render()
-            assert (
-                "RuntimeError: 日本".encode("ascii", "ignore") in html_error
-            )
+            assert "RuntimeError: 日本".encode("ascii", "ignore") in html_error
 
     @requires_pygments_14
     def test_format_exceptions_pygments(self):
@@ -208,7 +204,7 @@ ${foobar}
     @requires_pygments_14
     def test_utf8_format_exceptions_pygments(self):
         """test that htmlentityreplace formatting is applied to
-           exceptions reported with format_exceptions=True"""
+        exceptions reported with format_exceptions=True"""
 
         l = TemplateLookup(format_exceptions=True)
         l.put_string(
@@ -222,7 +218,7 @@ ${foobar}
     @requires_no_pygments_exceptions
     def test_utf8_format_exceptions_no_pygments(self):
         """test that htmlentityreplace formatting is applied to
-           exceptions reported with format_exceptions=True"""
+        exceptions reported with format_exceptions=True"""
 
         l = TemplateLookup(format_exceptions=True)
         l.put_string(

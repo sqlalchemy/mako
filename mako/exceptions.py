@@ -139,8 +139,7 @@ class RichTraceback:
 
     @property
     def reverse_traceback(self):
-        """Return the same data as traceback, except in reverse order.
-        """
+        """Return the same data as traceback, except in reverse order."""
 
         return list(self._get_reformatted_records(self.reverse_records))
 

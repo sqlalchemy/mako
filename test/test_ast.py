@@ -234,7 +234,7 @@ import x as bar
             exceptions.CompileException,
             ast.PythonCode,
             code,
-            **exception_kwargs
+            **exception_kwargs,
         )
 
     def test_python_fragment(self):
