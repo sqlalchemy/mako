@@ -188,8 +188,7 @@ class EncodingTest(TemplateTest):
         )
 
     def test_unicode_text_ccall(self):
-        val = (
-            """
+        val = """
         <%def name="foo()">
             ${capture(caller.body)}
         </%def>
@@ -198,7 +197,6 @@ class EncodingTest(TemplateTest):
 quand une drôle de petite voix m’a réveillé. Elle disait:
 « S’il vous plaît… dessine-moi un mouton! »</%text>
         </%call>"""
-        )
         self._do_memory_test(
             ("## -*- coding: utf-8 -*-\n" + val).encode("utf-8"),
             (
@@ -347,29 +345,6 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
             ("## -*- coding: utf-8 -*-\nhello ${f('śląsk')}"),
             ("hello śląsk"),
             template_args={"f": lambda x: x},
-        )
-
-    def test_raw_strings(self):
-        """test that raw strings go straight thru with default_filters
-        turned off, bytestring_passthrough enabled.
-
-        """
-
-        self._do_memory_test(
-            ("## -*- coding: utf-8 -*-\nhello ${x}"),
-            "hello śląsk",
-            default_filters=[],
-            template_args={"x": "śląsk"},
-            unicode_=False,
-            bytestring_passthrough=True,
-            output_encoding=None,  # 'ascii'
-        )
-
-        # now, the way you *should* be doing it....
-        self._do_memory_test(
-            ("## -*- coding: utf-8 -*-\nhello ${x}"),
-            ("hello śląsk"),
-            template_args={"x": ("śląsk")},
         )
 
     def test_encoding(self):

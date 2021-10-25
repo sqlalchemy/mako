@@ -1,5 +1,5 @@
 # mako/lexer.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -18,11 +18,7 @@ _regexp_cache = {}
 
 class Lexer:
     def __init__(
-        self,
-        text,
-        filename=None,
-        input_encoding=None,
-        preprocessor=None,
+        self, text, filename=None, input_encoding=None, preprocessor=None
     ):
         self.text = text
         self.filename = filename
@@ -180,7 +176,7 @@ class Lexer:
                 raise exceptions.SyntaxException(
                     "Keyword '%s' not a legal ternary for keyword '%s'"
                     % (node.keyword, self.control_line[-1].keyword),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
 
     _coding_re = re.compile(r"#.*coding[:=]\s*([-\w.]+).*\r?\n")
@@ -268,12 +264,13 @@ class Lexer:
 
             if self.match_position > self.textlength:
                 break
-            raise exceptions.CompileException("assertion failed")
+            # TODO: no coverage here
+            raise exceptions.MakoException("assertion failed")
 
         if len(self.tag):
             raise exceptions.SyntaxException(
                 "Unclosed tag: <%%%s>" % self.tag[-1].keyword,
-                **self.exception_kwargs
+                **self.exception_kwargs,
             )
         if len(self.control_line):
             raise exceptions.SyntaxException(
@@ -325,7 +322,7 @@ class Lexer:
                     if not match:
                         raise exceptions.SyntaxException(
                             "Unclosed tag: <%%%s>" % self.tag[-1].keyword,
-                            **self.exception_kwargs
+                            **self.exception_kwargs,
                         )
                     self.append_node(parsetree.Text, match.group(1))
                     return self.match_tag_end()
@@ -340,13 +337,13 @@ class Lexer:
                 raise exceptions.SyntaxException(
                     "Closing tag without opening tag: </%%%s>"
                     % match.group(1),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             elif self.tag[-1].keyword != match.group(1):
                 raise exceptions.SyntaxException(
                     "Closing tag </%%%s> does not match tag: <%%%s>"
                     % (match.group(1), self.tag[-1].keyword),
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             self.tag.pop()
             return True
@@ -447,7 +444,7 @@ class Lexer:
                 if not m2:
                     raise exceptions.SyntaxException(
                         "Invalid control line: '%s'" % text,
-                        **self.exception_kwargs
+                        **self.exception_kwargs,
                     )
                 isend, keyword = m2.group(1, 2)
                 isend = isend is not None
@@ -457,13 +454,13 @@ class Lexer:
                         raise exceptions.SyntaxException(
                             "No starting keyword '%s' for '%s'"
                             % (keyword, text),
-                            **self.exception_kwargs
+                            **self.exception_kwargs,
                         )
                     elif self.control_line[-1].keyword != keyword:
                         raise exceptions.SyntaxException(
                             "Keyword '%s' doesn't match keyword '%s'"
                             % (text, self.control_line[-1].keyword),
-                            **self.exception_kwargs
+                            **self.exception_kwargs,
                         )
                 self.append_node(parsetree.ControlLine, keyword, isend, text)
             else:

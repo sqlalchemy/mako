@@ -1,5 +1,5 @@
 # mako/compat.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -46,10 +46,6 @@ def inspect_getargspec(func):
     return ArgSpec(args, varargs, varkw, func.__defaults__)
 
 
-def octal(lit):
-    return eval("0o" + lit)
-
-
 def load_module(module_id, path):
     spec = util.spec_from_file_location(module_id, path)
     module = util.module_from_spec(spec)
@@ -57,42 +53,9 @@ def load_module(module_id, path):
     return module
 
 
-def reraise(tp, value, tb=None, cause=None):
-    if cause is not None:
-        value.__cause__ = cause
-    if value.__traceback__ is not tb:
-        raise value.with_traceback(tb)
-    raise value
-
-
 def exception_as():
     return sys.exc_info()[1]
 
 
-all = all  # noqa
-
-
 def exception_name(exc):
     return exc.__class__.__name__
-
-
-################################################
-# cross-compatible metaclass implementation
-# Copyright (c) 2010-2012 Benjamin Peterson
-def with_metaclass(meta, base=object):
-    """Create a base class with a metaclass."""
-    return meta("%sBase" % meta.__name__, (base,), {})
-
-
-################################################
-
-
-def arg_stringname(func_arg):
-    """Gets the string name of a kwarg or vararg
-    In Python3.4 a function's args are
-    of _ast.arg type not _ast.name
-    """
-    if hasattr(func_arg, "arg"):
-        return func_arg.arg
-    else:
-        return str(func_arg)

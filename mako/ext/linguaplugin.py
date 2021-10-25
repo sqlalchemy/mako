@@ -1,5 +1,5 @@
 # ext/linguaplugin.py
-# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2021 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -39,11 +39,8 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
     def process_python(self, code, code_lineno, translator_strings):
         source = code.getvalue().strip()
         if source.endswith(":"):
-            if source in (
-                "try:",
-                "else:",
-            ) or source.startswith("except"):
-                source = ""      # Ignore try/except and else
+            if source in ("try:", "else:") or source.startswith("except"):
+                source = ""  # Ignore try/except and else
             elif source.startswith("elif"):
                 source = source[2:]  # Replace "elif" with "if"
             source += "pass"
