@@ -19,8 +19,7 @@ class MessageExtractor:
         template_node = lexer.Lexer(
             fileobj.read(), input_encoding=self.config["encoding"]
         ).parse()
-        for extracted in self.extract_nodes(template_node.get_children()):
-            yield extracted
+        yield from self.extract_nodes(template_node.get_children())
 
     def extract_nodes(self, nodes):
         translator_comments = []
@@ -118,8 +117,7 @@ class MessageExtractor:
             in_translator_comments = False
 
             if child_nodes:
-                for extracted in self.extract_nodes(child_nodes):
-                    yield extracted
+                yield from self.extract_nodes(child_nodes)
 
     @staticmethod
     def _split_comment(lineno, comment):

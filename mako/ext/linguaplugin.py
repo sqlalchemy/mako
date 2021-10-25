@@ -4,6 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import contextlib
 import io
 
 from lingua.extractors import Extractor
@@ -25,16 +26,11 @@ class LinguaMakoExtractor(Extractor, MessageExtractor):
         self.filename = filename
         self.python_extractor = get_extractor("x.py")
         if fileobj is None:
-            fileobj = open(filename, "r")
-            must_close = True
+            ctx = open(filename, "r")
         else:
-            must_close = False
-        try:
-            for message in self.process_file(fileobj):
-                yield message
-        finally:
-            if must_close:
-                fileobj.close()
+            ctx = contextlib.nullcontext(fileobj)
+        with ctx as file_:
+            yield from self.process_file(file_)
 
     def process_python(self, code, code_lineno, translator_strings):
         source = code.getvalue().strip()

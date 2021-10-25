@@ -298,10 +298,13 @@ class Tag(Node, metaclass=_TagMeta):
         missing = [r for r in required if r not in self.parsed_attributes]
         if len(missing):
             raise exceptions.CompileException(
-                "Missing attribute(s): %s"
-                % ",".join([repr(m) for m in missing]),
+                (
+                    "Missing attribute(s): %s"
+                    % ",".join(repr(m) for m in missing)
+                ),
                 **self.exception_kwargs,
             )
+
         self.parent = None
         self.nodes = []
 
@@ -333,9 +336,8 @@ class Tag(Node, metaclass=_TagMeta):
                             code.undeclared_identifiers
                         )
                         expr.append("(%s)" % m.group(1))
-                    else:
-                        if x:
-                            expr.append(repr(x))
+                    elif x:
+                        expr.append(repr(x))
                 self.parsed_attributes[key] = " + ".join(expr) or repr("")
             elif key in nonexpressions:
                 if re.search(r"\${.+?}", self.attributes[key]):
@@ -604,13 +606,12 @@ class CallNamespaceTag(Tag):
             namespace,
             defname,
             ",".join(
-                [
-                    "%s=%s" % (k, v)
-                    for k, v in self.parsed_attributes.items()
-                    if k != "args"
-                ]
+                "%s=%s" % (k, v)
+                for k, v in self.parsed_attributes.items()
+                if k != "args"
             ),
         )
+
         self.code = ast.PythonCode(self.expression, **self.exception_kwargs)
         self.body_decl = ast.FunctionArgs(
             attributes.get("args", ""), **self.exception_kwargs
