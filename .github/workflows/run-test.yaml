@@ -29,6 +29,12 @@ jobs:
           - "3.9"
           - "3.10"
 
+        exclude:
+          # beaker raises warning on 3.10. only windows seems affected
+          # See https://github.com/bbangert/beaker/pull/213
+          - os: "windows-latest"
+            python-version: "3.10"
+
       fail-fast: false
 
     # steps to run in each job. Some are github actions, others run shell commands
