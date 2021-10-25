@@ -10,7 +10,7 @@ on:
 
 jobs:
   run-test:
-    name: ${{ matrix.python-version }}-${{ matrix.os }}
+    name: ${{ matrix.python-version }}-${{ matrix.os }}-${{matrix.tox-env}}
     runs-on: ${{ matrix.os }}
     strategy:
       # run this job using this matrix
@@ -19,6 +19,9 @@ jobs:
           - "ubuntu-latest"
         python-version:
           - "3.10"
+        tox-env:
+          - ""
+          - "-e pep8"
 
       fail-fast: false
 
@@ -40,4 +43,4 @@ jobs:
           pip list
 
       - name: Run tests
-        run: tox
+        run: tox ${{ matrix.tox-env }}

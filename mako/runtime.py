@@ -24,7 +24,7 @@ class Context:
     See :ref:`runtime_toplevel` for detail on the usage of
     :class:`.Context`.
 
-     """
+    """
 
     def __init__(self, buffer, **data):
         self._buffer_stack = [buffer]
@@ -339,8 +339,7 @@ class LoopContext:
         return bool(self.index % 2)
 
     def cycle(self, *values):
-        """Cycle through values as the loop progresses.
-        """
+        """Cycle through values as the loop progresses."""
         if not values:
             raise ValueError("You must provide values to cycle through")
         return values[self.index % len(values)]
@@ -363,19 +362,19 @@ class _NSAttr:
 class Namespace:
 
     """Provides access to collections of rendering methods, which
-      can be local, from other templates, or from imported modules.
+    can be local, from other templates, or from imported modules.
 
-      To access a particular rendering method referenced by a
-      :class:`.Namespace`, use plain attribute access:
+    To access a particular rendering method referenced by a
+    :class:`.Namespace`, use plain attribute access:
 
-      .. sourcecode:: mako
+    .. sourcecode:: mako
 
-        ${some_namespace.foo(x, y, z)}
+      ${some_namespace.foo(x, y, z)}
 
-      :class:`.Namespace` also contains several built-in attributes
-      described here.
+    :class:`.Namespace` also contains several built-in attributes
+    described here.
 
-      """
+    """
 
     def __init__(
         self,

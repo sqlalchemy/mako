@@ -46,6 +46,6 @@ class TestTGPlugin(TemplateTest):
         assert result_lines(tl.render({}, template="/index.html")) == [
             "this is index"
         ]
-        assert result_lines(
-            tl.render({}, template=("/index.html"))
-        ) == ["this is index"]
+        assert result_lines(tl.render({}, template=("/index.html"))) == [
+            "this is index"
+        ]

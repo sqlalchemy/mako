@@ -332,7 +332,7 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
 
     def test_input_encoding(self):
         """test the 'input_encoding' flag on Template, and that unicode
-            objects arent double-decoded"""
+        objects arent double-decoded"""
 
         self._do_memory_test(
             ("hello ${f('śląsk')}"),
@@ -927,15 +927,18 @@ class ControlTest(TemplateTest):
     %endfor
 """
         )
-        assert result_lines(
-            t.render(
-                y=[
-                    {"test": "one"},
-                    {"foo": "bar"},
-                    {"foo": "bar", "test": "two"},
-                ]
+        assert (
+            result_lines(
+                t.render(
+                    y=[
+                        {"test": "one"},
+                        {"foo": "bar"},
+                        {"foo": "bar", "test": "two"},
+                    ]
+                )
             )
-        ) == ["yes x has test", "no x does not have test", "yes x has test"]
+            == ["yes x has test", "no x does not have test", "yes x has test"]
+        )
 
     def test_blank_control_1(self):
         self._do_memory_test(

@@ -176,8 +176,8 @@ class Lexer:
 
     def decode_raw_stream(self, text, decode_raw, known_encoding, filename):
         """given string/unicode or bytes/string, determine encoding
-           from magic encoding comment, return body as unicode
-           or raw if decode_raw=False
+        from magic encoding comment, return body as unicode
+        or raw if decode_raw=False
 
         """
         if isinstance(text, str):
@@ -312,7 +312,7 @@ class Lexer:
             if not match:
                 raise exceptions.SyntaxException(
                     "Unclosed tag: <%%%s>" % self.tag[-1].keyword,
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             self.append_node(parsetree.Text, match.group(1))
             return self.match_tag_end()
@@ -434,7 +434,7 @@ class Lexer:
             if not m2:
                 raise exceptions.SyntaxException(
                     "Invalid control line: '%s'" % text,
-                    **self.exception_kwargs
+                    **self.exception_kwargs,
                 )
             isend, keyword = m2.group(1, 2)
             isend = isend is not None
@@ -442,15 +442,14 @@ class Lexer:
             if isend:
                 if not len(self.control_line):
                     raise exceptions.SyntaxException(
-                        "No starting keyword '%s' for '%s'"
-                        % (keyword, text),
-                        **self.exception_kwargs
+                        "No starting keyword '%s' for '%s'" % (keyword, text),
+                        **self.exception_kwargs,
                     )
                 elif self.control_line[-1].keyword != keyword:
                     raise exceptions.SyntaxException(
                         "Keyword '%s' doesn't match keyword '%s'"
                         % (text, self.control_line[-1].keyword),
-                        **self.exception_kwargs
+                        **self.exception_kwargs,
                     )
             self.append_node(parsetree.ControlLine, keyword, isend, text)
         else:

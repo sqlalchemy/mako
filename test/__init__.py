@@ -102,9 +102,10 @@ def raises(except_cls, message=None):
         success = False
     except except_cls as e:
         if message:
-            assert re.search(
-                message, str(e), re.UNICODE
-            ), "%r !~ %s" % (message, e)
+            assert re.search(message, str(e), re.UNICODE), "%r !~ %s" % (
+                message,
+                e,
+            )
             print(str(e).encode("utf-8"))
         success = True
 
@@ -168,7 +169,7 @@ def requires_no_pygments_exceptions(fn):
 
 class PlainCacheImpl(CacheImpl):
     """Simple memory cache impl so that tests which
-    use caching can run without beaker.  """
+    use caching can run without beaker."""
 
     def __init__(self, cache):
         self.cache = cache

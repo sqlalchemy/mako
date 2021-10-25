@@ -29,7 +29,7 @@ class UtilTest(unittest.TestCase):
         eq_(buf.getvalue(), "string c string d")
 
     def test_fast_buffer_encoded(self):
-        s = ("drôl m’a rée « S’il")
+        s = "drôl m’a rée « S’il"
         buf = util.FastEncodingBuffer(encoding="utf-8")
         buf.write(s[0:10])
         buf.write(s[10:])

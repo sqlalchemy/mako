@@ -106,11 +106,13 @@ class ControlLine(Node):
         """return true if the given keyword is a ternary keyword
         for this ControlLine"""
 
-        return keyword in {
+        cases = {
             "if": {"else", "elif"},
             "try": {"except", "finally"},
             "for": {"else"},
-        }.get(self.keyword, [])
+        }
+
+        return keyword in cases.get(self.keyword, set())
 
     def __repr__(self):
         return "ControlLine(%r, %r, %r, %r)" % (

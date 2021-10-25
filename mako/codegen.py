@@ -43,7 +43,7 @@ def compile(  # noqa
     reserved_names=frozenset(),
 ):
     """Generate module source code given a parsetree node,
-      uri, and optional source filename"""
+    uri, and optional source filename"""
 
     buf = util.FastEncodingBuffer()
 
@@ -99,7 +99,7 @@ class _CompileContext:
 class _GenerateRenderMethod:
 
     """A template visitor object which generates the
-       full module source for a template.
+    full module source for a template.
 
     """
 
@@ -702,7 +702,7 @@ class _GenerateRenderMethod:
         toplevel=False,
     ):
         """write a post-function decorator to replace a rendering
-            callable with a cached version of itself."""
+        callable with a cached version of itself."""
 
         self.printer.writeline("__M_%s = %s" % (name, name))
         cachekey = node_or_pagetag.parsed_attributes.get(
@@ -1084,7 +1084,7 @@ class _Identifiers:
 
     def branch(self, node, **kwargs):
         """create a new Identifiers for a new Node, with
-          this Identifiers as the parent."""
+        this Identifiers as the parent."""
 
         return _Identifiers(self.compiler, node, self, **kwargs)
 
@@ -1109,7 +1109,7 @@ class _Identifiers:
 
     def check_declared(self, node):
         """update the state of this Identifiers with the undeclared
-            and declared identifiers of the given node."""
+        and declared identifiers of the given node."""
 
         for ident in node.undeclared_identifiers():
             if ident != "context" and ident not in self.declared.union(
