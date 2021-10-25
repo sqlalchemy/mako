@@ -262,15 +262,14 @@ class TemplateLookup(TemplateCollection):
         if key in self._uri_cache:
             return self._uri_cache[key]
 
-        if uri[0] != "/":
-            if relativeto is not None:
-                v = self._uri_cache[key] = posixpath.join(
-                    posixpath.dirname(relativeto), uri
-                )
-            else:
-                v = self._uri_cache[key] = "/" + uri
-        else:
+        if uri[0] == "/":
             v = self._uri_cache[key] = uri
+        elif relativeto is not None:
+            v = self._uri_cache[key] = posixpath.join(
+                posixpath.dirname(relativeto), uri
+            )
+        else:
+            v = self._uri_cache[key] = "/" + uri
         return v
 
     def filename_to_uri(self, filename):
@@ -334,11 +333,10 @@ class TemplateLookup(TemplateCollection):
 
         try:
             template_stat = os.stat(template.filename)
-            if template.module._modified_time < template_stat[stat.ST_MTIME]:
-                self._collection.pop(uri, None)
-                return self._load(template.filename, uri)
-            else:
+            if template.module._modified_time >= template_stat[stat.ST_MTIME]:
                 return template
+            self._collection.pop(uri, None)
+            return self._load(template.filename, uri)
         except OSError:
             self._collection.pop(uri, None)
             raise exceptions.TemplateLookupException(

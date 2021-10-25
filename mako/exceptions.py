@@ -225,13 +225,12 @@ class RichTraceback:
                 if new_trcback:
                     try:
                         # A normal .py file (not a Template)
-                        fp = open(new_trcback[-1][0], "rb")
-                        encoding = util.parse_encoding(fp)
-                        if not encoding:
-                            encoding = "utf-8"
-                        fp.seek(0)
-                        self.source = fp.read()
-                        fp.close()
+                        with open(new_trcback[-1][0], "rb") as fp:
+                            encoding = util.parse_encoding(fp)
+                            if not encoding:
+                                encoding = "utf-8"
+                            fp.seek(0)
+                            self.source = fp.read()
                         if encoding:
                             self.source = self.source.decode(encoding)
                     except IOError:

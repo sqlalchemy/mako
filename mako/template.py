@@ -357,11 +357,7 @@ class Template:
     ):
         self.cache_impl = cache_impl
         self.cache_enabled = cache_enabled
-        if cache_args:
-            self.cache_args = cache_args
-        else:
-            self.cache_args = {}
-
+        self.cache_args = cache_args or {}
         # transfer deprecated cache_* args
         if cache_type:
             self.cache_args["type"] = cache_type
@@ -636,21 +632,21 @@ class ModuleInfo:
 
     @property
     def source(self):
-        if self.template_source is not None:
-            if self.module._source_encoding and not isinstance(
-                self.template_source, str
-            ):
-                return self.template_source.decode(
-                    self.module._source_encoding
-                )
-            else:
-                return self.template_source
-        else:
+        if self.template_source is None:
             data = util.read_file(self.template_filename)
             if self.module._source_encoding:
                 return data.decode(self.module._source_encoding)
             else:
                 return data
+
+        elif self.module._source_encoding and not isinstance(
+            self.template_source, str
+        ):
+            return self.template_source.decode(
+                self.module._source_encoding
+            )
+        else:
+            return self.template_source
 
 
 def _compile(template, text, filename, generate_magic_comment):

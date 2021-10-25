@@ -26,18 +26,17 @@ class PluginLoader:
     def load(self, name):
         if name in self.impls:
             return self.impls[name]()
+        import pkg_resources
+
+        for impl in pkg_resources.iter_entry_points(self.group, name):
+            self.impls[name] = impl.load
+            return impl.load()
         else:
-            import pkg_resources
+            from mako import exceptions
 
-            for impl in pkg_resources.iter_entry_points(self.group, name):
-                self.impls[name] = impl.load
-                return impl.load()
-            else:
-                from mako import exceptions
-
-                raise exceptions.RuntimeException(
-                    "Can't load plugin %s %s" % (self.group, name)
-                )
+            raise exceptions.RuntimeException(
+                "Can't load plugin %s %s" % (self.group, name)
+            )
 
     def register(self, name, modulepath, objname):
         def load():
@@ -195,9 +194,8 @@ class LRUCache(dict):
     def setdefault(self, key, value):
         if key in self:
             return self[key]
-        else:
-            self[key] = value
-            return value
+        self[key] = value
+        return value
 
     def __setitem__(self, key, value):
         item = dict.get(self, key)
@@ -287,7 +285,7 @@ def sorted_dict_repr(d):
     """
     keys = list(d.keys())
     keys.sort()
-    return "{" + ", ".join(["%r: %r" % (k, d[k]) for k in keys]) + "}"
+    return "{" + ", ".join("%r: %r" % (k, d[k]) for k in keys) + "}"
 
 
 def restore__ast(_ast):
@@ -372,12 +370,8 @@ mako in baz not in mako""",
 
 
 def read_file(path, mode="rb"):
-    fp = open(path, mode)
-    try:
-        data = fp.read()
-        return data
-    finally:
-        fp.close()
+    with open(path, mode) as fp:
+        return fp.read()
 
 
 def read_python_file(path):

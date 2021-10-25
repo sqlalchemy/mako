@@ -94,8 +94,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
     def _expand_tuples(self, args):
         for arg in args:
             if isinstance(arg, _ast.Tuple):
-                for n in arg.elts:
-                    yield n
+                yield from arg.elts
             else:
                 yield arg
 
@@ -156,15 +155,15 @@ class FindIdentifiers(_ast_util.NodeVisitor):
         for name in node.names:
             if name.asname is not None:
                 self._add_declared(name.asname)
+            elif name.name == "*":
+                raise exceptions.CompileException(
+                    "'import *' is not supported, since all identifier "
+                    "names must be explicitly declared.  Please use the "
+                    "form 'from <modulename> import <name1>, <name2>, "
+                    "...' instead.",
+                    **self.exception_kwargs
+                )
             else:
-                if name.name == "*":
-                    raise exceptions.CompileException(
-                        "'import *' is not supported, since all identifier "
-                        "names must be explicitly declared.  Please use the "
-                        "form 'from <modulename> import <name1>, <name2>, "
-                        "...' instead.",
-                        **self.exception_kwargs,
-                    )
                 self._add_declared(name.name)
 
 
