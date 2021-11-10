@@ -3,12 +3,16 @@
 Changelog
 =========
 
-1.1
+1.2
 ===
 
 .. changelog::
     :version: 1.2
     :include_notes_from: unreleased
+
+1.1
+===
+
 
 .. changelog::
     :version: 1.1.5
