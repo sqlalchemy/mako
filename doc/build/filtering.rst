@@ -34,9 +34,15 @@ The built-in escape flags are:
 * ``trim`` : whitespace trimming, provided by ``string.strip()``
 * ``entity`` : produces HTML entity references for applicable
   strings, derived from ``htmlentitydefs``
-* ``unicode`` (``str`` on Python 3): produces a Python unicode
+* ``str`` : produces a Python unicode
   string (this function is applied by default)
-* ``decode.<some encoding>``: decode input into a Python
+* ``unicode`` : aliased to ``str`` above
+
+  .. versionchanged:: 1.2.0
+     Prior versions applied the ``unicode`` built-in when running in Python 2;
+     in 1.2.0 Mako applies the Python 3 ``str`` built-in.
+
+* ``decode.<some encoding>`` : decode input into a Python
   unicode with the specified encoding
 * ``n`` : disable all default filtering; only filters specified
   in the local expression tag will be applied.
@@ -101,13 +107,13 @@ In addition to the ``expression_filter`` argument, the
 :class:`.TemplateLookup` can specify filtering for all expression tags
 at the programmatic level. This array-based argument, when given
 its default argument of ``None``, will be internally set to
-``["unicode"]`` (or ``["str"]`` on Python 3):
+``["str"]``:
 
 .. sourcecode:: python
 
-    t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
+    t = TemplateLookup(directories=['/tmp'], default_filters=['str'])
 
-To replace the usual ``unicode``/``str`` function with a
+To replace the usual ``str`` function with a
 specific encoding, the ``decode`` filter can be substituted:
 
 .. sourcecode:: python
@@ -128,7 +134,7 @@ applied first.
 
 .. sourcecode:: python
 
-    t = Template(templatetext, default_filters=['unicode', 'myfilter'])
+    t = Template(templatetext, default_filters=['str', 'myfilter'])
 
 To ease the usage of ``default_filters`` with custom filters,
 you can also add imports (or other code) to all templates using
@@ -137,7 +143,7 @@ the ``imports`` argument:
 .. sourcecode:: python
 
     t = TemplateLookup(directories=['/tmp'],
-                       default_filters=['unicode', 'myfilter'],
+                       default_filters=['str', 'myfilter'],
                        imports=['from mypackage import myfilter'])
 
 The above will generate templates something like this:
@@ -148,7 +154,7 @@ The above will generate templates something like this:
     from mypackage import myfilter
 
     def render_body(context):
-        context.write(myfilter(unicode("some text")))
+        context.write(myfilter(str("some text")))
 
 .. _expression_filtering_nfilter:
 
