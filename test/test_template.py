@@ -32,6 +32,26 @@ class ctx:
         pass
 
 
+class MiscTest(TemplateTest):
+    def test_crlf_linebreaks(self):
+
+        crlf = r"""
+<%
+    foo = True
+    bar = True
+%>
+% if foo and \
+     bar:
+     foo and bar
+%endif
+"""
+        crlf = crlf.replace("\n", "\r\n")
+        self._do_test(
+            Template(crlf),
+            "\r\n\r\n     foo and bar\r\n"
+        )
+
+
 class EncodingTest(TemplateTest):
     def test_escapes_html_tags(self):
         from mako.exceptions import html_error_template
