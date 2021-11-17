@@ -10,7 +10,6 @@ Changelog
     :version: 1.2
     :include_notes_from: unreleased
 
-
 1.1
 ===
 
