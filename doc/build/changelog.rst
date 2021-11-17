@@ -10,8 +10,22 @@ Changelog
     :version: 1.2
     :include_notes_from: unreleased
 
+
 1.1
 ===
+
+.. changelog::
+    :version: 1.1.6
+    :released: Wed Nov 17 2021
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 346
+        :versions: 1.2.0, 1.1.6
+
+        Fixed issue where control statements on multi lines with a backslash would
+        not parse correctly if the template itself contained CR/LF pairs as on
+        Windows. Pull request courtesy Charles Pigott.
 
 
 .. changelog::
