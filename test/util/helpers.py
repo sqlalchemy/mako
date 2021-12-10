@@ -19,9 +19,19 @@ def result_lines(result):
     ]
 
 
+def _unlink_path(path, missing_ok=False):
+    # Replicate 3.8+ functionality in 3.7
+    cm = contextlib.nullcontext()
+    if missing_ok:
+        cm = contextlib.suppress(FileNotFoundError)
+
+    with cm:
+        path.unlink()
+
+
 def replace_file_with_dir(pathspec):
     path = pathlib.Path(pathspec)
-    path.unlink(missing_ok=True)
+    _unlink_path(path, missing_ok=True)
     path.mkdir(exist_ok=True)
     return path
 
