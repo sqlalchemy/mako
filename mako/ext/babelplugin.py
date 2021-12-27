@@ -20,7 +20,7 @@ class BabelMakoExtractor(MessageExtractor):
                 "input_encoding", options.get("encoding", None)
             ),
         }
-        super(BabelMakoExtractor, self).__init__()
+        super().__init__()
 
     def __call__(self, fileobj):
         return self.process_file(fileobj)

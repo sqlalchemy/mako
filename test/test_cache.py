@@ -652,9 +652,7 @@ class BeakerCacheTest(RealBackendTest, CacheTest):
 
     def _install_mock_cache(self, template, implname=None):
         template.cache_args["manager"] = self._regions()
-        impl = super(BeakerCacheTest, self)._install_mock_cache(
-            template, implname
-        )
+        impl = super()._install_mock_cache(template, implname)
         return impl
 
     def _regions(self):
@@ -680,9 +678,7 @@ class DogpileCacheTest(RealBackendTest, CacheTest):
     def _install_mock_cache(self, template, implname=None):
         template.cache_args["regions"] = self._regions()
         template.cache_args.setdefault("region", "short")
-        impl = super(DogpileCacheTest, self)._install_mock_cache(
-            template, implname
-        )
+        impl = super()._install_mock_cache(template, implname)
         return impl
 
     def _regions(self):
