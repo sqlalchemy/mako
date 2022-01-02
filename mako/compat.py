@@ -24,11 +24,11 @@ def inspect_getargspec(func):
     if inspect.ismethod(func):
         func = func.__func__
     if not inspect.isfunction(func):
-        raise TypeError("{!r} is not a Python function".format(func))
+        raise TypeError(f"{func!r} is not a Python function")
 
     co = func.__code__
     if not inspect.iscode(co):
-        raise TypeError("{!r} is not a code object".format(co))
+        raise TypeError(f"{co!r} is not a code object")
 
     nargs = co.co_argcount
     names = co.co_varnames

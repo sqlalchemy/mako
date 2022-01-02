@@ -40,7 +40,7 @@ class BeakerCacheImpl(CacheImpl):
                 _beaker_cache = cache.template.cache_args["manager"]
             else:
                 _beaker_cache = beaker_cache.CacheManager()
-        super(BeakerCacheImpl, self).__init__(cache)
+        super().__init__(cache)
 
     def _get_cache(self, **kw):
         expiretime = kw.pop("timeout", None)

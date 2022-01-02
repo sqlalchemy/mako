@@ -103,7 +103,7 @@ class ExtractMakoTestCase(TemplateTest):
         )
         self.addCleanup(mako_tmpl.close)
         message = next(
-            extract(mako_tmpl, set(["_", None]), [], {"encoding": "utf-8"})
+            extract(mako_tmpl, {"_", None}, [], {"encoding": "utf-8"})
         )
         assert message == (1, "_", "K\xf6ln", [])
 
@@ -114,7 +114,7 @@ class ExtractMakoTestCase(TemplateTest):
         )
         self.addCleanup(mako_tmpl.close)
         message = next(
-            extract(mako_tmpl, set(["_", None]), [], {"encoding": "cp1251"})
+            extract(mako_tmpl, {"_", None}, [], {"encoding": "cp1251"})
         )
         # "test" in Rusian. File encoding is cp1251 (aka "windows-1251")
         assert message == (1, "_", "\u0442\u0435\u0441\u0442", [])

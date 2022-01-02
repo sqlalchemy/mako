@@ -199,7 +199,7 @@ class TestLoopContext(unittest.TestCase):
 
     def test_reverse_index(self):
         length = len(self.iterable)
-        expected = tuple([length - i - 1 for i in range(length)])
+        expected = tuple(length - i - 1 for i in range(length))
         actual = tuple(self.ctx.reverse_index for i in self.ctx)
         print(expected, actual)
         assert expected == actual, (

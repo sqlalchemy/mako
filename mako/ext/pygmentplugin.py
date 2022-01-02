@@ -106,7 +106,7 @@ class MakoHtmlLexer(DelegatingLexer):
     aliases = ["html+mako"]
 
     def __init__(self, **options):
-        super(MakoHtmlLexer, self).__init__(HtmlLexer, MakoLexer, **options)
+        super().__init__(HtmlLexer, MakoLexer, **options)
 
 
 class MakoXmlLexer(DelegatingLexer):
@@ -114,7 +114,7 @@ class MakoXmlLexer(DelegatingLexer):
     aliases = ["xml+mako"]
 
     def __init__(self, **options):
-        super(MakoXmlLexer, self).__init__(XmlLexer, MakoLexer, **options)
+        super().__init__(XmlLexer, MakoLexer, **options)
 
 
 class MakoJavascriptLexer(DelegatingLexer):
@@ -122,9 +122,7 @@ class MakoJavascriptLexer(DelegatingLexer):
     aliases = ["js+mako", "javascript+mako"]
 
     def __init__(self, **options):
-        super(MakoJavascriptLexer, self).__init__(
-            JavascriptLexer, MakoLexer, **options
-        )
+        super().__init__(JavascriptLexer, MakoLexer, **options)
 
 
 class MakoCssLexer(DelegatingLexer):
@@ -132,7 +130,7 @@ class MakoCssLexer(DelegatingLexer):
     aliases = ["css+mako"]
 
     def __init__(self, **options):
-        super(MakoCssLexer, self).__init__(CssLexer, MakoLexer, **options)
+        super().__init__(CssLexer, MakoLexer, **options)
 
 
 pygments_html_formatter = HtmlFormatter(

@@ -50,7 +50,7 @@ class TemplateNode(Node):
     """a 'container' node that stores the overall collection of nodes."""
 
     def __init__(self, filename):
-        super(TemplateNode, self).__init__("", 0, 0, filename)
+        super().__init__("", 0, 0, filename)
         self.nodes = []
         self.page_attributes = {}
 
@@ -79,7 +79,7 @@ class ControlLine(Node):
     has_loop_context = False
 
     def __init__(self, keyword, isend, text, **kwargs):
-        super(ControlLine, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.text = text
         self.keyword = keyword
         self.isend = isend
@@ -127,7 +127,7 @@ class Text(Node):
     """defines plain text in the template."""
 
     def __init__(self, content, **kwargs):
-        super(Text, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.content = content
 
     def __repr__(self):
@@ -152,7 +152,7 @@ class Code(Node):
     """
 
     def __init__(self, text, ismodule, **kwargs):
-        super(Code, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.text = text
         self.ismodule = ismodule
         self.code = ast.PythonCode(text, **self.exception_kwargs)
@@ -179,7 +179,7 @@ class Comment(Node):
     """
 
     def __init__(self, text, **kwargs):
-        super(Comment, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.text = text
 
     def __repr__(self):
@@ -194,7 +194,7 @@ class Expression(Node):
     """
 
     def __init__(self, text, escapes, **kwargs):
-        super(Expression, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.text = text
         self.escapes = escapes
         self.escapes_code = ast.ArgumentList(escapes, **self.exception_kwargs)
@@ -228,7 +228,7 @@ class _TagMeta(type):
     def __init__(cls, clsname, bases, dict_):
         if getattr(cls, "__keyword__", None) is not None:
             cls._classmap[cls.__keyword__] = cls
-        super(_TagMeta, cls).__init__(clsname, bases, dict_)
+        super().__init__(clsname, bases, dict_)
 
     def __call__(cls, keyword, attributes, **kwargs):
         if ":" in keyword:
@@ -293,7 +293,7 @@ class Tag(Node, metaclass=_TagMeta):
          other arguments passed to the Node superclass (lineno, pos)
 
         """
-        super(Tag, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.keyword = keyword
         self.attributes = attributes
         self._parse_attributes(expressions, nonexpressions)
@@ -377,7 +377,7 @@ class IncludeTag(Tag):
     __keyword__ = "include"
 
     def __init__(self, keyword, attributes, **kwargs):
-        super(IncludeTag, self).__init__(
+        super().__init__(
             keyword,
             attributes,
             ("file", "import", "args"),
@@ -396,16 +396,14 @@ class IncludeTag(Tag):
         identifiers = self.page_args.undeclared_identifiers.difference(
             {"__DUMMY"}
         ).difference(self.page_args.declared_identifiers)
-        return identifiers.union(
-            super(IncludeTag, self).undeclared_identifiers()
-        )
+        return identifiers.union(super().undeclared_identifiers())
 
 
 class NamespaceTag(Tag):
     __keyword__ = "namespace"
 
     def __init__(self, keyword, attributes, **kwargs):
-        super(NamespaceTag, self).__init__(
+        super().__init__(
             keyword,
             attributes,
             ("file",),
@@ -435,9 +433,7 @@ class TextTag(Tag):
     __keyword__ = "text"
 
     def __init__(self, keyword, attributes, **kwargs):
-        super(TextTag, self).__init__(
-            keyword, attributes, (), ("filter"), (), **kwargs
-        )
+        super().__init__(keyword, attributes, (), ("filter"), (), **kwargs)
         self.filter_args = ast.ArgumentList(
             attributes.get("filter", ""), **self.exception_kwargs
         )
@@ -456,7 +452,7 @@ class DefTag(Tag):
             c for c in attributes if c.startswith("cache_")
         ]
 
-        super(DefTag, self).__init__(
+        super().__init__(
             keyword,
             attributes,
             expressions,
@@ -519,7 +515,7 @@ class BlockTag(Tag):
             c for c in attributes if c.startswith("cache_")
         ]
 
-        super(BlockTag, self).__init__(
+        super().__init__(
             keyword,
             attributes,
             expressions,
@@ -575,7 +571,7 @@ class CallTag(Tag):
     __keyword__ = "call"
 
     def __init__(self, keyword, attributes, **kwargs):
-        super(CallTag, self).__init__(
+        super().__init__(
             keyword, attributes, ("args"), ("expr",), ("expr",), **kwargs
         )
         self.expression = attributes["expr"]
@@ -595,7 +591,7 @@ class CallTag(Tag):
 
 class CallNamespaceTag(Tag):
     def __init__(self, namespace, defname, attributes, **kwargs):
-        super(CallNamespaceTag, self).__init__(
+        super().__init__(
             namespace + ":" + defname,
             attributes,
             tuple(attributes.keys()) + ("args",),
@@ -632,7 +628,7 @@ class InheritTag(Tag):
     __keyword__ = "inherit"
 
     def __init__(self, keyword, attributes, **kwargs):
-        super(InheritTag, self).__init__(
+        super().__init__(
             keyword, attributes, ("file",), (), ("file",), **kwargs
         )
 
@@ -648,9 +644,7 @@ class PageTag(Tag):
             "enable_loop",
         ] + [c for c in attributes if c.startswith("cache_")]
 
-        super(PageTag, self).__init__(
-            keyword, attributes, expressions, (), (), **kwargs
-        )
+        super().__init__(keyword, attributes, expressions, (), (), **kwargs)
         self.body_decl = ast.FunctionArgs(
             attributes.get("args", ""), **self.exception_kwargs
         )

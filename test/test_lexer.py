@@ -26,7 +26,7 @@ def repr_arg(x):
 
 def _as_unicode(arg):
     if isinstance(arg, dict):
-        return dict((k, _as_unicode(v)) for k, v in arg.items())
+        return {k: _as_unicode(v) for k, v in arg.items()}
     else:
         return arg
 

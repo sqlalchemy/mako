@@ -107,7 +107,7 @@ class PythonFragment(PythonCode):
                 "Unsupported control keyword: '%s'" % keyword,
                 **exception_kwargs,
             )
-        super(PythonFragment, self).__init__(code, **exception_kwargs)
+        super().__init__(code, **exception_kwargs)
 
 
 class FunctionDecl:
@@ -199,6 +199,4 @@ class FunctionArgs(FunctionDecl):
     """the argument portion of a function declaration"""
 
     def __init__(self, code, **kwargs):
-        super(FunctionArgs, self).__init__(
-            "def ANON(%s):pass" % code, **kwargs
-        )
+        super().__init__("def ANON(%s):pass" % code, **kwargs)
