@@ -7,7 +7,7 @@ Changelog
 ===
 
 .. changelog::
-    :version: 1.2
+    :version: 1.2.0
     :include_notes_from: unreleased
 
 1.1
