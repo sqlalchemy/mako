@@ -4,7 +4,8 @@ from unittest import mock
 
 from mako.cmd import cmdline
 from .util.assertions import eq_
-from .util.assertions import raises
+from .util.assertions import expect_raises
+from .util.assertions import expect_raises_message
 from .util.fixtures import template_base
 from .util.fixtures import TemplateTest
 
@@ -30,7 +31,7 @@ class CmdTest(TemplateTest):
             "sys.stdin", mock.Mock(read=mock.Mock(return_value="${x"))
         ):
             with self._capture_output_fixture("stderr") as stderr:
-                with raises(SystemExit):
+                with expect_raises(SystemExit):
                     cmdline(["--var", "x=5", "-"])
 
             assert (
@@ -43,7 +44,7 @@ class CmdTest(TemplateTest):
             "sys.stdin", mock.Mock(read=mock.Mock(return_value="${q}"))
         ):
             with self._capture_output_fixture("stderr") as stderr:
-                with raises(SystemExit):
+                with expect_raises(SystemExit):
                     cmdline(["--var", "x=5", "-"])
 
             assert "NameError: Undefined" in stderr.write.mock_calls[0][1][0]
@@ -59,7 +60,7 @@ class CmdTest(TemplateTest):
 
     def test_file_syntax_err(self):
         with self._capture_output_fixture("stderr") as stderr:
-            with raises(SystemExit):
+            with expect_raises(SystemExit):
                 cmdline(
                     [
                         "--var",
@@ -73,7 +74,7 @@ class CmdTest(TemplateTest):
 
     def test_file_rt_err(self):
         with self._capture_output_fixture("stderr") as stderr:
-            with raises(SystemExit):
+            with expect_raises(SystemExit):
                 cmdline(
                     [
                         "--var",
@@ -86,5 +87,7 @@ class CmdTest(TemplateTest):
         assert "Traceback" in stderr.write.mock_calls[0][1][0]
 
     def test_file_notfound(self):
-        with raises(SystemExit, "error: can't find fake.lalala"):
+        with expect_raises_message(
+            SystemExit, "error: can't find fake.lalala"
+        ):
             cmdline(["--var", "x=5", "fake.lalala"])

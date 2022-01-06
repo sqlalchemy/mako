@@ -8,24 +8,6 @@ def eq_(a, b, msg=None):
     assert a == b, msg or "%r != %r" % (a, b)
 
 
-@contextlib.contextmanager
-def raises(except_cls, message=None):
-    try:
-        yield
-        success = False
-    except except_cls as e:
-        if message:
-            assert re.search(message, str(e), re.UNICODE), "%r !~ %s" % (
-                message,
-                e,
-            )
-            print(str(e).encode("utf-8"))
-        success = True
-
-    # assert outside the block so it works for AssertionError too !
-    assert success, "Callable did not raise an exception"
-
-
 def _assert_proper_exception_context(exception):
     """assert that any exception we're catching does not have a __context__
     without a __cause__, and that __suppress_context__ is never set.
@@ -152,9 +134,19 @@ def _expect_raises(except_cls, msg=None, check_context=False, cause_cls=None):
     assert success, "Callable did not raise an exception"
 
 
-def expect_raises(except_cls, check_context=True):
+def expect_raises(except_cls, check_context=False):
     return _expect_raises(except_cls, check_context=check_context)
 
 
-def expect_raises_message(except_cls, msg, check_context=True):
+def expect_raises_message(except_cls, msg, check_context=False):
+    return _expect_raises(except_cls, msg=msg, check_context=check_context)
+
+
+def expect_raises_with_proper_context(except_cls, check_context=True):
+    return _expect_raises(except_cls, check_context=check_context)
+
+
+def expect_raises_message_with_proper_context(
+    except_cls, msg, check_context=True
+):
     return _expect_raises(except_cls, msg=msg, check_context=check_context)
