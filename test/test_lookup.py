@@ -1,24 +1,23 @@
 import os
 import tempfile
-import unittest
 
 from mako import exceptions
 from mako import lookup
 from mako import runtime
 from mako.template import Template
+from mako.testing.assertions import assert_raises_message
+from mako.testing.assertions import assert_raises_with_given_cause
+from mako.testing.config import config
+from mako.testing.helpers import file_with_template_code
+from mako.testing.helpers import replace_file_with_dir
+from mako.testing.helpers import result_lines
+from mako.testing.helpers import rewind_compile_time
 from mako.util import FastEncodingBuffer
-from .util.assertions import assert_raises_message
-from .util.assertions import assert_raises_with_given_cause
-from .util.fixtures import template_base
-from .util.helpers import file_with_template_code
-from .util.helpers import replace_file_with_dir
-from .util.helpers import result_lines
-from .util.helpers import rewind_compile_time
 
-tl = lookup.TemplateLookup(directories=[template_base])
+tl = lookup.TemplateLookup(directories=[config.template_base])
 
 
-class LookupTest(unittest.TestCase):
+class LookupTest:
     def test_basic(self):
         t = tl.get_template("index.html")
         assert result_lines(t.render()) == ["this is index"]
@@ -98,7 +97,7 @@ class LookupTest(unittest.TestCase):
         """test the mechanics of an include where
         the include goes outside of the path"""
         tl = lookup.TemplateLookup(
-            directories=[os.path.join(template_base, "subdir")]
+            directories=[os.path.join(config.template_base, "subdir")]
         )
         index = tl.get_template("index.html")
 

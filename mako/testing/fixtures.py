@@ -1,49 +1,29 @@
 import os
-import unittest
 
 from mako.cache import CacheImpl
 from mako.cache import register_plugin
 from mako.template import Template
 from .assertions import eq_
+from .config import config
 
 
-def _ensure_environment_variable(key, fallback):
-    env_var = os.getenv(key)
-    if env_var is None:
-        return fallback
-    return env_var
-
-
-def _get_module_base():
-    return _ensure_environment_variable(
-        "TEST_MODULE_BASE", os.path.abspath("./test/templates/modules")
-    )
-
-
-def _get_template_base():
-    return _ensure_environment_variable(
-        "TEST_TEMPLATE_BASE", os.path.abspath("./test/templates/")
-    )
-
-
-module_base = _get_module_base()
-template_base = _get_template_base()
-
-
-class TemplateTest(unittest.TestCase):
+class TemplateTest:
     def _file_template(self, filename, **kw):
         filepath = self._file_path(filename)
         return Template(
-            uri=filename, filename=filepath, module_directory=module_base, **kw
+            uri=filename,
+            filename=filepath,
+            module_directory=config.module_base,
+            **kw,
         )
 
     def _file_path(self, filename):
         name, ext = os.path.splitext(filename)
-        py3k_path = os.path.join(template_base, name + "_py3k" + ext)
+        py3k_path = os.path.join(config.template_base, name + "_py3k" + ext)
         if os.path.exists(py3k_path):
             return py3k_path
 
-        return os.path.join(template_base, filename)
+        return os.path.join(config.template_base, filename)
 
     def _do_file_test(
         self,

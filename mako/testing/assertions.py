@@ -8,6 +8,21 @@ def eq_(a, b, msg=None):
     assert a == b, msg or "%r != %r" % (a, b)
 
 
+def ne_(a, b, msg=None):
+    """Assert a != b, with repr messaging on failure."""
+    assert a != b, msg or "%r == %r" % (a, b)
+
+
+def in_(a, b, msg=None):
+    """Assert a in b, with repr messaging on failure."""
+    assert a in b, msg or "%r not in %r" % (a, b)
+
+
+def not_in(a, b, msg=None):
+    """Assert a in not b, with repr messaging on failure."""
+    assert a not in b, msg or "%r is in %r" % (a, b)
+
+
 def _assert_proper_exception_context(exception):
     """assert that any exception we're catching does not have a __context__
     without a __cause__, and that __suppress_context__ is never set.

@@ -1,9 +1,11 @@
 from mako.ext.turbogears import TGPlugin
-from .util.fixtures import template_base
-from .util.fixtures import TemplateTest
-from .util.helpers import result_lines
+from mako.testing.config import config
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import result_lines
 
-tl = TGPlugin(options=dict(directories=[template_base]), extension="html")
+tl = TGPlugin(
+    options=dict(directories=[config.template_base]), extension="html"
+)
 
 
 class TestTGPlugin(TemplateTest):

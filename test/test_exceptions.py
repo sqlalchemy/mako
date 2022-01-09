@@ -3,10 +3,10 @@ import sys
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
-from .util.exclusions import requires_no_pygments_exceptions
-from .util.exclusions import requires_pygments_14
-from .util.fixtures import TemplateTest
-from .util.helpers import result_lines
+from mako.testing.exclusions import requires_no_pygments_exceptions
+from mako.testing.exclusions import requires_pygments_14
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import result_lines
 
 
 class ExceptionsTest(TemplateTest):

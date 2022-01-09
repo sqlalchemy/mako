@@ -1,8 +1,8 @@
 from mako.template import Template
-from .util.assertions import eq_
-from .util.fixtures import TemplateTest
-from .util.helpers import flatten_result
-from .util.helpers import result_lines
+from mako.testing.assertions import eq_
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import flatten_result
+from mako.testing.helpers import result_lines
 
 
 class CallTest(TemplateTest):

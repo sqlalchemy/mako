@@ -1,11 +1,12 @@
 from mako import exceptions
 from mako import lookup
 from mako.template import Template
-from .util.assertions import assert_raises_message_with_given_cause
-from .util.assertions import eq_
-from .util.fixtures import TemplateTest
-from .util.helpers import flatten_result
-from .util.helpers import result_lines
+from mako.testing.assertions import assert_raises
+from mako.testing.assertions import assert_raises_message_with_given_cause
+from mako.testing.assertions import eq_
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import flatten_result
+from mako.testing.helpers import result_lines
 
 
 class NamespaceTest(TemplateTest):
@@ -586,7 +587,7 @@ class NamespaceTest(TemplateTest):
         """,
         )
 
-        self.assertRaises(AttributeError, l.get_template("bar.html").render)
+        assert_raises(AttributeError, l.get_template("bar.html").render)
 
     def test_custom_tag_1(self):
         template = Template(

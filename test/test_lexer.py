@@ -6,10 +6,11 @@ from mako import parsetree
 from mako import util
 from mako.lexer import Lexer
 from mako.template import Template
-from .util.assertions import assert_raises_message
-from .util.assertions import eq_
-from .util.fixtures import TemplateTest
-from .util.helpers import flatten_result
+from mako.testing.assertions import assert_raises
+from mako.testing.assertions import assert_raises_message
+from mako.testing.assertions import eq_
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import flatten_result
 
 # create fake parsetree classes which are constructed
 # exactly as the repr() of a real parsetree object.
@@ -137,13 +138,13 @@ class LexerTest(TemplateTest):
 
             hi.
         """
-        self.assertRaises(exceptions.SyntaxException, Lexer(template).parse)
+        assert_raises(exceptions.SyntaxException, Lexer(template).parse)
 
     def test_noexpr_allowed(self):
         template = """
             <%namespace name="${foo}"/>
         """
-        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        assert_raises(exceptions.CompileException, Lexer(template).parse)
 
     def test_unmatched_tag(self):
         template = """
@@ -156,13 +157,13 @@ class LexerTest(TemplateTest):
 
         hi.
 """
-        self.assertRaises(exceptions.SyntaxException, Lexer(template).parse)
+        assert_raises(exceptions.SyntaxException, Lexer(template).parse)
 
     def test_nonexistent_tag(self):
         template = """
             <%lala x="5"/>
         """
-        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        assert_raises(exceptions.CompileException, Lexer(template).parse)
 
     def test_wrongcase_tag(self):
         template = """
@@ -170,7 +171,7 @@ class LexerTest(TemplateTest):
             </%def>
 
         """
-        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        assert_raises(exceptions.CompileException, Lexer(template).parse)
 
     def test_percent_escape(self):
         template = """
@@ -273,7 +274,7 @@ class LexerTest(TemplateTest):
             hi
         </%def>
 """
-        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        assert_raises(exceptions.CompileException, Lexer(template).parse)
 
     def test_def_syntax_2(self):
         template = """
@@ -281,7 +282,7 @@ class LexerTest(TemplateTest):
             hi
         </%def>
     """
-        self.assertRaises(exceptions.CompileException, Lexer(template).parse)
+        assert_raises(exceptions.CompileException, Lexer(template).parse)
 
     def test_whitespace_equals(self):
         template = """

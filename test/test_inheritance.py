@@ -1,10 +1,8 @@
-import unittest
-
 from mako import lookup
-from .util.helpers import result_lines
+from mako.testing.helpers import result_lines
 
 
-class InheritanceTest(unittest.TestCase):
+class InheritanceTest:
     def test_basic(self):
         collection = lookup.TemplateLookup()
 

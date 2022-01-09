@@ -1,10 +1,10 @@
 import contextlib
 import pathlib
+from pathlib import Path
 import re
 import time
+from typing import Union
 from unittest import mock
-
-from test.util.fixtures import module_base
 
 
 def flatten_result(result):
@@ -17,6 +17,19 @@ def result_lines(result):
         for x in re.split(r"\r?\n", re.sub(r" +", " ", result))
         if x.strip() != ""
     ]
+
+
+def make_path(
+    filespec: Union[Path, str],
+    make_absolute: bool = True,
+    check_exists: bool = False,
+) -> Path:
+    path = Path(filespec)
+    if make_absolute:
+        path = path.resolve(strict=check_exists)
+    if check_exists and (not path.exists()):
+        raise FileNotFoundError(f"No file or directory at {filespec}")
+    return path
 
 
 def _unlink_path(path, missing_ok=False):
@@ -52,9 +65,3 @@ def rewind_compile_time(hours=1):
     with mock.patch("mako.codegen.time") as codegen_time:
         codegen_time.time.return_value = rewound
         yield
-
-
-def teardown():
-    import shutil
-
-    shutil.rmtree(module_base, True)

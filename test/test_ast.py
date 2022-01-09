@@ -1,14 +1,13 @@
-import unittest
-
 from mako import ast
 from mako import exceptions
 from mako import pyparser
-from .util.assertions import eq_
+from mako.testing.assertions import assert_raises
+from mako.testing.assertions import eq_
 
 exception_kwargs = {"source": "", "lineno": 0, "pos": 0, "filename": ""}
 
 
-class AstParseTest(unittest.TestCase):
+class AstParseTest:
     def test_locate_identifiers(self):
         """test the location of identifiers in a python code string"""
         code = """
@@ -228,7 +227,7 @@ except (Foo, Bar) as e:
 from foo import *
 import x as bar
 """
-        self.assertRaises(
+        assert_raises(
             exceptions.CompileException,
             ast.PythonCode,
             code,

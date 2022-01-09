@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from mako import exceptions
 from mako import runtime
@@ -9,14 +8,13 @@ from mako.lookup import TemplateLookup
 from mako.template import ModuleInfo
 from mako.template import ModuleTemplate
 from mako.template import Template
-from .util.assertions import assert_raises
-from .util.assertions import assert_raises_message
-from .util.assertions import eq_
-from .util.fixtures import module_base
-from .util.fixtures import template_base
-from .util.fixtures import TemplateTest
-from .util.helpers import flatten_result
-from .util.helpers import result_lines
+from mako.testing.assertions import assert_raises
+from mako.testing.assertions import assert_raises_message
+from mako.testing.assertions import eq_
+from mako.testing.config import config
+from mako.testing.fixtures import TemplateTest
+from mako.testing.helpers import flatten_result
+from mako.testing.helpers import result_lines
 
 
 class ctx:
@@ -136,7 +134,7 @@ class EncodingTest(TemplateTest):
 
     def test_unicode_file_lookup(self):
         lookup = TemplateLookup(
-            directories=[template_base],
+            directories=[config.template_base],
             output_encoding="utf-8",
             default_filters=["decode.utf8"],
         )
@@ -165,11 +163,11 @@ class EncodingTest(TemplateTest):
             ),
         )
 
-        self.assertRaises(
+        assert_raises(
             exceptions.CompileException,
             Template,
             filename=self._file_path("badbom.html"),
-            module_directory=module_base,
+            module_directory=config.module_base,
         )
 
     def test_unicode_memory(self):
@@ -399,7 +397,7 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
 
     def test_read_unicode(self):
         lookup = TemplateLookup(
-            directories=[template_base],
+            directories=[config.template_base],
             filesystem_checks=True,
             output_encoding="utf-8",
         )
@@ -1228,40 +1226,47 @@ for utf8 in (True, False):
 
 
 class ModuleDirTest(TemplateTest):
-    def tearDown(self):
+    def teardown_method(self):
         import shutil
 
-        shutil.rmtree(module_base, True)
+        shutil.rmtree(config.module_base, True)
 
     def test_basic(self):
         t = self._file_template("modtest.html")
         t2 = self._file_template("subdir/modtest.html")
 
-        eq_(t.module.__file__, os.path.join(module_base, "modtest.html.py"))
+        eq_(
+            t.module.__file__,
+            os.path.join(config.module_base, "modtest.html.py"),
+        )
         eq_(
             t2.module.__file__,
-            os.path.join(module_base, "subdir", "modtest.html.py"),
+            os.path.join(config.module_base, "subdir", "modtest.html.py"),
         )
 
     def test_callable(self):
         def get_modname(filename, uri):
             return os.path.join(
-                module_base,
+                config.module_base,
                 os.path.dirname(uri)[1:],
                 "foo",
                 os.path.basename(filename) + ".py",
             )
 
-        lookup = TemplateLookup(template_base, modulename_callable=get_modname)
+        lookup = TemplateLookup(
+            config.template_base, modulename_callable=get_modname
+        )
         t = lookup.get_template("/modtest.html")
         t2 = lookup.get_template("/subdir/modtest.html")
         eq_(
             t.module.__file__,
-            os.path.join(module_base, "foo", "modtest.html.py"),
+            os.path.join(config.module_base, "foo", "modtest.html.py"),
         )
         eq_(
             t2.module.__file__,
-            os.path.join(module_base, "subdir", "foo", "modtest.html.py"),
+            os.path.join(
+                config.module_base, "subdir", "foo", "modtest.html.py"
+            ),
         )
 
     def test_custom_writer(self):
@@ -1274,17 +1279,17 @@ class ModuleDirTest(TemplateTest):
             f.close()
 
         lookup = TemplateLookup(
-            template_base,
+            config.template_base,
             module_writer=write_module,
-            module_directory=module_base,
+            module_directory=config.module_base,
         )
         lookup.get_template("/modtest.html")
         lookup.get_template("/subdir/modtest.html")
         eq_(
             canary,
             [
-                os.path.join(module_base, "modtest.html.py"),
-                os.path.join(module_base, "subdir", "modtest.html.py"),
+                os.path.join(config.module_base, "modtest.html.py"),
+                os.path.join(config.module_base, "subdir", "modtest.html.py"),
             ],
         )
 
@@ -1438,7 +1443,7 @@ class ModuleTemplateTest(TemplateTest):
         ]
 
 
-class TestTemplateAPI(unittest.TestCase):
+class TestTemplateAPI:
     def test_metadata(self):
         t = Template(
             """

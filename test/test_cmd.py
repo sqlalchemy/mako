@@ -3,11 +3,11 @@ import os
 from unittest import mock
 
 from mako.cmd import cmdline
-from .util.assertions import eq_
-from .util.assertions import expect_raises
-from .util.assertions import expect_raises_message
-from .util.fixtures import template_base
-from .util.fixtures import TemplateTest
+from mako.testing.assertions import eq_
+from mako.testing.assertions import expect_raises
+from mako.testing.assertions import expect_raises_message
+from mako.testing.config import config
+from mako.testing.fixtures import TemplateTest
 
 
 class CmdTest(TemplateTest):
@@ -53,7 +53,11 @@ class CmdTest(TemplateTest):
     def test_file_success(self):
         with self._capture_output_fixture() as stdout:
             cmdline(
-                ["--var", "x=5", os.path.join(template_base, "cmd_good.mako")]
+                [
+                    "--var",
+                    "x=5",
+                    os.path.join(config.template_base, "cmd_good.mako"),
+                ]
             )
 
         eq_(stdout.write.mock_calls[0][1][0], "hello world 5")
@@ -65,7 +69,7 @@ class CmdTest(TemplateTest):
                     [
                         "--var",
                         "x=5",
-                        os.path.join(template_base, "cmd_syntax.mako"),
+                        os.path.join(config.template_base, "cmd_syntax.mako"),
                     ]
                 )
 
@@ -79,7 +83,7 @@ class CmdTest(TemplateTest):
                     [
                         "--var",
                         "x=5",
-                        os.path.join(template_base, "cmd_runtime.mako"),
+                        os.path.join(config.template_base, "cmd_runtime.mako"),
                     ]
                 )
 
