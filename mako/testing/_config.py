@@ -50,7 +50,7 @@ def _parse_cfg_file(filespec: Union[Path, str]):
     except FileNotFoundError as e:
         raise MissingConfig(f"No config file found at {filespec}") from e
     else:
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             cfg.read_file(f)
         return cfg
 
