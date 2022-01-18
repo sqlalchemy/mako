@@ -1,6 +1,0 @@
-.. change::
-    :tags: changed, py3k
-    :tickets: 351
-
-    Corrected "universal wheel" directive in ``setup.cfg`` so that building a
-    wheel does not target Python 2.

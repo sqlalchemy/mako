@@ -8,7 +8,57 @@ Changelog
 
 .. changelog::
     :version: 1.2.0
-    :include_notes_from: unreleased
+    :released: Tue Jan 18 2022
+
+    .. change::
+        :tags: changed, py3k
+        :tickets: 351
+
+        Corrected "universal wheel" directive in ``setup.cfg`` so that building a
+        wheel does not target Python 2.
+
+    .. change::
+        :tags: changed, py3k
+
+        The ``bytestring_passthrough`` template argument is removed, as this
+        flag only applied to Python 2.
+
+    .. change::
+        :tags: changed, py3k
+
+        With the removal of Python 2's ``cStringIO``, Mako now uses its own
+        internal ``FastEncodingBuffer`` exclusively.
+
+    .. change::
+        :tags: changed, py3k
+
+        Removed ``disable_unicode`` flag, that's no longer used in Python 3.
+
+    .. change::
+        :tags: changed
+        :tickets: 349
+
+        Refactored test utilities into ``mako.testing`` module. Removed
+        ``unittest.TestCase`` dependency in favor of ``pytest``.
+
+    .. change::
+        :tags: changed, setup
+
+        Replaced the use of ``pkg_resources`` with the ``importlib`` library.
+        For Python < 3.8 the library ``importlib_metadata`` is used.
+
+    .. change::
+        :tags: changed, py3k
+
+        Removed support for Python 2 and Python 3.6. Mako now requires Python >=
+        3.7.
+
+    .. change::
+        :tags: bug, py3k
+
+        Mako now performs exception chaining using ``raise from``, correctly
+        identifying underlying exception conditions when it raises its own
+        exceptions. Pull request courtesy Ram Rachum.
 
 1.1
 ===
