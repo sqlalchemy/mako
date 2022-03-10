@@ -8,7 +8,7 @@ Changelog
 
 .. changelog::
     :version: 1.2.0
-    :released: Tue Jan 18 2022
+    :released: Thu Mar 10 2022
 
     .. change::
         :tags: changed, py3k
