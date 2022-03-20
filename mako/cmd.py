@@ -51,12 +51,32 @@ def cmdline(argv=None):
         default=None,
         help="Write to file upon successful render instead of stdout",
     )
-    parser.add_argument("input", nargs="?", default="-")
+    parser.add_argument(
+        "--strip-shebang", "-s", action="store_true",
+        help="Strip a shebang in the first line of given input file",
+    )
+    parser.add_argument(
+        "--shift-args", "-a", action="store_true",
+        help="pass further `args` of this argument parser to the template"
+        "as sys.argv - allowing the template to do argparsing again.",
+    )
+    parser.add_argument("input", nargs="?", default="-",
+                        help="file to parse as template. default is stdin.")
+    parser.add_argument("args", nargs="*",
+                        help=("arguments passed to template's script. "
+                              "use '-- args...' when first arg "
+                              "starts with - or "))
 
     options = parser.parse_args(argv)
 
     output_encoding = options.output_encoding
     output_file = options.output_file
+
+    # strip away mako's original args, so the template can get new args
+    # we do this so templates can handle further args on their own
+    if options.shift_args:
+        saved_sys_argv = sys.argv
+        sys.argv = [options.input] + options.args
 
     if options.input == "-":
         lookup_dirs = options.template_dir or ["."]
@@ -75,18 +95,35 @@ def cmdline(argv=None):
             raise SystemExit("error: can't find %s" % filename)
         lookup_dirs = options.template_dir or [dirname(filename)]
         lookup = TemplateLookup(lookup_dirs)
+
+        preprocessor = None
+        if options.strip_shebang:
+            def preprocessor(content):
+                if content.startswith("#!"):
+                    lineend = content.find('\n')
+                    # without newline after shebang, content will be unchanged
+                    content = content[lineend + 1:]
+                return content
+
         try:
             template = Template(
                 filename=filename,
                 lookup=lookup,
                 output_encoding=output_encoding,
+                preprocessor=preprocessor,
             )
         except:
             _exit()
 
-    kw = dict(varsplit(var) for var in options.var)
+    # template rendering args
+    kw = {
+        "template_argv": options.args,
+    } | dict(varsplit(var) for var in options.var)
+
     try:
         rendered = template.render(**kw)
+    except SystemExit:
+        pass
     except:
         _exit()
     else:
@@ -94,6 +131,9 @@ def cmdline(argv=None):
             open(output_file, "wt", encoding=output_encoding).write(rendered)
         else:
             sys.stdout.write(rendered)
+    finally:
+        if options.shift_args:
+            sys.argv = saved_sys_argv
 
 
 if __name__ == "__main__":
