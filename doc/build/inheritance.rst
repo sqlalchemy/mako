@@ -525,7 +525,7 @@ A common mistake is along these lines:
     </%block>
 
     ## parent.mako
-    <%include file="partials.mako">
+    <%include file="partials.mako" />
 
     ## child.mako
     <%inherit file="parent.mako">
@@ -580,7 +580,7 @@ Another scenario is below, which results in both ``"SectionA"`` blocks being ren
 
     ## parent.mako
     <%inherit file="base.mako">
-    <%include file="child.mako">
+    <%include file="child.mako" />
 
     ## child.mako
     <%block name="SectionA">
