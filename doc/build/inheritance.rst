@@ -528,7 +528,7 @@ A common mistake is along these lines:
     <%include file="partials.mako" />
 
     ## child.mako
-    <%inherit file="parent.mako">
+    <%inherit file="parent.mako" />
     <%block name="header">
         Custom Header
     </%block>
@@ -559,7 +559,7 @@ it as a namespace:
     </%block>
 
     ## child.mako
-    <%inherit file="parent.mako">
+    <%inherit file="parent.mako" />
     <%block name="header">
         Custom Header
     </%block>
@@ -579,7 +579,7 @@ Another scenario is below, which results in both ``"SectionA"`` blocks being ren
     </%block>
 
     ## parent.mako
-    <%inherit file="base.mako">
+    <%inherit file="base.mako" />
     <%include file="child.mako" />
 
     ## child.mako
@@ -593,8 +593,8 @@ of ``child.mako`` using a namespace:
 .. sourcecode:: mako
 
     ## parent.mako
-    <%inherit file="base.mako">
-    <%namespace name="child" file="child.mako">
+    <%inherit file="base.mako" />
+    <%namespace name="child" file="child.mako" />
 
     <%block name="SectionA">
         ${child.SectionA()}
