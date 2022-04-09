@@ -274,10 +274,7 @@ ${foobar}
         html_error = exceptions.html_error_template().render_unicode(
             error=v, traceback=None
         )
-        assert (
-            "local variable &#39;y&#39; referenced before assignment"
-            in html_error
-        )
+        assert "local variable &#39;y&#39;" in html_error
 
     def test_tback_trace_from_py_file(self):
         t = self._file_template("runtimeerr.html")
@@ -287,10 +284,7 @@ ${foobar}
         except:
             html_error = exceptions.html_error_template().render_unicode()
 
-        assert (
-            "local variable &#39;y&#39; referenced before assignment"
-            in html_error
-        )
+        assert "local variable &#39;y&#39;" in html_error
 
     def test_code_block_line_number(self):
         l = TemplateLookup()
