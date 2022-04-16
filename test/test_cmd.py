@@ -95,3 +95,34 @@ class CmdTest(TemplateTest):
             SystemExit, "error: can't find fake.lalala"
         ):
             cmdline(["--var", "x=5", "fake.lalala"])
+
+    def test_strip_shebang(self):
+        with self._capture_output_fixture() as stdout:
+            cmdline(
+                [
+                    "--var",
+                    "x=42",
+                    "--strip-shebang",
+                    os.path.join(config.template_base,
+                                 "cmd_shebang.mako"),
+                ]
+            )
+
+        eq_(stdout.write.mock_calls[0][1][0], "executable template 42")
+
+    def test_template_arguments(self):
+        with self._capture_output_fixture() as stdout:
+            cmdline(
+                [
+                    "-s",  # short form for shebang strip
+                    "-a",  # replace sys.argv during rendering
+                    os.path.join(config.template_base,
+                                 "cmd_args.mako"),
+                    "--",
+                    "--test=42",
+                    "with args",
+                ]
+            )
+
+        eq_(stdout.write.mock_calls[0][1][0],
+            "executable template with args 42")
