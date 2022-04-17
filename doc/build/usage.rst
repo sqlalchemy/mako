@@ -332,6 +332,80 @@ which describes its general API:
             print(line, "\n")
         print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
 
+
+Standalone Template Evaluation
+==============================
+
+Direct Template Rendering
+-------------------------
+
+You can evaluate a template file with the ``mako-render`` tool directly.
+Alternatively, you can execute the `mako` Python package with ``python3 -m mako``.
+
+All available options can be seen by invoking:
+
+.. sourcecode:: sh
+    mako-render --help
+
+By default, the template is read from ``stdin``, and results are written to ``stdout``.
+To evaluate template files, pass the template file name, variables, and some arguments.
+
+Suppose you have this ``mytemplate.mako``:
+
+.. sourcecode:: mako
+
+    paper of the year by: ${name}!
+
+You can then evaluate the template on command-line by calling
+
+.. sourcecode:: sh
+
+    mako-render --var name="aperture science" mytemplate.mako
+
+
+Template Execution
+------------------
+
+``mako-render`` can also be used for executable template files. Such a file may
+be useful for dynamically generating static config files, especially in
+conjunction with some kind of "execfs" which executes files when they are read.
+
+Command line arguments given to the template can be evaluated within the template.
+
+To use this feature, choose ``#!/usr/bin/env -S mako-render -s -a --`` as your
+shebang. The ``-s`` will strip away the shebang (which is part of the template)
+from the resulting output. Using ``--`` allows us to pass template cli arguments
+starting with ``-``. Option ``-a`` enables passing cli arguments to the template
+as ``sys.argv`` so the template can do arg-parsing on its own easily.
+
+
+In this example, we have an executable text file named ``executabletemplate.mako``:
+
+.. sourcecode:: mako
+
+    #!/usr/bin/env -S mako-render -s -a --
+    <%!
+    import argparse
+    cli = argparse.ArgumentParser()
+    cli.add_argument("someargument")
+    cli.add_argument("--test")
+    args = cli.parse_args()
+    %>\
+    templates can be executed: ${args.test} ${args.someargument}
+
+Let's execute this template by running:
+
+.. sourcecode:: sh
+
+    ./executabletemplate.mako well! --test 'it works'
+
+This will result in output:
+
+.. sourcecode::
+
+    templates can be executed: it works well!
+
+
 Common Framework Integrations
 =============================
 
