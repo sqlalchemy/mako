@@ -173,7 +173,7 @@ ${foobar}
         )
 
         assert (
-            '<div class="sourceline"><table class="syntax-highlightedtable">'
+            '<table class="syntax-highlightedtable">'
             in l.get_template("foo.html").render_unicode()
         )
 

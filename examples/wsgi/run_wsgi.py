@@ -1,7 +1,12 @@
 #!/usr/bin/python
-import cgi, re, os, posixpath, mimetypes
-from mako.lookup import TemplateLookup
+import cgi
+import mimetypes
+import os
+import posixpath
+import re
+
 from mako import exceptions
+from mako.lookup import TemplateLookup
 
 root = "./"
 port = 8000

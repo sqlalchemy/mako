@@ -1,4 +1,4 @@
-from django.template import Library, Node, resolve_variable
+from django.template import Library
 from django.utils.html import escape
 
 register = Library()
