@@ -74,12 +74,11 @@ class Lexer:
             (start, end) = match.span()
             self.match_position = end + 1 if end == start else end
             self.matched_lineno = self.lineno
-            lines = re.findall(r"\n", self.text[mp : self.match_position])
             cp = mp - 1
-            while cp >= 0 and cp < self.textlength and self.text[cp] != "\n":
-                cp -= 1
+            if cp >= 0 and cp < self.textlength:
+                cp = self.text[ : cp + 1].rfind("\n")
             self.matched_charpos = mp - cp
-            self.lineno += len(lines)
+            self.lineno += self.text[mp : self.match_position].count("\n")
         return match
 
     def parse_until_text(self, watch_nesting, *text):
