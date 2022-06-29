@@ -18,6 +18,7 @@ class MockOptions:
 class MakoExtractTest(TemplateTest):
     @pytest.fixture(autouse=True)
     def register_lingua_extractors(self):
+
         from lingua.extractors import register_extractors
 
         register_extractors()
