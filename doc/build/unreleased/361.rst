@@ -1,7 +1,0 @@
-.. change::
-    :tags: performance
-    :tickets: 361
-
-    Optimized some codepaths within the lexer/Python code generation process,
-    improving performance for generation of templates prior to their being
-    cached. Pull request courtesy Takuto Ikuta.

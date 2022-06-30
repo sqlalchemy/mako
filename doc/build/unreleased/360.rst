@@ -1,6 +1,0 @@
-.. change::
-    :tags: bug, tests
-    :tickets: 360
-
-    Various fixes to the test suite in the area of exception message rendering
-    to accommodate for variability in Python versions as well as Pygments.

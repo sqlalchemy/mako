@@ -8,7 +8,22 @@ Changelog
 
 .. changelog::
     :version: 1.2.1
-    :include_notes_from: unreleased
+    :released: Thu Jun 30 2022
+
+    .. change::
+        :tags: performance
+        :tickets: 361
+
+        Optimized some codepaths within the lexer/Python code generation process,
+        improving performance for generation of templates prior to their being
+        cached. Pull request courtesy Takuto Ikuta.
+
+    .. change::
+        :tags: bug, tests
+        :tickets: 360
+
+        Various fixes to the test suite in the area of exception message rendering
+        to accommodate for variability in Python versions as well as Pygments.
 
 .. changelog::
     :version: 1.2.0
