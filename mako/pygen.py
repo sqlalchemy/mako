@@ -47,7 +47,9 @@ class PythonPrinter:
         self._re_space = re.compile(r"^\s*$")
         self._re_indent = re.compile(r":[ \t]*(?:#.*)?$")
         self._re_compound = re.compile(r"^\s*(if|try|elif|while|for|with)")
-        self._re_indent_keyword = re.compile(r"^\s*(def|class|else|elif|except|finally)")
+        self._re_indent_keyword = re.compile(
+            r"^\s*(def|class|else|elif|except|finally)"
+        )
         self._re_unindentor = re.compile(r"^\s*(else|elif|except|finally).*\:")
 
     def _update_lineno(self, num):
