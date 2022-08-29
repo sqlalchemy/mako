@@ -1,5 +1,7 @@
 import re
 
+import pytest
+
 from mako import compat
 from mako import exceptions
 from mako import parsetree
@@ -145,6 +147,10 @@ class LexerTest(TemplateTest):
             <%namespace name="${foo}"/>
         """
         assert_raises(exceptions.CompileException, Lexer(template).parse)
+
+    def test_tag_many_quotes(self):
+        template = "<%0" + '"' * 3000
+        assert_raises(exceptions.SyntaxException, Lexer(template).parse)
 
     def test_unmatched_tag(self):
         template = """
@@ -432,9 +438,16 @@ class LexerTest(TemplateTest):
             ),
         )
 
-    def test_pagetag(self):
-        template = """
-            <%page cached="True", args="a, b"/>
+    @pytest.mark.parametrize("comma,numchars", [(",", 48), ("", 47)])
+    def test_pagetag(self, comma, numchars):
+        # note that the comma here looks like:
+        # <%page cached="True", args="a, b"/>
+        # that's what this test has looked like for decades, however, the
+        # comma there is not actually the right syntax.  When issue #366
+        # was fixed, the reg was altered to accommodate for this comma to allow
+        # backwards compat
+        template = f"""
+            <%page cached="True"{comma} args="a, b"/>
 
             some template
         """
@@ -453,7 +466,7 @@ class LexerTest(TemplateTest):
 
             some template
         """,
-                        (2, 48),
+                        (2, numchars),
                     ),
                 ],
             ),
