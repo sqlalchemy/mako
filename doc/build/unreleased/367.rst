@@ -1,0 +1,13 @@
+.. change::
+    :tags: bug, lexer
+    :tickets: 367
+
+    Fixed issue in lexer in the same category as that of :ticket:`366` where
+    the regexp used to match an end tag didn't correctly organize for matching
+    characters surrounded by whitespace, leading to high memory / interpreter
+    hang if a closing tag incorrectly had a large amount of unterminated space
+    in it. Credit to Sebastian Chnelik for locating the issue.
+
+    As Mako templates inherently render and directly invoke arbitrary Python
+    code from the template source, it is **never** appropriate to create
+    templates that contain untrusted input.

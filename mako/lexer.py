@@ -322,7 +322,7 @@ class Lexer:
         return True
 
     def match_tag_end(self):
-        match = self.match(r"\</%[\t ]*(.+?)[\t ]*>")
+        match = self.match(r"\</%[\t ]*([^\t ]+?)[\t ]*>")
         if match:
             if not len(self.tag):
                 raise exceptions.SyntaxException(

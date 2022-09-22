@@ -148,7 +148,13 @@ class LexerTest(TemplateTest):
         """
         assert_raises(exceptions.CompileException, Lexer(template).parse)
 
-    def test_tag_many_quotes(self):
+    def test_closing_tag_many_spaces(self):
+        """test #367"""
+        template = '<%def name="foo()"> this is a def. </%' + " " * 10000
+        assert_raises(exceptions.SyntaxException, Lexer(template).parse)
+
+    def test_opening_tag_many_quotes(self):
+        """test #366"""
         template = "<%0" + '"' * 3000
         assert_raises(exceptions.SyntaxException, Lexer(template).parse)
 

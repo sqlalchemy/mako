@@ -22,7 +22,12 @@ Changelog
         correctly interpret quoted sections individually. While this parsing issue
         still produced the same expected tag structure later on, the mis-handling
         of quoted sections was also subject to a regexp crash if a tag had a large
-        number of quotes within its quoted sections.
+        number of quotes within its quoted sections.  Credit to Sebastian
+        Chnelik for locating the issue.
+
+        As Mako templates inherently render and directly invoke arbitrary Python
+        code from the template source, it is **never** appropriate to create
+        templates that contain untrusted input.
 
 .. changelog::
     :version: 1.2.1
