@@ -31,6 +31,16 @@ class TestLoop(unittest.TestCase):
                 "x",
                 "[y+1 for y in [1, 2, 3]]",
             ),
+            (
+                "for ((key1, val1), (key2, val2)) in pairwise(dict.items()):",
+                "((key1, val1), (key2, val2))",
+                "pairwise(dict.items())",
+            ),
+            (
+                "for (key1, val1), (key2, val2) in pairwise(dict.items()):",
+                "(key1, val1), (key2, val2)",
+                "pairwise(dict.items())",
+            ),
         ):
             match = _FOR_LOOP.match(statement)
             assert match and match.groups() == (target_list, expression_list)
