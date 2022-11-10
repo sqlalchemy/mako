@@ -32,9 +32,14 @@ class TestLoop(unittest.TestCase):
                 "[y+1 for y in [1, 2, 3]]",
             ),
             (
-                "for ((i1, assignment1), (i2, assignment2)) in pairwise(explicit_assignments):",
-                "((i1, assignment1), (i2, assignment2))",
-                "pairwise(explicit_assignments)"
+                "for ((key1, val1), (key2, val2)) in pairwise(dict.items()):",
+                "((key1, val1), (key2, val2))",
+                "pairwise(dict.items())"
+            ),
+            (
+                "for (key1, val1), (key2, val2) in pairwise(dict.items()):",
+                "(key1, val1), (key2, val2)",
+                "pairwise(dict.items())"
             ),
         ):
             match = _FOR_LOOP.match(statement)
