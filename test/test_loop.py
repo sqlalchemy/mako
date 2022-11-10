@@ -34,12 +34,12 @@ class TestLoop(unittest.TestCase):
             (
                 "for ((key1, val1), (key2, val2)) in pairwise(dict.items()):",
                 "((key1, val1), (key2, val2))",
-                "pairwise(dict.items())"
+                "pairwise(dict.items())",
             ),
             (
                 "for (key1, val1), (key2, val2) in pairwise(dict.items()):",
                 "(key1, val1), (key2, val2)",
-                "pairwise(dict.items())"
+                "pairwise(dict.items())",
             ),
         ):
             match = _FOR_LOOP.match(statement)
