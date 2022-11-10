@@ -31,6 +31,11 @@ class TestLoop(unittest.TestCase):
                 "x",
                 "[y+1 for y in [1, 2, 3]]",
             ),
+            (
+                "for ((i1, assignment1), (i2, assignment2)) in pairwise(explicit_assignments):",
+                "((i1, assignment1), (i2, assignment2))",
+                "pairwise(explicit_assignments)"
+            ),
         ):
             match = _FOR_LOOP.match(statement)
             assert match and match.groups() == (target_list, expression_list)
