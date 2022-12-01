@@ -53,7 +53,7 @@ render with it, using the :meth:`~.Template.render_context` method:
 
     from mako.template import Template
     from mako.runtime import Context
-    from StringIO import StringIO
+    from io import StringIO
 
     mytemplate = Template("hello, ${name}!")
     buf = StringIO()
@@ -517,4 +517,3 @@ API Reference
 .. autofunction:: mako.exceptions.html_error_template
 
 .. autofunction:: mako.exceptions.text_error_template
-
