@@ -91,7 +91,11 @@ def cmdline(argv=None):
         _exit()
     else:
         if output_file:
-            open(output_file, "wt", encoding=output_encoding).write(rendered)
+            if output_encoding is None:
+                encoded_output = rendered.encode()
+            else:
+                encoded_output = rendered.encode(output_encoding)
+            open(output_file, "wb").write(encoded_output)
         else:
             sys.stdout.write(rendered)
 
