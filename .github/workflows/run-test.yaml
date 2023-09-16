@@ -27,6 +27,8 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
 
         exclude:
           # beaker raises warning on 3.10. only windows seems affected
@@ -39,12 +41,13 @@ jobs:
     # steps to run in each job. Some are github actions, others run shell commands
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
           architecture: ${{ matrix.architecture }}
 
       - name: Install dependencies
