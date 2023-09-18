@@ -80,7 +80,6 @@ register_plugin("mock", __name__, "MockCacheImpl")
 
 
 class CacheTest:
-
     real_backend = "simple"
 
     def _install_mock_cache(self, template, implname=None):

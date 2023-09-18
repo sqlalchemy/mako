@@ -178,7 +178,6 @@ class TemplateLookup(TemplateCollection):
         lexer_cls=None,
         include_error_handler=None,
     ):
-
         self.directories = [
             posixpath.normpath(d) for d in util.to_list(directories, ())
         ]

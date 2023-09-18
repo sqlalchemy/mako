@@ -816,7 +816,6 @@ class _GenerateRenderMethod:
             )
             or len(self.compiler.default_filters)
         ):
-
             s = self.create_filter_callable(
                 node.escapes_code.args, "%s" % node.text, True
             )
@@ -1181,7 +1180,6 @@ class _Identifiers:
 
     def visitBlockTag(self, node):
         if node is not self.node and not node.is_anonymous:
-
             if isinstance(self.node, parsetree.DefTag):
                 raise exceptions.CompileException(
                     "Named block '%s' not allowed inside of def '%s'"

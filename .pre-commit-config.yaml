@@ -2,12 +2,12 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/python/black
-    rev: 22.3.0
+    rev: 23.9.1
     hooks:
     -   id: black
 
 -   repo: https://github.com/sqlalchemyorg/zimports
-    rev: v0.4.1
+    rev: v0.6.0
     hooks:
     -   id: zimports
 

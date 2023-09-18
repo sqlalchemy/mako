@@ -30,7 +30,6 @@ class ctx:
 
 class MiscTest(TemplateTest):
     def test_crlf_linebreaks(self):
-
         crlf = r"""
 <%
     foo = True
@@ -1164,7 +1163,6 @@ class GlobalsTest(TemplateTest):
 
 class RichTracebackTest(TemplateTest):
     def _do_test_traceback(self, utf8, memory, syntax):
-
         if memory:
             if syntax:
                 source = (

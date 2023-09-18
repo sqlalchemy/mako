@@ -232,7 +232,6 @@ ${foobar}
         )
 
     def test_mod_no_encoding(self):
-
         mod = __import__("test.foo.mod_no_encoding").foo.mod_no_encoding
         try:
             mod.run()

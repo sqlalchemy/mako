@@ -25,7 +25,6 @@ def _exit():
 
 
 def cmdline(argv=None):
-
     parser = ArgumentParser()
     parser.add_argument(
         "--var",

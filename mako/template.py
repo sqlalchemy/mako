@@ -26,7 +26,6 @@ from mako.lexer import Lexer
 
 
 class Template:
-
     r"""Represents a compiled template.
 
     :class:`.Template` includes a reference to the original
