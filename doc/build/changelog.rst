@@ -8,7 +8,13 @@ Changelog
 
 .. changelog::
     :version: 1.3.0
-    :include_notes_from: unreleased
+    :released: Wed Nov 8 2023
+
+    .. change::
+        :tags: change, installation
+
+        Mako 1.3.0 bumps the minimum Python version to 3.8, as 3.7 is EOL as of
+        2023-06-27.   Python 3.12 is now supported explicitly.
 
 1.2
 ===
