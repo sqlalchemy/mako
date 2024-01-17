@@ -357,9 +357,11 @@ class Lexer:
             r"""
                 (.*?)         # anything, followed by:
                 (
-                 (?<=\n)(?=[ \t]*(?=%|\#\#)) # an eval or line-based
+                 ((?<=\n)|^)(?=[ \t]*(?=%|\#\#)) # an eval or line-based
                                              # comment preceded by a
                                              # consumed newline and whitespace
+                 |
+                 (?<!%)(?=%%+)
                  |
                  (?=\${)      # an expression
                  |

@@ -202,10 +202,31 @@ class LexerTest(TemplateTest):
                 [
                     Text("""\n\n""", (1, 1)),
                     Text("""% some whatever.\n\n""", (3, 2)),
-                    Text("   %% more some whatever\n", (5, 2)),
+                    Text("   ", (5, 2)),
+                    Text("% more some whatever\n", (5, 6)),
                     ControlLine("if", "if foo:", False, (6, 1)),
                     ControlLine("if", "endif", True, (7, 1)),
                     Text("        ", (8, 1)),
+                ],
+            ),
+        )
+
+    def test_percent_escape2(self):
+        template = """%% do something
+%%% do something
+if <some condition>:
+    %%%% do something
+        """
+        node = Lexer(template).parse()
+        self._compare(
+            node,
+            TemplateNode(
+                {},
+                [
+                    Text("% do something\n", (1, 2)),
+                    Text("%% do something\nif <some condition>:\n", (2, 2)),
+                    Text("   ", (4, 2)),
+                    Text("%%% do something\n        ", (4, 6)),
                 ],
             ),
         )

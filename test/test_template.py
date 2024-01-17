@@ -1667,3 +1667,20 @@ class FuturesTest(TemplateTest):
     def test_future_import(self):
         t = Template("${ x / y }", future_imports=["division"])
         assert result_lines(t.render(x=12, y=5)) == ["2.4"]
+
+
+class EscapeTest(TemplateTest):
+    def test_percent_escape(self):
+        t = Template(
+            """%% do something
+%%% do something
+if <some condition>:
+    %%%% do something
+"""
+        )
+        assert result_lines(t.render()) == [
+            "% do something",
+            "%% do something",
+            "if <some condition>:",
+            "%%% do something",
+        ]
