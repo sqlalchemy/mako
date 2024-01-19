@@ -223,12 +223,14 @@ if <some condition>:
                 {},
                 [
                     Text("% do something\n", (1, 2)),
-                    Text("%% do something\nif <some condition>:\n    ", (2, 2)),
+                    Text(
+                        "%% do something\nif <some condition>:\n    ", (2, 2)
+                    ),
                     Text("%%% do something\n        ", (4, 6)),
                 ],
             ),
         )
-    
+
     def test_percent_escape_with_control_block(self):
         template = """
 % for i in [1, 2, 3]:
@@ -241,13 +243,14 @@ if <some condition>:
             TemplateNode(
                 {},
                 [
-                    Text('\n', (1, 1)), 
-                    ControlLine('for', 'for i in [1, 2, 3]:', False, (2, 1)), 
-                    Text('    ', (3, 1)), 
-                    Text('% do something ', (3, 6)), 
-                    Expression('i', [], (3, 21)), 
-                    Text('\n', (3, 25)), 
-                    ControlLine('for', 'endfor', True, (4, 1))]
+                    Text("\n", (1, 1)),
+                    ControlLine("for", "for i in [1, 2, 3]:", False, (2, 1)),
+                    Text("    ", (3, 1)),
+                    Text("% do something ", (3, 6)),
+                    Expression("i", [], (3, 21)),
+                    Text("\n", (3, 25)),
+                    ControlLine("for", "endfor", True, (4, 1)),
+                ],
             ),
         )
 

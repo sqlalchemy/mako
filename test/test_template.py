@@ -14,7 +14,8 @@ from mako.testing.assertions import eq_
 from mako.testing.config import config
 from mako.testing.fixtures import TemplateTest
 from mako.testing.helpers import flatten_result
-from mako.testing.helpers import result_lines, result_raw_lines
+from mako.testing.helpers import result_lines
+from mako.testing.helpers import result_raw_lines
 
 
 class ctx:
@@ -1672,7 +1673,7 @@ class FuturesTest(TemplateTest):
 class EscapeTest(TemplateTest):
     def test_percent_escape(self):
         t = Template(
-        """%% do something
+            """%% do something
 %%% do something
 if <some condition>:
     %%%% do something
@@ -1684,10 +1685,10 @@ if <some condition>:
             "if <some condition>:",
             "    %%% do something",
         ]
-    
+
     def test_percent_escape2(self):
         t = Template(
-        """
+            """
 % for i in [1, 2, 3]:
     %% do something ${i}
 % endfor
