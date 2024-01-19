@@ -18,6 +18,13 @@ def result_lines(result):
         if x.strip() != ""
     ]
 
+def result_raw_lines(result):
+    return [
+        x
+        for x in re.split(r"\r?\n", result)
+        if x.strip() != ""
+    ]
+
 
 def make_path(
     filespec: Union[Path, str],

@@ -357,11 +357,11 @@ class Lexer:
             r"""
                 (.*?)         # anything, followed by:
                 (
-                 ((?<=\n)|^)(?=[ \t]*(?=%|\#\#)) # an eval or line-based
-                                             # comment preceded by a
-                                             # consumed newline and whitespace
+                 (?<=\n)(?=[ \t]*(?=%(?!%)|\#\#))   # an eval or line-based
+                                                    # comment, preceded by a
+                                                    # consumed newline and whitespace
                  |
-                 (?<!%)(?=%%+)
+                 (?<!%)(?=%%+)  # consume the first percent sign out of a group of percent signs
                  |
                  (?=\${)      # an expression
                  |
