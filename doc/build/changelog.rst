@@ -8,7 +8,16 @@ Changelog
 
 .. changelog::
     :version: 1.3.1
-    :include_notes_from: unreleased
+    :released: Mon Jan 22 2024
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 323
+
+        Fixed parsing issue where attempting to render a single percent sign ``%``
+        using an escaped percent ``%%`` would not function correctly if the escaped
+        percent were not the first character on a line.  Pull request courtesy Hai
+        Zhu.
 
 .. changelog::
     :version: 1.3.0
