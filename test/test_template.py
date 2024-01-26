@@ -1699,3 +1699,21 @@ if <some condition>:
             "    % do something 2",
             "    % do something 3",
         ]
+
+    def test_inline_percent(self):
+        t = Template(
+            """
+% for i in [1, 2, 3]:
+%% foo
+bar %% baz
+% endfor
+"""
+        )
+        assert result_raw_lines(t.render()) == [
+            "% foo",
+            "bar %% baz",
+            "% foo",
+            "bar %% baz",
+            "% foo",
+            "bar %% baz",
+        ]
