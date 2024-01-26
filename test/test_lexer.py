@@ -200,15 +200,102 @@ class LexerTest(TemplateTest):
             TemplateNode(
                 {},
                 [
-                    Text("""\n\n""", (1, 1)),
-                    Text("""% some whatever.\n\n""", (3, 2)),
-                    Text("   %% more some whatever\n", (5, 2)),
+                    Text("\n\n%", (1, 1)),
+                    Text(" some whatever.\n\n", (3, 3)),
+                    Text("    %", (5, 1)),
+                    Text(" more some whatever\n", (5, 7)),
                     ControlLine("if", "if foo:", False, (6, 1)),
                     ControlLine("if", "endif", True, (7, 1)),
                     Text("        ", (8, 1)),
                 ],
             ),
         )
+
+    def test_percent_escape2(self):
+        template = """%% do something
+%%% do something
+if <some condition>:
+    %%%% do something
+        """
+        node = Lexer(template).parse()
+        self._compare(
+            node,
+            TemplateNode(
+                {},
+                [
+                    Text("%", (1, 1)),
+                    Text(" do something\n", (1, 3)),
+                    Text("%%", (2, 1)),
+                    Text(" do something\nif <some condition>:\n", (2, 4)),
+                    Text("    %%%", (4, 1)),
+                    Text(" do something\n        ", (4, 9)),
+                ],
+            ),
+        )
+
+    def test_percent_escape_with_control_block(self):
+        template = """
+% for i in [1, 2, 3]:
+    %% do something ${i}
+% endfor
+"""
+        node = Lexer(template).parse()
+        self._compare(
+            node,
+            TemplateNode(
+                {},
+                [
+                    Text("\n", (1, 1)),
+                    ControlLine("for", "for i in [1, 2, 3]:", False, (2, 1)),
+                    Text("    %", (3, 1)),
+                    Text(" do something ", (3, 7)),
+                    Expression("i", [], (3, 21)),
+                    Text("\n", (3, 25)),
+                    ControlLine("for", "endfor", True, (4, 1)),
+                ],
+            ),
+        )
+
+    def test_inline_percent(self):
+        template = """
+%% foo
+bar %% baz
+"""
+        node = Lexer(template).parse()
+        self._compare(
+            node,
+            TemplateNode(
+                {},
+                [Text("\n%", (1, 1)), Text(" foo\nbar %% baz\n", (2, 3))],
+            ),
+        )
+
+        def test_inline_percent_with_control_block(self):
+            template = """
+% for i in [1, 2, 3]:
+%% foo
+bar %% baz
+% endfor
+"""
+            node = Lexer(template).parse()
+            self._compare(
+                node,
+                TemplateNode(
+                    {},
+                    [
+                        Text("\n", (1, 1)),
+                        ControlLine(
+                            "for", "for i in [1, 2, 3]:", False, (2, 1)
+                        ),
+                        Text("%", (3, 1)),
+                        Text(" foo\nbar ", (3, 3)),
+                        Text("%", (3, 3)),
+                        Text("%", (3, 3)),
+                        Text(" baz\n", (4, 7)),
+                        ControlLine("for", "endfor", True, (5, 1)),
+                    ],
+                ),
+            )
 
     def test_old_multiline_comment(self):
         template = """#*"""

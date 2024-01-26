@@ -23,6 +23,9 @@ Changelog
         percent were not the first character on a line.  Pull request courtesy Hai
         Zhu.
 
+        .. note::  Mako 1.3.1 was yanked from pypi and this change was reverted,
+           replaced with a modified version for Mako 1.3.2.
+
 .. changelog::
     :version: 1.3.0
     :released: Wed Nov 8 2023

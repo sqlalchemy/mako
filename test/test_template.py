@@ -15,6 +15,7 @@ from mako.testing.config import config
 from mako.testing.fixtures import TemplateTest
 from mako.testing.helpers import flatten_result
 from mako.testing.helpers import result_lines
+from mako.testing.helpers import result_raw_lines
 
 
 class ctx:
@@ -1667,3 +1668,52 @@ class FuturesTest(TemplateTest):
     def test_future_import(self):
         t = Template("${ x / y }", future_imports=["division"])
         assert result_lines(t.render(x=12, y=5)) == ["2.4"]
+
+
+class EscapeTest(TemplateTest):
+    def test_percent_escape(self):
+        t = Template(
+            """%% do something
+%%% do something
+if <some condition>:
+    %%%% do something
+"""
+        )
+        assert result_raw_lines(t.render()) == [
+            "% do something",
+            "%% do something",
+            "if <some condition>:",
+            "    %%% do something",
+        ]
+
+    def test_percent_escape2(self):
+        t = Template(
+            """
+% for i in [1, 2, 3]:
+    %% do something ${i}
+% endfor
+"""
+        )
+        assert result_raw_lines(t.render()) == [
+            "    % do something 1",
+            "    % do something 2",
+            "    % do something 3",
+        ]
+
+    def test_inline_percent(self):
+        t = Template(
+            """
+% for i in [1, 2, 3]:
+%% foo
+bar %% baz
+% endfor
+"""
+        )
+        assert result_raw_lines(t.render()) == [
+            "% foo",
+            "bar %% baz",
+            "% foo",
+            "bar %% baz",
+            "% foo",
+            "bar %% baz",
+        ]
