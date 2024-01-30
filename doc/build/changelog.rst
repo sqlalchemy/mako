@@ -8,7 +8,18 @@ Changelog
 
 .. changelog::
     :version: 1.3.2
-    :include_notes_from: unreleased
+    :released: Tue Jan 30 2024
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 323
+
+        Fixed parsing issue where attempting to render a single percent sign %
+        using an escaped percent %% would not function correctly if the escaped
+        percent were not the first character on a line.  Note that this is a revised
+        version of a similar change made in Mako 1.3.1 which caused unexpected
+        parsing regressions, resulting in the release being yanked.
+        Pull request courtesy Hai Zhu.
 
 .. changelog::
     :version: 1.3.1
