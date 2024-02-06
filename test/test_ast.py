@@ -222,6 +222,42 @@ except (Foo, Bar) as e:
         parsed = ast.PythonCode(code, **exception_kwargs)
         eq_(parsed.undeclared_identifiers, {"x", "y", "Foo", "Bar"})
 
+    def test_locate_identifiers_18(self):
+        code = """
+def func():
+    return [i for i in range(10)]
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, {"func"})
+        eq_(parsed.undeclared_identifiers, {"range"})
+
+    def test_locate_identifiers_19(self):
+        code = """
+def func():
+    return (i for i in range(10))
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, {"func"})
+        eq_(parsed.undeclared_identifiers, {"range"})
+
+    def test_locate_identifiers_20(self):
+        code = """
+def func():
+    return {i for i in range(10)}
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, {"func"})
+        eq_(parsed.undeclared_identifiers, {"range"})
+
+    def test_locate_identifiers_21(self):
+        code = """
+def func():
+    return {i: i**2 for i in range(10)}
+"""
+        parsed = ast.PythonCode(code, **exception_kwargs)
+        eq_(parsed.declared_identifiers, {"func"})
+        eq_(parsed.undeclared_identifiers, {"range"})
+
     def test_no_global_imports(self):
         code = """
 from foo import *
