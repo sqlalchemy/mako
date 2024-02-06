@@ -1036,6 +1036,47 @@ class ControlTest(TemplateTest):
             template_args={"ctx": ctx},
         )
 
+    def test_blank_control_9(self):
+        self._do_memory_test(
+            """
+            % if True:
+            % elif False:
+            false
+            % else:
+            broken
+            % endif
+            """,
+            "",
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx},
+        )
+
+    def test_blank_control_10(self):
+        self._do_memory_test(
+            """
+            % if True:
+            % else:
+            test
+            % endif
+            """,
+            "",
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx},
+        )
+
+    def test_blank_control_11(self):
+        self._do_memory_test(
+            """
+            % try:
+            % except:
+            error
+            % endtry
+            """,
+            "",
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx},
+        )
+
     def test_commented_blank_control_1(self):
         self._do_memory_test(
             """
@@ -1129,6 +1170,36 @@ class ControlTest(TemplateTest):
             % with ctx('x', 'w') as fp:
             ## comment
             % endwith
+            """,
+            "",
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx},
+        )
+
+    def test_commented_blank_control_9(self):
+        self._do_memory_test(
+            """
+            % if True:
+            ## comment
+            % elif False:
+            false
+            % else:
+            broken
+            % endif
+            """,
+            "",
+            filters=lambda s: s.strip(),
+            template_args={"ctx": ctx},
+        )
+
+    def test_commented_blank_control_10(self):
+        self._do_memory_test(
+            """
+            % try:
+            ## comment
+            % except:
+            error
+            % endtry
             """,
             "",
             filters=lambda s: s.strip(),

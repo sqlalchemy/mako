@@ -1,0 +1,8 @@
+.. change::
+    :tags: bug, codegen
+    :tickets: 146
+
+    Fixed unexpected error when use control lines which the
+    first control block with no bodies other than comments,
+    as `pass` is now added to the first empty block.
+    Pull request courtesy Hai Zhu.
