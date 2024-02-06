@@ -1,0 +1,9 @@
+.. change::
+    :tags: bug, parser
+    :tickets: 320
+    
+    Fixed unexpected syntax error in strict_undefined mode that occurred
+    when using comprehensions within a function in a Mako Python code block.
+    Now, the local variable in comprehensions won't be added to the checklist
+    when using strict_undefined mode.
+    Pull request courtesy Hai Zhu.

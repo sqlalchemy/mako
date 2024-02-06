@@ -1718,7 +1718,7 @@ bar %% baz
             "bar %% baz",
         ]
 
-    def test_lsitcomp_in_func_strict(self):
+    def test_listcomp_in_func_strict(self):
         t = Template(
             """
 <%
