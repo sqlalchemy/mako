@@ -1717,3 +1717,62 @@ bar %% baz
             "% foo",
             "bar %% baz",
         ]
+
+    def test_listcomp_in_func_strict(self):
+        t = Template(
+            """
+<%
+    mydict = { 'foo': 1 }
+    def getkeys(x):
+        return [ k for k in x.keys() ]
+%>
+
+${ ','.join( getkeys(mydict) ) }
+""",
+            strict_undefined=True,
+        )
+        assert result_raw_lines(t.render()) == ["foo"]
+
+    def test_setcomp_in_func_strict(self):
+        t = Template(
+            """
+<%
+    mydict = { 'foo': 1 }
+    def getkeys(x):
+        return { k for k in x.keys() }
+%>
+
+${ ','.join( getkeys(mydict) ) }
+""",
+            strict_undefined=True,
+        )
+        assert result_raw_lines(t.render()) == ["foo"]
+
+    def test_generator_in_func_strict(self):
+        t = Template(
+            """
+<%
+    mydict = { 'foo': 1 }
+    def getkeys(x):
+        return ( k for k in x.keys())
+%>
+
+${ ','.join( getkeys(mydict) ) }
+""",
+            strict_undefined=True,
+        )
+        assert result_raw_lines(t.render()) == ["foo"]
+
+    def test_dictcomp_in_func_strict(self):
+        t = Template(
+            """
+<%
+    def square():
+        return {i: i**2 for i in range(10)}
+%>
+
+${ square()[3] }
+""",
+            strict_undefined=True,
+        )
+        assert result_raw_lines(t.render()) == ["9"]
