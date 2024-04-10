@@ -8,7 +8,26 @@ Changelog
 
 .. changelog::
     :version: 1.3.3
-    :include_notes_from: unreleased
+    :released: Wed Apr 10 2024
+
+    .. change::
+        :tags: bug, codegen
+        :tickets: 146
+
+        Fixed unexpected error when use control lines which the
+        first control block with no bodies other than comments,
+        as `pass` is now added to the first empty block.
+        Pull request courtesy Hai Zhu.
+
+    .. change::
+        :tags: bug, parser
+        :tickets: 320
+
+        Fixed unexpected syntax error in strict_undefined mode that occurred
+        when using comprehensions within a function in a Mako Python code block.
+        Now, the local variable in comprehensions won't be added to the checklist
+        when using strict_undefined mode.
+        Pull request courtesy Hai Zhu.
 
 .. changelog::
     :version: 1.3.2
