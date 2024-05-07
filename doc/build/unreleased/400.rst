@@ -1,0 +1,7 @@
+.. change::
+    :tags: bug, lexer
+    :tickets: 400
+
+    Fixed issue where a parsed expression which contained sub-brackets, such as
+    dictionary literals, would fail to be interpreted correctly even though the
+    initial parsing is correct. Pull request courtesy Jose Galvez.

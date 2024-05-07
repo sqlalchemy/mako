@@ -322,10 +322,10 @@ class Tag(Node, metaclass=_TagMeta):
         for key in self.attributes:
             if key in expressions:
                 expr = []
-                for x in re.compile(r"(\${.+?})", re.S).split(
+                for x in re.compile(r"(\${.+})", re.S).split(
                     self.attributes[key]
                 ):
-                    m = re.compile(r"^\${(.+?)}$", re.S).match(x)
+                    m = re.compile(r"^\${(.+)}$", re.S).match(x)
                     if m:
                         code = ast.PythonCode(
                             m.group(1).rstrip(), **self.exception_kwargs
