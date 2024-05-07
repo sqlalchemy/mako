@@ -880,9 +880,19 @@ more text
 
         <%self:bar x=" ${{'id':4}} " y="x${g and '1' or '2'}y"/>
 
+        <%def name="dtest(d)">
+        % for k,v in d.items():
+        ${k} = ${v}
+        % endfor
+        % if 'embeded' in d and 'name' in d['embeded']:
+        ${d['embeded']['name']}
+        % endif
+        </%def>
+
         <%self:dtest d="${ {
-            'x-on:click':foo,
-            'foo':'bar'
+            'x-on:click':'foo',
+            'foo':'bar',
+            'embeded':{'name':'J Doe'}
         } }" />
         """
         nodes = Lexer(template).parse()
@@ -903,10 +913,8 @@ more text
                         ]
                     ), 
                     Text('\n\n        ', (4, 16)), 
-                    CallNamespaceTag('self:thing', {'thing': 'foo'}, (6, 9), []), 
-                    Text('\n\n        ', (6, 36)), 
-                    CallNamespaceTag('self:thing', {'thing': '${5}'}, (8, 9), []), 
-                    Text('\n\n        ', (8, 37)), 
+                    CallNamespaceTag('self:thing', {'thing': 'foo'}, (6, 9), []), Text('\n\n        ', (6, 36)), 
+                    CallNamespaceTag('self:thing', {'thing': '${5}'}, (8, 9), []), Text('\n\n        ', (8, 37)), 
                     CallNamespaceTag('self:thing', {'thing': '${[1,2,3]}'}, (10, 9), []), 
                     Text('\n\n        ', (10, 43)), 
                     CallNamespaceTag('self:thing', {'thing': "${{'id':'4'}}"}, (12, 9), []), 
@@ -928,8 +936,30 @@ more text
                     Text('\n\n        ', (22, 16)), 
                     CallNamespaceTag('self:bar', {'x': " ${{'id':4}} ", 'y': "x${g and '1' or '2'}y"}, (24, 9), []), 
                     Text('\n\n        ', (24, 65)), 
-                    CallNamespaceTag('self:dtest', {'d': "${ {\n            'x-on:click':foo,\n            'foo':'bar'\n        } }"}, (26, 9), []), 
-                    Text('\n        ', (29, 16))
+                    DefTag(
+                        'def', 
+                        {'name': 'dtest(d)'}, (26, 9), 
+                        [
+                            Text('\n', (26, 31)), 
+                            ControlLine('for', 'for k,v in d.items():', False, (27, 1)), 
+                            Text('        ', (28, 1)), 
+                            Expression('k', [], (28, 9)), 
+                            Text(' = ', (28, 13)), 
+                            Expression('v', [], (28, 16)), 
+                            Text('\n', (28, 20)), 
+                            ControlLine('for', 'endfor', True, (29, 1)), 
+                            ControlLine('if', "if 'embeded' in d and 'name' in d['embeded']:", False, (30, 1)), 
+                            Text('        ', (31, 1)), 
+                            Expression("d['embeded']['name']", [], (31, 9)), 
+                            Text('\n', (31, 32)), 
+                            ControlLine('if', 'endif', True, (32, 1)), 
+                            Text('        ', (33, 1))
+                        ]
+                    ), 
+                    Text('\n\n        ', 
+                    (33, 16)), 
+                    CallNamespaceTag('self:dtest', {'d': "${ {\n            'x-on:click':'foo',\n            'foo':'bar',\n            'embeded':{'name':'J Doe'}\n        } }"}, (35, 9), []), 
+                    Text('\n        ', (39, 16))
                 ]
             )
         )
