@@ -1,0 +1,6 @@
+.. change::
+    :tags: bug, parser
+    :tickets: 398
+
+    Fixed the fix for ticket 320. It was trigerring an error in dictionary
+    comprehension when the key is not a simple name.

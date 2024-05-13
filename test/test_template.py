@@ -878,6 +878,21 @@ class UndefinedVarsTest(TemplateTest):
 
         eq_(result_lines(t.render(t="T")), ["t is: T", "a,b,c"])
 
+    def test_dict_comprehensions_in_function_plus_undeclared_strict(self):
+        t = Template(
+            """
+<%
+    def foo():
+        return {s[0]: s for s in ('foo',)}
+%>
+
+${ foo()['f'] }
+""",
+            strict_undefined=True,
+        )
+
+        eq_(result_lines(t.render()), ["foo"])
+
 
 class StopRenderingTest(TemplateTest):
     def test_return_in_template(self):
