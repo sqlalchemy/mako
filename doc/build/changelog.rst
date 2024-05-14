@@ -8,7 +8,24 @@ Changelog
 
 .. changelog::
     :version: 1.3.4
-    :include_notes_from: unreleased
+    :released: Mon May 13 2024
+
+    .. change::
+        :tags: bug, parser
+        :tickets: 398
+
+        Fixed regression caused by the fix for :ticket:`320` where new logic added
+        to interpret list and dictionary comprehensions would fail for expression
+        oriented keys.  As the parsing in question was not necessary for these
+        keys, it's been removed.  Pull request courtesy Sébastien Granjoux.
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 400
+
+        Fixed issue where a parsed expression which contained sub-brackets, such as
+        dictionary literals, would fail to be interpreted correctly even though the
+        initial parsing is correct. Pull request courtesy Jose Galvez.
 
 .. changelog::
     :version: 1.3.3
