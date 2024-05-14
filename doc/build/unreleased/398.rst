@@ -1,0 +1,8 @@
+.. change::
+    :tags: bug, parser
+    :tickets: 398
+
+    Fixed regression caused by the fix for :ticket:`320` where new logic added
+    to interpret list and dictionary comprehensions would fail for expression
+    oriented keys.  As the parsing in question was not necessary for these
+    keys, it's been removed.  Pull request courtesy Sébastien Granjoux.
