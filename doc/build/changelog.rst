@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.3.5
-    :include_notes_from: unreleased
+    :released: Tue May 14 2024
+
+    .. change::
+        :tags: bug, lexer, regression
+        :tickets: 400, 401
+
+        Reverted the fix for :ticket:`400` as it caused new issues when traversing
+        some bracketed situations.
+
 
 .. changelog::
     :version: 1.3.4 (yanked)
