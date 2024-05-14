@@ -1,0 +1,7 @@
+.. change::
+    :tags: bug, lexer, regression
+    :tickets: 400, 401
+
+    Reverted the fix for :ticket:`400` as it caused new issues when traversing
+    some bracketed situations.
+

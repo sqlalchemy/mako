@@ -11,11 +11,11 @@ Changelog
     :include_notes_from: unreleased
 
 .. changelog::
-    :version: 1.3.4
+    :version: 1.3.4 (yanked)
     :released: Mon May 13 2024
 
     .. change::
-        :tags: bug, parser
+        :tags: bug, lexer
         :tickets: 398
 
         Fixed regression caused by the fix for :ticket:`320` where new logic added
@@ -30,6 +30,9 @@ Changelog
         Fixed issue where a parsed expression which contained sub-brackets, such as
         dictionary literals, would fail to be interpreted correctly even though the
         initial parsing is correct. Pull request courtesy Jose Galvez.
+
+        .. note:: this change was **reverted** and release 1.3.4 was yanked as
+           this fix caused regressions.
 
 .. changelog::
     :version: 1.3.3

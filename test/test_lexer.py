@@ -810,7 +810,25 @@ more text
             ),
         )
 
-    def test_dict_expression(self):
+    def test_dict_expression_issue_400_regression(self):
+        """test for issue #401.
+
+        This was the regression case for #400
+
+        """
+        template = '<%include file="${foo}${bar}"/>'
+
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode(
+                {},
+                [IncludeTag("include", {"file": "${foo}${bar}"}, (1, 1), [])],
+            ),
+        )
+
+    def _dont_test_dict_expression_issue_400(self):
+        """test for issue #400"""
         template = """
         <%def name="dtest(d)">
             % for k,v in d.items():
@@ -868,7 +886,8 @@ more text
             ),
         )
 
-    def test_dict_expression_2(self):
+    def _dont_test_dict_expression_2_issue_400(self):
+        """test for issue #400"""
         template = """
         <%def name="thing(thing)">
             ${type(thing)}
