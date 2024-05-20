@@ -964,6 +964,35 @@ more text
             )
         )
 
+    def test_concatinated_expressions(self):
+        template="""
+        <%
+
+            first = 'abc'
+            second = "def"
+            third = 'ghi'
+
+        %>
+
+        ${first}${second}${third} 
+        """
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode(
+                {}, 
+                [
+                    Text('\n        ', (1, 1)), 
+                    Code('\n\nfirst = \'abc\'\nsecond = "def"\nthird = \'ghi\'\n\n        \n', False, (2, 9)), 
+                    Text('\n\n        ', (8, 11)), 
+                    Expression('first', [], (10, 9)), 
+                    Expression('second', [], (10, 17)), 
+                    Expression('third', [], (10, 26)), 
+                    Text(' \n        ', (10, 34))
+                ]
+            )
+        )
+
     def test_tricky_code(self):
         template = """<% print('hi %>') %>"""
         nodes = Lexer(template).parse()
