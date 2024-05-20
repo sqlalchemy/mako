@@ -810,6 +810,23 @@ more text
             ),
         )
 
+    def test_dict_expression_issue_400_regression(self):
+        """test for issue #401.
+
+        This was the regression case for #400
+
+        """
+        template = '<%include file="${foo}${bar}"/>'
+
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode(
+                {},
+                [IncludeTag("include", {"file": "${foo}${bar}"}, (1, 1), [])],
+            ),
+        )
+
     def test_dict_expression(self):
         template = """
         <%def name="dtest(d)">
