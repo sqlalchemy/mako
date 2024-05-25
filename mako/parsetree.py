@@ -316,15 +316,34 @@ class Tag(Node, metaclass=_TagMeta):
     def get_children(self):
         return self.nodes
 
+    def _expression_could_contain_a_dict(self, exp):
+        '''
+        if an expression contains multiple paired {} then
+        it may contain a dict and will need to be parsed 
+        with a more complex regular expression
+        '''
+        open_bracket = re.compile('{')
+        close_bracket = re.compile('}')
+        open_bracket_count = len(open_bracket.findall(exp))
+        close_bracket_count = len(close_bracket.findall(exp))
+        if open_bracket_count > 1 and open_bracket_count == close_bracket_count:
+            # this is could be a contained dictionary and requires a more complex re
+            return True
+        return False
+
     def _parse_attributes(self, expressions, nonexpressions):
         undeclared_identifiers = set()
         self.parsed_attributes = {}
         for key in self.attributes:
             if key in expressions:
                 expr = []
-                for x in [x.strip() for x in re.compile(r"(\$[{]+.+?[}]+[\s*}]*)\s*", re.S).split(
-                        self.attributes[key]
-                )]:
+                if self._expression_could_contain_a_dict(self.attributes[key]):
+                    _expressions = [x.strip() for x in re.compile(r"(\$[{]+.+?[}]+[\s*}]*)\s*", re.S).split(
+                        self.attributes[key])]
+                else:
+                    _expressions = re.compile(r"(\${.+?})", re.S).split(
+                        self.attributes[key])
+                for x in _expressions:
                     m = re.compile(r"^\${(.+?)}$", re.S).match(x)
                     if m:
                         code = ast.PythonCode(
