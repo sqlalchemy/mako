@@ -1,496 +1,12 @@
-
 =========
 Changelog
 =========
-
-1.3
-===
-
-.. changelog::
-    :version: 1.3.6
-    :include_notes_from: unreleased
-
-.. changelog::
-    :version: 1.3.5
-    :released: Tue May 14 2024
-
-    .. change::
-        :tags: bug, lexer, regression
-        :tickets: 400, 401
-
-        Reverted the fix for :ticket:`400` as it caused new issues when traversing
-        some bracketed situations.
-
-
-.. changelog::
-    :version: 1.3.4 (yanked)
-    :released: Mon May 13 2024
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 398
-
-        Fixed regression caused by the fix for :ticket:`320` where new logic added
-        to interpret list and dictionary comprehensions would fail for expression
-        oriented keys.  As the parsing in question was not necessary for these
-        keys, it's been removed.  Pull request courtesy Sébastien Granjoux.
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 400
-
-        Fixed issue where a parsed expression which contained sub-brackets, such as
-        dictionary literals, would fail to be interpreted correctly even though the
-        initial parsing is correct. Pull request courtesy Jose Galvez.
-
-        .. note:: this change was **reverted** and release 1.3.4 was yanked as
-           this fix caused regressions.
-
-.. changelog::
-    :version: 1.3.3
-    :released: Wed Apr 10 2024
-
-    .. change::
-        :tags: bug, codegen
-        :tickets: 146
-
-        Fixed unexpected error when use control lines which the
-        first control block with no bodies other than comments,
-        as `pass` is now added to the first empty block.
-        Pull request courtesy Hai Zhu.
-
-    .. change::
-        :tags: bug, parser
-        :tickets: 320
-
-        Fixed unexpected syntax error in strict_undefined mode that occurred
-        when using comprehensions within a function in a Mako Python code block.
-        Now, the local variable in comprehensions won't be added to the checklist
-        when using strict_undefined mode.
-        Pull request courtesy Hai Zhu.
-
-.. changelog::
-    :version: 1.3.2
-    :released: Tue Jan 30 2024
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 323
-
-        Fixed parsing issue where attempting to render a single percent sign %
-        using an escaped percent %% would not function correctly if the escaped
-        percent were not the first character on a line.  Note that this is a revised
-        version of a similar change made in Mako 1.3.1 which caused unexpected
-        parsing regressions, resulting in the release being yanked.
-        Pull request courtesy Hai Zhu.
-
-.. changelog::
-    :version: 1.3.1
-    :released: Mon Jan 22 2024
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 323
-
-        Fixed parsing issue where attempting to render a single percent sign ``%``
-        using an escaped percent ``%%`` would not function correctly if the escaped
-        percent were not the first character on a line.  Pull request courtesy Hai
-        Zhu.
-
-        .. note::  Mako 1.3.1 was yanked from pypi and this change was reverted,
-           replaced with a modified version for Mako 1.3.2.
-
-.. changelog::
-    :version: 1.3.0
-    :released: Wed Nov 8 2023
-
-    .. change::
-        :tags: change, installation
-
-        Mako 1.3.0 bumps the minimum Python version to 3.8, as 3.7 is EOL as of
-        2023-06-27.   Python 3.12 is now supported explicitly.
-
-1.2
-===
-
-
-.. changelog::
-    :version: 1.2.4
-    :released: Tue Nov 15 2022
-
-    .. change::
-        :tags: bug, codegen
-        :tickets: 368
-
-        Fixed issue where unpacking nested tuples in a for loop using would raise a
-        "couldn't apply loop context" error if the loop context was used. The regex
-        used to match the for loop expression now allows the list of loop variables
-        to contain parenthesized sub-tuples. Pull request courtesy Matt Trescott.
-
-
-.. changelog::
-    :version: 1.2.3
-    :released: Thu Sep 22 2022
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 367
-
-        Fixed issue in lexer in the same category as that of :ticket:`366` where
-        the regexp used to match an end tag didn't correctly organize for matching
-        characters surrounded by whitespace, leading to high memory / interpreter
-        hang if a closing tag incorrectly had a large amount of unterminated space
-        in it. Credit to Sebastian Chnelik for locating the issue.
-
-        As Mako templates inherently render and directly invoke arbitrary Python
-        code from the template source, it is **never** appropriate to create
-        templates that contain untrusted input.
-
-.. changelog::
-    :version: 1.2.2
-    :released: Mon Aug 29 2022
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 366
-
-        Fixed issue in lexer where the regexp used to match tags would not
-        correctly interpret quoted sections individually. While this parsing issue
-        still produced the same expected tag structure later on, the mis-handling
-        of quoted sections was also subject to a regexp crash if a tag had a large
-        number of quotes within its quoted sections.  Credit to Sebastian
-        Chnelik for locating the issue.
-
-        As Mako templates inherently render and directly invoke arbitrary Python
-        code from the template source, it is **never** appropriate to create
-        templates that contain untrusted input.
-
-.. changelog::
-    :version: 1.2.1
-    :released: Thu Jun 30 2022
-
-    .. change::
-        :tags: performance
-        :tickets: 361
-
-        Optimized some codepaths within the lexer/Python code generation process,
-        improving performance for generation of templates prior to their being
-        cached. Pull request courtesy Takuto Ikuta.
-
-    .. change::
-        :tags: bug, tests
-        :tickets: 360
-
-        Various fixes to the test suite in the area of exception message rendering
-        to accommodate for variability in Python versions as well as Pygments.
-
-.. changelog::
-    :version: 1.2.0
-    :released: Thu Mar 10 2022
-
-    .. change::
-        :tags: changed, py3k
-        :tickets: 351
-
-        Corrected "universal wheel" directive in ``setup.cfg`` so that building a
-        wheel does not target Python 2.
-
-    .. change::
-        :tags: changed, py3k
-
-        The ``bytestring_passthrough`` template argument is removed, as this
-        flag only applied to Python 2.
-
-    .. change::
-        :tags: changed, py3k
-
-        With the removal of Python 2's ``cStringIO``, Mako now uses its own
-        internal ``FastEncodingBuffer`` exclusively.
-
-    .. change::
-        :tags: changed, py3k
-
-        Removed ``disable_unicode`` flag, that's no longer used in Python 3.
-
-    .. change::
-        :tags: changed
-        :tickets: 349
-
-        Refactored test utilities into ``mako.testing`` module. Removed
-        ``unittest.TestCase`` dependency in favor of ``pytest``.
-
-    .. change::
-        :tags: changed, setup
-
-        Replaced the use of ``pkg_resources`` with the ``importlib`` library.
-        For Python < 3.8 the library ``importlib_metadata`` is used.
-
-    .. change::
-        :tags: changed, py3k
-
-        Removed support for Python 2 and Python 3.6. Mako now requires Python >=
-        3.7.
-
-    .. change::
-        :tags: bug, py3k
-
-        Mako now performs exception chaining using ``raise from``, correctly
-        identifying underlying exception conditions when it raises its own
-        exceptions. Pull request courtesy Ram Rachum.
-
-1.1
-===
-
-.. changelog::
-    :version: 1.1.6
-    :released: Wed Nov 17 2021
-
-    .. change::
-        :tags: bug, lexer
-        :tickets: 346
-        :versions: 1.2.0, 1.1.6
-
-        Fixed issue where control statements on multi lines with a backslash would
-        not parse correctly if the template itself contained CR/LF pairs as on
-        Windows. Pull request courtesy Charles Pigott.
-
-
-.. changelog::
-    :version: 1.1.5
-    :released: Fri Aug 20 2021
-
-    .. change::
-        :tags: bug, tests
-        :tickets: 338
-
-        Fixed some issues with running the test suite which would be revealed by
-        running tests in random order.
-
-
-
-.. changelog::
-    :version: 1.1.4
-    :released: Thu Jan 14 2021
-
-    .. change::
-        :tags: bug, py3k
-        :tickets: 328
-
-        Fixed Python deprecation issues related to module importing, as well as
-        file access within the Lingua plugin, for deprecated APIs that began to
-        emit warnings under Python 3.10.  Pull request courtesy Petr Viktorin.
-
-.. changelog::
-    :version: 1.1.3
-    :released: Fri May 29 2020
-
-    .. change::
-        :tags: bug, templates
-        :tickets: 267
-
-        The default template encoding is now utf-8.  Previously, the encoding was
-        "ascii", which was standard throughout Python 2.   This allows that
-        "magic encoding comment" for utf-8 templates is no longer required.
-
-
-.. changelog::
-    :version: 1.1.2
-    :released: Sun Mar 1 2020
-
-    .. change::
-        :tags: feature, commands
-        :tickets: 283
-
-        Added --output-file argument to the Mako command line runner, which allows
-        a specific output file to be selected.  Pull request courtesy Björn
-        Dahlgren.
-
-.. changelog::
-    :version: 1.1.1
-    :released: Mon Jan 20 2020
-
-    .. change::
-        :tags: bug, py3k
-        :tickets: 310
-
-        Replaced usage of the long-superseded "parser.suite" module in the
-        mako.util package for parsing the python magic encoding comment with the
-        "ast.parse" function introduced many years ago in Python 2.5, as
-        "parser.suite" is emitting deprecation warnings in Python 3.9.
-
-
-
-    .. change::
-        :tags: bug, ext
-        :tickets: 304
-
-        Added "babel" and "lingua" dependency entries to the setuptools entrypoints
-        for the babel and lingua extensions, so that pkg_resources can check that
-        these extra dependencies are available, raising an informative
-        exception if not.  Pull request courtesy sinoroc.
-
-
-
-.. changelog::
-    :version: 1.1.0
-    :released: Thu Aug 1 2019
-
-    .. change::
-        :tags: bug, py3k, windows
-        :tickets: 301
-
-        Replaced usage of time.clock() on windows as well as time.time() elsewhere
-        for microsecond timestamps with timeit.default_timer(), as time.clock() is
-        being removed in Python 3.8.   Pull request courtesy Christoph Reiter.
-
-
-    .. change::
-        :tags: bug, py3k
-        :tickets: 295
-
-        Replaced usage of ``inspect.getfullargspec()`` with the vendored version
-        used by SQLAlchemy, Alembic to avoid future deprecation warnings.  Also
-        cleans up an additional version of the same function that's apparently
-        been floating around for some time.
-
-
-    .. change::
-        :tags: changed, setup
-        :tickets: 303
-
-        Removed the "python setup.py test" feature in favor of a straight run of
-        "tox".   Per Pypa / pytest developers, "setup.py" commands are in general
-        headed towards deprecation in favor of tox.  The tox.ini script has been
-        updated such that running "tox" with no arguments will perform a single run
-        of the test suite against the default installed Python interpreter.
-
-        .. seealso::
-
-            https://github.com/pypa/setuptools/issues/1684
-
-            https://github.com/pytest-dev/pytest/issues/5534
-
-    .. change::
-        :tags: changed, py3k, installer
-        :tickets: 249
-
-        Mako 1.1 now supports Python versions:
-
-        * 2.7
-        * 3.4 and higher
-
-        This includes that setup.py no longer includes any conditionals, allowing
-        for a pure Python wheel build, however this is not necessarily part of the
-        Pypi release process as of yet.  The test suite also raises for Python
-        deprecation warnings.
-
 
 1.0
 ===
 
 .. changelog::
-    :version: 1.0.14
-    :released: Sat Jul 20 2019
-
-    .. change::
-        :tags: feature, template
-
-        The ``n`` filter is now supported in the ``<%page>`` tag.  This allows a
-        template to omit the default expression filters throughout a whole
-        template, for those cases where a template-wide filter needs to have
-        default filtering disabled.  Pull request courtesy Martin von Gagern.
-
-        .. seealso::
-
-            :ref:`expression_filtering_nfilter`
-
-
-
-    .. change::
-        :tags: bug, exceptions
-
-        Fixed issue where the correct file URI would not be shown in the
-        template-formatted exception traceback if the template filename were not
-        known.  Additionally fixes an issue where stale filenames would be
-        displayed if a stack trace alternated between different templates.  Pull
-        request courtesy Martin von Gagern.
-
-
-.. changelog::
-    :version: 1.0.13
-    :released: Mon Jul 1 2019
-
-    .. change::
-        :tags: bug, exceptions
-
-        Improved the line-number tracking for source lines inside of Python  ``<%
-        ... %>`` blocks, such that text- and HTML-formatted exception traces such
-        as that of  :func:`.html_error_template` now report the correct source line
-        inside the block, rather than the first line of the block itself.
-        Exceptions in ``<%! ... %>`` blocks which get raised while loading the
-        module are still not reported correctly, as these are handled before the
-        Mako code is generated.  Pull request courtesy Martin von Gagern.
-
-.. changelog::
-    :version: 1.0.12
-    :released: Wed Jun 5 2019
-
-    .. change::
-        :tags: bug, py3k
-        :tickets: 296
-
-        Fixed regression where import refactors in Mako 1.0.11 caused broken
-        imports on Python 3.8.
-
-
-.. changelog::
-    :version: 1.0.11
-    :released: Fri May 31 2019
-
-    .. change::
-        :tags: changed
-
-        Updated for additional project metadata in setup.py.   Additionally,
-        the code has been reformatted using Black and zimports.
-
-.. changelog::
-    :version: 1.0.10
-    :released: Fri May 10 2019
-
-    .. change::
-        :tags: bug, py3k
-        :tickets: 293
-
-     Added a default encoding of "utf-8" when the :class:`.RichTraceback`
-     object retrieves Python source lines from a Python traceback; as these
-     are bytes in Python 3 they need to be decoded so that they can be
-     formatted in the template.
-
-.. changelog::
-    :version: 1.0.9
-    :released: Mon Apr 15 2019
-
-    .. change::
-        :tags: bug
-        :tickets: 287
-
-     Further corrected the previous fix for :ticket:`287` as it relied upon
-     an attribute that is monkeypatched by Python's ``ast`` module for some
-     reason, which fails if ``ast`` hasn't been imported; the correct
-     attribute ``Constant.value`` is now used.   Also note the issue
-     was mis-numbered in the previous changelog note.
-
-.. changelog::
     :version: 1.0.8
-    :released: Wed Mar 20 2019
-    :released: Wed Mar 20 2019
-
-    .. change::
-        :tags: bug
-        :tickets: 287
-
-     Fixed an element in the AST Python generator which changed
-     for Python 3.8, causing expression generation to fail.
 
     .. change::
         :tags: feature
@@ -502,8 +18,8 @@ Changelog
     .. change::
         :tags: bug
 
-     Removed unnecessary "usage" prefix from mako-render script.
-     Pull request courtesy Hugo.
+    Removed unnecessary "usage" prefix from mako-render script.
+    Pull request courtesy Hugo.
 
 .. changelog::
     :version: 1.0.7
@@ -563,6 +79,7 @@ Changelog
 
     .. change::
         :tags: feature
+        :pullreq: bitbucket:16
 
       Added new method :meth:`.Template.list_defs`.   Pull request courtesy
       Jonathan Vanasco.
@@ -573,6 +90,7 @@ Changelog
 
     .. change::
         :tags: bug, babel
+        :pullreq: bitbucket:21
 
       Fixed an issue where the Babel plugin would not handle a translation
       symbol that contained non-ascii characters.  Pull request courtesy
@@ -604,6 +122,7 @@ Changelog
 
     .. change::
         :tags: bug
+        :pullreq: bitbucket:18
 
       Update the Lingua translation extraction plugin to correctly
       handle templates mixing Python control statements (such as if,
@@ -630,12 +149,14 @@ Changelog
 
     .. change::
         :tags: feature
+        :pullreq: bitbucket:9
 
       Added support for Lingua, a translation extraction system as an
       alternative to Babel.  Pull request courtesy Wichert Akkerman.
 
     .. change::
         :tags: bug, py3k
+        :pullreq: bitbucket:11
 
       Modernized the examples/wsgi/run_wsgi.py file for Py3k.
       Pull requset courtesy Cody Taylor.
@@ -646,6 +167,7 @@ Changelog
 
     .. change::
         :tags: bug, py2k
+        :pullreq: bitbucket:8
 
       Improved the error re-raise operation when a custom
       :paramref:`.Template.error_handler` is used that does not handle
@@ -654,6 +176,7 @@ Changelog
 
     .. change::
         :tags: bug, py2k, filters
+        :pullreq: bitbucket:7
 
       Added an html_escape filter that works in "non unicode" mode.
       Previously, when using ``disable_unicode=True``, the ``u`` filter
@@ -694,6 +217,7 @@ Changelog
 
     .. change::
         :tags: feature
+        :pullreq: bitbucket:5
 
       mako-render is now implemented as a setuptools entrypoint script;
       a standalone mako.cmd.cmdline() callable is now available, and the
@@ -702,6 +226,7 @@ Changelog
 
     .. change::
         :tags: feature
+        :pullreq: bitbucket:4
 
       The mako-render script will now catch exceptions and run them
       into the text error handler, and exit with a non-zero exit code.
@@ -709,6 +234,7 @@ Changelog
 
     .. change::
         :tags: bug
+        :pullreq: bitbucket:2
 
       A rework of the mako-render script allows the script to run
       correctly when given a file pathname that is outside of the current
@@ -1399,7 +925,7 @@ Older Versions
         :tags:
         :tickets: 148
 
-      Fixed missing \**extra collection in
+      Fixed missing **extra collection in
       setup.py which prevented setup.py
       from running 2to3 on install.
 
@@ -1652,7 +1178,7 @@ Older Versions
       The <%page args> tag can now be used in a base
       inheriting template - the full set of render()
       arguments are passed down through the inherits
-      chain.  Undeclared arguments go into \**pageargs
+      chain.  Undeclared arguments go into **pageargs
       as usual.
 
     .. change::
@@ -2007,16 +1533,16 @@ Older Versions
 
       added "attr" accessor to namespaces. Returns
       attributes configured as module level attributes, i.e.
-      within <%! %> sections.  i.e.::
+      within <%! %> sections.  i.e.:
 
-        # somefile.html
-        <%!
-            foo = 27
-        %>
+      # somefile.html
+      <%!
+          foo = 27
+      %>
 
-        # some other template
-        <%namespace name="myns" file="somefile.html"/>
-        ${myns.attr.foo}
+      # some other template
+      <%namespace name="myns" file="somefile.html"/>
+      ${myns.attr.foo}
 
       The slight backwards incompatibility here is, you
       can't have namespace defs named "attr" since the
@@ -2410,7 +1936,7 @@ Older Versions
         :tickets:
 
       <%include> plus arguments is also programmatically available via
-      self.include_file(<filename>, \**kwargs)
+      self.include_file(<filename>, **kwargs)
 
     .. change::
         :tags:

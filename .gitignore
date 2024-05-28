@@ -6,11 +6,16 @@
 *.orig
 *.egg-info
 *.sw[opq]
+
 /.Python
 /bin
 /include
 /lib
 /man
+
 .tox/
 .cache/
-.vscode
+.vscode/
+.idea/
+.pytest_cache/
+venv[23]/

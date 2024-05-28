@@ -1,63 +1,57 @@
 import os
+from .. import TemplateTest, template_base, skip_if
 
-import pytest
+try:
+    import lingua
+except:
+    lingua = None
 
-from mako.testing.assertions import eq_
-from mako.testing.config import config
-from mako.testing.exclusions import requires_lingua
-from mako.testing.fixtures import TemplateTest
+if lingua is not None:
+    from mako.ext.linguaplugin import LinguaMakoExtractor
+    from lingua.extractors import register_extractors
 
 
 class MockOptions:
     keywords = []
     domain = None
-    comment_tag = True
 
 
-@requires_lingua
-class MakoExtractTest(TemplateTest):
-    @pytest.fixture(autouse=True)
-    def register_lingua_extractors(self):
-        from lingua.extractors import register_extractors
+def skip():
+    return skip_if(
+        lambda: not lingua, 'lingua not installed: skipping linguaplugin test')
 
-        register_extractors()
 
+class ExtractMakoTestCase(TemplateTest):
+    @skip()
     def test_extract(self):
-        from mako.ext.linguaplugin import LinguaMakoExtractor
-
-        plugin = LinguaMakoExtractor({"comment-tags": "TRANSLATOR"})
+        register_extractors()
+        plugin = LinguaMakoExtractor({'comment-tags': 'TRANSLATOR'})
         messages = list(
-            plugin(
-                os.path.join(config.template_base, "gettext.mako"),
-                MockOptions(),
-            )
-        )
+            plugin(os.path.join(template_base, 'gettext.mako'), MockOptions()))
         msgids = [(m.msgid, m.msgid_plural) for m in messages]
-        eq_(
+        self.assertEqual(
             msgids,
             [
-                ("Page arg 1", None),
-                ("Page arg 2", None),
-                ("Begin", None),
-                ("Hi there!", None),
-                ("Hello", None),
-                ("Welcome", None),
-                ("Yo", None),
-                ("The", None),
-                ("bunny", "bunnies"),
-                ("Goodbye", None),
-                ("Babel", None),
-                ("hella", "hellas"),
-                ("The", None),
-                ("bunny", "bunnies"),
-                ("Goodbye, really!", None),
-                ("P.S. byebye", None),
-                ("Top", None),
-                ("foo", None),
-                ("hoho", None),
-                ("bar", None),
-                ("Inside a p tag", None),
-                ("Later in a p tag", None),
-                ("No action at a distance.", None),
-            ],
-        )
+                ('Page arg 1', None),
+                ('Page arg 2', None),
+                ('Begin', None),
+                ('Hi there!', None),
+                ('Hello', None),
+                ('Welcome', None),
+                ('Yo', None),
+                ('The', None),
+                ('bunny', 'bunnies'),
+                ('Goodbye', None),
+                ('Babel', None),
+                ('hella', 'hellas'),
+                ('The', None),
+                ('bunny', 'bunnies'),
+                ('Goodbye, really!', None),
+                ('P.S. byebye', None),
+                ('Top', None),
+                (u'foo', None),
+                ('hoho', None),
+                (u'bar', None),
+                ('Inside a p tag', None),
+                ('Later in a p tag', None),
+                ('No action at a distance.', None)])

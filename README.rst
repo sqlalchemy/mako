@@ -42,7 +42,7 @@ Python is a great scripting language. Don't reinvent the wheel...your templates 
 Documentation
 ==============
 
-See documentation for Mako at https://docs.makotemplates.org/en/latest/
+See documentation for Mako at http://www.makotemplates.org/docs/
 
 License
 ========

@@ -284,7 +284,7 @@ using a :class:`.CacheImpl` subclass.    This class implements
 the rudimental methods Mako needs to implement the caching
 API.   Mako includes the :class:`.BeakerCacheImpl` class to
 provide the default implementation.  A :class:`.CacheImpl` class
-is acquired by Mako using a ``importlib.metatada`` entrypoint, using
+is acquired by Mako using a ``pkg_resources`` entrypoint, using
 the name given as the ``cache_impl`` argument to :class:`.Template`
 or :class:`.TemplateLookup`.    This entry point can be
 installed via the standard `setuptools`/``setup()`` procedure, underneath

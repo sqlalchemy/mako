@@ -1,10 +1,10 @@
 # mako/cache.py
-# Copyright 2006-2024 the Mako authors and contributors <see AUTHORS file>
+# Copyright (C) 2006-2016 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from mako import util
+from mako import compat, util
 
 _cache_plugins = util.PluginLoader("mako.cache")
 
@@ -12,7 +12,7 @@ register_plugin = _cache_plugins.register
 register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
 
 
-class Cache:
+class Cache(object):
 
     """Represents a data content cache made available to the module
     space of a specific :class:`.Template` object.
@@ -65,7 +65,7 @@ class Cache:
     def __init__(self, template, *args):
         # check for a stale template calling the
         # constructor
-        if isinstance(template, str) and args:
+        if isinstance(template, compat.string_types) and args:
             return
         self.template = template
         self.id = template.module.__name__
@@ -90,8 +90,9 @@ class Cache:
             return creation_function()
 
         return self.impl.get_or_create(
-            key, creation_function, **self._get_cache_kw(kw, context)
-        )
+            key,
+            creation_function,
+            **self._get_cache_kw(kw, context))
 
     def set(self, key, value, **kw):
         r"""Place a value in the cache.
@@ -140,7 +141,7 @@ class Cache:
         template.
 
         """
-        self.invalidate("render_body", __M_defname="render_body")
+        self.invalidate('render_body', __M_defname='render_body')
 
     def invalidate_def(self, name):
         """Invalidate the cached content of a particular ``<%def>`` within this
@@ -148,7 +149,7 @@ class Cache:
 
         """
 
-        self.invalidate("render_%s" % name, __M_defname="render_%s" % name)
+        self.invalidate('render_%s' % name, __M_defname='render_%s' % name)
 
     def invalidate_closure(self, name):
         """Invalidate a nested ``<%def>`` within this template.
@@ -164,7 +165,7 @@ class Cache:
         self.invalidate(name, __M_defname=name)
 
     def _get_cache_kw(self, kw, context):
-        defname = kw.pop("__M_defname", None)
+        defname = kw.pop('__M_defname', None)
         if not defname:
             tmpl_kw = self.template.cache_args.copy()
             tmpl_kw.update(kw)
@@ -176,11 +177,11 @@ class Cache:
             self._def_regions[defname] = tmpl_kw
         if context and self.impl.pass_context:
             tmpl_kw = tmpl_kw.copy()
-            tmpl_kw.setdefault("context", context)
+            tmpl_kw.setdefault('context', context)
         return tmpl_kw
 
 
-class CacheImpl:
+class CacheImpl(object):
 
     """Provide a cache implementation for use by :class:`.Cache`."""
 

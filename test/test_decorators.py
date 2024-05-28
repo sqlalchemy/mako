@@ -1,16 +1,15 @@
 from mako.template import Template
-from mako.testing.helpers import flatten_result
+from mako import lookup
+import unittest
+from test.util import flatten_result, result_lines
 
-
-class DecoratorTest:
+class DecoratorTest(unittest.TestCase):
     def test_toplevel(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bar(fn):
                     def decorate(context, *args, **kw):
-                        return "BAR" + runtime.capture"""
-            """(context, fn, *args, **kw) + "BAR"
+                        return "BAR" + runtime.capture(context, fn, *args, **kw) + "BAR"
                     return decorate
             %>
 
@@ -19,14 +18,12 @@ class DecoratorTest:
             </%def>
 
             ${foo(1, x=5)}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "BAR this is foo 1 5 BAR"
 
     def test_toplevel_contextual(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bar(fn):
                     def decorate(context):
@@ -42,19 +39,15 @@ class DecoratorTest:
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "BAR this is foo BAR"
 
-        assert (
-            flatten_result(template.get_def("foo").render())
-            == "BAR this is foo BAR"
-        )
+        assert flatten_result(template.get_def('foo').render()) == "BAR this is foo BAR"
+
 
     def test_nested(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bat(fn):
                     def decorate(context):
@@ -71,19 +64,16 @@ class DecoratorTest:
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "BAT this is bar BAT"
 
     def test_toplevel_decorated_name(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bar(fn):
                     def decorate(context, *args, **kw):
-                        return "function " + fn.__name__ + """
-            """" " + runtime.capture(context, fn, *args, **kw)
+                        return "function " + fn.__name__ + " " + runtime.capture(context, fn, *args, **kw)
                     return decorate
             %>
 
@@ -92,21 +82,16 @@ class DecoratorTest:
             </%def>
 
             ${foo(1, x=5)}
-        """
-        )
+        """)
 
-        assert (
-            flatten_result(template.render()) == "function foo this is foo 1 5"
-        )
+        assert flatten_result(template.render()) == "function foo this is foo 1 5"
 
     def test_nested_decorated_name(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bat(fn):
                     def decorate(context):
-                        return "function " + fn.__name__ + " " + """
-            """runtime.capture(context, fn)
+                        return "function " + fn.__name__ + " " + runtime.capture(context, fn)
                     return decorate
             %>
 
@@ -119,7 +104,7 @@ class DecoratorTest:
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "function bar this is bar"
+

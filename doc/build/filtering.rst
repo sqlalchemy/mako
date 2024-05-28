@@ -4,8 +4,6 @@
 Filtering and Buffering
 =======================
 
-.. _expression_filtering:
-
 Expression Filtering
 ====================
 
@@ -34,15 +32,9 @@ The built-in escape flags are:
 * ``trim`` : whitespace trimming, provided by ``string.strip()``
 * ``entity`` : produces HTML entity references for applicable
   strings, derived from ``htmlentitydefs``
-* ``str`` : produces a Python unicode
+* ``unicode`` (``str`` on Python 3): produces a Python unicode
   string (this function is applied by default)
-* ``unicode`` : aliased to ``str`` above
-
-  .. versionchanged:: 1.2.0
-     Prior versions applied the ``unicode`` built-in when running in Python 2;
-     in 1.2.0 Mako applies the Python 3 ``str`` built-in.
-
-* ``decode.<some encoding>`` : decode input into a Python
+* ``decode.<some encoding>``: decode input into a Python
   unicode with the specified encoding
 * ``n`` : disable all default filtering; only filters specified
   in the local expression tag will be applied.
@@ -107,13 +99,15 @@ In addition to the ``expression_filter`` argument, the
 :class:`.TemplateLookup` can specify filtering for all expression tags
 at the programmatic level. This array-based argument, when given
 its default argument of ``None``, will be internally set to
+``["unicode"]`` (or ``["str"]`` on Python 3), except when
+``disable_unicode=True`` is set in which case it defaults to
 ``["str"]``:
 
 .. sourcecode:: python
 
-    t = TemplateLookup(directories=['/tmp'], default_filters=['str'])
+    t = TemplateLookup(directories=['/tmp'], default_filters=['unicode'])
 
-To replace the usual ``str`` function with a
+To replace the usual ``unicode``/``str`` function with a
 specific encoding, the ``decode`` filter can be substituted:
 
 .. sourcecode:: python
@@ -134,7 +128,7 @@ applied first.
 
 .. sourcecode:: python
 
-    t = Template(templatetext, default_filters=['str', 'myfilter'])
+    t = Template(templatetext, default_filters=['unicode', 'myfilter'])
 
 To ease the usage of ``default_filters`` with custom filters,
 you can also add imports (or other code) to all templates using
@@ -143,7 +137,7 @@ the ``imports`` argument:
 .. sourcecode:: python
 
     t = TemplateLookup(directories=['/tmp'],
-                       default_filters=['str', 'myfilter'],
+                       default_filters=['unicode', 'myfilter'],
                        imports=['from mypackage import myfilter'])
 
 The above will generate templates something like this:
@@ -154,9 +148,7 @@ The above will generate templates something like this:
     from mypackage import myfilter
 
     def render_body(context):
-        context.write(myfilter(str("some text")))
-
-.. _expression_filtering_nfilter:
+        context.write(myfilter(unicode("some text")))
 
 Turning off Filtering with the ``n`` Filter
 -------------------------------------------
@@ -176,22 +168,6 @@ will render ``myexpression`` with no filtering of any kind, and:
     ${'myexpression' | n,trim}
 
 will render ``myexpression`` using the ``trim`` filter only.
-
-Including the ``n`` filter in a ``<%page>`` tag will only disable
-``default_filters``. In effect this makes the filters from the tag replace
-default filters instead of adding to them. For example:
-
-.. sourcecode:: mako
-
-    <%page expression_filter="n, json.dumps"/>
-    data = {a: ${123}, b: ${"123"}};
-
-will suppress turning the values into strings using the default filter, so that
-``json.dumps`` (which requires ``imports=["import json"]`` or something
-equivalent) can take the value type into account, formatting numbers as numeric
-literals and strings as string literals.
-
-.. versionadded:: 1.0.14 The ``n`` filter can now be used in the ``<%page>`` tag.
 
 Filtering Defs and Blocks
 =========================

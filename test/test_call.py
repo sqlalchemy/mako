@@ -1,14 +1,11 @@
 from mako.template import Template
-from mako.testing.assertions import eq_
-from mako.testing.fixtures import TemplateTest
-from mako.testing.helpers import flatten_result
-from mako.testing.helpers import result_lines
-
+from mako import util
+from test.util import result_lines, flatten_result
+from test import TemplateTest, eq_
 
 class CallTest(TemplateTest):
     def test_call(self):
-        t = Template(
-            """
+        t = Template("""
         <%def name="foo()">
             hi im foo ${caller.body(y=5)}
         </%def>
@@ -16,16 +13,12 @@ class CallTest(TemplateTest):
         <%call expr="foo()" args="y, **kwargs">
             this is the body, y is ${y}
         </%call>
-"""
-        )
-        assert result_lines(t.render()) == [
-            "hi im foo",
-            "this is the body, y is 5",
-        ]
+""")
+        assert result_lines(t.render()) == ['hi im foo', 'this is the body, y is 5']
+
 
     def test_compound_call(self):
-        t = Template(
-            """
+        t = Template("""
 
         <%def name="bar()">
             this is bar
@@ -48,26 +41,16 @@ class CallTest(TemplateTest):
         </%call>
         ${bar()}
 
-"""
-        )
-        assert result_lines(t.render()) == [
-            "foo calling comp1:",
-            "this is comp1, 5",
-            "foo calling body:",
-            "this is the body,",
-            "this is comp1, 6",
-            "this is bar",
-        ]
+""")
+        assert result_lines(t.render()) == ['foo calling comp1:', 'this is comp1, 5', 'foo calling body:', 'this is the body,', 'this is comp1, 6', 'this is bar']
 
     def test_new_syntax(self):
-        """test foo:bar syntax, including multiline args and expression
-        eval."""
+        """test foo:bar syntax, including multiline args and expression eval."""
 
         # note the trailing whitespace in the bottom ${} expr, need to strip
         # that off < python 2.7
 
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo(x, y, q, z)">
                 ${x}
                 ${y}
@@ -87,17 +70,15 @@ class CallTest(TemplateTest):
             ]
 
             }"/>
-        """
-        )
+        """)
 
         eq_(
             result_lines(t.render()),
-            ["this is x", "some y", "this", "is", "q", "1->2,3->4,5->6"],
+             ['this is x', 'some y', 'this', 'is', 'q', '1->2,3->4,5->6']
         )
 
     def test_ccall_caller(self):
-        t = Template(
-            """
+        t = Template("""
         <%def name="outer_func()">
         OUTER BEGIN
             <%call expr="caller.inner_func()">
@@ -114,9 +95,8 @@ class CallTest(TemplateTest):
             </%def>
         </%call>
 
-        """
-        )
-        # print t.code
+        """)
+        #print t.code
         assert result_lines(t.render()) == [
             "OUTER BEGIN",
             "INNER BEGIN",
@@ -126,8 +106,7 @@ class CallTest(TemplateTest):
         ]
 
     def test_stack_pop(self):
-        t = Template(
-            """
+        t = Template("""
         <%def name="links()" buffered="True">
            Some links
         </%def>
@@ -143,22 +122,19 @@ class CallTest(TemplateTest):
            Some title
         </%call>
 
-        """
-        )
+        """)
 
         assert result_lines(t.render()) == [
-            "<h1>",
-            "Some title",
-            "</h1>",
-            "Some links",
+        "<h1>",
+        "Some title",
+        "</h1>",
+        "Some links"
         ]
 
     def test_conditional_call(self):
-        """test that 'caller' is non-None only if the immediate <%def> was
-        called via <%call>"""
+        """test that 'caller' is non-None only if the immediate <%def> was called via <%call>"""
 
-        t = Template(
-            """
+        t = Template("""
         <%def name="a()">
         % if caller:
         ${ caller.body() } \\
@@ -186,14 +162,17 @@ class CallTest(TemplateTest):
         CALL
         </%call>
 
-        """
-        )
-        assert result_lines(t.render()) == ["CALL", "AAA", "BBB", "CCC"]
+        """)
+        assert result_lines(t.render()) == [
+            "CALL",
+            "AAA",
+            "BBB",
+            "CCC"
+        ]
 
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
-        t = Template(
-            """
+        t = Template("""
             <%def name="a()">
                 this is a.
                 <%call expr="b()">
@@ -210,21 +189,19 @@ class CallTest(TemplateTest):
                 heres the main templ call
             </%call>
 
-"""
-        )
+""")
         assert result_lines(t.render()) == [
-            "this is a.",
-            "this is b. heres my body:",
+            'this is a.',
+            'this is b. heres my body:',
             "this is a's ccall. heres my body:",
-            "heres the main templ call",
+            'heres the main templ call',
             "whats in the body's caller's body ?",
-            "heres the main templ call",
+            'heres the main templ call'
         ]
 
     def test_nested_call(self):
         """test %calls that are nested inside each other"""
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo()">
                 ${caller.body(x=10)}
             </%def>
@@ -241,18 +218,16 @@ class CallTest(TemplateTest):
                     this is bar body: ${x}
                 </%call>
             </%call>
-"""
-        )
+""")
         assert result_lines(t.render(x=5)) == [
             "x is 5",
             "this is foo body: 10",
             "bar:",
-            "this is bar body: 10",
+            "this is bar body: 10"
         ]
 
     def test_nested_call_2(self):
-        t = Template(
-            """
+        t = Template("""
             x is ${x}
             <%def name="foo()">
                 ${caller.foosub(x=10)}
@@ -275,18 +250,16 @@ class CallTest(TemplateTest):
                 </%def>
 
             </%call>
-"""
-        )
+""")
         assert result_lines(t.render(x=5)) == [
             "x is 5",
             "this is foo body: 10",
             "bar:",
-            "this is bar body: 10",
+            "this is bar body: 10"
         ]
 
     def test_nested_call_3(self):
-        template = Template(
-            """\
+        template = Template('''\
         <%def name="A()">
           ${caller.body()}
         </%def>
@@ -303,8 +276,7 @@ class CallTest(TemplateTest):
           </%call>
         </%call>
 
-        """
-        )
+        ''')
         assert flatten_result(template.render()) == "foo"
 
     def test_nested_call_4(self):
@@ -320,9 +292,7 @@ class CallTest(TemplateTest):
         </%def>
         """
 
-        template = Template(
-            base
-            + """
+        template = Template(base + """
         <%def name="C()">
          C_def
          <%self:B>
@@ -337,17 +307,14 @@ class CallTest(TemplateTest):
         <%self:C>
         C_body
         </%self:C>
-        """
-        )
+        """)
 
         eq_(
             flatten_result(template.render()),
-            "C_def B_def A_def A_body B_body C_body",
+            "C_def B_def A_def A_body B_body C_body"
         )
 
-        template = Template(
-            base
-            + """
+        template = Template(base + """
         <%def name="C()">
          C_def
          <%self:B>
@@ -362,17 +329,15 @@ class CallTest(TemplateTest):
         <%self:C>
         C_body
         </%self:C>
-        """
-        )
+        """)
 
         eq_(
             flatten_result(template.render()),
-            "C_def B_def B_body C_body A_def A_body",
+            "C_def B_def B_body C_body A_def A_body"
         )
 
     def test_chained_call_in_nested(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="embedded()">
             <%def name="a()">
                 this is a.
@@ -382,8 +347,7 @@ class CallTest(TemplateTest):
             </%def>
             <%def name="b()">
                 this is b.  heres  my body: ${caller.body()}
-                whats in the body's caller's body ? """
-            """${context.caller_stack[-2].body()}
+                whats in the body's caller's body ? ${context.caller_stack[-2].body()}
             </%def>
 
             <%call expr="a()">
@@ -391,22 +355,20 @@ class CallTest(TemplateTest):
             </%call>
             </%def>
             ${embedded()}
-"""
-        )
-        # print t.code
-        # print result_lines(t.render())
+""")
+        #print t.code
+        #print result_lines(t.render())
         assert result_lines(t.render()) == [
-            "this is a.",
-            "this is b. heres my body:",
+            'this is a.',
+            'this is b. heres my body:',
             "this is a's ccall. heres my body:",
-            "heres the main templ call",
+            'heres the main templ call',
             "whats in the body's caller's body ?",
-            "heres the main templ call",
+            'heres the main templ call'
         ]
 
     def test_call_in_nested(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="a()">
                 this is a ${b()}
                 <%def name="b()">
@@ -420,31 +382,22 @@ class CallTest(TemplateTest):
                 </%def>
             </%def>
         ${a()}
-"""
-        )
-        assert result_lines(t.render()) == [
-            "this is a",
-            "this is b",
-            "this is c:",
-            "this is the body in b's call",
-        ]
+""")
+        assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call"]
 
     def test_composed_def(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="f()"><f>${caller.body()}</f></%def>
             <%def name="g()"><g>${caller.body()}</g></%def>
             <%def name="fg()">
                 <%self:f><%self:g>${caller.body()}</%self:g></%self:f>
             </%def>
             <%self:fg>fgbody</%self:fg>
-            """
-        )
-        assert result_lines(t.render()) == ["<f><g>fgbody</g></f>"]
+            """)
+        assert result_lines(t.render()) == ['<f><g>fgbody</g></f>']
 
     def test_regular_defs(self):
-        t = Template(
-            """
+        t = Template("""
         <%!
             @runtime.supports_caller
             def a(context):
@@ -477,8 +430,7 @@ class CallTest(TemplateTest):
         </%call>
 
 
-        """
-        )
+        """)
         assert result_lines(t.render()) == [
             "test 1",
             "this is a",
@@ -497,12 +449,11 @@ class CallTest(TemplateTest):
             "our body:",
             "this is the nested body",
             "this is aa is done",
-            "this is aa is done",
+            "this is aa is done"
         ]
 
     def test_call_in_nested_2(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="a()">
                 <%def name="d()">
                     not this d
@@ -526,24 +477,14 @@ class CallTest(TemplateTest):
                 </%def>
             </%def>
         ${a()}
-"""
-        )
-        assert result_lines(t.render()) == [
-            "this is a",
-            "this is b",
-            "this is c:",
-            "this is the body in b's call",
-            'the embedded "d" is:',
-            "this is d",
-        ]
-
+""")
+        assert result_lines(t.render()) == ['this is a', 'this is b', 'this is c:', "this is the body in b's call", 'the embedded "d" is:', 'this is d']
 
 class SelfCacheTest(TemplateTest):
     """this test uses a now non-public API."""
 
     def test_basic(self):
-        t = Template(
-            """
+        t = Template("""
         <%!
             cached = None
         %>
@@ -564,10 +505,10 @@ class SelfCacheTest(TemplateTest):
 
         ${foo()}
         ${foo()}
-"""
-        )
+""")
         assert result_lines(t.render()) == [
             "this is foo",
             "cached:",
-            "this is foo",
+            "this is foo"
         ]
+

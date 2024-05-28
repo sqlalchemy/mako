@@ -1,11 +1,11 @@
-from io import StringIO
+import unittest
 
-from mako.pygen import adjust_whitespace
-from mako.pygen import PythonPrinter
-from mako.testing.assertions import eq_
+from mako.pygen import PythonPrinter, adjust_whitespace
+from mako.compat import StringIO
+from test import eq_
 
 
-class GeneratePythonTest:
+class GeneratePythonTest(unittest.TestCase):
     def test_generate_normal(self):
         stream = StringIO()
         printer = PythonPrinter(stream)
@@ -14,15 +14,12 @@ class GeneratePythonTest:
         printer.writeline("print x")
         printer.writeline(None)
         printer.writeline("print y")
-        assert (
-            stream.getvalue()
-            == """import lala
+        assert stream.getvalue() == \
+"""import lala
 for x in foo:
     print x
 print y
 """
-        )
-
     def test_generate_adjusted(self):
         block = """
         x = 5 +6
@@ -34,20 +31,18 @@ print y
         printer = PythonPrinter(stream)
         printer.write_indented_block(block)
         printer.close()
-        # print stream.getvalue()
-        assert (
-            stream.getvalue()
-            == """
+        #print stream.getvalue()
+        assert stream.getvalue() == \
+"""
 x = 5 +6
 if x > 7:
     for y in range(1,5):
         print "<td>%s</td>" % y
 
 """
-        )
-
     def test_generate_combo(self):
-        block = """
+        block = \
+"""
                 x = 5 +6
                 if x > 7:
                     for y in range(1,5):
@@ -65,10 +60,9 @@ if x > 7:
         printer.writeline(None)
         printer.writeline("print y")
         printer.close()
-        # print "->" + stream.getvalue().replace(' ', '#') + "<-"
-        eq_(
-            stream.getvalue(),
-            """import lala
+        #print "->" + stream.getvalue().replace(' ', '#') + "<-"
+        eq_(stream.getvalue(),
+"""import lala
 for x in foo:
     print x
 
@@ -81,11 +75,10 @@ for x in foo:
     foo(lala)
 
 print y
-""",
-        )
-
+""")
     def test_multi_line(self):
-        block = """
+        block = \
+"""
     if test:
         print ''' this is a block of stuff.
 this is more stuff in the block.
@@ -97,10 +90,9 @@ and more block.
         printer = PythonPrinter(stream)
         printer.write_indented_block(block)
         printer.close()
-        # print stream.getvalue()
-        assert (
-            stream.getvalue()
-            == """
+        #print stream.getvalue()
+        assert stream.getvalue() == \
+"""
 if test:
     print ''' this is a block of stuff.
 this is more stuff in the block.
@@ -109,7 +101,6 @@ and more block.
     do_more_stuff(g)
 
 """
-        )
 
     def test_false_unindentor(self):
         stream = StringIO()
@@ -122,23 +113,23 @@ and more block.
             None,
             "finally:",
             "dosomething",
-            None,
+            None
         ]:
             printer.writeline(line)
 
-        assert (
-            stream.getvalue()
-            == """try:
+        assert stream.getvalue() == \
+"""try:
     elsemyvar = 12
     if True:
         print 'hi'
 finally:
     dosomething
-"""
-        ), stream.getvalue()
+"""    , stream.getvalue()
+
 
     def test_backslash_line(self):
-        block = """
+        block = \
+"""
             # comment
     if test:
         if (lala + hoho) + \\
@@ -150,9 +141,8 @@ finally:
         printer = PythonPrinter(stream)
         printer.write_indented_block(block)
         printer.close()
-        assert (
-            stream.getvalue()
-            == """
+        assert stream.getvalue() == \
+"""
             # comment
 if test:
     if (lala + hoho) + \\
@@ -161,24 +151,20 @@ if test:
 print "more indent"
 
 """
-        )
 
-
-class WhitespaceTest:
+class WhitespaceTest(unittest.TestCase):
     def test_basic(self):
         text = """
         for x in range(0,15):
             print x
         print "hi"
         """
-        assert (
-            adjust_whitespace(text)
-            == """
+        assert adjust_whitespace(text) == \
+"""
 for x in range(0,15):
     print x
 print "hi"
 """
-        )
 
     def test_blank_lines(self):
         text = """
@@ -188,16 +174,14 @@ print "hi"
 
     print g
 """
-        assert (
-            adjust_whitespace(text)
-            == """
+        assert adjust_whitespace(text) == \
+"""
 print "hi"  # a comment
 
 # more comments
 
 print g
 """
-        )
 
     def test_open_quotes_with_pound(self):
         text = '''
@@ -205,17 +189,15 @@ print g
           # and this is text
         # and this is too """
 '''
-        assert (
-            adjust_whitespace(text)
-            == '''
+        assert adjust_whitespace(text) == \
+'''
 print """  this is text
           # and this is text
         # and this is too """
 '''
-        )
 
     def test_quote_with_comments(self):
-        text = """
+        text= """
             print 'hi'
             # this is a comment
             # another comment
@@ -226,9 +208,8 @@ print """  this is text
             # someone else's comment
 """
 
-        assert (
-            adjust_whitespace(text)
-            == """
+        assert adjust_whitespace(text) == \
+"""
 print 'hi'
 # this is a comment
 # another comment
@@ -238,7 +219,7 @@ print '''
         '''
 # someone else's comment
 """
-        )
+
 
     def test_quotes_with_pound(self):
         text = '''
@@ -247,15 +228,13 @@ print '''
         elif False:
             "bar"
 '''
-        assert (
-            adjust_whitespace(text)
-            == '''
+        assert adjust_whitespace(text) == \
+'''
 if True:
     """#"""
 elif False:
     "bar"
 '''
-        )
 
     def test_quotes(self):
         text = """
@@ -265,13 +244,11 @@ asdkfjnads kfajns '''
         if x:
             print y
 """
-        assert (
-            adjust_whitespace(text)
-            == """
+        assert adjust_whitespace(text) == \
+"""
 print ''' aslkjfnas kjdfn
 askdjfnaskfd fkasnf dknf sadkfjn asdkfjna sdakjn
 asdkfjnads kfajns '''
 if x:
     print y
 """
-        )
