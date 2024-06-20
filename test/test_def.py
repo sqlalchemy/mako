@@ -62,6 +62,25 @@ class DefTest(TemplateTest):
             """look at all these args: one two three four 5 seven""",
         )
 
+    def test_def_py3k_args_quirk(self):
+        """Document quirk where bare * is silently removed which incorrectly
+        allows for kwonly args to be passed as positional.
+
+        See issue #405 for more information."""
+        template = Template(
+            """
+        <%def name="kwonly(a, *, b)">
+            hello kwonly: ${a} ${b} """
+            """
+        </%def>
+
+        ${kwonly('1', '2')}"""
+        )
+        eq_(
+            template.render().strip(),
+            """hello kwonly: 1 2""",
+        )
+
     def test_inter_def(self):
         """test defs calling each other"""
         template = Template(
