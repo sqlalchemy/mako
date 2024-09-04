@@ -73,6 +73,10 @@ value). This is in contrast to using context-level variables,
 which evaluate to ``UNDEFINED`` if you reference a name that
 does not exist.
 
+Note there is a quirk that results in a bare ``*`` being silently removed from
+a function definition.  The function then incorrectly
+allows keyword only arguments to be used as positional arguments.
+
 Calling Defs from Other Files
 -----------------------------
 
