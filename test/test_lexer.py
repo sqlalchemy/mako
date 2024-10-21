@@ -827,6 +827,17 @@ more text
             ),
         )
 
+    def test_ampersand_issue_412(self):
+        template = """
+property = <&node>;
+
+"""
+        nodes = Lexer(template).parse()
+        self._compare(
+            nodes,
+            TemplateNode({}, [Text("\nproperty = <&node>;\n\n", (1, 1))]),
+        )
+
     def _dont_test_dict_expression_issue_400(self):
         """test for issue #400"""
         template = """

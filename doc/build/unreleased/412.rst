@@ -1,0 +1,8 @@
+.. change::
+    :tags: bug, lexer
+    :tickets: 412
+
+    Fixed long standing bug where the sequence ``<&`` would be misinterpreted
+    by the lexer.   It's not clear why the ampersand character was part of the
+    characters being consumed here and it may have been an inadvertent bit of
+    code from one of Mako's predecessor languages.
