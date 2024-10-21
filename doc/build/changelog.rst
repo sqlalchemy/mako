@@ -8,7 +8,16 @@ Changelog
 
 .. changelog::
     :version: 1.3.6
-    :include_notes_from: unreleased
+    :released: Mon Oct 21 2024
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 412
+
+        Fixed long standing bug where the sequence ``<&`` would be misinterpreted
+        by the lexer.   It's not clear why the ampersand character was part of the
+        characters being consumed here and it may have been an inadvertent bit of
+        code from one of Mako's predecessor languages.
 
 .. changelog::
     :version: 1.3.5
