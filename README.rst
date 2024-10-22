@@ -37,7 +37,7 @@ Nutshell
 Philosophy
 ===========
 
-Python is a great scripting language. Don't reinvent the wheel...your templates can handle it !
+Python is a great scripting language. Don't reinvent the wheel...your templates can handle it!
 
 Documentation
 ==============
