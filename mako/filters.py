@@ -161,3 +161,5 @@ DEFAULT_ESCAPES = {
     "str": "str",
     "n": "n",
 }
+
+CONFLICT_PREFIX = "__ALIAS_"

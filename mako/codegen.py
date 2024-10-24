@@ -16,6 +16,7 @@ from mako import exceptions
 from mako import filters
 from mako import parsetree
 from mako import util
+from mako.filters import CONFLICT_PREFIX
 from mako.pygen import PythonPrinter
 
 
@@ -522,6 +523,8 @@ class _GenerateRenderMethod:
             self.printer.writeline("loop = __M_loop = runtime.LoopStack()")
 
         for ident in to_write:
+            if ident.startswith(CONFLICT_PREFIX):
+                ident = ident.replace(CONFLICT_PREFIX, "")
             if ident in comp_idents:
                 comp = comp_idents[ident]
                 if comp.is_block:
@@ -785,16 +788,36 @@ class _GenerateRenderMethod:
             else:
                 return filters.DEFAULT_ESCAPES.get(name, name)
 
-        if "n" not in args:
+        filter_args = []
+        conflict_n = "%sn" % CONFLICT_PREFIX
+        if conflict_n not in args:
             if is_expression:
                 if self.compiler.pagetag:
                     args = self.compiler.pagetag.filter_args.args + args
-                if self.compiler.default_filters and "n" not in args:
+                    filter_args = self.compiler.pagetag.filter_args.args
+                if self.compiler.default_filters and conflict_n not in args:
                     args = self.compiler.default_filters + args
         for e in args:
-            # if filter given as a function, get just the identifier portion
-            if e == "n":
+            if e == conflict_n:
                 continue
+            if e.startswith(CONFLICT_PREFIX):
+                if e not in filter_args:
+                    ident = e.replace(CONFLICT_PREFIX, "")
+                    m = re.match(r"(.+?)(\(.*\))", e)
+                    if m:
+                        target = "%s(%s)" % (ident, target)
+                        continue
+                    target = "%s(%s) if %s is not UNDEFINED else %s(%s)" % (
+                        ident,
+                        target,
+                        ident,
+                        locate_encode(ident),
+                        target,
+                    )
+                    continue
+                e = e.replace(CONFLICT_PREFIX, "")
+
+            # if filter given as a function, get just the identifier portion
             m = re.match(r"(.+?)(\(.*\))", e)
             if m:
                 ident, fargs = m.group(1, 2)
