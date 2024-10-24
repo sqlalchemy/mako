@@ -198,16 +198,12 @@ class FindTuple(_ast_util.NodeVisitor):
                 p.declared_identifiers
             )
             lui = self.listener.undeclared_identifiers
-            # self.listener.undeclared_identifiers = lui.union(
-            #     p.undeclared_identifiers
-            # )
             undeclared_identifiers = lui.union(p.undeclared_identifiers)
             conflict_identifiers = undeclared_identifiers.intersection(
                 DEFAULT_ESCAPES
             )
             if conflict_identifiers:
                 _map = {i: CONFLICT_PREFIX + i for i in conflict_identifiers}
-                # for k, v in _map.items():
                 for i, arg in enumerate(self.listener.args):
                     if arg in _map:
                         self.listener.args[i] = _map[arg]
