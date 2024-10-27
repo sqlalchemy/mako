@@ -298,9 +298,23 @@ import x as bar
 
     def test_conflict_argument_list(self):
         parsed = ast.ArgumentList(
-            "3, 5, 'hi', n+5, " "context.get('lala')", **exception_kwargs
+            "x-2, h*2, '(u)', n+5, trim, entity, unicode, decode, str, other",
+            **exception_kwargs,
         )
-        eq_(parsed.undeclared_identifiers, {"__ALIAS_n", "context"})
+        eq_(
+            parsed.undeclared_identifiers,
+            {
+                "__DEFAULT_ESCAPE_trim",
+                "__DEFAULT_ESCAPE_h",
+                "__DEFAULT_ESCAPE_decode",
+                "__DEFAULT_ESCAPE_unicode",
+                "__DEFAULT_ESCAPE_x",
+                "__DEFAULT_ESCAPE_str",
+                "__DEFAULT_ESCAPE_entity",
+                "__DEFAULT_ESCAPE_n",
+                "other",
+            },
+        )
 
     def test_function_decl(self):
         """test getting the arguments from a function"""
