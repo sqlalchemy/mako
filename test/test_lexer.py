@@ -1049,7 +1049,12 @@ property = <&node>;
                     CallNamespaceTag(
                         "self:dtest",
                         {
-                            "d": "${\n                            {\n                                'id':'4',\n                                'foo':'barr'\n                            }\n                        }"
+                            "d": "${\n\
+                            {\n\
+                                'id':'4',\n\
+                                'foo':'barr'\n\
+                            }\n\
+                        }"
                         },
                         (7, 9),
                         [],
@@ -1167,7 +1172,8 @@ property = <&node>;
                             ControlLine("for", "endfor", True, (20, 1)),
                             ControlLine(
                                 "if",
-                                "if 'embeded' in d and 'name' in d['embeded']:",
+                                "if 'embeded' in d and \
+'name' in d['embeded']:",
                                 False,
                                 (21, 1),
                             ),
@@ -1182,7 +1188,11 @@ property = <&node>;
                     CallNamespaceTag(
                         "self:dtest",
                         {
-                            "d": "${ {\n            'x-on:click':'foo',\n            'foo':'bar',\n            'embeded':{'name':'J Doe'}\n        } }"
+                            "d": "${ {\n\
+            'x-on:click':'foo',\n\
+            'foo':'bar',\n\
+            'embeded':{'name':'J Doe'}\n\
+        } }"
                         },
                         (25, 9),
                         [],
