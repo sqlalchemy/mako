@@ -838,7 +838,7 @@ property = <&node>;
             TemplateNode({}, [Text("\nproperty = <&node>;\n\n", (1, 1))]),
         )
 
-    def _dont_test_dict_expression_issue_400(self):
+    def test_dict_expression_issue_400(self):
         """test for issue #400"""
         template = """
         <%def name="dtest(d)">
@@ -897,7 +897,7 @@ property = <&node>;
             ),
         )
 
-    def _dont_test_dict_expression_2_issue_400(self):
+    def test_dict_expression_2_issue_400(self):
         """test for issue #400"""
         template = """
         <%def name="thing(thing)">
