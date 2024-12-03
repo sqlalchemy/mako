@@ -1,8 +1,0 @@
-.. change::
-    :tags: bug, lexer
-    :tickets: 400, 401
-
-    Support the direct passing of dictionary literals when calling functions
-    and fix the errors caused by nested braces.   This revises the fix that was
-    released in 1.3.4 and then reverted in 1.3.5. Pull request by Hai Zhu and
-    Jose Galvez.

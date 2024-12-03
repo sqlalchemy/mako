@@ -8,7 +8,25 @@ Changelog
 
 .. changelog::
     :version: 1.3.7
-    :include_notes_from: unreleased
+    :released: Tue Dec 3 2024
+
+    .. change::
+        :tags: bug, lexer, codegen
+        :tickets: 140
+
+        During the lexical analysis phase, add an additional prefix for undeclared
+        identifiers that have the same name as built-in flags, and determine the
+        final filter to be used during the code generation phase based on the
+        context provided by the user. Pull request by Hai Zhu.
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 400, 401
+
+        Support the direct passing of dictionary literals when calling functions
+        and fix the errors caused by nested braces.   This revises the fix that was
+        released in 1.3.4 and then reverted in 1.3.5. Pull request by Hai Zhu and
+        Jose Galvez.
 
 .. changelog::
     :version: 1.3.6
