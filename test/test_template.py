@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from mako import exceptions
 from mako import runtime
 from mako import util
@@ -722,6 +724,27 @@ class IncludeTest(TemplateTest):
 
 
 class UndefinedVarsTest(TemplateTest):
+    @pytest.mark.parametrize(
+        "filters",
+        [
+            ["str", "n"],
+            ["n"],
+            ["str", "h"],
+            ["h"],
+            [],
+        ],
+    )
+    def test_140_regression(self, filters):
+        """test #415, regression on #140"""
+
+        t1 = Template(
+            "hello world ${x}",
+            strict_undefined=True,
+            default_filters=filters,
+        )
+
+        t1.render_unicode(x="hi")
+
     def test_undefined(self):
         t = Template(
             """

@@ -11,7 +11,7 @@ Changelog
     :include_notes_from: unreleased
 
 .. changelog::
-    :version: 1.3.7
+    :version: 1.3.7 (yanked)
     :released: Tue Dec 3 2024
 
     .. change::

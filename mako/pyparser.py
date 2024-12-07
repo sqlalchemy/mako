@@ -18,8 +18,6 @@ from mako import _ast_util
 from mako import compat
 from mako import exceptions
 from mako import util
-from mako.filters import DEFAULT_ESCAPE_PREFIX
-from mako.filters import DEFAULT_ESCAPES
 
 # words that cannot be assigned to (notably
 # smaller than the total keys in __builtins__)
@@ -198,24 +196,9 @@ class FindTuple(_ast_util.NodeVisitor):
                 p.declared_identifiers
             )
             lui = self.listener.undeclared_identifiers
-            undeclared_identifiers = lui.union(p.undeclared_identifiers)
-            conflict_identifiers = undeclared_identifiers.intersection(
-                DEFAULT_ESCAPES
+            self.listener.undeclared_identifiers = lui.union(
+                p.undeclared_identifiers
             )
-            if conflict_identifiers:
-                _map = {
-                    i: DEFAULT_ESCAPE_PREFIX + i for i in conflict_identifiers
-                }
-                for i, arg in enumerate(self.listener.args):
-                    if arg in _map:
-                        self.listener.args[i] = _map[arg]
-                self.listener.undeclared_identifiers = (
-                    undeclared_identifiers.symmetric_difference(
-                        conflict_identifiers
-                    ).union(_map.values())
-                )
-            else:
-                self.listener.undeclared_identifiers = undeclared_identifiers
 
 
 class ParseFunc(_ast_util.NodeVisitor):

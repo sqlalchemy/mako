@@ -16,7 +16,6 @@ from mako import exceptions
 from mako import filters
 from mako import parsetree
 from mako import util
-from mako.filters import DEFAULT_ESCAPE_PREFIX
 from mako.pygen import PythonPrinter
 
 
@@ -27,7 +26,6 @@ MAGIC_NUMBER = 10
 # context itself
 TOPLEVEL_DECLARED = {"UNDEFINED", "STOP_RENDERING"}
 RESERVED_NAMES = {"context", "loop"}.union(TOPLEVEL_DECLARED)
-DEFAULT_ESCAPED_N = "%sn" % DEFAULT_ESCAPE_PREFIX
 
 
 def compile(  # noqa
@@ -524,7 +522,6 @@ class _GenerateRenderMethod:
             self.printer.writeline("loop = __M_loop = runtime.LoopStack()")
 
         for ident in to_write:
-            ident = ident.replace(DEFAULT_ESCAPE_PREFIX, "")
             if ident in comp_idents:
                 comp = comp_idents[ident]
                 if comp.is_block:
@@ -788,48 +785,25 @@ class _GenerateRenderMethod:
             else:
                 return filters.DEFAULT_ESCAPES.get(name, name)
 
-        filter_args = set()
-        if DEFAULT_ESCAPED_N not in args:
+        if "n" not in args:
             if is_expression:
                 if self.compiler.pagetag:
                     args = self.compiler.pagetag.filter_args.args + args
-                    filter_args = set(self.compiler.pagetag.filter_args.args)
-                if (
-                    self.compiler.default_filters
-                    and DEFAULT_ESCAPED_N not in args
-                ):
+                if self.compiler.default_filters and "n" not in args:
                     args = self.compiler.default_filters + args
         for e in args:
-            if e == DEFAULT_ESCAPED_N:
-                continue
-
-            if e.startswith(DEFAULT_ESCAPE_PREFIX):
-                render_e = e.replace(DEFAULT_ESCAPE_PREFIX, "")
-                is_default_filter = True
-            else:
-                render_e = e
-                is_default_filter = False
-
             # if filter given as a function, get just the identifier portion
+            if e == "n":
+                continue
             m = re.match(r"(.+?)(\(.*\))", e)
             if m:
-                if not is_default_filter:
-                    ident, fargs = m.group(1, 2)
-                    f = locate_encode(ident)
-                    render_e = f + fargs
-                target = "%s(%s)" % (render_e, target)
-            elif is_default_filter and e not in filter_args:
-                target = "%s(%s) if %s is not UNDEFINED else %s(%s)" % (
-                    render_e,
-                    target,
-                    render_e,
-                    locate_encode(render_e),
-                    target,
-                )
+                ident, fargs = m.group(1, 2)
+                f = locate_encode(ident)
+                e = f + fargs
             else:
-                e = locate_encode(render_e)
+                e = locate_encode(e)
                 assert e is not None
-                target = "%s(%s)" % (e, target)
+            target = "%s(%s)" % (e, target)
         return target
 
     def visitExpression(self, node):
