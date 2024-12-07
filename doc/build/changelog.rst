@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.3.8
-    :include_notes_from: unreleased
+    :released: Sat Dec 7 2024
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 415, 140
+
+        Reverted the fix for :ticket:`140` released in Mako 1.3.7 as it produced
+        regressions in existing user code.
+
 
 .. changelog::
     :version: 1.3.7 (yanked)
