@@ -285,16 +285,36 @@ import x as bar
 
     def test_argument_list(self):
         parsed = ast.ArgumentList(
-            "3, 5, 'hi', x+5, " "context.get('lala')", **exception_kwargs
+            "3, 5, 'hi', g+5, " "context.get('lala')", **exception_kwargs
         )
-        eq_(parsed.undeclared_identifiers, {"x", "context"})
+        eq_(parsed.undeclared_identifiers, {"g", "context"})
         eq_(
             [x for x in parsed.args],
-            ["3", "5", "'hi'", "(x + 5)", "context.get('lala')"],
+            ["3", "5", "'hi'", "(g + 5)", "context.get('lala')"],
         )
 
-        parsed = ast.ArgumentList("h", **exception_kwargs)
-        eq_(parsed.args, ["h"])
+        parsed = ast.ArgumentList("m", **exception_kwargs)
+        eq_(parsed.args, ["m"])
+
+    def test_conflict_argument_list(self):
+        parsed = ast.ArgumentList(
+            "x-2, h*2, '(u)', n+5, trim, entity, unicode, decode, str, other",
+            **exception_kwargs,
+        )
+        eq_(
+            parsed.undeclared_identifiers,
+            {
+                "__DEFAULT_ESCAPE_trim",
+                "__DEFAULT_ESCAPE_h",
+                "__DEFAULT_ESCAPE_decode",
+                "__DEFAULT_ESCAPE_unicode",
+                "__DEFAULT_ESCAPE_x",
+                "__DEFAULT_ESCAPE_str",
+                "__DEFAULT_ESCAPE_entity",
+                "__DEFAULT_ESCAPE_n",
+                "other",
+            },
+        )
 
     def test_function_decl(self):
         """test getting the arguments from a function"""
