@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.3.9
-    :include_notes_from: unreleased
+    :released: Tue Feb 4 2025
+
+    .. change::
+        :tags: bug, tests
+        :tickets: 408
+
+        Fixed test suite to not rely upon ancient "future division" statement to
+        test the :paramref:`.Template.future_imports` feature.   The test is
+        replaced with one that tests only the rendering, not the ultimate effect.
 
 .. changelog::
     :version: 1.3.8
