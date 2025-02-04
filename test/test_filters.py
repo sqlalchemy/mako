@@ -453,3 +453,36 @@ class BufferTest:
 
         # print t.render()
         assert flatten_result(t.render()) == "this is foo. body: ccall body"
+
+    def test_conflict_filter_ident(self):
+        class h(object):
+            foo = str
+
+        t = Template(
+            """
+X:
+    ${"asdf" | h.foo}
+"""
+        )
+        assert flatten_result(t.render(h=h)) == "X: asdf"
+
+        def h(i):
+            return str(i) + "1"
+
+        t = Template(
+            """
+        ${123 | h}
+"""
+        )
+        assert flatten_result(t.render()) == "123"
+        assert flatten_result(t.render(h=h)) == "1231"
+
+        t = Template(
+            """
+        <%def name="foo()" filter="h">
+            this is foo</%def>
+        ${foo()}
+"""
+        )
+        assert flatten_result(t.render()) == "this is foo"
+        assert flatten_result(t.render(h=h)) == "this is foo1"
