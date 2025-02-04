@@ -1775,8 +1775,8 @@ class LexerTest(TemplateTest):
 
 class FuturesTest(TemplateTest):
     def test_future_import(self):
-        t = Template("${ x / y }", future_imports=["division"])
-        assert result_lines(t.render(x=12, y=5)) == ["2.4"]
+        t = Template("foobar", future_imports=["annotations"])
+        assert t.code.startswith("from __future__ import annotations")
 
 
 class EscapeTest(TemplateTest):
