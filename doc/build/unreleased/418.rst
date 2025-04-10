@@ -1,0 +1,7 @@
+.. change::
+    :tags: bug, lexer
+    :tickets: 418
+
+    Fix undefined variable errors when ``strict_undefined=True`` when using a
+    nested list comprehension.  Pull request courtesy Sébastien Granjoux.
+

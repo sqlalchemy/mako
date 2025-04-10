@@ -916,6 +916,19 @@ ${ foo()['f'] }
 
         eq_(result_lines(t.render()), ["foo"])
 
+    def test_nested_list_comprehensions_in_function_plus_undeclared_strict(
+        self,
+    ):
+        t = Template(
+            """
+<%foo = lambda b : sum(f for s in b for f in s)%>\
+${ foo(([1,2],[3,4]))}
+""",
+            strict_undefined=True,
+        )
+
+        eq_(result_lines(t.render()), ["10"])
+
 
 class StopRenderingTest(TemplateTest):
     def test_return_in_template(self):
