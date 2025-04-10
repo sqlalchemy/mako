@@ -8,7 +8,15 @@ Changelog
 
 .. changelog::
     :version: 1.3.10
-    :include_notes_from: unreleased
+    :released: Thu Apr 10 2025
+
+    .. change::
+        :tags: bug, lexer
+        :tickets: 418
+
+        Fix undefined variable errors when ``strict_undefined=True`` when using a
+        nested list comprehension.  Pull request courtesy Sébastien Granjoux.
+
 
 .. changelog::
     :version: 1.3.9
