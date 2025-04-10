@@ -1,0 +1,7 @@
+.. change::
+    :tags: bug, parser
+    :tickets: 418
+
+    Fix undefined variable errors when strict_undefined is True and using
+    nested list comprehension.
+

@@ -93,6 +93,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
     def visit_ListComp(self, node):
         if self.in_function:
             for comp in node.generators:
+                self.visit(comp.target)
                 self.visit(comp.iter)
         else:
             self.generic_visit(node)
@@ -102,6 +103,7 @@ class FindIdentifiers(_ast_util.NodeVisitor):
     def visit_DictComp(self, node):
         if self.in_function:
             for comp in node.generators:
+                self.visit(comp.target)
                 self.visit(comp.iter)
         else:
             self.generic_visit(node)
