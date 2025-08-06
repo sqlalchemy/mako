@@ -1,9 +1,10 @@
 #!/usr/bin/python
-import cgi
 import mimetypes
 import os
 import posixpath
 import re
+
+import urllib.parse
 
 from mako import exceptions
 from mako.lookup import TemplateLookup
@@ -21,12 +22,16 @@ lookup = TemplateLookup(
 )
 
 
+def parse_form_data(environ):
+    """eplacement for parsing 'GET' data in cgi.FieldStorage"""
+    query_string = environ.get('QUERY_STRING', '')
+    form_data = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+    return {k: v[0] if len(v) == 1 else v for k, v in form_data.items()}
+
+
 def serve(environ, start_response):
     """serves requests using the WSGI callable interface."""
-    fieldstorage = cgi.FieldStorage(
-        fp=environ["wsgi.input"], environ=environ, keep_blank_values=True
-    )
-    d = dict([(k, getfield(fieldstorage[k])) for k in fieldstorage])
+    d = parse_form_data(environ)
 
     uri = environ.get("PATH_INFO", "/")
     if not uri:
@@ -52,18 +57,11 @@ def serve(environ, start_response):
         filename = os.path.join(root, u)
         if os.path.isfile(filename):
             start_response("200 OK", [("Content-type", guess_type(uri))])
-            return [open(filename, "rb").read()]
+            with open(filename, "rb") as f:
+                return [f.read()]
         else:
             start_response("404 Not Found", [])
             return [str.encode("File not found: '%s'" % filename)]
-
-
-def getfield(f):
-    """convert values from cgi.Field objects to plain values."""
-    if isinstance(f, list):
-        return [getfield(x) for x in f]
-    else:
-        return f.value
 
 
 extensions_map = mimetypes.types_map.copy()
