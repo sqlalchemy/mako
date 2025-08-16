@@ -1,4 +1,10 @@
 [gerrit]
-host=gerrit.sqlalchemy.org
+host=ssh.gerrit.sqlalchemy.org
 project=sqlalchemy/mako
 defaultbranch=main
+
+# non-standard config, used by publishthing
+httphost=gerrit.sqlalchemy.org
+
+
+
