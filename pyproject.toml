@@ -4,7 +4,7 @@ requires = ['setuptools >= 47', 'wheel']
 
 [project]
 name = "Mako"
-version = "1.3.11"
+dynamic = ["version"]
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
 readme = "README.rst"
 license = "MIT"
@@ -35,6 +35,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://www.makotemplates.org/"
 Source = "https://github.com/sqlalchemy/mako"
+Documentation = "https://docs.makotemplates.org"
 
 [project.scripts]
 mako-render = "mako.cmd:cmdline"
@@ -61,6 +62,9 @@ exclude = [
     "test*",
     "examples*"
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "mako.__version__"} 
 
 [tool.black]
 line-length = 79
