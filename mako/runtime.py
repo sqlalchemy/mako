@@ -35,6 +35,7 @@ class Context:
         self._with_template = None
         self._outputting_as_unicode = None
         self.namespaces = {}
+        self._code_block_entry_mark = None
 
         # "capture" function which proxies to the
         # generic "capture" function
@@ -137,9 +138,27 @@ class Context:
 
         return self._data.get(key, builtins.__dict__.get(key, default))
 
-    def write(self, string):
+    def code_block_entry_mark(self):
+        """Mark the current location in the buffer."""
+        self._code_block_entry_mark = self._buffer_stack[-1].getpos()
+
+    def write(self, string, indent_relative_to_code_block_entry=False):
         """Write a string to this :class:`.Context` object's
         underlying output buffer."""
+
+        if (len(string) == 0):
+            return
+
+        print(f"write({string}, {indent_relative_to_code_block_entry}, {self._code_block_entry_mark})")
+        if ((indent_relative_to_code_block_entry) and (self._code_block_entry_mark is not None)):
+            text_before_code_block_entry = self._buffer_stack[-1].getvalue(self._code_block_entry_mark)
+            indent_len = len(text_before_code_block_entry)-(text_before_code_block_entry.rfind("\n") + 1)
+            indent = " " * indent_len
+
+            text_before_write = self._buffer_stack[-1].getvalue()
+            current_indent_len = len(text_before_write)-(text_before_write.rfind("\n") + 1)
+
+            string = (" " * max(len(indent) - current_indent_len, 0)) + string[:-1].replace("\n", "\n" + indent) + string[-1]
 
         self._buffer_stack[-1].write(string)
 
@@ -156,6 +175,7 @@ class Context:
         c._with_template = self._with_template
         c._outputting_as_unicode = self._outputting_as_unicode
         c.namespaces = self.namespaces
+        c._code_block_entry_mark = self._code_block_entry_mark
         c.caller_stack = self.caller_stack
         return c
 

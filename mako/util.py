@@ -5,7 +5,6 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 from ast import parse
 import codecs
-import collections
 import operator
 import os
 import re
@@ -143,23 +142,26 @@ class FastEncodingBuffer:
     and supports unicode data."""
 
     def __init__(self, encoding=None, errors="strict"):
-        self.data = collections.deque()
+        self.data = []
         self.encoding = encoding
         self.delim = ""
         self.errors = errors
         self.write = self.data.append
 
     def truncate(self):
-        self.data = collections.deque()
+        self.data = []
         self.write = self.data.append
 
-    def getvalue(self):
+    def getvalue(self, uptopos=None):
         if self.encoding:
-            return self.delim.join(self.data).encode(
+            return self.delim.join(self.data[:uptopos]).encode(
                 self.encoding, self.errors
             )
         else:
-            return self.delim.join(self.data)
+            return self.delim.join(self.data[:uptopos])
+
+    def getpos(self):
+        return len(self.data)
 
 
 class LRUCache(dict):
