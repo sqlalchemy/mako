@@ -149,7 +149,6 @@ class Context:
         if (len(string) == 0):
             return
 
-        print(f"write({string}, {indent_relative_to_code_block_entry}, {self._code_block_entry_mark})")
         if ((indent_relative_to_code_block_entry) and (self._code_block_entry_mark is not None)):
             text_before_code_block_entry = self._buffer_stack[-1].getvalue(self._code_block_entry_mark)
             indent_len = len(text_before_code_block_entry)-(text_before_code_block_entry.rfind("\n") + 1)
