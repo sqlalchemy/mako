@@ -158,7 +158,7 @@ class TypeMismatchConfigTest:
     def test_error_on_load(self):
         assert_raises_message_with_given_cause(
             ConfigValueTypeError,
-            "Wrong value type for int_value",
+            "Wrong bloooooom type for int_value",
             ValueError,
             TypeMismatchConfig.from_cfg_file,
             PATH_TO_TEST_CONFIG,
