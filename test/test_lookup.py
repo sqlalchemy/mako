@@ -127,6 +127,47 @@ class LookupTest:
         # this is OK since the .. cancels out
         runtime._lookup_template(ctx, "foo/../index.html", index.uri)
 
+    def test_dont_accept_relative_outside_of_root_via_double_slash(self):
+        """test that double-slash URI prefix can't bypass the
+        path traversal check"""
+        with tempfile.TemporaryDirectory() as base:
+            tmpl_dir = os.path.join(base, "app", "templates")
+            os.makedirs(tmpl_dir)
+            with open(os.path.join(tmpl_dir, "index.html"), "w") as f:
+                f.write("Hello")
+
+            secret = os.path.join(base, "secrets", "creds.txt")
+            os.makedirs(os.path.dirname(secret))
+            with open(secret, "w") as f:
+                f.write("SECRET_KEY=supersecret123")
+
+            tl = lookup.TemplateLookup(directories=[tmpl_dir])
+            rel = os.path.relpath(secret, tmpl_dir)
+
+            # single-slash prefix should also be blocked
+            assert_raises_message(
+                exceptions.TemplateLookupException,
+                "cannot be relative outside of the root path",
+                tl.get_template,
+                "/" + rel,
+            )
+
+            # double-slash prefix must not bypass the check
+            assert_raises_message(
+                exceptions.TemplateLookupException,
+                "cannot be relative outside of the root path",
+                tl.get_template,
+                "//" + rel,
+            )
+
+            # triple-slash prefix must not bypass the check
+            assert_raises_message(
+                exceptions.TemplateLookupException,
+                "cannot be relative outside of the root path",
+                tl.get_template,
+                "///" + rel,
+            )
+
     def test_checking_against_bad_filetype(self):
         with tempfile.TemporaryDirectory() as tempdir:
             tl = lookup.TemplateLookup(directories=[tempdir])
