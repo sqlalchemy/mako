@@ -7,6 +7,8 @@ from mako import runtime
 from mako import util
 from mako.ext.preprocessors import convert_comments
 from mako.lookup import TemplateLookup
+from mako.parsetree import TemplateNode
+from mako.parsetree import Text
 from mako.template import ModuleInfo
 from mako.template import ModuleTemplate
 from mako.template import Template
@@ -51,12 +53,10 @@ class EncodingTest(TemplateTest):
     def test_escapes_html_tags(self):
         from mako.exceptions import html_error_template
 
-        x = Template(
-            """
+        x = Template("""
         X:
         <% raise Exception('<span style="color:red">Foobar</span>') %>
-        """
-        )
+        """)
 
         try:
             x.render()
@@ -272,16 +272,14 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
 
     def test_unicode_literal_in_controlline(self):
         self._do_memory_test(
-            (
-                """## -*- coding: utf-8 -*-
+            ("""## -*- coding: utf-8 -*-
             <%
                 x = "drôle de petite voix m’a réveillé."
             %>
             % if x=="drôle de petite voix m’a réveillé.":
                 hi, ${x}
             % endif
-            """
-            ).encode("utf-8"),
+            """).encode("utf-8"),
             ("""hi, drôle de petite voix m’a réveillé."""),
             filters=lambda s: s.strip(),
         )
@@ -413,13 +411,11 @@ quand une drôle de petite voix m’a réveillé. Elle disait:
 
 class PageArgsTest(TemplateTest):
     def test_basic(self):
-        template = Template(
-            """
+        template = Template("""
             <%page args="x, y, z=7"/>
 
             this is page, ${x}, ${y}, ${z}
-"""
-        )
+""")
 
         assert (
             flatten_result(template.render(x=5, y=10))
@@ -496,13 +492,11 @@ class PageArgsTest(TemplateTest):
         eq_(sorted(ctx.keys()), ["caller", "capture", "x", "y"])
 
     def test_with_context(self):
-        template = Template(
-            """
+        template = Template("""
             <%page args="x, y, z=7"/>
 
             this is page, ${x}, ${y}, ${z}, ${w}
-"""
-        )
+""")
         # print template.code
         assert (
             flatten_result(template.render(x=5, y=10, w=17))
@@ -510,13 +504,11 @@ class PageArgsTest(TemplateTest):
         )
 
     def test_overrides_builtins(self):
-        template = Template(
-            """
+        template = Template("""
             <%page args="id"/>
 
             this is page, id is ${id}
-        """
-        )
+        """)
 
         assert (
             flatten_result(template.render(id="im the id"))
@@ -524,12 +516,10 @@ class PageArgsTest(TemplateTest):
         )
 
     def test_canuse_builtin_names(self):
-        template = Template(
-            """
+        template = Template("""
             exception: ${Exception}
             id: ${id}
-        """
-        )
+        """)
         assert (
             flatten_result(
                 template.render(id="some id", Exception="some exception")
@@ -570,16 +560,14 @@ class PageArgsTest(TemplateTest):
             )
 
     def test_dict_locals(self):
-        template = Template(
-            """
+        template = Template("""
             <%
                 dict = "this is dict"
                 locals = "this is locals"
             %>
             dict: ${dict}
             locals: ${locals}
-        """
-        )
+        """)
         assert (
             flatten_result(template.render())
             == "dict: this is dict locals: this is locals"
@@ -746,15 +734,13 @@ class UndefinedVarsTest(TemplateTest):
         t1.render_unicode(x="hi")
 
     def test_undefined(self):
-        t = Template(
-            """
+        t = Template("""
             % if x is UNDEFINED:
                 undefined
             % else:
                 x: ${x}
             % endif
-        """
-        )
+        """)
 
         assert result_lines(t.render(x=12)) == ["x: 12"]
         assert result_lines(t.render(y=12)) == ["undefined"]
@@ -865,26 +851,22 @@ class UndefinedVarsTest(TemplateTest):
     def test_list_comprehensions_plus_undeclared_nonstrict(self):
         # traditional behavior.  variable inside a list comprehension
         # is treated as an "undefined", so is pulled from the context.
-        t = Template(
-            """
+        t = Template("""
             t is: ${t}
 
             ${",".join([t for t in ("a", "b", "c")])}
-        """
-        )
+        """)
 
         eq_(result_lines(t.render(t="T")), ["t is: T", "a,b,c"])
 
     def test_traditional_assignment_plus_undeclared(self):
-        t = Template(
-            """
+        t = Template("""
             t is: ${t}
 
             <%
                 t = 12
             %>
-        """
-        )
+        """)
         assert_raises(UnboundLocalError, t.render, t="T")
 
     def test_list_comprehensions_plus_undeclared_strict(self):
@@ -979,8 +961,7 @@ class ReservedNameTest(TemplateTest):
 
 class ControlTest(TemplateTest):
     def test_control(self):
-        t = Template(
-            """
+        t = Template("""
     ## this is a template.
     % for x in y:
     %   if 'test' in x:
@@ -989,8 +970,7 @@ class ControlTest(TemplateTest):
         no x does not have test
     %endif
     %endfor
-"""
-        )
+""")
         assert result_lines(
             t.render(
                 y=[
@@ -1258,14 +1238,12 @@ class ControlTest(TemplateTest):
         )
 
     def test_multiline_control(self):
-        t = Template(
-            """
+        t = Template("""
     % for x in \\
         [y for y in [1,2,3]]:
         ${x}
     % endfor
-"""
-        )
+""")
         # print t.code
         assert flatten_result(t.render()) == "1 2 3"
 
@@ -1749,7 +1727,6 @@ class PreprocessTest(TemplateTest):
 
 class LexerTest(TemplateTest):
     def _fixture(self):
-        from mako.parsetree import TemplateNode, Text
 
         class MyLexer:
             encoding = "ascii"
@@ -1794,13 +1771,11 @@ class FuturesTest(TemplateTest):
 
 class EscapeTest(TemplateTest):
     def test_percent_escape(self):
-        t = Template(
-            """%% do something
+        t = Template("""%% do something
 %%% do something
 if <some condition>:
     %%%% do something
-"""
-        )
+""")
         assert result_raw_lines(t.render()) == [
             "% do something",
             "%% do something",
@@ -1809,13 +1784,11 @@ if <some condition>:
         ]
 
     def test_percent_escape2(self):
-        t = Template(
-            """
+        t = Template("""
 % for i in [1, 2, 3]:
     %% do something ${i}
 % endfor
-"""
-        )
+""")
         assert result_raw_lines(t.render()) == [
             "    % do something 1",
             "    % do something 2",
@@ -1823,14 +1796,12 @@ if <some condition>:
         ]
 
     def test_inline_percent(self):
-        t = Template(
-            """
+        t = Template("""
 % for i in [1, 2, 3]:
 %% foo
 bar %% baz
 % endfor
-"""
-        )
+""")
         assert result_raw_lines(t.render()) == [
             "% foo",
             "bar %% baz",

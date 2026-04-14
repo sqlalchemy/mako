@@ -5,6 +5,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 """gettext message extraction via Babel: https://pypi.org/project/Babel/"""
+
 from babel.messages.extract import extract_python
 
 from mako.ext.extract import MessageExtractor

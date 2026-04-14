@@ -1,20 +1,23 @@
 #!/usr/bin/python
-import cgi
 import mimetypes
 import os
 import posixpath
 import re
+from urllib.parse import parse_qs
 
 from mako import exceptions
 from mako.lookup import TemplateLookup
 
-root = "./"
+root = os.path.dirname(__file__)
 port = 8000
 
 lookup = TemplateLookup(
-    directories=[root + "templates", root + "htdocs"],
+    directories=[
+        os.path.join(root, "templates"),
+        os.path.join(root, "htdocs"),
+    ],
     filesystem_checks=True,
-    module_directory="./modules",
+    module_directory=os.path.join(root, "modules"),
     # even better would be to use 'charset' in start_response
     output_encoding="ascii",
     encoding_errors="replace",
@@ -23,10 +26,11 @@ lookup = TemplateLookup(
 
 def serve(environ, start_response):
     """serves requests using the WSGI callable interface."""
-    fieldstorage = cgi.FieldStorage(
-        fp=environ["wsgi.input"], environ=environ, keep_blank_values=True
-    )
-    d = dict([(k, getfield(fieldstorage[k])) for k in fieldstorage])
+    query_string = environ.get("QUERY_STRING", "")
+    d = {
+        k: v[0] if len(v) == 1 else v
+        for k, v in parse_qs(query_string, keep_blank_values=True).items()
+    }
 
     uri = environ.get("PATH_INFO", "/")
     if not uri:
@@ -49,21 +53,13 @@ def serve(environ, start_response):
             return [exceptions.html_error_template().render()]
     else:
         u = re.sub(r"^\/+", "", uri)
-        filename = os.path.join(root, u)
+        filename = os.path.join(root, "htdocs", u)
         if os.path.isfile(filename):
             start_response("200 OK", [("Content-type", guess_type(uri))])
             return [open(filename, "rb").read()]
         else:
             start_response("404 Not Found", [])
             return [str.encode("File not found: '%s'" % filename)]
-
-
-def getfield(f):
-    """convert values from cgi.Field objects to plain values."""
-    if isinstance(f, list):
-        return [getfield(x) for x in f]
-    else:
-        return f.value
 
 
 extensions_map = mimetypes.types_map.copy()

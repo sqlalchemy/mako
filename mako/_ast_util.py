@@ -5,15 +5,14 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 """
-    ast
-    ~~~
+ast
+~~~
 
-    This is a stripped down version of Armin Ronacher's ast module.
+This is a stripped down version of Armin Ronacher's ast module.
 
-    :copyright: Copyright 2008 by Armin Ronacher.
-    :license: Python License.
+:copyright: Copyright 2008 by Armin Ronacher.
+:license: Python License.
 """
-
 
 from _ast import Add
 from _ast import And
@@ -46,7 +45,6 @@ from _ast import RShift
 from _ast import Sub
 from _ast import UAdd
 from _ast import USub
-
 
 BOOLOP_SYMBOLS = {And: "and", Or: "or"}
 
@@ -102,7 +100,6 @@ def iter_fields(node):
 
 
 class NodeVisitor:
-
     """
     Walks the abstract syntax tree and call visitor functions for every node
     found.  The visitor functions may return values which will be forwarded
@@ -147,7 +144,6 @@ class NodeVisitor:
 
 
 class NodeTransformer(NodeVisitor):
-
     """
     Walks the abstract syntax tree and allows modifications of nodes.
 
@@ -207,7 +203,6 @@ class NodeTransformer(NodeVisitor):
 
 
 class SourceGenerator(NodeVisitor):
-
     """
     This visitor is able to transform a well formed syntax tree into python
     sourcecode.  For more details have a look at the docstring of the

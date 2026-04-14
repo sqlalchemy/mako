@@ -1,7 +1,114 @@
 [build-system]
-build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 47', 'wheel']
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Mako"
+description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
+authors = [{name = "Mike Bayer", email = "mike@zzzcomputing.com"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+requires-python = ">=3.10"
+dependencies = ["MarkupSafe >= 2.0"]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.rst"
+content-type = "text/x-rst"
+
+[project.urls]
+Homepage = "https://www.makotemplates.org/"
+Documentation = "https://docs.makotemplates.org"
+"Issue Tracker" = "https://github.com/sqlalchemy/mako"
+
+[project.optional-dependencies]
+testing = ["pytest"]
+babel = ["Babel"]
+lingua = ["lingua"]
+
+[project.entry-points."python.templating.engines"]
+mako = "mako.ext.turbogears:TGPlugin"
+
+[project.entry-points."pygments.lexers"]
+mako = "mako.ext.pygmentplugin:MakoLexer"
+"html+mako" = "mako.ext.pygmentplugin:MakoHtmlLexer"
+"xml+mako" = "mako.ext.pygmentplugin:MakoXmlLexer"
+"js+mako" = "mako.ext.pygmentplugin:MakoJavascriptLexer"
+"css+mako" = "mako.ext.pygmentplugin:MakoCssLexer"
+
+[project.entry-points."babel.extractors"]
+mako = "mako.ext.babelplugin:extract [babel]"
+
+[project.entry-points."lingua.extractors"]
+mako = "mako.ext.linguaplugin:LinguaMakoExtractor [lingua]"
+
+[project.scripts]
+mako-render = "mako.cmd:cmdline"
+
+[tool.setuptools]
+zip-safe = false
+license-files = ["LICENSE"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = [
+    "test*",
+    "examples*",
+]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = {attr = "mako.__version__"}
+
+[tool.distutils.egg_info]
+tag-build = "dev"
+
+[tool.pytest.ini_options]
+addopts = "--tb native -v -r fxX -p warnings"
+python_files = ["test/*test_*.py"]
+python_classes = ["*Test", "Test*"]
+filterwarnings = [
+    "error::DeprecationWarning:test",
+    "error::DeprecationWarning:mako",
+]
 
 [tool.black]
 line-length = 79
-target-version = ['py38']
+target-version = ['py310']
+
+[tool.zimports]
+black-line-length = 79
+
+[tool.flake8]
+show-source = false
+enable-extensions = "G"
+# E203 is due to https://github.com/PyCQA/pycodestyle/issues/373
+ignore = [
+    "A003","A005",
+    "D",
+    "E203","E305","E711","E712","E721","E722","E741",
+    "N801","N802","N806",
+    "RST304","RST303","RST299","RST399",
+    "W503","W504",
+]
+exclude = [".venv",".git",".tox","dist","doc","*egg","build"]
+import-order-style = "google"
+application-import-names = ["mako","test"]
+
+[tool.mako_testing]
+module_base = "./test/templates/modules"
+template_base = "./test/templates/"

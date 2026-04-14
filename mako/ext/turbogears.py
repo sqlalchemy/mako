@@ -10,7 +10,6 @@ from mako.template import Template
 
 
 class TGPlugin:
-
     """TurboGears compatible Template Plugin."""
 
     def __init__(self, extra_vars_func=None, options=None, extension="mak"):
