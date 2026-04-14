@@ -1,0 +1,10 @@
+.. change::
+    :tags: bug, template
+    :tickets: 434
+
+    Fixed issue in :class:`.TemplateLookup` where a URI with a double-slash
+    prefix (e.g. ``//../../``) could bypass the directory traversal check in
+    :class:`.Template`, allowing reads of arbitrary files outside of the
+    template directory. The issue was caused by an inconsistency in how leading
+    slashes were stripped between :meth:`.TemplateLookup.get_template` and
+    :class:`.Template` initialization.
