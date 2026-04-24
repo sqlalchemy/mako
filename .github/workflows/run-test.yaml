@@ -44,17 +44,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-          architecture: ${{ matrix.architecture }}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade tox setuptools
+          pip install nox
           pip list
 
       - name: Run tests
-        run: tox
+        run: nox -t py-tests

@@ -15,3 +15,7 @@
 .cache/
 .vscode
 /examples/wsgi/modules/
+.nox/
+/junit-*.xml
+/coverage-*.xml
+/.coverage.*

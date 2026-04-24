@@ -42,6 +42,33 @@ testing = ["pytest"]
 babel = ["Babel"]
 lingua = ["lingua"]
 
+[dependency-groups]
+tests = [
+    "pytest>8",
+    "beaker",
+    "markupsafe",
+    "pygments",
+    "babel",
+    "dogpile.cache",
+    "lingua<4",
+    "junitparser",
+]
+coverage = [
+    "pytest-cov",
+]
+lint = [
+    "flake8-pyproject",
+    "flake8>=7.3.0",
+    "flake8-import-order>=0.19.2",
+    "flake8-import-single==0.1.5",
+    "flake8-builtins",
+    "flake8-docstrings",
+    "flake8-rst-docstrings",
+    "pydocstyle",
+    "pygments",
+    "black==26.3.1",
+]
+
 [project.entry-points."python.templating.engines"]
 mako = "mako.ext.turbogears:TGPlugin"
 
@@ -60,6 +87,11 @@ mako = "mako.ext.linguaplugin:LinguaMakoExtractor [lingua]"
 
 [project.scripts]
 mako-render = "mako.cmd:cmdline"
+
+[tool.coverage.run]
+# required for the jenkins coverage job to combine .coverage files
+# produced on different nodes
+relative_files = true
 
 [tool.setuptools]
 zip-safe = false
