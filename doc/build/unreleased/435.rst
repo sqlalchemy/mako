@@ -5,6 +5,5 @@
     Fixed issue in :class:`.TemplateLookup` where a URI with backslash path
     separators (e.g. ``\..\secret.txt``) could bypass the directory traversal
     check on Windows, allowing reads of arbitrary files outside of the template
-    directory.  This is an incomplete fix for :cve:`2026-41205`.  Backslash
-    characters in URIs are now normalized to forward slashes before path
-    resolution.
+    directory.  Backslash characters in URIs are now normalized to forward
+    slashes before path resolution.
