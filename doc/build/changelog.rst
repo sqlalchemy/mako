@@ -8,7 +8,17 @@ Changelog
 
 .. changelog::
     :version: 1.3.12
-    :include_notes_from: unreleased
+    :released: Tue Apr 28 2026
+
+    .. change::
+        :tags: bug, template
+        :tickets: 435
+
+        Fixed issue in :class:`.TemplateLookup` where a URI with backslash path
+        separators (e.g. ``\..\secret.txt``) could bypass the directory traversal
+        check on Windows, allowing reads of arbitrary files outside of the template
+        directory.  Backslash characters in URIs are now normalized to forward
+        slashes before path resolution.
 
 .. changelog::
     :version: 1.3.11
