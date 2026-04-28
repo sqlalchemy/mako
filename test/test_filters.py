@@ -7,9 +7,11 @@ from mako.testing.helpers import result_lines
 
 class FilterTest(TemplateTest):
     def test_basic(self):
-        t = Template("""
+        t = Template(
+            """
         ${x | myfilter}
-""")
+"""
+        )
         assert (
             flatten_result(
                 t.render(
@@ -22,9 +24,11 @@ class FilterTest(TemplateTest):
 
     def test_expr(self):
         """test filters that are themselves expressions"""
-        t = Template("""
+        t = Template(
+            """
         ${x | myfilter(y)}
-""")
+"""
+        )
 
         def myfilter(y):
             return lambda x: "MYFILTER->%s<-%s" % (x, y)
@@ -39,15 +43,19 @@ class FilterTest(TemplateTest):
     def test_convert_str(self):
         """test that string conversion happens in expressions before
         sending to filters"""
-        t = Template("""
+        t = Template(
+            """
             ${x | trim}
-        """)
+        """
+        )
         assert flatten_result(t.render(x=5)) == "5"
 
     def test_quoting(self):
-        t = Template("""
+        t = Template(
+            """
             foo ${bar | h}
-        """)
+        """
+        )
 
         eq_(
             flatten_result(t.render(bar="<'some bar'>")),
@@ -55,9 +63,11 @@ class FilterTest(TemplateTest):
         )
 
     def test_url_escaping(self):
-        t = Template("""
+        t = Template(
+            """
             http://example.com/?bar=${bar | u}&v=1
-        """)
+        """
+        )
 
         eq_(
             flatten_result(t.render(bar="酒吧bar")),
@@ -72,12 +82,14 @@ class FilterTest(TemplateTest):
         )
 
     def test_def(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()" filter="myfilter">
                 this is foo
             </%def>
             ${foo()}
-""")
+"""
+        )
 
         eq_(
             flatten_result(
@@ -155,18 +167,22 @@ class FilterTest(TemplateTest):
         assert t.render().strip() == "hi ->there<-"
 
     def test_global(self):
-        t = Template("""
+        t = Template(
+            """
             <%page expression_filter="h"/>
             ${"<tag>this is html</tag>"}
-        """)
+        """
+        )
         assert t.render().strip() == "&lt;tag&gt;this is html&lt;/tag&gt;"
 
     def test_block_via_context(self):
-        t = Template("""
+        t = Template(
+            """
             <%block name="foo" filter="myfilter">
                 some text
             </%block>
-        """)
+        """
+        )
 
         def myfilter(text):
             return "MYTEXT" + text
@@ -174,12 +190,14 @@ class FilterTest(TemplateTest):
         eq_(result_lines(t.render(myfilter=myfilter)), ["MYTEXT", "some text"])
 
     def test_def_via_context(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()" filter="myfilter">
                 some text
             </%def>
             ${foo()}
-        """)
+        """
+        )
 
         def myfilter(text):
             return "MYTEXT" + text
@@ -187,11 +205,13 @@ class FilterTest(TemplateTest):
         eq_(result_lines(t.render(myfilter=myfilter)), ["MYTEXT", "some text"])
 
     def test_text_via_context(self):
-        t = Template("""
+        t = Template(
+            """
             <%text filter="myfilter">
                 some text
             </%text>
-        """)
+        """
+        )
 
         def myfilter(text):
             return "MYTEXT" + text
@@ -207,25 +227,31 @@ class FilterTest(TemplateTest):
         )
         assert t.render().strip() == "<tag>this is html</tag>"
 
-        t = Template("""
+        t = Template(
+            """
             <%page expression_filter="h"/>
             ${"<tag>this is html</tag>" | n}
-        """)
+        """
+        )
         assert t.render().strip() == "<tag>this is html</tag>"
 
-        t = Template("""
+        t = Template(
+            """
             <%page expression_filter="h"/>
             ${"<tag>this is html</tag>" | n, h}
-        """)
+        """
+        )
         assert t.render().strip() == "&lt;tag&gt;this is html&lt;/tag&gt;"
 
     def test_global_json(self):
-        t = Template("""
+        t = Template(
+            """
 <%!
 import json
 %><%page expression_filter="n, json.dumps"/>
 data = {a: ${123}, b: ${"123"}};
-        """)
+        """
+        )
         assert t.render().strip() == """data = {a: 123, b: "123"};"""
 
     def test_non_expression(self):
@@ -317,14 +343,18 @@ data = {a: ${123}, b: ${"123"}};
         assert flatten_result(t.render()) == "this is b this is a"
 
     def test_builtins(self):
-        t = Template("""
+        t = Template(
+            """
             ${"this is <text>" | h}
-""")
+"""
+        )
         assert flatten_result(t.render()) == "this is &lt;text&gt;"
 
-        t = Template("""
+        t = Template(
+            """
             http://foo.com/arg1=${"hi! this is a string." | u}
-""")
+"""
+        )
         assert (
             flatten_result(t.render())
             == "http://foo.com/arg1=hi%21+this+is+a+string."
@@ -333,34 +363,41 @@ data = {a: ${123}, b: ${"123"}};
 
 class BufferTest:
     def test_buffered_def(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()" buffered="True">
                 this is foo
             </%def>
             ${"hi->" + foo() + "<-hi"}
-""")
+"""
+        )
         assert flatten_result(t.render()) == "hi-> this is foo <-hi"
 
     def test_unbuffered_def(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()" buffered="False">
                 this is foo
             </%def>
             ${"hi->" + foo() + "<-hi"}
-""")
+"""
+        )
         assert flatten_result(t.render()) == "this is foo hi-><-hi"
 
     def test_capture(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()" buffered="False">
                 this is foo
             </%def>
             ${"hi->" + capture(foo) + "<-hi"}
-""")
+"""
+        )
         assert flatten_result(t.render()) == "hi-> this is foo <-hi"
 
     def test_capture_exception(self):
-        template = Template("""
+        template = Template(
+            """
             <%def name="a()">
                 this is a
                 <%
@@ -371,7 +408,8 @@ class BufferTest:
                 c = capture(a)
             %>
             a->${c}<-a
-        """)
+        """
+        )
         try:
             template.render()
             assert False
@@ -379,7 +417,8 @@ class BufferTest:
             assert True
 
     def test_buffered_exception(self):
-        template = Template("""
+        template = Template(
+            """
             <%def name="a()" buffered="True">
                 <%
                     raise TypeError("hi")
@@ -388,7 +427,8 @@ class BufferTest:
 
             ${a()}
 
-""")
+"""
+        )
         try:
             print(template.render())
             assert False
@@ -396,7 +436,8 @@ class BufferTest:
             assert True
 
     def test_capture_ccall(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()">
                 <%
                     x = capture(caller.body)
@@ -407,7 +448,8 @@ class BufferTest:
             <%call expr="foo()">
                 ccall body
             </%call>
-""")
+"""
+        )
 
         # print t.render()
         assert flatten_result(t.render()) == "this is foo. body: ccall body"

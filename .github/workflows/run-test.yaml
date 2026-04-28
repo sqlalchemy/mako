@@ -23,11 +23,11 @@ jobs:
           - "windows-latest"
           - "macos-latest"
         python-version:
+          - "3.8"
+          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
-          - "3.13"
-          - "3.14"
 
         exclude:
           # beaker raises warning on 3.10. only windows seems affected

@@ -46,9 +46,11 @@ class TestLoop(unittest.TestCase):
             assert match and match.groups() == (target_list, expression_list)
 
     def test_no_loop(self):
-        template = Template("""% for x in 'spam':
+        template = Template(
+            """% for x in 'spam':
 ${x}
-% endfor""")
+% endfor"""
+        )
         code = template.code
         assert not re.match(r"loop = __M_loop._enter\(:", code), (
             "No need to "
@@ -84,13 +86,15 @@ ${x}|${loop.index}|${loop.reverse_index}|${loop.first}|"""
             )
 
     def test_nested_loops(self):
-        template = Template("""% for x in 'ab':
+        template = Template(
+            """% for x in 'ab':
 ${x} ${loop.index} <- start in outer loop
 % for y in [0, 1]:
 ${y} ${loop.index} <- go to inner loop
 % endfor
 ${x} ${loop.index} <- back to outer loop
-% endfor""")
+% endfor"""
+        )
         rendered = template.render()
         expected = [
             "a 0 <- start in outer loop",
@@ -109,14 +113,16 @@ ${x} ${loop.index} <- back to outer loop
             )
 
     def test_parent_loops(self):
-        template = Template("""% for x in 'ab':
+        template = Template(
+            """% for x in 'ab':
 ${x} ${loop.index} <- outer loop
 % for y in [0, 1]:
 ${y} ${loop.index} <- inner loop
 ${x} ${loop.parent.index} <- parent loop
 % endfor
 ${x} ${loop.index} <- outer loop
-% endfor""")
+% endfor"""
+        )
         code = template.code
         rendered = template.render()
         expected = [

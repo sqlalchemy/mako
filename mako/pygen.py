@@ -254,7 +254,7 @@ def adjust_whitespace(text):
     """remove the left-whitespace margin of a block of Python code."""
 
     state = [False, False]
-    backslashed, triplequoted = (0, 1)
+    (backslashed, triplequoted) = (0, 1)
 
     def in_multi_line(line):
         start_state = state[backslashed] or state[triplequoted]

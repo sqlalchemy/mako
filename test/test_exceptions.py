@@ -359,7 +359,8 @@ def broken():
             t.render()
         except:
             text_error = exceptions.text_error_template().render_unicode()
-            assert """
+            assert (
+                """
   File "base.html", line 5, in render_body
     %> body starts here
   File "foo.html", line 4, in render_foo
@@ -368,6 +369,8 @@ def broken():
     ${broken()}
   File "base.html", line 4, in broken
     raise RuntimeError("Something went wrong.")
-""" in text_error
+"""
+                in text_error
+            )
         else:
             assert False

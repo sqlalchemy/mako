@@ -14,4 +14,3 @@
 .tox/
 .cache/
 .vscode
-/examples/wsgi/modules/

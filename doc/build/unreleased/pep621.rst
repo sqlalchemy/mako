@@ -1,5 +1,0 @@
-.. change::
-    :tags: usecase, installation
-
-    Project metadata has been migrated to :pep:`621` ``pyproject.toml``-based
-    configuration.

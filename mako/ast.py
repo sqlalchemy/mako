@@ -14,6 +14,7 @@ from mako import pyparser
 
 
 class PythonCode:
+
     """represents information about a string containing Python code"""
 
     def __init__(self, code, **exception_kwargs):
@@ -47,6 +48,7 @@ class PythonCode:
 
 
 class ArgumentList:
+
     """parses a fragment of code as a comma-separated list of expressions"""
 
     def __init__(self, code, **exception_kwargs):
@@ -68,6 +70,7 @@ class ArgumentList:
 
 
 class PythonFragment(PythonCode):
+
     """extends PythonCode to provide identifier lookups in partial control
     statements
 
@@ -88,7 +91,7 @@ class PythonFragment(PythonCode):
             )
         if m.group(3):
             code = code[: m.start(3)]
-        keyword, expr = m.group(1, 2)
+        (keyword, expr) = m.group(1, 2)
         if keyword in ["for", "if", "while"]:
             code = code + "pass"
         elif keyword == "try":
@@ -108,6 +111,7 @@ class PythonFragment(PythonCode):
 
 
 class FunctionDecl:
+
     """function declaration"""
 
     def __init__(self, code, allow_kwargs=True, **exception_kwargs):
@@ -191,6 +195,7 @@ class FunctionDecl:
 
 
 class FunctionArgs(FunctionDecl):
+
     """the argument portion of a function declaration"""
 
     def __init__(self, code, **kwargs):

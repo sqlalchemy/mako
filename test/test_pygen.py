@@ -14,11 +14,14 @@ class GeneratePythonTest:
         printer.writeline("print x")
         printer.writeline(None)
         printer.writeline("print y")
-        assert stream.getvalue() == """import lala
+        assert (
+            stream.getvalue()
+            == """import lala
 for x in foo:
     print x
 print y
 """
+        )
 
     def test_generate_adjusted(self):
         block = """
@@ -32,13 +35,16 @@ print y
         printer.write_indented_block(block)
         printer.close()
         # print stream.getvalue()
-        assert stream.getvalue() == """
+        assert (
+            stream.getvalue()
+            == """
 x = 5 +6
 if x > 7:
     for y in range(1,5):
         print "<td>%s</td>" % y
 
 """
+        )
 
     def test_generate_combo(self):
         block = """
@@ -92,7 +98,9 @@ and more block.
         printer.write_indented_block(block)
         printer.close()
         # print stream.getvalue()
-        assert stream.getvalue() == """
+        assert (
+            stream.getvalue()
+            == """
 if test:
     print ''' this is a block of stuff.
 this is more stuff in the block.
@@ -101,6 +109,7 @@ and more block.
     do_more_stuff(g)
 
 """
+        )
 
     def test_false_unindentor(self):
         stream = StringIO()
@@ -117,13 +126,16 @@ and more block.
         ]:
             printer.writeline(line)
 
-        assert stream.getvalue() == """try:
+        assert (
+            stream.getvalue()
+            == """try:
     elsemyvar = 12
     if True:
         print 'hi'
 finally:
     dosomething
-""", stream.getvalue()
+"""
+        ), stream.getvalue()
 
     def test_backslash_line(self):
         block = """
@@ -138,7 +150,9 @@ finally:
         printer = PythonPrinter(stream)
         printer.write_indented_block(block)
         printer.close()
-        assert stream.getvalue() == """
+        assert (
+            stream.getvalue()
+            == """
             # comment
 if test:
     if (lala + hoho) + \\
@@ -147,6 +161,7 @@ if test:
 print "more indent"
 
 """
+        )
 
 
 class WhitespaceTest:
@@ -156,11 +171,14 @@ class WhitespaceTest:
             print x
         print "hi"
         """
-        assert adjust_whitespace(text) == """
+        assert (
+            adjust_whitespace(text)
+            == """
 for x in range(0,15):
     print x
 print "hi"
 """
+        )
 
     def test_blank_lines(self):
         text = """
@@ -170,13 +188,16 @@ print "hi"
 
     print g
 """
-        assert adjust_whitespace(text) == """
+        assert (
+            adjust_whitespace(text)
+            == """
 print "hi"  # a comment
 
 # more comments
 
 print g
 """
+        )
 
     def test_open_quotes_with_pound(self):
         text = '''
@@ -184,11 +205,14 @@ print g
           # and this is text
         # and this is too """
 '''
-        assert adjust_whitespace(text) == '''
+        assert (
+            adjust_whitespace(text)
+            == '''
 print """  this is text
           # and this is text
         # and this is too """
 '''
+        )
 
     def test_quote_with_comments(self):
         text = """
@@ -202,7 +226,9 @@ print """  this is text
             # someone else's comment
 """
 
-        assert adjust_whitespace(text) == """
+        assert (
+            adjust_whitespace(text)
+            == """
 print 'hi'
 # this is a comment
 # another comment
@@ -212,6 +238,7 @@ print '''
         '''
 # someone else's comment
 """
+        )
 
     def test_quotes_with_pound(self):
         text = '''
@@ -220,12 +247,15 @@ print '''
         elif False:
             "bar"
 '''
-        assert adjust_whitespace(text) == '''
+        assert (
+            adjust_whitespace(text)
+            == '''
 if True:
     """#"""
 elif False:
     "bar"
 '''
+        )
 
     def test_quotes(self):
         text = """
@@ -235,10 +265,13 @@ asdkfjnads kfajns '''
         if x:
             print y
 """
-        assert adjust_whitespace(text) == """
+        assert (
+            adjust_whitespace(text)
+            == """
 print ''' aslkjfnas kjdfn
 askdjfnaskfd fkasnf dknf sadkfjn asdkfjna sdakjn
 asdkfjnads kfajns '''
 if x:
     print y
 """
+        )

@@ -13,6 +13,7 @@ register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
 
 
 class Cache:
+
     """Represents a data content cache made available to the module
     space of a specific :class:`.Template` object.
 
@@ -180,6 +181,7 @@ class Cache:
 
 
 class CacheImpl:
+
     """Provide a cache implementation for use by :class:`.Cache`."""
 
     def __init__(self, cache):

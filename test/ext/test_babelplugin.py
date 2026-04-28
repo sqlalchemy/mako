@@ -30,11 +30,13 @@ class PluginExtractTest(UsesExtract):
         eq_(messages, [(1, "_", ("Message"), [])])
 
     def test_translator_comment(self, extract):
-        input_ = io.BytesIO(b"""
+        input_ = io.BytesIO(
+            b"""
         <p>
           ## TRANSLATORS: This is a comment.
           ${_("Message")}
-        </p>""")
+        </p>"""
+        )
         messages = list(extract(input_, ["_"], ["TRANSLATORS:"], {}))
         eq_(
             messages,
@@ -43,7 +45,7 @@ class PluginExtractTest(UsesExtract):
                     4,
                     "_",
                     ("Message"),
-                    ["TRANSLATORS: This is a comment."],
+                    [("TRANSLATORS: This is a comment.")],
                 )
             ],
         )

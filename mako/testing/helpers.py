@@ -55,9 +55,11 @@ def replace_file_with_dir(pathspec):
 
 def file_with_template_code(filespec):
     with open(filespec, "w") as f:
-        f.write("""
+        f.write(
+            """
 i am an artificial template just for you
-""")
+"""
+        )
     return filespec
 
 

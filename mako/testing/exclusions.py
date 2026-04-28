@@ -3,6 +3,7 @@ import pytest
 from mako.ext.beaker_cache import has_beaker
 from mako.util import update_wrapper
 
+
 try:
     import babel.messages.extract as babel
 except ImportError:

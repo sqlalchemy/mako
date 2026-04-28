@@ -74,6 +74,7 @@ def to_list(x, default=None):
 
 
 class memoized_property:
+
     """A read-only @property that is only evaluated once."""
 
     def __init__(self, fget, doc=None):
@@ -89,6 +90,7 @@ class memoized_property:
 
 
 class memoized_instancemethod:
+
     """Decorate a method memoize its return value.
 
     Best applied to no-arg methods: memoization is not sensitive to
@@ -123,6 +125,7 @@ class memoized_instancemethod:
 
 
 class SetLikeDict(dict):
+
     """a dictionary that has some setlike methods on it"""
 
     def union(self, other):
@@ -135,6 +138,7 @@ class SetLikeDict(dict):
 
 
 class FastEncodingBuffer:
+
     """a very rudimentary buffer that is faster than StringIO,
     and supports unicode data."""
 
@@ -159,6 +163,7 @@ class FastEncodingBuffer:
 
 
 class LRUCache(dict):
+
     """A dictionary-like object that stores a limited number of items,
     discarding lesser used items periodically.
 

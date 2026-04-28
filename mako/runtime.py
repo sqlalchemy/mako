@@ -17,6 +17,7 @@ from mako import util
 
 
 class Context:
+
     """Provides runtime namespace, output buffer, and various
     callstacks for templates.
 
@@ -216,6 +217,7 @@ class CallerStack(list):
 
 
 class Undefined:
+
     """Represents an undefined value in a template.
 
     All template modules have a constant value
@@ -239,6 +241,7 @@ STOP_RENDERING = ""
 
 
 class LoopStack:
+
     """a stack for LoopContexts that implements the context manager protocol
     to automatically pop off the top of the stack on context exit
     """
@@ -278,6 +281,7 @@ class LoopStack:
 
 
 class LoopContext:
+
     """A magic loop variable.
     Automatically accessible in any ``% for`` block.
 
@@ -356,6 +360,7 @@ class _NSAttr:
 
 
 class Namespace:
+
     """Provides access to collections of rendering methods, which
     can be local, from other templates, or from imported modules.
 
@@ -549,6 +554,7 @@ class Namespace:
 
 
 class TemplateNamespace(Namespace):
+
     """A :class:`.Namespace` specific to a :class:`.Template` instance."""
 
     def __init__(
@@ -641,6 +647,7 @@ class TemplateNamespace(Namespace):
 
 
 class ModuleNamespace(Namespace):
+
     """A :class:`.Namespace` specific to a Python module instance."""
 
     def __init__(
@@ -771,7 +778,7 @@ def _include_file(context, uri, calling_uri, **kwargs):
     the current output."""
 
     template = _lookup_template(context, uri, calling_uri)
-    callable_, ctx = _populate_self_namespace(
+    (callable_, ctx) = _populate_self_namespace(
         context._clean_inheritance_tokens(), template
     )
     kwargs = _kwargs_for_include(callable_, context._data, **kwargs)
@@ -905,11 +912,11 @@ def _render_context(tmpl, callable_, context, *args, **kwargs):
     # template with possibly updated context
     if not isinstance(tmpl, template.DefTemplate):
         # if main render method, call from the base of the inheritance stack
-        inherit, lclcontext = _populate_self_namespace(context, tmpl)
+        (inherit, lclcontext) = _populate_self_namespace(context, tmpl)
         _exec_template(inherit, lclcontext, args=args, kwargs=kwargs)
     else:
         # otherwise, call the actual rendering method specified
-        inherit, lclcontext = _populate_self_namespace(context, tmpl.parent)
+        (inherit, lclcontext) = _populate_self_namespace(context, tmpl.parent)
         _exec_template(callable_, context, args=args, kwargs=kwargs)
 
 

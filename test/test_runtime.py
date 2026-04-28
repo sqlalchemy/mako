@@ -1,5 +1,5 @@
-"""Assorted runtime unit tests"""
-
+"""Assorted runtime unit tests
+"""
 from mako import runtime
 from mako.testing.assertions import eq_
 

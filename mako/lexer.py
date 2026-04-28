@@ -71,7 +71,7 @@ class Lexer:
 
         match = reg.match(self.text, self.match_position)
         if match:
-            start, end = match.span()
+            (start, end) = match.span()
             self.match_position = end + 1 if end == start else end
             self.matched_lineno = self.lineno
             cp = mp - 1

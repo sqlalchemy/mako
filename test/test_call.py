@@ -7,7 +7,8 @@ from mako.testing.helpers import result_lines
 
 class CallTest(TemplateTest):
     def test_call(self):
-        t = Template("""
+        t = Template(
+            """
         <%def name="foo()">
             hi im foo ${caller.body(y=5)}
         </%def>
@@ -15,14 +16,16 @@ class CallTest(TemplateTest):
         <%call expr="foo()" args="y, **kwargs">
             this is the body, y is ${y}
         </%call>
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "hi im foo",
             "this is the body, y is 5",
         ]
 
     def test_compound_call(self):
-        t = Template("""
+        t = Template(
+            """
 
         <%def name="bar()">
             this is bar
@@ -45,7 +48,8 @@ class CallTest(TemplateTest):
         </%call>
         ${bar()}
 
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "foo calling comp1:",
             "this is comp1, 5",
@@ -62,7 +66,8 @@ class CallTest(TemplateTest):
         # note the trailing whitespace in the bottom ${} expr, need to strip
         # that off < python 2.7
 
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo(x, y, q, z)">
                 ${x}
                 ${y}
@@ -82,7 +87,8 @@ class CallTest(TemplateTest):
             ]
 
             }"/>
-        """)
+        """
+        )
 
         eq_(
             result_lines(t.render()),
@@ -90,7 +96,8 @@ class CallTest(TemplateTest):
         )
 
     def test_ccall_caller(self):
-        t = Template("""
+        t = Template(
+            """
         <%def name="outer_func()">
         OUTER BEGIN
             <%call expr="caller.inner_func()">
@@ -107,7 +114,8 @@ class CallTest(TemplateTest):
             </%def>
         </%call>
 
-        """)
+        """
+        )
         # print t.code
         assert result_lines(t.render()) == [
             "OUTER BEGIN",
@@ -118,7 +126,8 @@ class CallTest(TemplateTest):
         ]
 
     def test_stack_pop(self):
-        t = Template("""
+        t = Template(
+            """
         <%def name="links()" buffered="True">
            Some links
         </%def>
@@ -134,7 +143,8 @@ class CallTest(TemplateTest):
            Some title
         </%call>
 
-        """)
+        """
+        )
 
         assert result_lines(t.render()) == [
             "<h1>",
@@ -147,7 +157,8 @@ class CallTest(TemplateTest):
         """test that 'caller' is non-None only if the immediate <%def> was
         called via <%call>"""
 
-        t = Template("""
+        t = Template(
+            """
         <%def name="a()">
         % if caller:
         ${ caller.body() } \\
@@ -175,12 +186,14 @@ class CallTest(TemplateTest):
         CALL
         </%call>
 
-        """)
+        """
+        )
         assert result_lines(t.render()) == ["CALL", "AAA", "BBB", "CCC"]
 
     def test_chained_call(self):
         """test %calls that are chained through their targets"""
-        t = Template("""
+        t = Template(
+            """
             <%def name="a()">
                 this is a.
                 <%call expr="b()">
@@ -197,7 +210,8 @@ class CallTest(TemplateTest):
                 heres the main templ call
             </%call>
 
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "this is a.",
             "this is b. heres my body:",
@@ -209,7 +223,8 @@ class CallTest(TemplateTest):
 
     def test_nested_call(self):
         """test %calls that are nested inside each other"""
-        t = Template("""
+        t = Template(
+            """
             <%def name="foo()">
                 ${caller.body(x=10)}
             </%def>
@@ -226,7 +241,8 @@ class CallTest(TemplateTest):
                     this is bar body: ${x}
                 </%call>
             </%call>
-""")
+"""
+        )
         assert result_lines(t.render(x=5)) == [
             "x is 5",
             "this is foo body: 10",
@@ -235,7 +251,8 @@ class CallTest(TemplateTest):
         ]
 
     def test_nested_call_2(self):
-        t = Template("""
+        t = Template(
+            """
             x is ${x}
             <%def name="foo()">
                 ${caller.foosub(x=10)}
@@ -258,7 +275,8 @@ class CallTest(TemplateTest):
                 </%def>
 
             </%call>
-""")
+"""
+        )
         assert result_lines(t.render(x=5)) == [
             "x is 5",
             "this is foo body: 10",
@@ -267,7 +285,8 @@ class CallTest(TemplateTest):
         ]
 
     def test_nested_call_3(self):
-        template = Template("""\
+        template = Template(
+            """\
         <%def name="A()">
           ${caller.body()}
         </%def>
@@ -284,7 +303,8 @@ class CallTest(TemplateTest):
           </%call>
         </%call>
 
-        """)
+        """
+        )
         assert flatten_result(template.render()) == "foo"
 
     def test_nested_call_4(self):
@@ -300,7 +320,9 @@ class CallTest(TemplateTest):
         </%def>
         """
 
-        template = Template(base + """
+        template = Template(
+            base
+            + """
         <%def name="C()">
          C_def
          <%self:B>
@@ -315,14 +337,17 @@ class CallTest(TemplateTest):
         <%self:C>
         C_body
         </%self:C>
-        """)
+        """
+        )
 
         eq_(
             flatten_result(template.render()),
             "C_def B_def A_def A_body B_body C_body",
         )
 
-        template = Template(base + """
+        template = Template(
+            base
+            + """
         <%def name="C()">
          C_def
          <%self:B>
@@ -337,7 +362,8 @@ class CallTest(TemplateTest):
         <%self:C>
         C_body
         </%self:C>
-        """)
+        """
+        )
 
         eq_(
             flatten_result(template.render()),
@@ -379,7 +405,8 @@ class CallTest(TemplateTest):
         ]
 
     def test_call_in_nested(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="a()">
                 this is a ${b()}
                 <%def name="b()">
@@ -393,7 +420,8 @@ class CallTest(TemplateTest):
                 </%def>
             </%def>
         ${a()}
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "this is a",
             "this is b",
@@ -402,18 +430,21 @@ class CallTest(TemplateTest):
         ]
 
     def test_composed_def(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="f()"><f>${caller.body()}</f></%def>
             <%def name="g()"><g>${caller.body()}</g></%def>
             <%def name="fg()">
                 <%self:f><%self:g>${caller.body()}</%self:g></%self:f>
             </%def>
             <%self:fg>fgbody</%self:fg>
-            """)
+            """
+        )
         assert result_lines(t.render()) == ["<f><g>fgbody</g></f>"]
 
     def test_regular_defs(self):
-        t = Template("""
+        t = Template(
+            """
         <%!
             @runtime.supports_caller
             def a(context):
@@ -446,7 +477,8 @@ class CallTest(TemplateTest):
         </%call>
 
 
-        """)
+        """
+        )
         assert result_lines(t.render()) == [
             "test 1",
             "this is a",
@@ -469,7 +501,8 @@ class CallTest(TemplateTest):
         ]
 
     def test_call_in_nested_2(self):
-        t = Template("""
+        t = Template(
+            """
             <%def name="a()">
                 <%def name="d()">
                     not this d
@@ -493,7 +526,8 @@ class CallTest(TemplateTest):
                 </%def>
             </%def>
         ${a()}
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "this is a",
             "this is b",
@@ -508,7 +542,8 @@ class SelfCacheTest(TemplateTest):
     """this test uses a now non-public API."""
 
     def test_basic(self):
-        t = Template("""
+        t = Template(
+            """
         <%!
             cached = None
         %>
@@ -529,7 +564,8 @@ class SelfCacheTest(TemplateTest):
 
         ${foo()}
         ${foo()}
-""")
+"""
+        )
         assert result_lines(t.render()) == [
             "this is foo",
             "cached:",
