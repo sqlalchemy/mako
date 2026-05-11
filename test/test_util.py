@@ -36,6 +36,15 @@ class UtilTest:
         buf.write(s[10:])
         eq_(buf.getvalue(), s.encode("utf-8"))
 
+    def test_fast_buffer_get_partial_value(self):
+        buf = util.FastEncodingBuffer()
+        buf.write("string a ")
+        buf.write("string b ")
+        pos = buf.getpos()
+        buf.write("string c ")
+        buf.write("string d")
+        eq_(buf.getvalue(pos), "string a string b ")
+
     def test_read_file(self):
         fn = os.path.join(os.path.dirname(__file__), "test_util.py")
         data = util.read_file(fn, "rb")
