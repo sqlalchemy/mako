@@ -161,3 +161,6 @@ DEFAULT_ESCAPES = {
     "str": "str",
     "n": "n",
 }
+
+
+DEFAULT_ESCAPE_PREFIX = "__DEFAULT_ESCAPE_"
