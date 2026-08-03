@@ -16,7 +16,6 @@ from mako.template import Template
 
 
 class TemplateCollection:
-
     """Represent a collection of :class:`.Template` objects,
     identifiable via URI.
 
@@ -84,7 +83,6 @@ class TemplateCollection:
 
 
 class TemplateLookup(TemplateCollection):
-
     """Represent a collection of templates that locates template source files
     from the local filesystem.
 

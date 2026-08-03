@@ -59,8 +59,7 @@ for cls in list(parsetree.__dict__.values()):
     if isinstance(cls, type) and issubclass(cls, parsetree.Node):
         clsname = cls.__name__
         exec(
-            (
-                """
+            ("""
 class %s:
     def __init__(self, *args):
         self.args = [_as_unicode(arg) for arg in args]
@@ -69,9 +68,7 @@ class %s:
             self.__class__.__name__,
             ", ".join(repr_arg(x) for x in self.args)
             )
-"""
-                % clsname
-            ),
+""" % clsname),
             locals(),
         )
 
@@ -1057,14 +1054,12 @@ property = <&node>;
                     Text("\n        ", (6, 16)),
                     CallNamespaceTag(
                         "self:dtest",
-                        {
-                            "d": "${\n\
+                        {"d": "${\n\
                             {\n\
                                 'id':'4',\n\
                                 'foo':'barr'\n\
                             }\n\
-                        }"
-                        },
+                        }"},
                         (7, 9),
                         [],
                     ),
@@ -1196,13 +1191,11 @@ property = <&node>;
                     Text("\n        ", (24, 16)),
                     CallNamespaceTag(
                         "self:dtest",
-                        {
-                            "d": "${ {\n\
+                        {"d": "${ {\n\
             'x-on:click':'foo',\n\
             'foo':'bar',\n\
             'embeded':{'name':'J Doe'}\n\
-        } }"
-                        },
+        } }"},
                         (25, 9),
                         [],
                     ),

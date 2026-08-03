@@ -15,7 +15,6 @@ from mako import util
 
 
 class Node:
-
     """base class for a Node in the parse tree."""
 
     def __init__(self, source, lineno, pos, filename):
@@ -46,7 +45,6 @@ class Node:
 
 
 class TemplateNode(Node):
-
     """a 'container' node that stores the overall collection of nodes."""
 
     def __init__(self, filename):
@@ -65,7 +63,6 @@ class TemplateNode(Node):
 
 
 class ControlLine(Node):
-
     """defines a control line, a line-oriented python line or end tag.
 
     e.g.::

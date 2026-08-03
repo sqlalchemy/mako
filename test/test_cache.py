@@ -11,7 +11,6 @@ from mako.testing.exclusions import requires_beaker
 from mako.testing.exclusions import requires_dogpile_cache
 from mako.testing.helpers import result_lines
 
-
 module_base = str(config.module_base)
 
 
@@ -89,8 +88,7 @@ class CacheTest:
         return impl
 
     def test_def(self):
-        t = Template(
-            """
+        t = Template("""
         <%!
             callcount = [0]
         %>
@@ -105,8 +103,7 @@ class CacheTest:
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-"""
-        )
+""")
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             "this is foo",
@@ -136,8 +133,7 @@ class CacheTest:
         eq_(t.render().strip(), "callcount: [2]")
 
     def test_nested_def(self):
-        t = Template(
-            """
+        t = Template("""
         <%!
             callcount = [0]
         %>
@@ -155,8 +151,7 @@ class CacheTest:
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-"""
-        )
+""")
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             "this is foo",
@@ -167,8 +162,7 @@ class CacheTest:
         assert m.kwargs == {}
 
     def test_page(self):
-        t = Template(
-            """
+        t = Template("""
         <%!
             callcount = [0]
         %>
@@ -178,8 +172,7 @@ class CacheTest:
         callcount[0] += 1
         %>
         callcount: ${callcount}
-"""
-        )
+""")
         m = self._install_mock_cache(t)
         t.render()
         t.render()
@@ -187,27 +180,23 @@ class CacheTest:
         assert m.kwargs == {}
 
     def test_dynamic_key_with_context(self):
-        t = Template(
-            """
+        t = Template("""
             <%block name="foo" cached="True" cache_key="${mykey}">
                 some block
             </%block>
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render(mykey="thekey")
         t.render(mykey="thekey")
         eq_(result_lines(t.render(mykey="thekey")), ["some block"])
         eq_(m.key, "thekey")
 
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo()" cached="True" cache_key="${mykey}">
                 some def
             </%def>
             ${foo()}
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render(mykey="thekey")
         t.render(mykey="thekey")
@@ -215,42 +204,36 @@ class CacheTest:
         eq_(m.key, "thekey")
 
     def test_dynamic_key_with_funcargs(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo(num=5)" cached="True" cache_key="foo_${str(num)}">
              hi
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render()
         t.render()
         assert result_lines(t.render()) == ["hi"]
         assert m.key == "foo_5"
 
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo(*args, **kwargs)" cached="True"
              cache_key="foo_${kwargs['bar']}">
              hi
             </%def>
 
             ${foo(1, 2, bar='lala')}
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render()
         assert result_lines(t.render()) == ["hi"]
         assert m.key == "foo_lala"
 
-        t = Template(
-            """
+        t = Template("""
         <%page args="bar='hi'" cache_key="foo_${bar}" cached="True"/>
          hi
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render()
         assert result_lines(t.render()) == ["hi"]
@@ -316,8 +299,7 @@ class CacheTest:
         eq_(m.kwargs, {"type": "dbm"})
 
     def test_fileargs_deftag(self):
-        t = Template(
-            """
+        t = Template("""
         <%%!
             callcount = [0]
         %%>
@@ -332,9 +314,7 @@ class CacheTest:
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-"""
-            % module_base
-        )
+""" % module_base)
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             "this is foo",
@@ -345,8 +325,7 @@ class CacheTest:
         assert m.kwargs == {"type": "file", "dir": module_base}
 
     def test_fileargs_pagetag(self):
-        t = Template(
-            """
+        t = Template("""
         <%%page cache_dir='%s' cache_type='dbm'/>
         <%%!
             callcount = [0]
@@ -362,9 +341,7 @@ class CacheTest:
         ${foo()}
         ${foo()}
         callcount: ${callcount}
-"""
-            % module_base
-        )
+""" % module_base)
         m = self._install_mock_cache(t)
         assert result_lines(t.render()) == [
             "this is foo",
@@ -375,29 +352,23 @@ class CacheTest:
         eq_(m.kwargs, {"dir": module_base, "type": "dbm"})
 
     def test_args_complete(self):
-        t = Template(
-            """
+        t = Template("""
         <%%def name="foo()" cached="True" cache_timeout="30" cache_dir="%s"
          cache_type="file" cache_key='somekey'>
             this is foo
         </%%def>
 
         ${foo()}
-"""
-            % module_base
-        )
+""" % module_base)
         m = self._install_mock_cache(t)
         t.render()
         eq_(m.kwargs, {"dir": module_base, "type": "file", "timeout": 30})
 
-        t2 = Template(
-            """
+        t2 = Template("""
         <%%page cached="True" cache_timeout="30" cache_dir="%s"
          cache_type="file" cache_key='somekey'/>
         hi
-        """
-            % module_base
-        )
+        """ % module_base)
         m = self._install_mock_cache(t2)
         t2.render()
         eq_(m.kwargs, {"dir": module_base, "type": "file", "timeout": 30})
@@ -460,14 +431,12 @@ class CacheTest:
         originating template has completed rendering.
 
         """
-        t = Template(
-            """
+        t = Template("""
         ${foo()}
         <%def name="foo()" cached="True" cache_timeout="1">
             foo
         </%def>
-        """
-        )
+        """)
         self._install_mock_cache(t)
 
         x1 = t.render()
@@ -476,8 +445,7 @@ class CacheTest:
         assert x1.strip() == x2.strip() == "foo"
 
     def test_namespace_access(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo(x)" cached="True">
                 foo: ${x}
             </%def>
@@ -489,8 +457,7 @@ class CacheTest:
                 foo(3)
                 foo(4)
             %>
-        """
-        )
+        """)
         self._install_mock_cache(t)
         eq_(result_lines(t.render()), ["foo: 1", "foo: 1", "foo: 3", "foo: 3"])
 
@@ -510,8 +477,7 @@ class CacheTest:
         assert isinstance(t.cache.impl, MockCacheImpl)
 
     def test_invalidate(self):
-        t = Template(
-            """
+        t = Template("""
             <%%def name="foo()" cached="True">
                 foo: ${x}
             </%%def>
@@ -520,9 +486,7 @@ class CacheTest:
                 bar: ${x}
             </%%def>
             ${foo()} ${bar()}
-        """
-            % module_base
-        )
+        """ % module_base)
         self._install_mock_cache(t)
         assert result_lines(t.render(x=1)) == ["foo: 1", "bar: 1"]
         assert result_lines(t.render(x=2)) == ["foo: 1", "bar: 1"]
@@ -531,14 +495,11 @@ class CacheTest:
         t.cache.invalidate_def("bar")
         assert result_lines(t.render(x=4)) == ["foo: 3", "bar: 4"]
 
-        t = Template(
-            """
+        t = Template("""
             <%%page cached="True" cache_type="dbm" cache_dir="%s"/>
 
             page: ${x}
-        """
-            % module_base
-        )
+        """ % module_base)
         self._install_mock_cache(t)
         assert result_lines(t.render(x=1)) == ["page: 1"]
         assert result_lines(t.render(x=2)) == ["page: 1"]
@@ -547,47 +508,39 @@ class CacheTest:
         assert result_lines(t.render(x=4)) == ["page: 3"]
 
     def test_custom_args_def(self):
-        t = Template(
-            """
+        t = Template("""
             <%def name="foo()" cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob">
             </%def>
             ${foo()}
-        """
-        )
+        """)
         m = self._install_mock_cache(t, "simple")
         t.render()
         eq_(m.kwargs, {"region": "myregion", "timeout": 50, "foo": "foob"})
 
     def test_custom_args_block(self):
-        t = Template(
-            """
+        t = Template("""
             <%block name="foo" cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob">
             </%block>
-        """
-        )
+        """)
         m = self._install_mock_cache(t, "simple")
         t.render()
         eq_(m.kwargs, {"region": "myregion", "timeout": 50, "foo": "foob"})
 
     def test_custom_args_page(self):
-        t = Template(
-            """
+        t = Template("""
             <%page cached="True" cache_region="myregion"
                     cache_timeout="50" cache_foo="foob"/>
-        """
-        )
+        """)
         m = self._install_mock_cache(t, "simple")
         t.render()
         eq_(m.kwargs, {"region": "myregion", "timeout": 50, "foo": "foob"})
 
     def test_pass_context(self):
-        t = Template(
-            """
+        t = Template("""
             <%page cached="True"/>
-        """
-        )
+        """)
         m = self._install_mock_cache(t)
         t.render()
         assert "context" not in m.kwargs
@@ -600,14 +553,12 @@ class CacheTest:
 
 class RealBackendMixin:
     def test_cache_uses_current_context(self):
-        t = Template(
-            """
+        t = Template("""
         ${foo()}
         <%def name="foo()" cached="True" cache_timeout="1">
             foo: ${x}
         </%def>
-        """
-        )
+        """)
         self._install_mock_cache(t)
 
         x1 = t.render(x=1)
@@ -617,8 +568,7 @@ class RealBackendMixin:
         eq_(x2.strip(), "foo: 2")
 
     def test_region(self):
-        t = Template(
-            """
+        t = Template("""
             <%block name="foo" cached="True" cache_region="short">
                 short term ${x}
             </%block>
@@ -628,8 +578,7 @@ class RealBackendMixin:
             <%block name="lala">
                 none ${x}
             </%block>
-        """
-        )
+        """)
 
         self._install_mock_cache(t)
         r1 = result_lines(t.render(x=5))

@@ -290,7 +290,7 @@ class Template:
 
         # if plain text, compile code in memory only
         if text is not None:
-            (code, module) = _compile_text(self, text, filename)
+            code, module = _compile_text(self, text, filename)
             self._code = code
             self._source = text
             ModuleInfo(module, None, self, filename, code, text, uri)
@@ -473,7 +473,6 @@ class Template:
 
 
 class ModuleTemplate(Template):
-
     """A Template which is constructed given an existing Python module.
 
     e.g.::
@@ -546,7 +545,6 @@ class ModuleTemplate(Template):
 
 
 class DefTemplate(Template):
-
     """A :class:`.Template` which represents a callable def in a parent
     template."""
 
@@ -567,7 +565,6 @@ class DefTemplate(Template):
 
 
 class ModuleInfo:
-
     """Stores information about a module currently loaded into
     memory, provides reverse lookups of template source, module
     source code based on a module's identifier.
@@ -694,7 +691,7 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
         # make tempfiles in the same location as the ultimate
         # location.   this ensures they're on the same filesystem,
         # avoiding synchronization issues.
-        (dest, name) = tempfile.mkstemp(dir=os.path.dirname(outputpath))
+        dest, name = tempfile.mkstemp(dir=os.path.dirname(outputpath))
 
         os.write(dest, source)
         os.close(dest)

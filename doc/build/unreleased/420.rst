@@ -1,0 +1,8 @@
+.. change::
+    :tags: bug, installation
+    :tickets: 420
+
+    The project license is now declared as an :pep:`639` SPDX license
+    expression rather than as a ``License ::`` trove classifier, which is
+    deprecated by current versions of setuptools.  A minimum setuptools
+    version of 77.0.0 is now required to build Mako from source.

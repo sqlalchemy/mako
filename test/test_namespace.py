@@ -590,16 +590,14 @@ class NamespaceTest(TemplateTest):
         assert_raises(AttributeError, l.get_template("bar.html").render)
 
     def test_custom_tag_1(self):
-        template = Template(
-            """
+        template = Template("""
 
             <%def name="foo(x, y)">
                 foo: ${x} ${y}
             </%def>
 
             <%self:foo x="5" y="${7+8}"/>
-        """
-        )
+        """)
         assert result_lines(template.render()) == ["foo: 5 15"]
 
     def test_custom_tag_2(self):
@@ -681,8 +679,7 @@ class NamespaceTest(TemplateTest):
         ]
 
     def test_custom_tag_case_sensitive(self):
-        t = Template(
-            """
+        t = Template("""
         <%def name="renderPanel()">
             panel ${caller.body()}
         </%def>
@@ -694,8 +691,7 @@ class NamespaceTest(TemplateTest):
         </%def>
 
         <%self:renderTablePanel/>
-        """
-        )
+        """)
         assert result_lines(t.render()) == ["panel", "hi"]
 
     def test_expr_grouping(self):
@@ -941,8 +937,7 @@ class NamespaceTest(TemplateTest):
         ) == ["this is foo", "this is bar"]
 
     def test_import_local(self):
-        t = Template(
-            """
+        t = Template("""
             <%namespace import="*">
                 <%def name="foo()">
                     this is foo
@@ -951,8 +946,7 @@ class NamespaceTest(TemplateTest):
 
             ${foo()}
 
-        """
-        )
+        """)
         assert flatten_result(t.render()) == "this is foo"
 
     def test_ccall_import(self):

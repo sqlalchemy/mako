@@ -1,0 +1,6 @@
+.. change::
+    :tags: usecase, installation
+
+    Project metadata has been migrated to :pep:`621` ``pyproject.toml``-based
+    configuration.  ``setup.cfg`` remains only for the ``[mako_testing]``
+    section used by Mako's own test suite.

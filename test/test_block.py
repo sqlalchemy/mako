@@ -22,8 +22,7 @@ class BlockTest(TemplateTest):
         )
 
     def test_anonymous_block_in_call(self):
-        template = Template(
-            """
+        template = Template("""
 
             <%self:foo x="5">
                 <%block>
@@ -35,8 +34,7 @@ class BlockTest(TemplateTest):
                 foo:
                 ${caller.body()}
             </%def>
-        """
-        )
+        """)
         self._do_test(
             template, ["foo:", "this is the block x"], filters=result_lines
         )
@@ -158,15 +156,13 @@ class BlockTest(TemplateTest):
         )
 
     def test_named_block_renders(self):
-        template = Template(
-            """
+        template = Template("""
             above
             <%block name="header">
                 the header
             </%block>
             below
-        """
-        )
+        """)
         self._do_test(
             template, ["above", "the header", "below"], filters=result_lines
         )
@@ -401,18 +397,15 @@ class BlockTest(TemplateTest):
         )
 
     def test_filter(self):
-        template = Template(
-            """
+        template = Template("""
             <%block filter="h">
                 <html>
             </%block>
-        """
-        )
+        """)
         self._do_test(template, ["&lt;html&gt;"], filters=result_lines)
 
     def test_anon_in_named(self):
-        template = Template(
-            """
+        template = Template("""
             <%block name="x">
                 outer above
                 <%block>
@@ -420,13 +413,11 @@ class BlockTest(TemplateTest):
                 </%block>
                 outer below
             </%block>
-        """
-        )
+        """)
         self._test_block_in_block(template)
 
     def test_named_in_anon(self):
-        template = Template(
-            """
+        template = Template("""
             <%block>
                 outer above
                 <%block name="x">
@@ -434,13 +425,11 @@ class BlockTest(TemplateTest):
                 </%block>
                 outer below
             </%block>
-        """
-        )
+        """)
         self._test_block_in_block(template)
 
     def test_anon_in_anon(self):
-        template = Template(
-            """
+        template = Template("""
             <%block>
                 outer above
                 <%block>
@@ -448,13 +437,11 @@ class BlockTest(TemplateTest):
                 </%block>
                 outer below
             </%block>
-        """
-        )
+        """)
         self._test_block_in_block(template)
 
     def test_named_in_named(self):
-        template = Template(
-            """
+        template = Template("""
             <%block name="x">
                 outer above
                 <%block name="y">
@@ -462,8 +449,7 @@ class BlockTest(TemplateTest):
                 </%block>
                 outer below
             </%block>
-        """
-        )
+        """)
         self._test_block_in_block(template)
 
     def _test_block_in_block(self, template):
@@ -474,18 +460,15 @@ class BlockTest(TemplateTest):
         )
 
     def test_iteration(self):
-        t = Template(
-            """
+        t = Template("""
             % for i in (1, 2, 3):
                 <%block>${i}</%block>
             % endfor
-        """
-        )
+        """)
         self._do_test(t, ["1", "2", "3"], filters=result_lines)
 
     def test_conditional(self):
-        t = Template(
-            """
+        t = Template("""
             % if True:
                 <%block>true</%block>
             % endif
@@ -493,8 +476,7 @@ class BlockTest(TemplateTest):
             % if False:
                 <%block>false</%block>
             % endif
-        """
-        )
+        """)
         self._do_test(t, ["true"], filters=result_lines)
 
     def test_block_overridden_by_def(self):
@@ -580,13 +562,11 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_variables_contextual(self):
-        t = Template(
-            """
+        t = Template("""
             <%block name="foob" >
                 foob, ${val1}, ${val2}
             </%block>
-        """
-        )
+        """)
         self._do_test(
             t,
             ["foob, 3, 4"],
@@ -595,14 +575,12 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_args_contextual(self):
-        t = Template(
-            """
+        t = Template("""
             <%page args="val1"/>
             <%block name="foob" args="val1">
                 foob, ${val1}, ${val2}
             </%block>
-        """
-        )
+        """)
         self._do_test(
             t,
             ["foob, 3, 4"],
@@ -611,13 +589,11 @@ class BlockTest(TemplateTest):
         )
 
     def test_block_pageargs_contextual(self):
-        t = Template(
-            """
+        t = Template("""
             <%block name="foob">
                 foob, ${pageargs['val1']}, ${pageargs['val2']}
             </%block>
-        """
-        )
+        """)
         self._do_test(
             t,
             ["foob, 3, 4"],

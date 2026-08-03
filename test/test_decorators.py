@@ -25,8 +25,7 @@ class DecoratorTest:
         assert flatten_result(template.render()) == "BAR this is foo 1 5 BAR"
 
     def test_toplevel_contextual(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bar(fn):
                     def decorate(context):
@@ -42,8 +41,7 @@ class DecoratorTest:
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "BAR this is foo BAR"
 
@@ -53,8 +51,7 @@ class DecoratorTest:
         )
 
     def test_nested(self):
-        template = Template(
-            """
+        template = Template("""
             <%!
                 def bat(fn):
                     def decorate(context):
@@ -71,8 +68,7 @@ class DecoratorTest:
             </%def>
 
             ${foo()}
-        """
-        )
+        """)
 
         assert flatten_result(template.render()) == "BAT this is bar BAT"
 
