@@ -1,8 +1,11 @@
 import sys
+import traceback
+import warnings
 
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from mako.testing.assertions import eq_
 from mako.testing.exclusions import requires_no_pygments_exceptions
 from mako.testing.exclusions import requires_pygments_14
 from mako.testing.fixtures import TemplateTest
@@ -371,3 +374,58 @@ def broken():
 """ in text_error
         else:
             assert False
+
+
+class TemplateModuleSpecTest(TemplateTest):
+    """test that in-memory template modules present a usable ``__spec__``.
+
+    A module made from :class:`types.ModuleType` alone carries a ``__spec__``
+    of ``None``, which Python 3.15's :mod:`linecache` reports as a
+    :class:`DeprecationWarning` while a traceback is being formatted.
+
+    """
+
+    def test_module_spec_has_loader(self):
+        template = Template("hello world")
+
+        spec = template.module.__spec__
+        assert spec is not None
+        assert spec.loader is not None
+        eq_(spec.loader, template.module.__loader__)
+
+    def test_loader_returns_module_source(self):
+        template = Template("hello world")
+
+        loader = template.module.__spec__.loader
+        eq_(loader.get_source(template.module.__name__), template.code)
+
+    def test_no_warning_formatting_traceback(self):
+        """test #437"""
+
+        template = Template("${1 / 0}")
+
+        try:
+            template.render()
+        except ZeroDivisionError:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                formatted = traceback.format_exc()
+        else:
+            assert False
+
+        assert "ZeroDivisionError" in formatted
+
+    def test_traceback_includes_module_source(self):
+        """test that generated source lines are available to linecache"""
+
+        template = Template("${1 / 0}")
+
+        try:
+            template.render()
+        except ZeroDivisionError:
+            formatted = traceback.format_exc()
+        else:
+            assert False
+
+        assert template.module.__name__ in formatted
+        assert "__M_writer" in formatted

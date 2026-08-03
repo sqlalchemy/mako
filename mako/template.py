@@ -7,6 +7,8 @@
 """Provides the Template class, a facade for parsing, generating and executing
 template strings, as well as template runtime operations."""
 
+from importlib import abc
+from importlib import machinery
 import json
 import os
 import re
@@ -662,6 +664,30 @@ def _compile(template, text, filename, generate_magic_comment):
     return source, lexer
 
 
+class _ModuleSourceLoader(abc.Loader):
+    """Provide the generated source of an in-memory template module.
+
+    A module created directly from :class:`types.ModuleType` has ``__spec__``
+    and ``__loader__`` present in its namespace but set to ``None``.  The
+    :mod:`linecache` module consults these while a traceback is being built,
+    and as of Python 3.15 emits a :class:`DeprecationWarning` when it finds a
+    ``__spec__`` that has no loader; a module lacking a real loader also has
+    no source lines available to show for its frames.  Supplying a loader
+    that can produce the generated module source addresses both.
+
+    """
+
+    def __init__(self, name, source):
+        self.name = name
+        self._source = source
+
+    def get_source(self, name):
+        return self._source
+
+    def is_package(self, name):
+        return False
+
+
 def _compile_text(template, text, filename):
     identifier = template.module_id
     source, lexer = _compile(
@@ -670,6 +696,9 @@ def _compile_text(template, text, filename):
 
     cid = identifier
     module = types.ModuleType(cid)
+    loader = _ModuleSourceLoader(cid, source)
+    module.__loader__ = loader
+    module.__spec__ = machinery.ModuleSpec(cid, loader, origin=cid)
     code = compile(source, cid, "exec")
 
     # this exec() works for 2.4->3.3.
