@@ -40,7 +40,7 @@ Documentation = "https://docs.makotemplates.org"
 [project.optional-dependencies]
 testing = ["pytest"]
 babel = ["Babel"]
-lingua = ["lingua"]
+lingua = ["lingua>=4.16"]
 
 [dependency-groups]
 tests = [
@@ -50,7 +50,7 @@ tests = [
     "pygments",
     "babel",
     "dogpile.cache",
-    "lingua<4",
+    "lingua>=4.16",
     "junitparser",
 ]
 coverage = [
