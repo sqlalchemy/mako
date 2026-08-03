@@ -86,7 +86,8 @@ class MissingItemConfig(ReadsCfg):
 
 class BasicConfigTest:
     @pytest.fixture(scope="class")
-    def config(self):
+    @staticmethod
+    def config():
         return BasicConfig.from_cfg_file(PATH_TO_TEST_CONFIG)
 
     def test_coercions(self, config):
@@ -120,7 +121,8 @@ class BasicConfigTest:
 
 class BooleanConfigTest:
     @pytest.fixture(scope="class")
-    def config(self):
+    @staticmethod
+    def config():
         return BooleanConfig.from_cfg_file(PATH_TO_TEST_CONFIG)
 
     def test_values(self, config):
@@ -136,7 +138,8 @@ class BooleanConfigTest:
 
 class UnsupportedTypesConfigTest:
     @pytest.fixture(scope="class")
-    def config(self):
+    @staticmethod
+    def config():
         return UnsupportedTypesConfig.from_cfg_file(PATH_TO_TEST_CONFIG)
 
     def test_values(self, config):
@@ -146,7 +149,8 @@ class UnsupportedTypesConfigTest:
 
 class SupportedTypesConfigTest:
     @pytest.fixture(scope="class")
-    def config(self):
+    @staticmethod
+    def config():
         return SupportedTypesConfig.from_cfg_file(PATH_TO_TEST_CONFIG)
 
     def test_values(self, config):

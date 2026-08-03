@@ -516,22 +516,9 @@ class SourceGenerator(NodeVisitor):
     def visit_Name(self, node):
         self.write(node.id)
 
-    def visit_NameConstant(self, node):
-        self.write(str(node.value))
-
     def visit_arg(self, node):
         self.write(node.arg)
 
-    def visit_Str(self, node):
-        self.write(repr(node.s))
-
-    def visit_Bytes(self, node):
-        self.write(repr(node.s))
-
-    def visit_Num(self, node):
-        self.write(repr(node.n))
-
-    # newly needed in Python 3.8
     def visit_Constant(self, node):
         self.write(repr(node.value))
 
@@ -633,9 +620,6 @@ class SourceGenerator(NodeVisitor):
         self.signature(node.args)
         self.write(": ")
         self.visit(node.body)
-
-    def visit_Ellipsis(self, node):
-        self.write("Ellipsis")
 
     def generator_visit(left, right):
         def visit(self, node):

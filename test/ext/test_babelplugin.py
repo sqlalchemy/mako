@@ -11,7 +11,8 @@ from mako.testing.fixtures import TemplateTest
 
 class UsesExtract:
     @pytest.fixture(scope="class")
-    def extract(self):
+    @staticmethod
+    def extract():
         from mako.ext.babelplugin import extract
 
         return extract

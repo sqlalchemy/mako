@@ -4,11 +4,7 @@
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""Handles parsing of Python code.
-
-Parsing to AST is done via _ast on Python > 2.5, otherwise the compiler
-module is used.
-"""
+"""Handles parsing of Python code."""
 
 import _ast
 import operator
@@ -16,7 +12,6 @@ import operator
 from mako import _ast_util
 from mako import compat
 from mako import exceptions
-from mako import util
 
 # words that cannot be assigned to (notably
 # smaller than the total keys in __builtins__)
@@ -24,8 +19,6 @@ reserved = {"True", "False", "None", "print"}
 
 # the "id" attribute on a function node
 arg_id = operator.attrgetter("arg")
-
-util.restore__ast(_ast)
 
 
 def parse(code, mode="exec", **exception_kwargs):
