@@ -83,6 +83,8 @@ class Lexer:
 
     def parse_until_text(self, watch_nesting, *text):
         startpos = self.match_position
+        startlineno = self.matched_lineno
+        startcharpos = self.matched_charpos
         text_re = r"|".join(text)
         brace_level = 0
         paren_level = 0
@@ -117,8 +119,17 @@ class Lexer:
                 bracket_level += match.group(1).count("[")
                 bracket_level -= match.group(1).count("]")
                 continue
+            # the scan consumes the remaining text looking for the
+            # closing token, so report the position the construct began
+            # at, rather than the position the scan gave up at
             raise exceptions.SyntaxException(
-                "Expected: %s" % ",".join(text), **self.exception_kwargs
+                "Expected: %s; unterminated tag or expression beginning"
+                % ",".join(text),
+                **{
+                    **self.exception_kwargs,
+                    "lineno": startlineno,
+                    "pos": startcharpos,
+                },
             )
 
     def append_node(self, nodecls, *args, **kwargs):

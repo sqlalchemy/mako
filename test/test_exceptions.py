@@ -714,3 +714,50 @@ class CompileWarningsTest(TemplateTest):
                 )
             },
         )
+
+
+class UnterminatedTagLocationTest(TemplateTest):
+    """test that a tag or expression which is never closed is reported
+    against the line it begins on.
+
+    """
+
+    def _assert_syntax_error(self, text, message):
+        assert_raises_message(
+            exceptions.SyntaxException,
+            message,
+            Template,
+            text,
+            filename="foo.mako",
+        )
+
+    def test_unterminated_expression(self):
+        """test #428"""
+
+        self._assert_syntax_error(
+            "one\ntwo\n${ d['x'\n"
+            + "".join('line%d "quoted" text\n' % i for i in range(4, 40)),
+            r"Expected: \\\|,\}; unterminated tag or expression beginning "
+            r"in file 'foo.mako' at line: 3 char: 1",
+        )
+
+    def test_unterminated_code_block(self):
+        self._assert_syntax_error(
+            "one\n<%\n    x = 1\n"
+            + "".join('line%d "quoted" text\n' % i for i in range(4, 40)),
+            r"Expected: %>; unterminated tag or expression beginning "
+            r"in file 'foo.mako' at line: 2 char: 1",
+        )
+
+    def test_unterminated_expression_filter(self):
+        """the filter of an expression is scanned separately, so the
+        position reported is where the filter begins
+
+        """
+
+        self._assert_syntax_error(
+            "one\ntwo\nthree\n${ x | trim\n"
+            + "".join('line%d "quoted" text\n' % i for i in range(5, 40)),
+            r"Expected: \}; unterminated tag or expression beginning "
+            r"in file 'foo.mako' at line: 4 char: 6",
+        )

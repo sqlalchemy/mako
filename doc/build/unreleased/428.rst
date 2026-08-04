@@ -1,0 +1,10 @@
+.. change::
+    :tags: bug, lexer
+    :tickets: 428
+
+    The ``SyntaxException`` raised for a tag or expression that is never
+    closed is now reported against the line the construct begins on, rather
+    than the point at which the search for the closing token gave up, which
+    for an unclosed construct is the end of the template.  The message of the
+    exception is amended to indicate that the position given is where the
+    unterminated construct begins.
