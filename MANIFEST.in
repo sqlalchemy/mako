@@ -1,8 +1,9 @@
 recursive-include doc *.html *.css *.txt *.js *.png *.py Makefile *.rst
 recursive-include examples *.py *.html
 recursive-include test *.py *.html *.mako *.cfg
+recursive-include tools *.py
 
-include README* AUTHORS LICENSE CHANGES* tox.ini
+include README* AUTHORS LICENSE CHANGES* tox.ini noxfile.py
 
 prune doc/build/output
 
