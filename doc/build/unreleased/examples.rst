@@ -1,5 +1,5 @@
 .. change::
-    :tags: usecase, examples
+    :tags: changed, examples
 
     The ``examples/bench`` folder has been removed as it used mostly
     long-obsolete template engines.  The ``examples/wsgi/run_wsgi.py`` example

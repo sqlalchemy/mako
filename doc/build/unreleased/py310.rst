@@ -1,4 +1,4 @@
 .. change::
-    :tags: usecase, installation
+    :tags: changed, installation
 
     Minimum Python version is now 3.10.

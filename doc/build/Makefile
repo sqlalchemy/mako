@@ -2,8 +2,9 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -T
+SPHINXOPTS    = -T -j auto
 SPHINXBUILD   = sphinx-build
+AUTOBUILD     = sphinx-autobuild  --port 8080  --watch ../../mako
 PAPER         =
 BUILDDIR      = output
 
@@ -17,6 +18,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
+	@echo "  autobuild  autobuild and run a webserver"
 	@echo "  dist-html  same as html, but places files in /doc"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -41,7 +43,8 @@ html:
 	$(SPHINXBUILD) -b html -A mako_layout=html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
-
+autobuild:
+	$(AUTOBUILD) $(ALLSPHINXOPTS) $(BUILDDIR)/html
 dist-html:
 	$(SPHINXBUILD) -b html -A mako_layout=html $(ALLSPHINXOPTS) ..
 	@echo
