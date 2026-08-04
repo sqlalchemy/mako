@@ -8,7 +8,110 @@ Changelog
 
 .. changelog::
     :version: 1.4.0
-    :include_notes_from: unreleased
+    :released: Tue Aug 4 2026
+
+    .. change::
+        :tags: bug, ext
+        :tickets: 393
+
+        The minimum Lingua version supported by :class:`.LinguaMakoExtractor` is
+        now 4.16.  The test suite had continued to pin Lingua below 4 long after
+        the extractor itself was repaired to work with Lingua 4 in version 1.2.0,
+        with the result that the plugin was no longer covered by tests at all; the
+        pinned version additionally imports ``pkg_resources`` at startup, which is
+        not present in current setuptools releases and left the package
+        unimportable.  Lingua 4.16 resolves entry points using
+        ``importlib.metadata``, so no deprecated ``pkg_resources`` usage remains.
+
+    .. change::
+        :tags: bug, exceptions
+        :tickets: 437
+
+        Fixed issue where formatting a traceback for an exception raised inside a
+        template compiled from a string would emit ``DeprecationWarning: Module
+        globals is missing a __spec__.loader`` on Python 3.15.  Modules for such
+        templates were created without a module spec, which Python's
+        :mod:`linecache` module consults for every frame while a traceback is
+        being built; the warning was raised from within traceback formatting
+        itself, disrupting the error report for applications that configure
+        warnings as errors.  These modules are now given a spec with a loader that
+        provides the generated module source, which additionally allows the
+        generated source lines to be displayed in tracebacks produced by the
+        standard library where previously no source was available.
+
+    .. change::
+        :tags: changed, examples
+
+        The ``examples/bench`` folder has been removed as it used mostly
+        long-obsolete template engines.  The ``examples/wsgi/run_wsgi.py`` example
+        has been updated to remove the use of the removed-in-Python-3.13 ``cgi``
+        module, and to be runnable as a module from the project root.
+
+    .. change::
+        :tags: bug, exceptions
+        :tickets: 430, 245, 428
+
+        A series of fixes involving syntax warnings and exceptions found
+        during template lexing / compilation:
+
+        * Warnings raised while a template is compiled, which in practice means
+          ``SyntaxWarning``, now report the filename and line number of the
+          template rather than a line within the generated module, and are no
+          longer reported twice.  This applies equally to templates compiled from a
+          string, from a file, and to a module file in a
+          :paramref:`.Template.module_directory`, as does a warning raised while
+          the module level code of a ``<%! %>`` block runs.  Warnings raised while
+          a template renders continue to report the location within the generated
+          module.
+
+          To do this, Mako replaces ``warnings.showwarning`` while a template is
+          compiled.  As that name is global to the process, an unrelated warning
+          displayed by another thread during that window may also be passed through
+          Mako's hook, which shows any warning it does not recognize unchanged.
+          (:ticket:`430`)
+
+        * The ``SyntaxException`` raised for a syntax error in Python code spanning
+          several lines of a template, such as that within a ``<% %>`` or ``<%! %>``
+          block, is now reported against the line the error is on, rather than
+          against the line on which the block begins.  The line reported for code
+          that occupies a single line, such as an expression or a control line, is
+          unchanged. (:ticket:`245`)
+
+        * The ``SyntaxException`` raised for a tag or expression that is never
+          closed is now reported against the line the construct begins on, rather
+          than the point at which the search for the closing token gave up, which
+          for an unclosed construct is the end of the template.  The message of the
+          exception is amended to indicate that the position given is where the
+          unterminated construct begins. (:ticket:`428`)
+
+
+
+
+    .. change::
+        :tags: changed, installation
+
+        Minimum MarkupSafe dependency version bumped from 0.9.2 to 2.0.
+
+    .. change::
+        :tags: changed, tests
+
+        The test suite now runs via nox.  The old tox.ini remains however nox will
+        be the only system that's maintained.
+
+    .. change::
+        :tags: changed, installation
+
+        Project metadata has been migrated to :pep:`621` ``pyproject.toml``-based
+        configuration.  ``setup.cfg`` remains only for the ``[mako_testing]``
+        section used by Mako's own test suite.   The build requirements
+        now set the minimum setuptools version at 77.0.0 in order to build Mako
+        from source.
+
+    .. change::
+        :tags: changed, installation
+
+        Minimum Python version is now 3.10.  Mako 1.4.0 has been tested up through
+        Python 3.15.0b4.
 
 1.3
 ===
