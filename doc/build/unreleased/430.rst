@@ -1,0 +1,18 @@
+.. change::
+    :tags: bug, exceptions
+    :tickets: 430
+
+    Warnings raised while a template is compiled, which in practice means
+    ``SyntaxWarning``, now report the filename and line number of the
+    template rather than a line within the generated module, and are no
+    longer reported twice.  This applies equally to templates compiled from a
+    string, from a file, and to a module file in a
+    :paramref:`.Template.module_directory`, as does a warning raised while
+    the module level code of a ``<%! %>`` block runs.  Warnings raised while
+    a template renders continue to report the location within the generated
+    module.
+
+    To do this, Mako replaces ``warnings.showwarning`` while a template is
+    compiled.  As that name is global to the process, an unrelated warning
+    displayed by another thread during that window may also be passed through
+    Mako's hook, which shows any warning it does not recognize unchanged.

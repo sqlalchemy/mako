@@ -1,15 +1,24 @@
+import os
 import sys
+import tempfile
 import traceback
 import warnings
+
+import pytest
 
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from mako.testing.assertions import assert_raises_message
 from mako.testing.assertions import eq_
 from mako.testing.exclusions import requires_no_pygments_exceptions
 from mako.testing.exclusions import requires_pygments_14
 from mako.testing.fixtures import TemplateTest
 from mako.testing.helpers import result_lines
+
+all_sources = pytest.mark.parametrize(
+    "source", ["string", "file", "module_file"]
+)
 
 
 class ExceptionsTest(TemplateTest):
@@ -429,3 +438,279 @@ class TemplateModuleSpecTest(TemplateTest):
 
         assert template.module.__name__ in formatted
         assert "__M_writer" in formatted
+
+
+class CompileWarningsTest(TemplateTest):
+    """test that warnings raised while compiling a template report the
+    location within the template.
+
+    """
+
+    def _warning_message(self, model):
+        """resolve the expected message for a warning.
+
+        ``model`` is a fragment of Python source that raises the same
+        warning being tested; the message is taken from the interpreter in
+        use, as the wording and category of compiler warnings vary by Python
+        version.  A fragment that raises no warning of its own is taken to
+        be the message itself.
+
+        """
+
+        with warnings.catch_warnings(record=True) as recorded:
+            warnings.simplefilter("always")
+            try:
+                compile(model, "<test>", "exec")
+            except SyntaxError:
+                return model
+
+        if recorded:
+            return str(recorded[0].message)
+        else:
+            return model
+
+    def _assert_compile_warnings(
+        self,
+        text,
+        source,
+        expected,
+        extra_files=None,
+        filter_action="always",
+        raises=None,
+        **kw,
+    ):
+        """compile ``text`` and assert the warnings that were raised.
+
+        ``source`` is one of "string", "file" or "module_file", so that the
+        same assertions can be made however the template was loaded.
+
+        ``expected`` is a list of (filename, lineno, model) tuples, where
+        ``model`` is resolved to a message by :meth:`._warning_message`.  The
+        template's own filename is given as "<template>", as it is otherwise
+        a temporary path, or an id in the case of a template compiled from a
+        string; any other filename is given as its base name.
+
+        ``extra_files`` is an optional map of filename to content, written
+        alongside the template and importable while it is compiled.
+
+        ``filter_action`` is the warnings filter in effect for the
+        compilation.
+
+        ``raises`` is an optional message expected of a
+        ``SyntaxException``, for a filter action under which the warning is
+        raised rather than shown.
+
+        """
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            for name, content in (extra_files or {}).items():
+                with open(os.path.join(tempdir, name), "w") as f:
+                    f.write(content)
+
+            if extra_files:
+                sys.path.insert(0, tempdir)
+
+            try:
+                if source == "string":
+                    filename = None
+
+                    def _compile():
+                        nonlocal filename
+                        template = Template(text, **kw)
+                        filename = template.uri
+
+                else:
+                    filename = os.path.join(tempdir, "warning.mako")
+                    with open(filename, "w") as f:
+                        f.write(text)
+
+                    if source == "module_file":
+                        kw["module_directory"] = os.path.join(
+                            tempdir, "modules"
+                        )
+
+                    def _compile():
+                        Template(filename=filename, **kw)
+
+                with warnings.catch_warnings(record=True) as recorded:
+                    warnings.simplefilter(filter_action)
+                    if raises is not None:
+                        assert_raises_message(
+                            exceptions.SyntaxException, raises, _compile
+                        )
+                    else:
+                        _compile()
+            finally:
+                if extra_files:
+                    sys.path.remove(tempdir)
+                    for name in extra_files:
+                        sys.modules.pop(os.path.splitext(name)[0], None)
+
+        def _filename(warning):
+            if warning.filename == filename:
+                return "<template>"
+            else:
+                return os.path.basename(warning.filename)
+
+        eq_(
+            [(_filename(w), w.lineno, str(w.message)) for w in recorded],
+            [
+                (filename, lineno, self._warning_message(model))
+                for filename, lineno, model in expected
+            ],
+        )
+
+    @all_sources
+    def test_warning_in_code_block(self, source):
+        """test #430"""
+
+        self._assert_compile_warnings(
+            'line one\nline two\n<%\n    x = "\\d"\n%>\n',
+            source,
+            [("<template>", 4, 'x = "\\d"')],
+        )
+
+    @all_sources
+    def test_warning_line_not_affected_by_preceding_lines(self, source):
+        self._assert_compile_warnings(
+            "\n" * 10 + '<%\n    x = "\\d"\n%>\n',
+            source,
+            [("<template>", 12, 'x = "\\d"')],
+        )
+
+    @all_sources
+    def test_warning_in_module_block_and_expression(self, source):
+        self._assert_compile_warnings(
+            '<%!\n    x = "\\d"\n%>\n${"\\q"}\n',
+            source,
+            [
+                ("<template>", 2, 'x = "\\d"'),
+                ("<template>", 4, '"\\q"'),
+            ],
+        )
+
+    @all_sources
+    @pytest.mark.parametrize(
+        "filter_action", ["always", "default", "module", "once"]
+    )
+    def test_warning_shown_for_each_filter_action(self, source, filter_action):
+        """test that the warning survives a filter with a stateful action.
+
+        the occurrence that is dropped is passed over by the filters first,
+        so a "once" filter would otherwise record the warning and suppress
+        the occurrence that can be translated.
+
+        """
+
+        self._assert_compile_warnings(
+            'line one\nline two\n<%\n    x = "\\d"\n%>\n',
+            source,
+            [("<template>", 4, 'x = "\\d"')],
+            filter_action=filter_action,
+        )
+
+    @all_sources
+    def test_error_filter_raises_from_the_parse(self, source):
+        """test that a filter which turns warnings into errors is unchanged.
+
+        The warning is raised as an exception where it is first passed over
+        by the filters, which is the parse of the individual expression, and
+        so is never shown; the display hook the translation is performed in
+        is not reached at all.
+
+        """
+
+        self._assert_compile_warnings(
+            'line one\nline two\n<%\n    x = "\\d"\n%>\n',
+            source,
+            [],
+            filter_action="error",
+            raises="invalid escape sequence",
+        )
+
+    @all_sources
+    def test_warning_from_module_level_block(self, source):
+        """test that a warning raised as the module level code of a
+        <%! %> block runs is reported against the template, the same way
+        however the template was loaded.
+
+        """
+
+        self._assert_compile_warnings(
+            "<%!\n"
+            "    import warnings\n"
+            '    warnings.warn("module body", UserWarning)\n'
+            "%>\nok\n",
+            source,
+            [("<template>", 3, "module body")],
+        )
+
+    def test_module_source_without_metadata(self):
+        """test that a warning is shown untranslated if the metadata of the
+        module it is raised for cannot be read, rather than the failure to
+        read it displacing the warning
+
+        """
+
+        from mako.template import _translate_module_warnings
+
+        with warnings.catch_warnings(record=True) as recorded:
+            warnings.simplefilter("always")
+            with _translate_module_warnings(
+                lambda: "not a mako module", "the_module", "the_template.mako"
+            ):
+                warnings.warn_explicit(
+                    "unmapped", UserWarning, "the_module", 5
+                )
+
+        eq_(
+            [(w.filename, w.lineno, str(w.message)) for w in recorded],
+            [("the_module", 5, "unmapped")],
+        )
+
+    @all_sources
+    def test_no_warnings_for_clean_template(self, source):
+        self._assert_compile_warnings("hello ${world}\n", source, [])
+
+    @all_sources
+    def test_warning_from_imported_module_passes_through(self, source):
+        """test that a warning raised by a module imported from the
+        template is not translated, or swallowed, along with those raised
+        by the compiler itself.
+
+        """
+
+        self._assert_compile_warnings(
+            "<%!\n    import mako_test_warns_on_import\n%>\nok\n",
+            source,
+            [("mako_test_warns_on_import.py", 2, "imported module warning")],
+            extra_files={
+                "mako_test_warns_on_import.py": (
+                    "import warnings\n"
+                    "warnings.warn('imported module warning', UserWarning)\n"
+                )
+            },
+        )
+
+    @all_sources
+    def test_unknown_filename_warning_from_import_passes_through(self, source):
+        """test that a warning raised as the template module executes is
+        shown even if it carries the filename used when parsing individual
+        expressions.
+
+        """
+
+        self._assert_compile_warnings(
+            "<%!\n    import mako_test_warns_unknown\n%>\nok\n",
+            source,
+            [("<unknown>", 1, "warning from an unknown file")],
+            extra_files={
+                "mako_test_warns_unknown.py": (
+                    "import warnings\n"
+                    "warnings.warn_explicit(\n"
+                    "    'warning from an unknown file', UserWarning,\n"
+                    "    '<unknown>', 1\n"
+                    ")\n"
+                )
+            },
+        )

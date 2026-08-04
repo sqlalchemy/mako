@@ -20,12 +20,17 @@ reserved = {"True", "False", "None", "print"}
 # the "id" attribute on a function node
 arg_id = operator.attrgetter("arg")
 
+# filename given to the compiler when an individual expression is parsed.
+# warnings raised against this name have no location that can be related
+# back to the template
+EXPRESSION_FILENAME = "<unknown>"
+
 
 def parse(code, mode="exec", **exception_kwargs):
     """Parse an expression into AST"""
 
     try:
-        return _ast_util.parse(code, "<unknown>", mode)
+        return _ast_util.parse(code, EXPRESSION_FILENAME, mode)
     except Exception as e:
         raise exceptions.SyntaxException(
             "(%s) %s (%r)"

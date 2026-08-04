@@ -7,6 +7,7 @@
 """Provides the Template class, a facade for parsing, generating and executing
 template strings, as well as template runtime operations."""
 
+import contextlib
 from importlib import abc
 from importlib import machinery
 import json
@@ -16,12 +17,14 @@ import shutil
 import stat
 import tempfile
 import types
+import warnings
 import weakref
 
 from mako import cache
 from mako import codegen
 from mako import compat
 from mako import exceptions
+from mako import pyparser
 from mako import runtime
 from mako import util
 from mako.lexer import Lexer
@@ -365,21 +368,27 @@ class Template:
         if path is not None:
             util.verify_directory(os.path.dirname(path))
             filemtime = os.stat(filename)[stat.ST_MTIME]
-            if (
-                not os.path.exists(path)
-                or os.stat(path)[stat.ST_MTIME] < filemtime
+            with _translate_module_warnings(
+                lambda: util.read_python_file(path), path, filename
             ):
-                data = util.read_file(filename)
-                _compile_module_file(
-                    self, data, filename, path, self.module_writer
-                )
-            module = compat.load_module(self.module_id, path)
-            if module._magic_number != codegen.MAGIC_NUMBER:
-                data = util.read_file(filename)
-                _compile_module_file(
-                    self, data, filename, path, self.module_writer
-                )
+                if (
+                    not os.path.exists(path)
+                    or os.stat(path)[stat.ST_MTIME] < filemtime
+                ):
+                    data = util.read_file(filename)
+                    with _drop_expression_warnings():
+                        _compile_module_file(
+                            self, data, filename, path, self.module_writer
+                        )
                 module = compat.load_module(self.module_id, path)
+                if module._magic_number != codegen.MAGIC_NUMBER:
+                    data = util.read_file(filename)
+                    with _drop_expression_warnings():
+                        _compile_module_file(
+                            self, data, filename, path, self.module_writer
+                        )
+                    module = compat.load_module(self.module_id, path)
+
             ModuleInfo(module, path, self, filename, None, None, None)
         else:
             # template filename and no module directory, compile code
@@ -688,21 +697,134 @@ class _ModuleSourceLoader(abc.Loader):
         return False
 
 
+@contextlib.contextmanager
+def _show_warnings_as(locate):
+    """Replace the warnings display hook for the duration of the block.
+
+    ``locate`` is passed the message, category, filename and line number of
+    each warning, and returns the filename and line number it should be
+    shown as, or ``None`` for a warning that should not be shown at all.
+
+    The display hook is replaced, rather than the warnings being recorded
+    and raised a second time, so that each warning passes through the
+    warnings filters exactly once.  A filter with a stateful action such as
+    "once" would otherwise suppress the second occurrence, and the warning
+    would be lost entirely.
+
+    """
+
+    show_warning = warnings.showwarning
+
+    def _show(message, category, filename, lineno, file=None, line=None):
+        location = locate(message, category, filename, lineno)
+        if location is None:
+            return
+
+        if location != (filename, lineno):
+            # the source line, if given, is that of the original location;
+            # allow it to be looked up again for the new one
+            line = None
+            filename, lineno = location
+
+        show_warning(message, category, filename, lineno, file, line)
+
+    warnings.showwarning = _show
+    try:
+        yield
+    finally:
+        warnings.showwarning = show_warning
+
+
+def _drop_expression_warnings():
+    """Drop warnings raised while individual expressions are parsed.
+
+    These carry no location that can be related back to the template, as the
+    expression is parsed on its own, and the same warning is raised again
+    when the module as a whole is compiled, where the location can be
+    translated.
+
+    """
+
+    def _locate(message, category, filename, lineno):
+        if filename != pyparser.EXPRESSION_FILENAME:
+            return filename, lineno
+
+        # a "once" filter records the warning globally as it is passed
+        # over, so remove that record, else the occurrence that can be
+        # translated would be suppressed
+        warnings.onceregistry.pop((str(message), category), None)
+        return None
+
+    return _show_warnings_as(_locate)
+
+
+def _translate_module_warnings(get_source, module_id, filename):
+    """Report warnings raised for a generated module against the template
+    it was generated from, translating the line number through the module's
+    line map.
+
+    Any other warning, such as one raised by a module imported from a
+    ``<%! %>`` block as the template module executes, is shown unchanged, as
+    is one whose line cannot be translated.
+
+    """
+
+    line_map = None
+
+    def _locate(message, category, warning_filename, lineno):
+        nonlocal line_map
+
+        if warning_filename != module_id:
+            return warning_filename, lineno
+
+        if line_map is None:
+            try:
+                line_map = ModuleInfo.get_module_source_metadata(
+                    get_source(), full_line_map=True
+                )["full_line_map"]
+            except Exception:
+                # a module file that carries no usable metadata, having
+                # been written by some other means or damaged.  the warning
+                # is worth more than the translation is
+                line_map = []
+
+        try:
+            translated = line_map[lineno - 1]
+        except IndexError:
+            return warning_filename, lineno
+        else:
+            return filename, translated
+
+    return _show_warnings_as(_locate)
+
+
 def _compile_text(template, text, filename):
     identifier = template.module_id
-    source, lexer = _compile(
-        template, text, filename, generate_magic_comment=False
-    )
 
     cid = identifier
     module = types.ModuleType(cid)
+
+    with _drop_expression_warnings():
+        source, lexer = _compile(
+            template, text, filename, generate_magic_comment=False
+        )
+
     loader = _ModuleSourceLoader(cid, source)
     module.__loader__ = loader
     module.__spec__ = machinery.ModuleSpec(cid, loader, origin=cid)
-    code = compile(source, cid, "exec")
 
-    # this exec() works for 2.4->3.3.
-    exec(code, module.__dict__, module.__dict__)
+    with _translate_module_warnings(
+        lambda: source, cid, filename or template.uri
+    ):
+        code = compile(source, cid, "exec")
+
+        # the module body, which is the code of any <%! %> blocks, is
+        # executed within the same block, so that a warning it raises is
+        # reported the same way here as it is when the template is loaded
+        # from a module file, where the import system compiles and executes
+        # the module as one step
+        exec(code, module.__dict__, module.__dict__)
+
     return (source, module)
 
 
