@@ -720,6 +720,8 @@ class UnterminatedTagLocationTest(TemplateTest):
     """test that a tag or expression which is never closed is reported
     against the line it begins on.
 
+    tests for #428
+
     """
 
     def _assert_syntax_error(self, text, message):
@@ -760,4 +762,83 @@ class UnterminatedTagLocationTest(TemplateTest):
             + "".join('line%d "quoted" text\n' % i for i in range(5, 40)),
             r"Expected: \}; unterminated tag or expression beginning "
             r"in file 'foo.mako' at line: 4 char: 6",
+        )
+
+
+class SyntaxExceptionLocationTest(TemplateTest):
+    """test that a syntax error in Python code within a template is
+    reported against the line it is on.
+
+    tests for #245
+    """
+
+    def _assert_syntax_error(self, text, message):
+        assert_raises_message(
+            exceptions.SyntaxException,
+            message,
+            Template,
+            text,
+            filename="foo.mako",
+        )
+
+    def test_code_block(self):
+        """test #245"""
+
+        self._assert_syntax_error(
+            "one\ntwo\nthree\nfour\n<%\n    a = 1\n    b = 2\n    c = (\n%>\n",
+            r"\(SyntaxError\) '\(' was never closed .* "
+            r"in file 'foo.mako' at line: 8 char: 1",
+        )
+
+    def test_code_block_beginning_on_tag_line(self):
+        self._assert_syntax_error(
+            "one\ntwo\n<% a = 1\nc = ( %>\n",
+            r"\(SyntaxError\) '\(' was never closed .* "
+            r"in file 'foo.mako' at line: 4 char: 1",
+        )
+
+    def test_module_level_block(self):
+        self._assert_syntax_error(
+            "one\n<%!\n    a = 1\n    c = (\n%>\n",
+            r"\(SyntaxError\) '\(' was never closed .* "
+            r"in file 'foo.mako' at line: 4 char: 1",
+        )
+
+    def test_expression(self):
+        self._assert_syntax_error(
+            "one\ntwo\n${x +* 1}\nfour\n",
+            r"\(SyntaxError\) invalid syntax .* "
+            r"in file 'foo.mako' at line: 3 char: 1",
+        )
+
+    def test_def_signature(self):
+        self._assert_syntax_error(
+            'one\n<%def name="d(a b)">\nx\n</%def>\n',
+            r"\(SyntaxError\) .* in file 'foo.mako' at line: 2 char: 1",
+        )
+
+    def test_control_line_if(self):
+        self._assert_syntax_error(
+            "one\ntwo\n% if x +* 1:\nb\n% endif\n",
+            r"\(SyntaxError\) invalid syntax .* "
+            r"in file 'foo.mako' at line: 3 char: 1",
+        )
+
+    def test_control_line_elif(self):
+        self._assert_syntax_error(
+            "one\n% if x:\na\n% elif y +* 1:\nb\n% endif\n",
+            r"\(SyntaxError\) invalid syntax .* "
+            r"in file 'foo.mako' at line: 4 char: 1",
+        )
+
+    def test_control_line_except(self):
+        self._assert_syntax_error(
+            "one\n% try:\na\n% except (E e):\nb\n% endtry\n",
+            r"\(SyntaxError\) .* in file 'foo.mako' at line: 4 char: 1",
+        )
+
+    def test_control_line_for(self):
+        self._assert_syntax_error(
+            "one\ntwo\nthree\n% for x in (:\na\n% endfor\n",
+            r"\(SyntaxError\) .* in file 'foo.mako' at line: 4 char: 1",
         )

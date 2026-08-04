@@ -26,8 +26,15 @@ arg_id = operator.attrgetter("arg")
 EXPRESSION_FILENAME = "<unknown>"
 
 
-def parse(code, mode="exec", **exception_kwargs):
-    """Parse an expression into AST"""
+def parse(code, mode="exec", lineno_offset=0, **exception_kwargs):
+    """Parse an expression into AST.
+
+    ``lineno_offset`` is the line within the template on which ``code``
+    begins, relative to the line given in ``exception_kwargs``.  It is used
+    to report a syntax error against the line it occurred on, rather than
+    against the start of the construct that contains it.
+
+    """
 
     try:
         return _ast_util.parse(code, EXPRESSION_FILENAME, mode)
@@ -39,8 +46,26 @@ def parse(code, mode="exec", **exception_kwargs):
                 compat.exception_as(),
                 code[0:50],
             ),
-            **exception_kwargs,
+            **_adjust_lineno(e, lineno_offset, exception_kwargs),
         ) from e
+
+
+def _adjust_lineno(exc, lineno_offset, exception_kwargs):
+    """Return ``exception_kwargs`` with the line of ``exc`` within the parsed
+    code applied to it.
+
+    """
+
+    lineno = exception_kwargs.get("lineno")
+    exc_lineno = getattr(exc, "lineno", None)
+
+    if lineno is None or exc_lineno is None:
+        return exception_kwargs
+
+    return {
+        **exception_kwargs,
+        "lineno": lineno + lineno_offset + exc_lineno - 1,
+    }
 
 
 class FindIdentifiers(_ast_util.NodeVisitor):

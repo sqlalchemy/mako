@@ -16,7 +16,7 @@ from mako import pyparser
 class PythonCode:
     """represents information about a string containing Python code"""
 
-    def __init__(self, code, **exception_kwargs):
+    def __init__(self, code, lineno_offset=0, **exception_kwargs):
         self.code = code
 
         # represents all identifiers which are assigned to at some point in
@@ -38,7 +38,19 @@ class PythonCode:
         # (for example, the behavior of co_names changed a little bit
         # in python version 2.5)
         if isinstance(code, str):
-            expr = pyparser.parse(code.lstrip(), "exec", **exception_kwargs)
+            stripped = code.lstrip()
+
+            # the code of a <% %> block usually begins on the line after the
+            # tag; count the lines that are stripped off so that a syntax
+            # error is reported against the line it is on
+            lineno_offset += code[: len(code) - len(stripped)].count("\n")
+
+            expr = pyparser.parse(
+                stripped,
+                "exec",
+                lineno_offset=lineno_offset,
+                **exception_kwargs,
+            )
         else:
             expr = code
 
@@ -89,14 +101,22 @@ class PythonFragment(PythonCode):
         if m.group(3):
             code = code[: m.start(3)]
         keyword, expr = m.group(1, 2)
+
+        # a statement that is only valid as a continuation is completed by
+        # a line placed before it; the line the fragment is on is that many
+        # lines further along than the code which is parsed
+        lineno_offset = 0
+
         if keyword in ["for", "if", "while"]:
             code = code + "pass"
         elif keyword == "try":
             code = code + "pass\nexcept:pass"
         elif keyword in ["elif", "else"]:
             code = "if False:pass\n" + code + "pass"
+            lineno_offset = -1
         elif keyword == "except":
             code = "try:pass\n" + code + "pass"
+            lineno_offset = -1
         elif keyword == "with":
             code = code + "pass"
         else:
@@ -104,7 +124,7 @@ class PythonFragment(PythonCode):
                 "Unsupported control keyword: '%s'" % keyword,
                 **exception_kwargs,
             )
-        super().__init__(code, **exception_kwargs)
+        super().__init__(code, lineno_offset=lineno_offset, **exception_kwargs)
 
 
 class FunctionDecl:
