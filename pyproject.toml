@@ -74,16 +74,19 @@ mako = "mako.ext.turbogears:TGPlugin"
 
 [project.entry-points."pygments.lexers"]
 mako = "mako.ext.pygmentplugin:MakoLexer"
-"html+mako" = "mako.ext.pygmentplugin:MakoHtmlLexer"
-"xml+mako" = "mako.ext.pygmentplugin:MakoXmlLexer"
-"js+mako" = "mako.ext.pygmentplugin:MakoJavascriptLexer"
-"css+mako" = "mako.ext.pygmentplugin:MakoCssLexer"
+# pygments discovers lexers by loading the entry point and reading the
+# lexer class's own aliases; the entry point name itself is ignored, so
+# these use underscores to satisfy the recommended [\w.-]+ name pattern
+html_mako = "mako.ext.pygmentplugin:MakoHtmlLexer"
+xml_mako = "mako.ext.pygmentplugin:MakoXmlLexer"
+js_mako = "mako.ext.pygmentplugin:MakoJavascriptLexer"
+css_mako = "mako.ext.pygmentplugin:MakoCssLexer"
 
 [project.entry-points."babel.extractors"]
-mako = "mako.ext.babelplugin:extract [babel]"
+mako = "mako.ext.babelplugin:extract"
 
 [project.entry-points."lingua.extractors"]
-mako = "mako.ext.linguaplugin:LinguaMakoExtractor [lingua]"
+mako = "mako.ext.linguaplugin:LinguaMakoExtractor"
 
 [project.scripts]
 mako-render = "mako.cmd:cmdline"
