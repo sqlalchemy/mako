@@ -101,6 +101,7 @@ zip-safe = false
 include-package-data = false
 
 [tool.setuptools.packages.find]
+include = ["mako*"]
 exclude = [
     "test*",
     "examples*",
