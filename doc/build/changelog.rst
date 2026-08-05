@@ -8,7 +8,17 @@ Changelog
 
 .. changelog::
     :version: 1.4.1
-    :include_notes_from: unreleased
+    :released: Wed Aug 5 2026
+
+    .. change::
+        :tags: bug, installation
+        :tickets: 438
+
+        Fixed issue in the 1.4.0 packaging where the repository's internal
+        ``tools/`` directory was detected by setuptools package discovery and
+        installed as a top-level ``tools`` package into site-packages, shadowing
+        unrelated ``tools`` packages belonging to other applications.  Package
+        discovery is now limited to the ``mako`` package explicitly.
 
 .. changelog::
     :version: 1.4.0
