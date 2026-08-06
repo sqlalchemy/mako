@@ -891,6 +891,8 @@ class _GenerateRenderMethod:
 
     def visitCode(self, node):
         if not node.ismodule:
+            self.printer.writeline("context.code_block_entry_mark()")
+
             self.printer.write_indented_block(
                 node.text, starting_lineno=node.lineno
             )
