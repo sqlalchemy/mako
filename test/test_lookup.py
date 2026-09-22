@@ -134,7 +134,23 @@ class LookupTest:
         runtime._lookup_template(ctx, "foo/../index.html", index.uri)
 
     @pytest.mark.parametrize(
-        "ospath", [posixpath, ntpath], ids=["posix", "windows"]
+        "ospath",
+        [
+            # get_template() converts the configured directory using
+            # os.path.sep; forcing posixpath on a Windows host would
+            # leave the directory's real backslashes in place and the
+            # template would not be located at all, so this half of the
+            # matrix only applies where the filesystem is posix
+            pytest.param(
+                posixpath,
+                marks=pytest.mark.skipif(
+                    os.name == "nt",
+                    reason="posix path semantics need a posix filesystem",
+                ),
+                id="posix",
+            ),
+            pytest.param(ntpath, id="windows"),
+        ],
     )
     @pytest.mark.parametrize(
         "uri",
