@@ -1,4 +1,7 @@
+import ntpath
 import os
+import posixpath
+import re
 
 import pytest
 
@@ -1463,28 +1466,67 @@ class FilenameToURITest(TemplateTest):
         finally:
             os.path = current_path
 
-    def test_dont_accept_relative_outside_of_root(self):
-        assert_raises_message(
-            exceptions.TemplateLookupException,
-            'Template uri "../../foo.html" is invalid - it '
-            "cannot be relative outside of the root path",
-            Template,
-            "test",
-            uri="../../foo.html",
-        )
+    @pytest.mark.parametrize(
+        "ospath", [posixpath, ntpath], ids=["posix", "windows"]
+    )
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            # plain relative traversal
+            "../../foo.html",
+            "/../../foo.html",
+            # leading slash prefixes; #434
+            "//../../foo.html",
+            "///../../foo.html",
+            # backslash separators; #435
+            "..\\..\\foo.html",
+            "\\..\\..\\foo.html",
+            # drive designators; #441
+            "C:/../../foo.html",
+            "c:/../../foo.html",
+            "C:\\..\\..\\foo.html",
+            "/C:/../../foo.html",
+            "//C:/../../foo.html",
+        ],
+    )
+    def test_dont_accept_relative_outside_of_root(self, uri, ospath):
+        """test that no spelling of a traversal URI passes the check in
+        :class:`.Template`, on either platform."""
 
-        assert_raises_message(
-            exceptions.TemplateLookupException,
-            'Template uri "/../../foo.html" is invalid - it '
-            "cannot be relative outside of the root path",
-            Template,
-            "test",
-            uri="/../../foo.html",
-        )
+        current_path = os.path
+        os.path = ospath
+        try:
+            # assert_raises_message matches as a regexp, so the
+            # backslash forms have to be escaped
+            assert_raises_message(
+                exceptions.TemplateLookupException,
+                re.escape(
+                    'Template uri "%s" is invalid - it '
+                    "cannot be relative outside of the root path" % uri
+                ),
+                Template,
+                "test",
+                uri=uri,
+            )
+        finally:
+            os.path = current_path
 
-        # normalizes in the root is OK
-        t = Template("test", uri="foo/bar/../../foo.html")
-        eq_(t.uri, "foo/bar/../../foo.html")
+    @pytest.mark.parametrize(
+        "ospath", [posixpath, ntpath], ids=["posix", "windows"]
+    )
+    @pytest.mark.parametrize(
+        "uri", ["foo/bar/../../foo.html", "C:/foo/../foo.html"]
+    )
+    def test_accept_relative_normalizing_inside_root(self, uri, ospath):
+        """test that a traversal which cancels out within the root is
+        still accepted, including below a drive designator."""
+
+        current_path = os.path
+        os.path = ospath
+        try:
+            eq_(Template("test", uri=uri).uri, uri)
+        finally:
+            os.path = current_path
 
 
 class ModuleTemplateTest(TemplateTest):

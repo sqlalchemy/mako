@@ -1,5 +1,10 @@
+import contextlib
+import ntpath
 import os
+import posixpath
 import tempfile
+
+import pytest
 
 from mako import exceptions
 from mako import lookup
@@ -7,6 +12,7 @@ from mako import runtime
 from mako.template import Template
 from mako.testing.assertions import assert_raises_message
 from mako.testing.assertions import assert_raises_with_given_cause
+from mako.testing.assertions import eq_
 from mako.testing.config import config
 from mako.testing.helpers import file_with_template_code
 from mako.testing.helpers import replace_file_with_dir
@@ -127,9 +133,64 @@ class LookupTest:
         # this is OK since the .. cancels out
         runtime._lookup_template(ctx, "foo/../index.html", index.uri)
 
-    def test_dont_accept_relative_outside_of_root_via_double_slash(self):
-        """test that double-slash URI prefix can't bypass the
-        path traversal check"""
+    @pytest.mark.parametrize(
+        "ospath", [posixpath, ntpath], ids=["posix", "windows"]
+    )
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            # plain relative traversal
+            "../../secrets/creds.txt",
+            "/../../secrets/creds.txt",
+            # leading slash prefixes; #434
+            "//../../secrets/creds.txt",
+            "///../../secrets/creds.txt",
+            # backslash separators; #435
+            "..\\..\\secrets\\creds.txt",
+            "\\..\\..\\secrets\\creds.txt",
+            # drive designators; #441.  the drive designator itself
+            # consumes one level of the posixpath resolution, hence the
+            # extra ".." relative to the forms above
+            "C:/../../../secrets/creds.txt",
+            "c:/../../../secrets/creds.txt",
+            "C:\\..\\..\\..\\secrets\\creds.txt",
+            "/C:/../../../secrets/creds.txt",
+            "//C:/../../../secrets/creds.txt",
+        ],
+    )
+    def test_dont_accept_traversal_outside_of_root(self, uri, ospath):
+        """test that no spelling of a traversal URI can bypass the
+        path traversal check, on either platform.
+
+        The URIs above are all spellings of the same traversal, and all
+        must be refused whether ``os.path`` is ``posixpath`` or
+        ``ntpath``; the backslash and drive designator forms are only
+        distinguishable from a plain traversal under ``ntpath``.
+
+        """
+        with self._traversal_fixture() as tmpl_dir:
+            tl = lookup.TemplateLookup(directories=[tmpl_dir])
+
+            current_path = os.path
+            os.path = ospath
+            try:
+                assert_raises_message(
+                    exceptions.TemplateLookupException,
+                    "cannot be relative outside of the root path",
+                    tl.get_template,
+                    uri,
+                )
+
+                # a template within the root still resolves
+                eq_(tl.get_template("index.html").render(), "Hello")
+            finally:
+                os.path = current_path
+
+    @contextlib.contextmanager
+    def _traversal_fixture(self):
+        """set up a template directory with a file to be reached outside
+        of it, laid out to match the literal URIs used above."""
+
         with tempfile.TemporaryDirectory() as base:
             tmpl_dir = os.path.join(base, "app", "templates")
             os.makedirs(tmpl_dir)
@@ -141,72 +202,13 @@ class LookupTest:
             with open(secret, "w") as f:
                 f.write("SECRET_KEY=supersecret123")
 
-            tl = lookup.TemplateLookup(directories=[tmpl_dir])
-            rel = os.path.relpath(secret, tmpl_dir)
-
-            # single-slash prefix should also be blocked
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                "/" + rel,
+            # keep the literal URIs above honest
+            eq_(
+                os.path.relpath(secret, tmpl_dir).replace(os.sep, "/"),
+                "../../secrets/creds.txt",
             )
 
-            # double-slash prefix must not bypass the check
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                "//" + rel,
-            )
-
-            # triple-slash prefix must not bypass the check
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                "///" + rel,
-            )
-
-    def test_dont_accept_relative_outside_of_root_via_backslash(self):
-        """test that backslash traversal URI can't bypass the
-        path traversal check"""
-        with tempfile.TemporaryDirectory() as base:
-            tmpl_dir = os.path.join(base, "app", "templates")
-            os.makedirs(tmpl_dir)
-            with open(os.path.join(tmpl_dir, "index.html"), "w") as f:
-                f.write("Hello")
-
-            secret = os.path.join(base, "secrets", "creds.txt")
-            os.makedirs(os.path.dirname(secret))
-            with open(secret, "w") as f:
-                f.write("SECRET_KEY=supersecret123")
-
-            tl = lookup.TemplateLookup(directories=[tmpl_dir])
-            rel = os.path.relpath(secret, tmpl_dir).replace("/", "\\")
-
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                rel,
-            )
-
-            # with leading backslash
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                "\\" + rel,
-            )
-
-            # with leading forward slash
-            assert_raises_message(
-                exceptions.TemplateLookupException,
-                "cannot be relative outside of the root path",
-                tl.get_template,
-                "/" + rel,
-            )
+            yield tmpl_dir
 
     def test_checking_against_bad_filetype(self):
         with tempfile.TemporaryDirectory() as tempdir:
