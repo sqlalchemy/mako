@@ -1,9 +1,0 @@
-.. change::
-    :tags: bug, tests
-    :tickets: 440
-
-    Adjusted the test suite to accommodate for a change in Pygments 2.21.0
-    where the ``HtmlFormatter`` now renders ``"`` and ``'`` characters
-    literally rather than as HTML entities, which caused failures in tests
-    that assert against the rendered output of
-    :func:`.html_error_template`.

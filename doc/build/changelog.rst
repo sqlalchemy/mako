@@ -8,7 +8,31 @@ Changelog
 
 .. changelog::
     :version: 1.4.2
-    :include_notes_from: unreleased
+    :released: Tue Sep 22 2026
+
+    .. change::
+        :tags: bug, tests
+        :tickets: 440
+
+        Adjusted the test suite to accommodate for a change in Pygments 2.21.0
+        where the ``HtmlFormatter`` now renders ``"`` and ``'`` characters
+        literally rather than as HTML entities, which caused failures in tests
+        that assert against the rendered output of
+        :func:`.html_error_template`.
+
+    .. change::
+        :tags: bug, template
+        :tickets: 441
+
+        Fixed issue in :class:`.TemplateLookup` where a URI beginning with a drive
+        designator (e.g. ``C:/../../secret.txt``) could bypass the directory
+        traversal check on Windows, allowing reads of arbitrary files outside of
+        the template directory.  The check in :class:`.Template` normalized the URI
+        using ``os.path``, which on Windows is ``ntpath``; as ``ntpath`` splits the
+        drive designator off and treats the remainder as rooted, the ``..``
+        segments were absorbed before the check could inspect them.  Normalization
+        is now performed with ``posixpath``, which is the same module used by
+        :meth:`.TemplateLookup.get_template` to resolve the URI to a file.
 
 .. changelog::
     :version: 1.4.1
