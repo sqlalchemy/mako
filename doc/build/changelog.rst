@@ -8,7 +8,19 @@ Changelog
 
 .. changelog::
     :version: 1.4.3
-    :include_notes_from: unreleased
+    :released: Tue Sep 22 2026
+
+    .. change::
+        :tags: bug, tests
+        :tickets: 441
+
+        Fixed regression caused in 1.4.2 where tests added to the suite were
+        unable to run directly on Windows, due to posix mechanics: the tests force
+        ``os.path`` to ``posixpath``, whereas
+        :meth:`.TemplateLookup.get_template` converts the configured directory
+        using ``os.path.sep``.  These tests are now skipped on that platform,
+        where the traversal check is instead exercised against ``ntpath``
+        natively.
 
 .. changelog::
     :version: 1.4.2
